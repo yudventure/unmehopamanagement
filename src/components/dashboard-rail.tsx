@@ -1,14 +1,13 @@
 "use client";
 
 import { Pill } from "@/components/ui/pill";
+import { CH, CHANNEL_LABELS } from "@/lib/data";
 import { fmtDate, fmtShort } from "@/lib/format";
-import { payColors } from "@/lib/pills";
 import type { Booking } from "@/lib/types";
 
 export interface DayEntry {
   booking: Booking;
   roomName: string;
-  dotColor: string;
 }
 
 export interface DashboardRailProps {
@@ -35,19 +34,24 @@ export interface DashboardRailProps {
  * calendar and lays its two sections out side by side as cards again.
  */
 
+/**
+ * The badge names where the booking came from — which OTA, WhatsApp, or a
+ * walk-in paid at the property — rather than its payment state. Payment is
+ * already the point of the section it sits under, while the source is not
+ * recorded anywhere else in the rail.
+ */
 function Row({
   guest,
   meta,
-  pay,
-  dotColor,
+  channel,
   onClick,
 }: {
   guest: string;
   meta: string;
-  pay: Booking["pay"];
-  dotColor?: string;
+  channel: Booking["channel"];
   onClick: () => void;
 }) {
+  const c = CH[channel];
   return (
     <button
       type="button"
@@ -57,12 +61,12 @@ function Row({
       <span className="flex items-center gap-[9px]">
         <span
           className="h-2 w-2 shrink-0 rounded-[3px]"
-          style={{ background: dotColor ?? "transparent" }}
+          style={{ background: c.dot }}
         />
         <span className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-[13.5px] font-medium">
           {guest}
         </span>
-        <Pill colors={payColors(pay)}>{pay}</Pill>
+        <Pill colors={{ bg: c.bg, fg: c.fg }}>{CHANNEL_LABELS[channel]}</Pill>
       </span>
       <span className="pl-[17px] text-[12px] text-slate-soft">{meta}</span>
     </button>
@@ -150,7 +154,7 @@ export function DashboardRail({
             Tidak ada tamu menginap pada tanggal ini.
           </div>
         ) : (
-          dayBookings.map(({ booking, roomName, dotColor }) => (
+          dayBookings.map(({ booking, roomName }) => (
             <Row
               key={booking.id}
               guest={booking.guest}
@@ -159,8 +163,7 @@ export function DashboardRail({
                   ? `${roomName} · check-in hari ini`
                   : `${roomName} · ${fmtShort(booking.checkIn)}–${fmtShort(booking.checkOut)}`
               }
-              pay={booking.pay}
-              dotColor={dotColor}
+              channel={booking.channel}
               onClick={() => onSelect(booking.id)}
             />
           ))
@@ -175,13 +178,12 @@ export function DashboardRail({
         card={narrow}
         empty="Tidak ada check-in pada tanggal ini."
       >
-        {todayIn.map(({ booking, roomName, dotColor }) => (
+        {todayIn.map(({ booking, roomName }) => (
           <Row
             key={booking.id}
             guest={booking.guest}
             meta={roomName}
-            pay={booking.pay}
-            dotColor={dotColor}
+            channel={booking.channel}
             onClick={() => onSelect(booking.id)}
           />
         ))}
@@ -198,7 +200,7 @@ export function DashboardRail({
             key={booking.id}
             guest={booking.guest}
             meta={`Check-in ${fmtShort(booking.checkIn)}`}
-            pay={booking.pay}
+            channel={booking.channel}
             onClick={() => onSelect(booking.id)}
           />
         ))}

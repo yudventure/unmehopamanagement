@@ -147,25 +147,29 @@ export function CalendarScreen({
                 outlineOffset: -2,
               }}
             >
-              <div className="flex items-center justify-between">
-                {/* The date opens the day list. Chips fill the rest of the
-                        cell, so this corner is the one dependable target. */}
-                <button
-                  type="button"
-                  onClick={() => onSelectDate(cell.dateStr)}
-                  aria-pressed={selectedDate === cell.dateStr}
-                  aria-label={`Lihat booking pada ${cell.dateStr}`}
-                  title="Lihat semua booking pada tanggal ini"
+              {/* The whole header strip opens the day list — the date, the
+                  counter, and the empty space between them. Below it the chips
+                  are their own targets, so this band is where a click can mean
+                  "the day" rather than "this booking". */}
+              <button
+                type="button"
+                onClick={() => onSelectDate(cell.dateStr)}
+                aria-pressed={selectedDate === cell.dateStr}
+                aria-label={`Lihat booking pada ${cell.dateStr}`}
+                title="Lihat semua booking pada tanggal ini"
+                className="flex w-full cursor-pointer items-center justify-between rounded-[9px] border-none bg-transparent px-[3px] py-[2px] text-left hover:bg-surface-hover"
+              >
+                <span
                   className={
                     cell.isToday
-                      ? "flex h-[26px] w-[26px] cursor-pointer items-center justify-center rounded-full border-none bg-teal text-[12.5px] font-bold text-white hover:bg-teal-deep"
-                      : "flex h-[26px] min-w-[26px] cursor-pointer items-center justify-center rounded-full border-none bg-transparent text-[13px] font-medium text-ink-soft hover:bg-surface-hover"
+                      ? "flex h-[26px] w-[26px] items-center justify-center rounded-full bg-teal text-[12.5px] font-bold text-white"
+                      : "flex h-[26px] min-w-[26px] items-center justify-center text-[13px] font-medium text-ink-soft"
                   }
                 >
                   {cell.label}
-                </button>
+                </span>
                 {cell.inMonth && cell.capacity > 0 && (
-                  <div
+                  <span
                     className="font-mono text-[10.5px]"
                     style={{
                       color:
@@ -173,9 +177,9 @@ export function CalendarScreen({
                     }}
                   >
                     {cell.occupied}/{cell.capacity}
-                  </div>
+                  </span>
                 )}
-              </div>
+              </button>
               <div className="mt-[7px] flex flex-col gap-1">
                 {cell.chips.map((chip) => (
                   <button

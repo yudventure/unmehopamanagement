@@ -72,10 +72,13 @@ scope yang disepakati, bukan pekerjaan yang terlewat.
   (`terisi/kapasitas`), chip booking berwarna per saluran di setiap malam yang
   ditempati, collapse "+N lagi", banner konflik iCal, kartu "Check-in hari ini"
   dan "Belum lunas".
-- **Daftar per tanggal** — klik angka tanggal (atau tautan "+N lagi") dan bilah
+- **Daftar per tanggal** — klik bidang atas sel (angka tanggal, penghitung
+  okupansi, dan ruang kosong di antaranya) atau tautan "+N lagi", dan bilah
   kanan menampilkan **semua** tamu yang menginap hari itu, termasuk yang tidak
-  muat sebagai chip. Sasaran kliknya angka tanggal, bukan seluruh sel: chip
-  memenuhi sisa sel.
+  muat sebagai chip. Yang bisa diklik hanya bidang atas itu, bukan seluruh sel:
+  sisanya diisi chip, yang punya aksinya sendiri.
+  Badge di bilah kanan menunjukkan **asal booking** (OTA mana / WA · langsung),
+  bukan status bayar — status bayar sudah jadi inti judul seksinya.
 - **Drawer detail booking** — transisi status (Tentative → Confirmed →
   Checked-in → Checked-out, atau Cancelled), rincian bayar, tombol catat
   pelunasan, jejak audit.

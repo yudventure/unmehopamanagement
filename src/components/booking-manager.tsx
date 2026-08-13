@@ -387,7 +387,6 @@ export function BookingManager({
     .map((b) => ({
       booking: b,
       roomName: roomById.get(b.roomId)?.name ?? "",
-      dotColor: CH[b.channel].dot,
     }));
 
   const unpaid = visible
@@ -404,7 +403,6 @@ export function BookingManager({
       .map((b) => ({
         booking: b,
         roomName: roomById.get(b.roomId)?.name ?? "",
-        dotColor: CH[b.channel].dot,
       }))
       .sort((a, b) => a.roomName.localeCompare(b.roomName));
   }, [selectedDate, visible, roomById]);

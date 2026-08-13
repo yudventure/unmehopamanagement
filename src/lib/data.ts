@@ -26,6 +26,20 @@ export const CH: Record<ChannelKey, ChannelStyle> = {
 
 export const CHANNEL_KEYS = Object.keys(CH) as ChannelKey[];
 
+/**
+ * How a channel is named wherever it faces the user. WhatsApp reads as two
+ * things because it is: the booking arrives over chat and the guest settles at
+ * the property, which is also why its commission is zero. Walk-ins are
+ * recorded here rather than as a channel of their own.
+ */
+export const CHANNEL_LABELS: Record<ChannelKey, string> = {
+  "Booking.com": "Booking.com",
+  Traveloka: "Traveloka",
+  Agoda: "Agoda",
+  WhatsApp: "WA / langsung",
+  Blokir: "Blokir",
+};
+
 export const PROPERTIES: { key: PropertyKey; name: string; location: string }[] =
   [
     { key: "turtle", name: "Turtle Homestay", location: "Yenbuba, Pulau Mansuar" },

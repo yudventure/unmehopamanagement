@@ -7,7 +7,7 @@ import {
   Modal,
   ModalHeader,
 } from "@/components/ui/modal";
-import { PROPERTIES } from "@/lib/data";
+import { CHANNEL_LABELS, PROPERTIES } from "@/lib/data";
 import { fmt } from "@/lib/format";
 import type { BookingForm, ChannelKey, PropertyKey, Room } from "@/lib/types";
 
@@ -156,7 +156,7 @@ export function BookingFormModal({
           >
             {CHANNEL_OPTIONS.map((c) => (
               <option key={c} value={c}>
-                {c === "WhatsApp" ? "WhatsApp / langsung" : c}
+                {CHANNEL_LABELS[c]}
               </option>
             ))}
           </select>

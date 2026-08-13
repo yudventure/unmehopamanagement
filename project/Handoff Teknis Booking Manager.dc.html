@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="./doc-page.js"></script>
+<style>
+  doc-page:not(:defined) { visibility: hidden; }
+  body { margin: 0; font-family: "DM Sans", system-ui, sans-serif; color: #16211E; -webkit-font-smoothing: antialiased; }
+  a { color: #0E7C6B; }
+  a:hover { color: #0B5F52; }
+</style>
+</helmet>
+
+<doc-page margin="0.8in">
+
+  <div slot="footer" style="display:flex; justify-content:space-between; align-items:center; padding-top:8px; border-top:1px solid #E6ECE9; font-size:9.5pt; color:#7A8B85">
+    <span>Handoff Teknis — Booking Manager Homestay Raja Ampat</span>
+    <span style="font-family:'JetBrains Mono', monospace">v1.0 · 13 Agustus 2026</span>
+  </div>
+
+  <h1 style="font-size:27pt; font-weight:700; letter-spacing:-.02em; line-height:1.15; margin:0 0 10px">Handoff Teknis — Booking Manager Homestay</h1>
+  <p style="font-size:12.5pt; color:#5C6E68; line-height:1.6; margin:0 0 6px">Dokumen implementasi untuk developer. Turunan dari PRD v1.0 dan prototype interaktif yang sudah dibuat. Berisi keputusan teknologi, skema database beserta proteksi anti-double-booking, daftar endpoint, alur sinkronisasi iCal dengan kasus tepinya, dan urutan pengerjaan.</p>
+  <p style="font-size:10.5pt; color:#8B9C96; margin:0 0 30px; font-family:'JetBrains Mono', monospace">Pemilik: Yud · Turtle Homestay (10 kamar), Eddo Homestay (2 kamar)</p>
+
+  <h2 style="font-size:15pt; font-weight:700; margin:0 0 12px; padding-bottom:7px; border-bottom:2px solid #16211E">1. Keputusan teknologi</h2>
+  <p style="font-size:11.5pt; line-height:1.65; margin:0 0 14px">Stack ditetapkan sebagai berikut. Setiap pilihan punya alasan yang terikat pada kebutuhan di PRD, bukan preferensi umum.</p>
+
+  <table style="width:100%; border-collapse:collapse; font-size:10.5pt; margin:0 0 16px">
+    <thead>
+      <tr style="background:#F4F7F6">
+        <th style="text-align:left; padding:8px 10px; border-bottom:1px solid #D9E3DF; font-weight:700; width:26%">Lapisan</th>
+        <th style="text-align:left; padding:8px 10px; border-bottom:1px solid #D9E3DF; font-weight:700; width:30%">Pilihan</th>
+        <th style="text-align:left; padding:8px 10px; border-bottom:1px solid #D9E3DF; font-weight:700">Alasan mengikat</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="padding:8px 10px; border-bottom:1px solid #EDF2F0; vertical-align:top">Framework</td>
+        <td style="padding:8px 10px; border-bottom:1px solid #EDF2F0; vertical-align:top">Next.js 15 (App Router), TypeScript</td>
+        <td style="padding:8px 10px; border-bottom:1px solid #EDF2F0; vertical-align:top">Satu repo untuk UI dan API, PWA lewat service worker, cocok untuk NF1 dan NF2.</td>
+      </tr>
+      <tr>
+        <td style="padding:8px 10px; border-bottom:1px solid #EDF2F0; vertical-align:top">Database</td>
+        <td style="padding:8px 10px; border-bottom:1px solid #EDF2F0; vertical-align:top">PostgreSQL 16 + Prisma</td>
+        <td style="padding:8px 10px; border-bottom:1px solid #EDF2F0; vertical-align:top">Tipe <code style="font-family:'JetBrains Mono', monospace; font-size:9.5pt">daterange</code> dan exclusion constraint adalah satu-satunya cara menutup double booking di level data. MySQL tidak punya ini.</td>
+      </tr>
+      <tr>
+        <td style="padding:8px 10px; border-bottom:1px solid #EDF2F0; vertical-align:top">Auth</td>
+        <td style="padding:8px 10px; border-bottom:1px solid #EDF2F0; vertical-align:top">Auth.js credentials + bcrypt</td>
+        <td style="padding:8px 10px; border-bottom:1px solid #EDF2F0; vertical-align:top">F7.1 hanya butuh email dan password. Tidak perlu OAuth.</td>
+      </tr>
+      <tr>
+        <td style="padding:8px 10px; border-bottom:1px solid #EDF2F0; vertical-align:top">iCal</td>
+        <td style="padding:8px 10px; border-bottom:1px solid #EDF2F0; vertical-align:top">node-ical (impor), ics (ekspor)</td>
+        <td style="padding:8px 10px; border-bottom:1px solid #EDF2F0; vertical-align:top">Keduanya menangani VEVENT dengan DATE value type yang dipakai OTA.</td>
+      </tr>
+      <tr>
+        <td style="padding:8px 10px; border-bottom:1px solid #EDF2F0; vertical-align:top">Validasi</td>
+        <td style="padding:8px 10px; border-bottom:1px solid #EDF2F0; vertical-align:top">Zod, dipakai ulang di client dan server</td>
+        <td style="padding:8px 10px; border-bottom:1px solid #EDF2F0; vertical-align:top">Satu definisi skema untuk form dan API, mengurangi celah validasi.</td>
+      </tr>
+      <tr>
+        <td style="padding:8px 10px; border-bottom:1px solid #EDF2F0; vertical-align:top">Tanggal</td>
+        <td style="padding:8px 10px; border-bottom:1px solid #EDF2F0; vertical-align:top">date-fns, zona Asia/Jayapura</td>
+        <td style="padding:8px 10px; border-bottom:1px solid #EDF2F0; vertical-align:top">Semua tanggal booking disimpan sebagai <code style="font-family:'JetBrains Mono', monospace; font-size:9.5pt">DATE</code>, bukan timestamp. Lihat 3.1.</td>
+      </tr>
+      <tr>
+        <td style="padding:8px 10px; border-bottom:1px solid #EDF2F0; vertical-align:top">Penyimpanan file</td>
+        <td style="padding:8px 10px; border-bottom:1px solid #EDF2F0; vertical-align:top">Cloudflare R2 + kompresi di browser</td>
+        <td style="padding:8px 10px; border-bottom:1px solid #EDF2F0; vertical-align:top">Bukti transfer difoto dari HP; kompresi sebelum upload wajib karena sinyal lemah.</td>
+      </tr>
+      <tr>
+        <td style="padding:8px 10px; border-bottom:1px solid #EDF2F0; vertical-align:top">Notifikasi</td>
+        <td style="padding:8px 10px; border-bottom:1px solid #EDF2F0; vertical-align:top">Resend (email), Fonnte (WhatsApp)</td>
+        <td style="padding:8px 10px; border-bottom:1px solid #EDF2F0; vertical-align:top">Undangan staf dan peringatan konflik. Fonnte jauh lebih murah dari WA Business API resmi.</td>
+      </tr>
+      <tr>
+        <td style="padding:8px 10px; border-bottom:1px solid #EDF2F0; vertical-align:top">Hosting</td>
+        <td style="padding:8px 10px; border-bottom:1px solid #EDF2F0; vertical-align:top">Vercel + Neon, atau VPS KVM 4</td>
+        <td style="padding:8px 10px; border-bottom:1px solid #EDF2F0; vertical-align:top">Lihat bagian 8. Keputusan ini tidak memengaruhi kode aplikasi.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p style="font-size:11.5pt; line-height:1.65; margin:0 0 8px"><strong>Sengaja tidak dipakai:</strong> Redis, Docker, microservice, GraphQL, dan state manager global. Untuk 12 kamar dan ribuan booking per tahun, semuanya menambah permukaan kegagalan tanpa manfaat terukur.</p>
+
+  <h2 style="font-size:15pt; font-weight:700; margin:30px 0 12px; padding-bottom:7px; border-bottom:2px solid #16211E">2. Arsitektur</h2>
+  <p style="font-size:11.5pt; line-height:1.65; margin:0 0 12px">Tiga bagian bergerak: aplikasi web, database, dan satu proses terjadwal yang menarik feed iCal. Tidak ada komponen lain.</p>
+  <pre style="font-family:'JetBrains Mono', monospace; font-size:9.5pt; line-height:1.6; background:#F8FAF9; border:1px solid #EDF2F0; border-radius:8px; padding:14px 16px; margin:0 0 10px; white-space:pre-wrap">Browser (PWA, cache read-only)
+      │  HTTPS
+      ▼
+Next.js  ─────────────►  PostgreSQL
+  ├── /app          UI kalender, form, laporan
+  ├── /api          REST internal, dilindungi session
+  └── /api/ical/... feed ekspor publik bertoken
+      ▲
+      │  POST bertoken, tiap 15 menit
+Penjadwal (crontab atau cron eksternal)
+      │
+      ▼  GET feed iCal OTA
+Booking.com · Agoda · (Traveloka bila tersedia)</pre>
+  <p style="font-size:10.5pt; color:#5C6E68; line-height:1.6; margin:0 0 8px">Gambar 1. Aliran data. Feed ekspor sengaja berada di luar session karena harus bisa dibaca server OTA tanpa login; pengamanannya lewat token acak per kamar.</p>
+
+  <h2 style="font-size:15pt; font-weight:700; margin:30px 0 12px; padding-bottom:7px; border-bottom:2px solid #16211E">3. Skema database</h2>
+
+  <h3 style="font-size:12.5pt; font-weight:700; margin:0 0 8px">3.1 Aturan tanggal</h3>
+  <p style="font-size:11.5pt; line-height:1.65; margin:0 0 12px">Semua tanggal menginap disimpan sebagai <code style="font-family:'JetBrains Mono', monospace; font-size:10pt">DATE</code>. Jangan pakai <code style="font-family:'JetBrains Mono', monospace; font-size:10pt">timestamptz</code>. Alasannya: satu malam menginap adalah satuan kalender, bukan satuan waktu, dan konversi zona waktu pernah menggeser check-in ke tanggal sebelumnya pada sistem sejenis. Rentang booking bersifat setengah terbuka: <code style="font-family:'JetBrains Mono', monospace; font-size:10pt">[check_in, check_out)</code> — tamu keluar pada tanggal check-out, sehingga kamar bisa langsung dipakai tamu lain hari itu. Konvensi ini identik dengan cara OTA mengirim <code style="font-family:'JetBrains Mono', monospace; font-size:10pt">DTEND</code> di iCal, jadi tidak perlu penyesuaian saat impor.</p>
+
+  <h3 style="font-size:12.5pt; font-weight:700; margin:22px 0 8px">3.2 Proteksi anti-double-booking</h3>
+  <p style="font-size:11.5pt; line-height:1.65; margin:0 0 12px">Ini bagian terpenting dari seluruh dokumen. Validasi ketersediaan di kode aplikasi tidak cukup — dua request yang datang bersamaan bisa lolos pengecekan yang sama sebelum salah satunya menyimpan. Constraint di bawah membuat database menolak overlap secara mutlak.</p>
+  <pre style="font-family:'JetBrains Mono', monospace; font-size:9.5pt; line-height:1.65; background:#F8FAF9; border:1px solid #EDF2F0; border-radius:8px; padding:14px 16px; margin:0 0 10px; white-space:pre-wrap">CREATE EXTENSION IF NOT EXISTS btree_gist;
+
+ALTER TABLE bookings
+  ADD COLUMN stay daterange
+  GENERATED ALWAYS AS (daterange(check_in, check_out, '[)')) STORED;
+
+-- Hanya booking yang benar-benar memegang kamar yang saling mengunci.
+ALTER TABLE bookings
+  ADD CONSTRAINT bookings_no_overlap
+  EXCLUDE USING gist (room_id WITH =, stay WITH &amp;&amp;)
+  WHERE (status IN ('CONFIRMED','CHECKED_IN','CHECKED_OUT','BLOCKED'));</pre>
+  <p style="font-size:11.5pt; line-height:1.65; margin:0 0 12px">Perhatikan klausa <code style="font-family:'JetBrains Mono', monospace; font-size:10pt">WHERE</code>. Status <code style="font-family:'JetBrains Mono', monospace; font-size:10pt">TENTATIVE</code>, <code style="font-family:'JetBrains Mono', monospace; font-size:10pt">CANCELLED</code>, dan <code style="font-family:'JetBrains Mono', monospace; font-size:10pt">NO_SHOW</code> dikecualikan dengan sengaja: hold sementara boleh berdampingan dengan hold lain, dan booking yang sudah dibatalkan tidak boleh memblokir tanggal. Konsekuensinya, promosi dari <code style="font-family:'JetBrains Mono', monospace; font-size:10pt">TENTATIVE</code> ke <code style="font-family:'JetBrains Mono', monospace; font-size:10pt">CONFIRMED</code> bisa gagal karena constraint — tangani error <code style="font-family:'JetBrains Mono', monospace; font-size:10pt">23P01</code> dan tampilkan pesan bahwa tanggal sudah terjual, jangan biarkan menjadi error 500.</p>
+  <p style="font-size:11.5pt; line-height:1.65; margin:0 0 12px">Booking hasil impor iCal adalah pengecualian penting: booking itu sudah terjadi di OTA, jadi menolaknya berarti kehilangan data. Impor menyimpan dengan status <code style="font-family:'JetBrains Mono', monospace; font-size:10pt">CONFLICT</code> ketika constraint menolak, lalu operator memutuskan penyelesaiannya. Lihat 5.3.</p>
+
+  <h3 style="font-size:12.5pt; font-weight:700; margin:22px 0 8px">3.3 Tabel</h3>
+  <pre style="font-family:'JetBrains Mono', monospace; font-size:9.5pt; line-height:1.65; background:#F8FAF9; border:1px solid #EDF2F0; border-radius:8px; padding:14px 16px; margin:0 0 10px; white-space:pre-wrap">properties      id, name, island, contact, notes, created_at
+rooms           id, property_id, name, room_type, cap_adult, cap_child,
+                base_rate, is_active, inactive_reason, sort_order
+seasonal_rates  id, room_id, date_from, date_to, rate, label
+                └ EXCLUDE gist (room_id =, daterange(date_from,date_to,'[]') &amp;&amp;)
+guests          id, name, phone, origin, notes
+bookings        id, code, room_id, guest_id, check_in, check_out,
+                stay (generated), channel, status, source, external_uid,
+                total_amount, ota_commission_est, notes,
+                hold_expires_at, conflict_group, created_by, created_at
+payments        id, booking_id, amount, kind, method, paid_at,
+                proof_url, recorded_by, created_at
+ical_feeds      id, room_id, direction, url, export_token, ota_label,
+                last_success_at, last_error_at, last_error, fail_count,
+                is_active
+sync_runs       id, feed_id, started_at, finished_at, events_seen,
+                created_count, updated_count, cancelled_count, error
+users           id, name, email, password_hash, role, is_active,
+                invited_at, last_login_at
+user_properties user_id, property_id          -- pembatas akses staf
+audit_log       id, entity, entity_id, action, actor_id, diff_json, at</pre>
+
+  <p style="font-size:11.5pt; line-height:1.65; margin:0 0 10px">Indeks yang wajib ada, karena inilah query yang dijalankan paling sering:</p>
+  <pre style="font-family:'JetBrains Mono', monospace; font-size:9.5pt; line-height:1.65; background:#F8FAF9; border:1px solid #EDF2F0; border-radius:8px; padding:14px 16px; margin:0 0 10px; white-space:pre-wrap">CREATE INDEX ON bookings USING gist (stay);
+CREATE INDEX ON bookings (room_id, check_in);
+CREATE UNIQUE INDEX ON bookings (external_uid) WHERE external_uid IS NOT NULL;
+CREATE INDEX ON payments (booking_id);</pre>
+  <p style="font-size:11.5pt; line-height:1.65; margin:0 0 8px">Unique index pada <code style="font-family:'JetBrains Mono', monospace; font-size:10pt">external_uid</code> adalah kunci idempotensi sinkron: tanpa itu, setiap siklus tarik akan menduplikasi seluruh booking OTA.</p>
+
+  <h3 style="font-size:12.5pt; font-weight:700; margin:22px 0 8px">3.4 Enum</h3>
+  <pre style="font-family:'JetBrains Mono', monospace; font-size:9.5pt; line-height:1.65; background:#F8FAF9; border:1px solid #EDF2F0; border-radius:8px; padding:14px 16px; margin:0 0 10px; white-space:pre-wrap">channel  BOOKING_COM | TRAVELOKA | AGODA | WHATSAPP | WALK_IN | BLOCK
+status   TENTATIVE | CONFIRMED | CHECKED_IN | CHECKED_OUT
+         | CANCELLED | NO_SHOW | CONFLICT | BLOCKED
+source   MANUAL | ICAL
+payment  DEPOSIT | BALANCE | EXTRA | REFUND
+method   TRANSFER | CASH | EWALLET | OTA_PREPAID
+role     OWNER | STAFF</pre>
+
+  <h2 style="font-size:15pt; font-weight:700; margin:30px 0 12px; padding-bottom:7px; border-bottom:2px solid #16211E">4. Endpoint API</h2>
+  <p style="font-size:11.5pt; line-height:1.65; margin:0 0 14px">Semua endpoint di bawah <code style="font-family:'JetBrains Mono', monospace; font-size:10pt">/api</code> memerlukan session, kecuali yang ditandai publik. Kolom akses menyebut peran minimum; staf tambahan dibatasi oleh <code style="font-family:'JetBrains Mono', monospace; font-size:10pt">user_properties</code>.</p>
+
+  <table style="width:100%; border-collapse:collapse; font-size:10pt; margin:0 0 16px">
+    <thead>
+      <tr style="background:#F4F7F6">
+        <th style="text-align:left; padding:7px 9px; border-bottom:1px solid #D9E3DF; font-weight:700; width:44%">Endpoint</th>
+        <th style="text-align:left; padding:7px 9px; border-bottom:1px solid #D9E3DF; font-weight:700; width:12%">Akses</th>
+        <th style="text-align:left; padding:7px 9px; border-bottom:1px solid #D9E3DF; font-weight:700">Catatan</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td style="padding:7px 9px; border-bottom:1px solid #EDF2F0; font-family:'JetBrains Mono', monospace; font-size:9pt; vertical-align:top">GET /api/calendar?from&amp;to&amp;property</td><td style="padding:7px 9px; border-bottom:1px solid #EDF2F0; vertical-align:top">Staf</td><td style="padding:7px 9px; border-bottom:1px solid #EDF2F0; vertical-align:top">Satu query untuk seluruh grid bulan. Nominal dibuang untuk staf.</td></tr>
+      <tr><td style="padding:7px 9px; border-bottom:1px solid #EDF2F0; font-family:'JetBrains Mono', monospace; font-size:9pt; vertical-align:top">GET /api/availability?room&amp;from&amp;to</td><td style="padding:7px 9px; border-bottom:1px solid #EDF2F0; vertical-align:top">Staf</td><td style="padding:7px 9px; border-bottom:1px solid #EDF2F0; vertical-align:top">Dipakai form input saat tanggal berubah. Bukan pengganti constraint.</td></tr>
+      <tr><td style="padding:7px 9px; border-bottom:1px solid #EDF2F0; font-family:'JetBrains Mono', monospace; font-size:9pt; vertical-align:top">POST /api/bookings</td><td style="padding:7px 9px; border-bottom:1px solid #EDF2F0; vertical-align:top">Staf</td><td style="padding:7px 9px; border-bottom:1px solid #EDF2F0; vertical-align:top">Buat manual. Tangani 23P01 sebagai 409 dengan pesan siap tampil.</td></tr>
+      <tr><td style="padding:7px 9px; border-bottom:1px solid #EDF2F0; font-family:'JetBrains Mono', monospace; font-size:9pt; vertical-align:top">PATCH /api/bookings/:id</td><td style="padding:7px 9px; border-bottom:1px solid #EDF2F0; vertical-align:top">Staf</td><td style="padding:7px 9px; border-bottom:1px solid #EDF2F0; vertical-align:top">Ubah tanggal, kamar, tamu, catatan. Wajib menulis audit_log.</td></tr>
+      <tr><td style="padding:7px 9px; border-bottom:1px solid #EDF2F0; font-family:'JetBrains Mono', monospace; font-size:9pt; vertical-align:top">POST /api/bookings/:id/status</td><td style="padding:7px 9px; border-bottom:1px solid #EDF2F0; vertical-align:top">Staf</td><td style="padding:7px 9px; border-bottom:1px solid #EDF2F0; vertical-align:top">Transisi status. Validasi terhadap tabel di bagian 6.</td></tr>
+      <tr><td style="padding:7px 9px; border-bottom:1px solid #EDF2F0; font-family:'JetBrains Mono', monospace; font-size:9pt; vertical-align:top">POST /api/bookings/:id/payments</td><td style="padding:7px 9px; border-bottom:1px solid #EDF2F0; vertical-align:top">Staf</td><td style="padding:7px 9px; border-bottom:1px solid #EDF2F0; vertical-align:top">Upload bukti lewat presigned URL, bukan multipart ke server.</td></tr>
+      <tr><td style="padding:7px 9px; border-bottom:1px solid #EDF2F0; font-family:'JetBrains Mono', monospace; font-size:9pt; vertical-align:top">GET /api/today</td><td style="padding:7px 9px; border-bottom:1px solid #EDF2F0; vertical-align:top">Staf</td><td style="padding:7px 9px; border-bottom:1px solid #EDF2F0; vertical-align:top">Check-in, check-out, dan tamu in-house hari ini (F2.5).</td></tr>
+      <tr><td style="padding:7px 9px; border-bottom:1px solid #EDF2F0; font-family:'JetBrains Mono', monospace; font-size:9pt; vertical-align:top">GET /api/conflicts</td><td style="padding:7px 9px; border-bottom:1px solid #EDF2F0; vertical-align:top">Staf</td><td style="padding:7px 9px; border-bottom:1px solid #EDF2F0; vertical-align:top">Semua booking status CONFLICT, dikelompokkan per conflict_group.</td></tr>
+      <tr><td style="padding:7px 9px; border-bottom:1px solid #EDF2F0; font-family:'JetBrains Mono', monospace; font-size:9pt; vertical-align:top">POST /api/conflicts/:group/resolve</td><td style="padding:7px 9px; border-bottom:1px solid #EDF2F0; vertical-align:top">Staf</td><td style="padding:7px 9px; border-bottom:1px solid #EDF2F0; vertical-align:top">Pindah kamar atau batalkan salah satu, lalu tandai selesai.</td></tr>
+      <tr><td style="padding:7px 9px; border-bottom:1px solid #EDF2F0; font-family:'JetBrains Mono', monospace; font-size:9pt; vertical-align:top">GET /api/reports/occupancy</td><td style="padding:7px 9px; border-bottom:1px solid #EDF2F0; vertical-align:top">Owner</td><td style="padding:7px 9px; border-bottom:1px solid #EDF2F0; vertical-align:top">Agregat SQL, bukan perhitungan di aplikasi.</td></tr>
+      <tr><td style="padding:7px 9px; border-bottom:1px solid #EDF2F0; font-family:'JetBrains Mono', monospace; font-size:9pt; vertical-align:top">GET /api/reports/revenue</td><td style="padding:7px 9px; border-bottom:1px solid #EDF2F0; vertical-align:top">Owner</td><td style="padding:7px 9px; border-bottom:1px solid #EDF2F0; vertical-align:top">Per saluran, kotor dan bersih setelah komisi.</td></tr>
+      <tr><td style="padding:7px 9px; border-bottom:1px solid #EDF2F0; font-family:'JetBrains Mono', monospace; font-size:9pt; vertical-align:top">GET /api/reports/export.csv</td><td style="padding:7px 9px; border-bottom:1px solid #EDF2F0; vertical-align:top">Owner</td><td style="padding:7px 9px; border-bottom:1px solid #EDF2F0; vertical-align:top">Streaming, bukan dirakit di memori.</td></tr>
+      <tr><td style="padding:7px 9px; border-bottom:1px solid #EDF2F0; font-family:'JetBrains Mono', monospace; font-size:9pt; vertical-align:top">POST /api/users/invite</td><td style="padding:7px 9px; border-bottom:1px solid #EDF2F0; vertical-align:top">Owner</td><td style="padding:7px 9px; border-bottom:1px solid #EDF2F0; vertical-align:top">Kirim email tautan set password, kedaluwarsa 48 jam.</td></tr>
+      <tr><td style="padding:7px 9px; border-bottom:1px solid #EDF2F0; font-family:'JetBrains Mono', monospace; font-size:9pt; vertical-align:top">POST /api/feeds/:id/sync</td><td style="padding:7px 9px; border-bottom:1px solid #EDF2F0; vertical-align:top">Owner</td><td style="padding:7px 9px; border-bottom:1px solid #EDF2F0; vertical-align:top">Tombol "sync sekarang" (F3.5).</td></tr>
+      <tr><td style="padding:7px 9px; border-bottom:1px solid #EDF2F0; font-family:'JetBrains Mono', monospace; font-size:9pt; vertical-align:top">POST /api/cron/sync-ical</td><td style="padding:7px 9px; border-bottom:1px solid #EDF2F0; vertical-align:top">Token</td><td style="padding:7px 9px; border-bottom:1px solid #EDF2F0; vertical-align:top">Dipanggil penjadwal. Header <code style="font-family:'JetBrains Mono', monospace; font-size:9pt">x-cron-secret</code>, bukan session.</td></tr>
+      <tr><td style="padding:7px 9px; border-bottom:1px solid #EDF2F0; font-family:'JetBrains Mono', monospace; font-size:9pt; vertical-align:top">GET /api/ical/:roomToken.ics</td><td style="padding:7px 9px; border-bottom:1px solid #EDF2F0; vertical-align:top">Publik</td><td style="padding:7px 9px; border-bottom:1px solid #EDF2F0; vertical-align:top">Feed ekspor per kamar. Token acak 32 byte, bisa direset.</td></tr>
+    </tbody>
+  </table>
+
+  <h2 style="font-size:15pt; font-weight:700; margin:30px 0 12px; padding-bottom:7px; border-bottom:2px solid #16211E">5. Sinkronisasi iCal</h2>
+
+  <h3 style="font-size:12.5pt; font-weight:700; margin:0 0 8px">5.1 Ekspor</h3>
+  <p style="font-size:11.5pt; line-height:1.65; margin:0 0 12px">Setiap kamar punya satu URL <code style="font-family:'JetBrains Mono', monospace; font-size:10pt">.ics</code> bertoken yang dipasang di extranet tiap OTA. Isinya satu VEVENT per booking aktif, tanpa nama tamu dan tanpa nilai — cukup rentang tanggal dan penanda blokir. Jangan bocorkan data tamu ke feed publik.</p>
+  <pre style="font-family:'JetBrains Mono', monospace; font-size:9.5pt; line-height:1.65; background:#F8FAF9; border:1px solid #EDF2F0; border-radius:8px; padding:14px 16px; margin:0 0 10px; white-space:pre-wrap">BEGIN:VEVENT
+UID:bk-01J8ZQ4M@rumahpapua.id
+DTSTAMP:20260813T024100Z
+DTSTART;VALUE=DATE:20260818
+DTEND;VALUE=DATE:20260821      ← eksklusif, sama dengan check_out
+SUMMARY:Tidak tersedia
+END:VEVENT</pre>
+  <p style="font-size:11.5pt; line-height:1.65; margin:0 0 12px">Status yang masuk feed: <code style="font-family:'JetBrains Mono', monospace; font-size:10pt">CONFIRMED</code>, <code style="font-family:'JetBrains Mono', monospace; font-size:10pt">CHECKED_IN</code>, <code style="font-family:'JetBrains Mono', monospace; font-size:10pt">CHECKED_OUT</code>, <code style="font-family:'JetBrains Mono', monospace; font-size:10pt">BLOCKED</code>, dan <code style="font-family:'JetBrains Mono', monospace; font-size:10pt">CONFLICT</code>. Booking <code style="font-family:'JetBrains Mono', monospace; font-size:10pt">TENTATIVE</code> tidak diekspor secara default; sediakan pengaturan per properti untuk mengekspornya juga, karena pada high season pemilik sering ingin hold ikut memblokir tanggal.</p>
+  <p style="font-size:11.5pt; line-height:1.65; margin:0 0 12px">Kirim header <code style="font-family:'JetBrains Mono', monospace; font-size:10pt">Cache-Control: max-age=300</code>. OTA menarik feed jauh lebih sering daripada yang mereka akui.</p>
+
+  <h3 style="font-size:12.5pt; font-weight:700; margin:22px 0 8px">5.2 Impor</h3>
+  <p style="font-size:11.5pt; line-height:1.65; margin:0 0 12px">Satu siklus sinkron per feed, berjalan dalam satu transaksi per feed agar kegagalan di tengah tidak meninggalkan data separuh jadi.</p>
+  <pre style="font-family:'JetBrains Mono', monospace; font-size:9.5pt; line-height:1.65; background:#F8FAF9; border:1px solid #EDF2F0; border-radius:8px; padding:14px 16px; margin:0 0 10px; white-space:pre-wrap">1  Ambil URL feed, timeout 20 detik, maksimal 3 percobaan
+     dengan jeda menaik (backoff).
+2  Parse semua VEVENT. Abaikan event yang DTEND-nya sudah lewat
+     lebih dari 60 hari.
+3  Untuk setiap event:
+     a  Cari booking dengan external_uid = UID event.
+     b  Ada, tanggal sama      → tidak ada perubahan.
+     c  Ada, tanggal berbeda   → perbarui tanggal, catat di audit_log.
+     d  Belum ada              → buat booking baru:
+                                  source=ICAL, status=CONFIRMED,
+                                  channel dari label feed,
+                                  guest kosong, total_amount NULL.
+     e  Penyimpanan ditolak
+        constraint (23P01)     → simpan dengan status=CONFLICT dan
+                                  conflict_group yang sama dengan
+                                  booking penghalang, lalu notifikasi.
+4  UID yang hilang dari feed padahal sebelumnya ada
+     → status=CANCELLED_PENDING_REVIEW. Jangan hapus (F3.4).
+5  Tulis sync_runs, perbarui last_success_at atau last_error_at
+     dan fail_count di ical_feeds.</pre>
+  <p style="font-size:11.5pt; line-height:1.65; margin:0 0 12px">Langkah 4 punya jebakan yang harus diperhatikan: sebagian OTA hanya memuat jendela beberapa bulan ke depan di feed mereka. Booking yang jatuh di luar jendela itu akan tampak "hilang" padahal masih ada. Karena itu, hanya tandai hilang jika UID sebelumnya terlihat pada sinkron yang sama-sama sukses <em>dan</em> tanggalnya berada di dalam jendela yang feed itu benar-benar kirim. Simpan rentang tanggal minimum dan maksimum yang terlihat per <code style="font-family:'JetBrains Mono', monospace; font-size:10pt">sync_run</code> untuk mengukur jendela ini.</p>
+
+  <h3 style="font-size:12.5pt; font-weight:700; margin:22px 0 8px">5.3 Penyelesaian konflik</h3>
+  <p style="font-size:11.5pt; line-height:1.65; margin:0 0 12px">Booking berstatus <code style="font-family:'JetBrains Mono', monospace; font-size:10pt">CONFLICT</code> tidak ikut constraint, jadi keduanya bisa hidup bersama sampai operator memutuskan. Sistem tidak pernah membatalkan otomatis. Tiga penyelesaian yang tersedia: pindahkan salah satu booking ke kamar lain yang kosong, batalkan salah satu setelah dikonfirmasi dengan tamu atau OTA, atau terima kondisi overbook secara sadar. Setelah beres, status dinaikkan ke <code style="font-family:'JetBrains Mono', monospace; font-size:10pt">CONFIRMED</code>; jika constraint menolak, berarti konflik belum benar-benar selesai dan UI harus mengatakannya.</p>
+  <p style="font-size:11.5pt; line-height:1.65; margin:0 0 12px">Notifikasi konflik dikirim ke WhatsApp pemilik seketika, bukan menunggu dilihat di dashboard. Ini satu-satunya notifikasi yang bersifat mendesak di sistem ini.</p>
+
+  <h3 style="font-size:12.5pt; font-weight:700; margin:22px 0 8px">5.4 Batasan yang harus dikomunikasikan ke pengguna</h3>
+  <p style="font-size:11.5pt; line-height:1.65; margin:0 0 8px">iCal tidak real-time dan tidak membawa harga maupun identitas tamu. Tampilkan waktu sinkron terakhir di UI kalender secara permanen supaya operator tahu seberapa segar datanya. Pada high season, sarankan menyisakan buffer ketersediaan di OTA. Kedua hal ini adalah mitigasi yang disepakati di PRD, bukan kekurangan yang bisa dihilangkan lewat kode.</p>
+
+  <h2 style="font-size:15pt; font-weight:700; margin:30px 0 12px; padding-bottom:7px; border-bottom:2px solid #16211E">6. Aturan bisnis</h2>
+
+  <h3 style="font-size:12.5pt; font-weight:700; margin:0 0 8px">6.1 Transisi status</h3>
+  <pre style="font-family:'JetBrains Mono', monospace; font-size:9.5pt; line-height:1.65; background:#F8FAF9; border:1px solid #EDF2F0; border-radius:8px; padding:14px 16px; margin:0 0 10px; white-space:pre-wrap">TENTATIVE   → CONFIRMED | CANCELLED
+CONFIRMED   → CHECKED_IN | CANCELLED | NO_SHOW
+CHECKED_IN  → CHECKED_OUT
+CONFLICT    → CONFIRMED | CANCELLED
+lainnya     → tidak ada transisi keluar</pre>
+  <p style="font-size:11.5pt; line-height:1.65; margin:0 0 12px">Hold <code style="font-family:'JetBrains Mono', monospace; font-size:10pt">TENTATIVE</code> punya <code style="font-family:'JetBrains Mono', monospace; font-size:10pt">hold_expires_at</code>, default 24 jam. Kedaluwarsa tidak membatalkan otomatis — job harian hanya menandai dan mengingatkan operator (F4.3). Keputusan melepas tanggal tetap milik manusia.</p>
+
+  <h3 style="font-size:12.5pt; font-weight:700; margin:22px 0 8px">6.2 Status pembayaran</h3>
+  <p style="font-size:11.5pt; line-height:1.65; margin:0 0 10px">Status bayar tidak pernah disimpan sebagai kolom. Selalu dihitung dari jumlah <code style="font-family:'JetBrains Mono', monospace; font-size:10pt">payments</code> agar tidak bisa menyimpang dari rinciannya:</p>
+  <pre style="font-family:'JetBrains Mono', monospace; font-size:9.5pt; line-height:1.65; background:#F8FAF9; border:1px solid #EDF2F0; border-radius:8px; padding:14px 16px; margin:0 0 10px; white-space:pre-wrap">terbayar = Σ(DEPOSIT, BALANCE, EXTRA) − Σ(REFUND)
+
+terbayar = 0              → Belum bayar
+0 &lt; terbayar &lt; total      → DP masuk
+terbayar = total          → Lunas
+terbayar &gt; total          → Kelebihan, perlu refund
+method = OTA_PREPAID      → Dibayar via OTA</pre>
+  <p style="font-size:11.5pt; line-height:1.65; margin:0 0 8px">Untuk booking OTA prabayar, <code style="font-family:'JetBrains Mono', monospace; font-size:10pt">total_amount</code> adalah nilai yang dibayar tamu dan <code style="font-family:'JetBrains Mono', monospace; font-size:10pt">ota_commission_est</code> diisi manual; pendapatan bersih dihitung sebagai selisihnya. Simpan semua nilai uang sebagai integer rupiah, bukan float.</p>
+
+  <h3 style="font-size:12.5pt; font-weight:700; margin:22px 0 8px">6.3 Harga</h3>
+  <p style="font-size:11.5pt; line-height:1.65; margin:0 0 8px">Harga satu malam diambil dari <code style="font-family:'JetBrains Mono', monospace; font-size:10pt">seasonal_rates</code> yang mencakup tanggal itu; jika tidak ada, pakai <code style="font-family:'JetBrains Mono', monospace; font-size:10pt">rooms.base_rate</code>. Total booking dihitung per malam lalu dijumlahkan, karena satu menginap bisa melintasi batas musim. Simpan hasil perhitungannya di <code style="font-family:'JetBrains Mono', monospace; font-size:10pt">total_amount</code> — perubahan tarif di kemudian hari tidak boleh mengubah nilai booking yang sudah terjadi.</p>
+
+  <h2 style="font-size:15pt; font-weight:700; margin:30px 0 12px; padding-bottom:7px; border-bottom:2px solid #16211E">7. Peran dan otorisasi</h2>
+  <p style="font-size:11.5pt; line-height:1.65; margin:0 0 12px">Otorisasi ditegakkan di setiap API route, bukan dengan menyembunyikan menu. Prototype menyembunyikan menu untuk kejelasan demo; implementasi nyata harus menolak request dari peran yang tidak berhak meski URL-nya diketahui.</p>
+  <p style="font-size:11.5pt; line-height:1.65; margin:0 0 12px"><strong>Owner</strong> mengakses semua properti, semua laporan keuangan, pengaturan feed iCal, dan manajemen pengguna. <strong>Staf</strong> hanya properti yang tercantum di <code style="font-family:'JetBrains Mono', monospace; font-size:10pt">user_properties</code>, terbatas pada kalender, input booking, penandaan check-in dan check-out, serta pencatatan pembayaran. Respons API untuk staf harus benar-benar membuang field nominal, tidak cukup menyembunyikannya di UI.</p>
+  <p style="font-size:11.5pt; line-height:1.65; margin:0 0 8px">Session cookie httpOnly dengan masa 30 hari, karena operator mengakses dari HP dan login ulang terus-menerus akan membuat mereka berhenti memakai aplikasi. Password di-hash dengan bcrypt cost 12. Rate limit pada endpoint login: 5 percobaan per 15 menit per IP.</p>
+
+  <h2 style="font-size:15pt; font-weight:700; margin:30px 0 12px; padding-bottom:7px; border-bottom:2px solid #16211E">8. Deploy dan operasional</h2>
+  <p style="font-size:11.5pt; line-height:1.65; margin:0 0 12px">Dua jalur yang sama-sama layak. Kode aplikasi identik; yang berbeda hanya cara menjalankan penjadwal.</p>
+
+  <table style="width:100%; border-collapse:collapse; font-size:10.5pt; margin:0 0 16px">
+    <thead>
+      <tr style="background:#F4F7F6">
+        <th style="text-align:left; padding:8px 10px; border-bottom:1px solid #D9E3DF; font-weight:700; width:22%">Aspek</th>
+        <th style="text-align:left; padding:8px 10px; border-bottom:1px solid #D9E3DF; font-weight:700; width:39%">Vercel + Neon</th>
+        <th style="text-align:left; padding:8px 10px; border-bottom:1px solid #D9E3DF; font-weight:700">VPS KVM 4</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td style="padding:8px 10px; border-bottom:1px solid #EDF2F0; vertical-align:top">Biaya per bulan</td><td style="padding:8px 10px; border-bottom:1px solid #EDF2F0; vertical-align:top">± Rp 600rb</td><td style="padding:8px 10px; border-bottom:1px solid #EDF2F0; vertical-align:top">± Rp 250rb termasuk daily backup</td></tr>
+      <tr><td style="padding:8px 10px; border-bottom:1px solid #EDF2F0; vertical-align:top">Penjadwal</td><td style="padding:8px 10px; border-bottom:1px solid #EDF2F0; vertical-align:top">cron-job.org tiap 15 menit</td><td style="padding:8px 10px; border-bottom:1px solid #EDF2F0; vertical-align:top">crontab, bisa tiap 5 menit</td></tr>
+      <tr><td style="padding:8px 10px; border-bottom:1px solid #EDF2F0; vertical-align:top">Pemulihan data</td><td style="padding:8px 10px; border-bottom:1px solid #EDF2F0; vertical-align:top">Point-in-time recovery</td><td style="padding:8px 10px; border-bottom:1px solid #EDF2F0; vertical-align:top">Snapshot harian, kehilangan sampai 24 jam</td></tr>
+      <tr><td style="padding:8px 10px; border-bottom:1px solid #EDF2F0; vertical-align:top">Beban sysadmin</td><td style="padding:8px 10px; border-bottom:1px solid #EDF2F0; vertical-align:top">Tidak ada</td><td style="padding:8px 10px; border-bottom:1px solid #EDF2F0; vertical-align:top">Patch OS, firewall, pemulihan manual</td></tr>
+      <tr><td style="padding:8px 10px; border-bottom:1px solid #EDF2F0; vertical-align:top">Deploy</td><td style="padding:8px 10px; border-bottom:1px solid #EDF2F0; vertical-align:top">Otomatis per push, rollback satu klik</td><td style="padding:8px 10px; border-bottom:1px solid #EDF2F0; vertical-align:top">Git + PM2 + Nginx, disiapkan sendiri</td></tr>
+    </tbody>
+  </table>
+
+  <p style="font-size:11.5pt; line-height:1.65; margin:0 0 12px">Rekomendasi: <strong>Vercel + Neon</strong>, dengan region Singapura di keduanya. Selisih biaya setara satu malam kamar, dan menghilangkan seluruh pekerjaan pemeliharaan server dari pemilik yang pekerjaan utamanya mengelola homestay. Pilih VPS hanya jika ada developer yang memang akan merawat server itu jangka panjang.</p>
+  <p style="font-size:11.5pt; line-height:1.65; margin:0 0 8px">Terlepas dari pilihan hosting, pasang Cloudflare di depan domain, Sentry untuk pelacakan error, dan Uptime Robot yang memantau <code style="font-family:'JetBrains Mono', monospace; font-size:10pt">/api/health</code>. Endpoint health harus memeriksa koneksi database, bukan hanya mengembalikan 200.</p>
+
+  <h2 style="font-size:15pt; font-weight:700; margin:30px 0 12px; padding-bottom:7px; border-bottom:2px solid #16211E">9. Urutan pengerjaan</h2>
+  <p style="font-size:11.5pt; line-height:1.65; margin:0 0 12px">Urutan ini mengikuti prioritas di PRD bagian 11, dengan satu penyesuaian: exclusion constraint dikerjakan di minggu pertama, bukan bersama fitur iCal. Constraint itu adalah fondasi seluruh sistem, dan menambahkannya belakangan berarti membersihkan data yang sudah kotor.</p>
+  <pre style="font-family:'JetBrains Mono', monospace; font-size:9.5pt; line-height:1.7; background:#F8FAF9; border:1px solid #EDF2F0; border-radius:8px; padding:14px 16px; margin:0 0 10px; white-space:pre-wrap">Minggu 1-2   Skema + exclusion constraint + seed 12 kamar,
+             auth Owner, CRUD properti/kamar/harga dasar
+Minggu 3-4   Kalender bulanan, detail booking, form input manual
+             dengan cek ketersediaan, pencatatan pembayaran
+Minggu 5     Ekspor iCal per kamar + pemasangan di extranet OTA
+             ← titik ini sudah menghentikan double booking
+Minggu 6-7   Impor iCal, penjadwal, deteksi konflik, notifikasi WA
+Minggu 8-9   Laporan okupansi & pendapatan, ekspor CSV,
+             peran Staf, halaman Hari Ini
+Minggu 10    PWA offline read-only, harga musiman, piutang,
+             pengingat pelunasan H-7/H-3, polish</pre>
+  <p style="font-size:11.5pt; line-height:1.65; margin:0 0 12px">Ekspor iCal dikerjakan sebelum impor karena dampaknya lebih besar dan risikonya lebih kecil: begitu feed ekspor terpasang, tanggal yang terjual lewat WhatsApp langsung terblokir di semua OTA. Itu menutup sumber double booking yang paling sering terjadi, tanpa perlu menunggu impor selesai.</p>
+
+  <h2 style="font-size:15pt; font-weight:700; margin:30px 0 12px; padding-bottom:7px; border-bottom:2px solid #16211E">10. Yang masih perlu diverifikasi</h2>
+  <p style="font-size:11.5pt; line-height:1.65; margin:0 0 8px">Empat hal berikut harus dipastikan sebelum minggu 5, karena bisa mengubah lingkup pekerjaan. Pertama, apakah extranet Booking.com, Agoda, dan Traveloka untuk akun ini benar-benar menyediakan impor dan ekspor iCal — periksa langsung di masing-masing dashboard, karena ketersediaannya berbeda per akun dan per negara. Kedua, jendela tanggal yang dimuat tiap feed, untuk mengkalibrasi langkah 4 di bagian 5.2. Ketiga, apakah data booking lama perlu dimigrasikan atau sistem dimulai dari kosong. Keempat, apakah pencatatan pengeluaran operasional masuk lingkup — ini pertanyaan terbuka nomor 4 di PRD dan memengaruhi desain tabel laporan.</p>
+
+</doc-page>
+
+</x-dc>
+</body>
+</html>

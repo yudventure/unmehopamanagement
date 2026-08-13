@@ -1,0 +1,132 @@
+@import "tailwindcss";
+
+/*
+ * Design tokens lifted verbatim from the Claude Design prototype
+ * (project/Booking Manager Homestay.dc.html). Every hex here appears in the
+ * prototype's inline styles — names are ours, values are not.
+ */
+@theme {
+  --font-sans: var(--font-dm-sans), system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
+
+  /* Surfaces */
+  --color-canvas: #dce8e2;
+  --color-surface: #ffffff;
+  --color-surface-soft: #fafcfb;
+  --color-surface-mute: #f8faf9;
+  --color-surface-tint: #f4f7f6;
+  --color-surface-hover: #f0f5f3;
+  --color-surface-out: #fbfcfc;
+
+  /* Text */
+  --color-ink: #16211e;
+  --color-ink-soft: #3c4b46;
+  --color-slate: #5c6e68;
+  --color-slate-soft: #7a8b85;
+  --color-slate-mute: #8b9c96;
+  --color-slate-faint: #94a5a0;
+  --color-slate-ghost: #9baba5;
+
+  /* Lines */
+  --color-line: #eef3f1;
+  --color-line-soft: #edf2f0;
+  --color-line-fine: #f1f5f3;
+  --color-line-row: #f4f7f6;
+  --color-line-strong: #e6ece9;
+  --color-line-input: #e2eae7;
+  --color-line-search: #eaf0ee;
+
+  /* Brand */
+  --color-teal: #0e7c6b;
+  --color-teal-deep: #0b5f52;
+  --color-teal-tint: #f2faf7;
+  --color-teal-soft: #d6f2e7;
+  --color-teal-line: #cfe6de;
+
+  /* Accent */
+  --color-amber: #f6c445;
+  --color-amber-hover: #f9d269;
+  --color-amber-shade: #dca92c;
+  --color-amber-soft: #fdf0ce;
+  --color-amber-ink: #8a6200;
+  --color-amber-deep: #2a2100;
+
+  /* Status */
+  --color-danger: #dc2626;
+  --color-danger-ink: #b42318;
+  --color-danger-deep: #7f1d1d;
+  --color-danger-tint: #fef2f2;
+  --color-danger-line: #fecaca;
+  --color-danger-soft: #fee4e2;
+  --color-danger-cell: #fff7f6;
+  --color-danger-edge: #f1d4d1;
+  --color-neutral-soft: #ecefee;
+  --color-ok: #16a34a;
+  --color-dot-all: #c7d5d0;
+
+  --animate-pop-in: popIn 0.18s ease-out;
+  --animate-slide-in: slideIn 0.18s ease-out;
+
+  @keyframes popIn {
+    from {
+      opacity: 0;
+      transform: translateY(8px) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes slideIn {
+    from {
+      transform: translateX(24px);
+      opacity: 0;
+    }
+    to {
+      transform: none;
+      opacity: 1;
+    }
+  }
+}
+
+@layer base {
+  body {
+    margin: 0;
+    background: var(--color-canvas);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  input,
+  select,
+  textarea,
+  button {
+    font-family: inherit;
+    font-size: inherit;
+    color: inherit;
+  }
+
+  a {
+    color: var(--color-teal);
+    text-decoration: none;
+  }
+
+  a:hover {
+    color: var(--color-teal-deep);
+    text-decoration: underline;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #cbd8d2;
+    border-radius: 8px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+  }
+}

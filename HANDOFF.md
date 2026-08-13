@@ -72,8 +72,11 @@ scope yang disepakati, bukan pekerjaan yang terlewat.
   panel foto kanan dengan overlay gradient dan tiga angka ringkas.
 - **Kalender bulanan** (Agustus 2026) — grid 6×7, penghitung okupansi per hari
   (`terisi/kapasitas`), chip booking berwarna per saluran di setiap malam yang
-  ditempati, collapse "+N lagi", banner konflik iCal, dan kartu "Check-in hari
-  ini".
+  ditempati, collapse "+N lagi", dan banner konflik iCal.
+- **Check-in terdekat** — bilah kanan mendaftar kedatangan dari hari ini
+  sampai 7 hari ke depan (`UPCOMING_DAYS` di `booking-manager.tsx`), terurut
+  paling dekat dulu, lengkap dengan rentang menginap dan penanda "Hari ini" /
+  "Besok".
 - **Daftar per tanggal** — klik bidang atas sel (angka tanggal, penghitung
   okupansi, dan ruang kosong di antaranya) atau tautan "+N lagi", dan bilah
   kanan menampilkan **semua** tamu yang menginap hari itu, termasuk yang tidak

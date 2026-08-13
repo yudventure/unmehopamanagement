@@ -8,16 +8,27 @@ import type { Booking } from "@/lib/types";
 export interface DayEntry {
   booking: Booking;
   roomName: string;
+  /** Nights from today until check-in. Only set on the arrivals list. */
+  leadDays?: number;
 }
 
 export interface DashboardRailProps {
   narrow: boolean;
-  todayIn: DayEntry[];
+  /** Arrivals from today through `upcomingDays`, soonest first. */
+  upcoming: DayEntry[];
+  upcomingDays: number;
   onSelect: (id: string) => void;
-  /** Day picked on the calendar, or null for the standing lists. */
+  /** Day picked on the calendar, or null for the standing list. */
   selectedDate: string | null;
   dayBookings: DayEntry[];
   onClearDate: () => void;
+}
+
+/** "Hari ini" / "Besok" earn a marker; past that the date itself is clearer. */
+function leadLabel(days: number | undefined) {
+  if (days === 0) return "Hari ini";
+  if (days === 1) return "Besok";
+  return undefined;
 }
 
 /**
@@ -38,11 +49,13 @@ export interface DashboardRailProps {
 function Row({
   guest,
   meta,
+  lead,
   channel,
   onClick,
 }: {
   guest: string;
   meta: string;
+  lead?: string;
   channel: Booking["channel"];
   onClick: () => void;
 }) {
@@ -63,19 +76,24 @@ function Row({
         </span>
         <Pill colors={{ bg: c.bg, fg: c.fg }}>{CHANNEL_LABELS[channel]}</Pill>
       </span>
-      <span className="pl-[17px] text-[12px] text-slate-soft">{meta}</span>
+      <span className="pl-[17px] text-[12px] text-slate-soft">
+        {lead && <span className="font-medium text-teal">{lead} · </span>}
+        {meta}
+      </span>
     </button>
   );
 }
 
 function Section({
   title,
+  hint,
   count,
   card,
   empty,
   children,
 }: {
   title: string;
+  hint?: string;
   count: number;
   card: boolean;
   empty: string;
@@ -94,6 +112,9 @@ function Section({
         <span className="rounded-full bg-surface-tint px-[7px] py-[1px] font-mono text-[10.5px] text-slate-soft">
           {count}
         </span>
+        {hint && (
+          <span className="ml-auto text-[11.5px] text-slate-mute">{hint}</span>
+        )}
       </div>
       <div className="flex flex-col gap-[9px]">
         {count === 0 ? (
@@ -108,12 +129,16 @@ function Section({
 
 export function DashboardRail({
   narrow,
-  todayIn,
+  upcoming,
+  upcomingDays,
   onSelect,
   selectedDate,
   dayBookings,
   onClearDate,
 }: DashboardRailProps) {
+  const stay = (b: Booking) =>
+    `${fmtShort(b.checkIn)} – ${fmtShort(b.checkOut)}`;
+
   /* A picked day replaces the standing lists rather than stacking above them:
      it answers a question the owner just asked, and it is the only place the
      bookings hidden behind "+N lagi" can be read. */
@@ -152,11 +177,8 @@ export function DashboardRail({
             <Row
               key={booking.id}
               guest={booking.guest}
-              meta={
-                booking.checkIn === selectedDate
-                  ? `${roomName} · check-in hari ini`
-                  : `${roomName} · ${fmtShort(booking.checkIn)}–${fmtShort(booking.checkOut)}`
-              }
+              lead={booking.checkIn === selectedDate ? "Check-in" : undefined}
+              meta={`${roomName} · ${stay(booking)}`}
               channel={booking.channel}
               onClick={() => onSelect(booking.id)}
             />
@@ -166,16 +188,18 @@ export function DashboardRail({
     </section>
   ) : (
     <Section
-      title="Check-in hari ini"
-      count={todayIn.length}
+      title="Check-in terdekat"
+      hint={`${upcomingDays} hari ke depan`}
+      count={upcoming.length}
       card={narrow}
-      empty="Tidak ada check-in pada tanggal ini."
+      empty={`Tidak ada check-in dalam ${upcomingDays} hari ke depan.`}
     >
-      {todayIn.map(({ booking, roomName }) => (
+      {upcoming.map(({ booking, roomName, leadDays }) => (
         <Row
           key={booking.id}
           guest={booking.guest}
-          meta={roomName}
+          lead={leadLabel(leadDays)}
+          meta={`${roomName} · ${stay(booking)}`}
           channel={booking.channel}
           onClick={() => onSelect(booking.id)}
         />

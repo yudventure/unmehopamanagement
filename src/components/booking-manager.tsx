@@ -63,6 +63,9 @@ import type {
 const NARROW_MAX = 900;
 const DRAWER_OVERLAY_MAX = 1160;
 
+/** How far ahead the rail's arrivals list looks, in days. */
+const UPCOMING_DAYS = 7;
+
 const OWNER_SCREENS: Screen[] = ["kalender", "laporan", "properti", "pengguna"];
 const STAFF_SCREENS: Screen[] = ["kalender", "properti"];
 
@@ -383,11 +386,24 @@ export function BookingManager({
     })),
   ];
 
-  const todayIn = visible
-    .filter((b) => b.checkIn === DEMO_TODAY)
+  /* Arrivals from today through the coming week, soonest first. A window
+     rather than just today, so a quiet day still shows what is on its way. */
+  const upcoming = visible
+    .filter((b) => {
+      const lead = dayDiff(DEMO_TODAY, b.checkIn);
+      return lead >= 0 && lead <= UPCOMING_DAYS;
+    })
+    .sort(
+      (a, b) =>
+        a.checkIn.localeCompare(b.checkIn) ||
+        (roomById.get(a.roomId)?.name ?? "").localeCompare(
+          roomById.get(b.roomId)?.name ?? "",
+        ),
+    )
     .map((b) => ({
       booking: b,
       roomName: roomById.get(b.roomId)?.name ?? "",
+      leadDays: dayDiff(DEMO_TODAY, b.checkIn),
     }));
 
   /* Everyone staying on the picked date, room order — including the ones the
@@ -592,7 +608,8 @@ export function BookingManager({
             {screen === "kalender" && !selected && (
               <DashboardRail
                 narrow={nw}
-                todayIn={todayIn}
+                upcoming={upcoming}
+                upcomingDays={UPCOMING_DAYS}
                 onSelect={setSelectedId}
                 selectedDate={selectedDate}
                 dayBookings={dayBookings}

@@ -17,7 +17,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Rumah Papua · Booking Manager",
+  title: "Unmehopa Management · Booking Manager",
   description:
     "Satu kalender untuk semua saluran booking Turtle dan Eddo Homestay, Raja Ampat.",
 };

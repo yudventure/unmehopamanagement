@@ -54,7 +54,9 @@ export function TopBar({
       <div className="flex min-w-[210px] items-center gap-3">
         <BrandLogo size={40} className="shrink-0" />
         <div className="leading-[1.15]">
-          <div className="text-[15px] font-bold">Rumah Papua</div>
+          <div className="text-[15px] font-bold whitespace-nowrap">
+            Unmehopa Management
+          </div>
           <div className="text-[12px] text-slate-soft">Booking Manager</div>
         </div>
       </div>

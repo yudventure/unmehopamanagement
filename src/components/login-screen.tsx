@@ -128,7 +128,7 @@ export function LoginScreen({
         <div className="flex items-center gap-[10px]">
           <BrandLogo size={42} className="shrink-0" />
           <div className="text-[17px] font-bold tracking-[-.01em] text-teal">
-            Rumah Papua
+            Unmehopa Management
           </div>
         </div>
 

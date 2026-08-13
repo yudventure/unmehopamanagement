@@ -1,5 +1,5 @@
 /**
- * Rumah Papua mark, redrawn as vector from the owner's logo artwork: a broken
+ * Unmehopa Management mark, redrawn as vector from the owner's artwork: a broken
  * ring around a leaf-roofed house, with a palm on one side and a leafy sprig on
  * the other.
  *
@@ -37,7 +37,7 @@ export function BrandLogo({
       height={size}
       className={className}
       role="img"
-      aria-label="Logo Rumah Papua"
+      aria-label="Logo Unmehopa Management"
     >
       {/* Broken ring: two crescents, gaps at the crown and lower right */}
       <g fill="none" strokeLinecap="round" strokeWidth={4.5}>

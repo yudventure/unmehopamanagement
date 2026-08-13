@@ -9,8 +9,11 @@ Repo GitHub: `yudventure/unmehopamanagement` (private).
 
 ## 1. Apa itu proyek ini
 
-**Unmehopa Management** adalah nama repo untuk **Rumah Papua Booking Manager** —
-webapp internal pengelolaan booking homestay di Raja Ampat, Papua Barat Daya.
+**Unmehopa Management** adalah nama brand sekaligus nama repo — webapp internal
+pengelolaan booking homestay di Raja Ampat, Papua Barat Daya. (Sampai Agustus
+2026 produk ini bernama "Rumah Papua Booking Manager"; nama itu masih muncul di
+berkas prototype di `project/` dan di transkrip desain, yang sengaja tidak
+diubah karena arsip.)
 
 Konteks bisnisnya: pemilik (Yud) mengelola dua homestay sendiri —
 **Turtle Homestay** (10 kamar, Yenbuba, Pulau Mansuar) dan **Eddo Homestay**

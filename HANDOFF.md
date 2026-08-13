@@ -39,7 +39,9 @@ Antarmuka sepenuhnya **Bahasa Indonesia** (NF3 di PRD). Dua peran: **Owner**
 Repo ini berawal dari **handoff bundle Claude Design** (commit `ab69939`):
 prototype HTML/CSS/JS yang dibuat pemilik di claude.ai/design, lengkap dengan
 transkrip percakapan desainnya. Commit berikutnya adalah **port prototype itu
-ke Next.js**.
+ke Next.js**. (Commit `ab69939` sendiri sudah tidak ada di repo ini — lihat
+bagian 4 soal histori yang hilang. Berkas prototype-nya tetap ada di
+`project/`.)
 
 Sumber desain — jangan dihapus, masih jadi acuan:
 
@@ -214,82 +216,72 @@ request 404).
 
 ---
 
-## 4. Pertanyaan terakhir: "Mau saya coba jalankan itu?"
+## 4. Kode sudah aman di GitHub — dan satu hal yang hilang
 
-Konteksnya: **push ke GitHub gagal dari sesi ini.**
+**Selesai.** Kode sekarang ada di GitHub, di branch
+`claude/lanjutkan-disini-gqgaao`. Bagian ini dulunya mencatat kegagalan push;
+disimpan dalam bentuk ringkas karena menjelaskan kenapa histori git-nya
+terlihat aneh.
 
-Yang terjadi — sesi ini dimulai dari *bundle handoff lokal* (folder git tanpa
-remote sama sekali), bukan dari clone GitHub. Akibatnya git proxy sesi tidak
-pernah memasang kredensial GitHub. Hasil diagnosisnya:
+Ringkas ceritanya: sesi yang membangun aplikasi ini dimulai dari *bundle
+handoff lokal* (folder git tanpa remote), bukan dari clone GitHub, jadi git
+proxy sesi itu tidak pernah memasang kredensial GitHub. Jaringan sampai
+(`curl https://github.com` → 200), tapi setiap request git keluar tanpa
+autentikasi (→ 401). Push, `ls-remote`, maupun `clone` semuanya gagal dengan
+`could not read Username`.
 
-| Uji | Hasil |
-|---|---|
-| `add_repo` attach repo | berhasil |
-| `git push` / `git ls-remote` / `git clone` | gagal — `could not read Username` |
-| `curl https://github.com` | 200 — jaringan sampai |
-| `curl .../info/refs?service=git-upload-pack` | **401** — request keluar tanpa autentikasi |
-| Dicoba sebagai user `claude`, bukan `root` | gagal sama |
-| Cari token / credential helper / proxy listener | tidak ada |
+Jalan keluarnya: pemilik mengunggah seluruh source sebagai
+`unmehopamanagementsource.zip` lewat antarmuka web GitHub (commit `fc07205`),
+lalu menghapusnya (commit `dda7d04`). Sesi berikutnya — yang lahir dari clone
+GitHub dan karena itu punya kredensial — mengeluarkan kembali snapshot dari
+blob zip di dalam histori dan meng-commit-nya sebagai berkas sungguhan.
 
-Jadi jaringannya jalan, hanya kredensialnya yang tidak pernah tersuntik.
-
-**"Itu" = membuka sesi Claude Code baru yang dimulai langsung dari repo GitHub
-`yudventure/unmehopamanagement`,** bukan dari bundle lokal. Sesi yang lahir
-dari clone GitHub biasanya sudah membawa kredensial git yang berfungsi, jadi
-sesi itu bisa push. Tawaran saya waktu itu adalah menjalankan sesi tersebut.
-
-**Cara lain yang tidak bergantung pada kredensial sesi:** git bundle berisi
-histori lengkap sudah dikirim ke pemilik sebagai file
-(`unmehopamanagement.bundle`, ~1,7 MB, berisi branch `main` dan
-`implement-booking-manager`). Dari komputer sendiri:
+**Konsekuensi yang perlu diketahui: histori git sesi pembangunan hilang.**
+Zip itu hanya berisi snapshot berkas, tanpa folder `.git`. Jadi commit-commit
+lama — termasuk commit bundle Claude Design `ab69939` yang disebut di bagian 1
+dan branch `implement-booking-manager` — **tidak ada di repo ini.** Yang
+tersisa hanyalah keadaan akhir kode. Kalau butuh histori itu, sumbernya adalah
+file `unmehopamanagement.bundle` (~1,7 MB) yang sudah dikirim ke pemilik:
 
 ```bash
-git clone unmehopamanagement.bundle unmehopamanagement
-cd unmehopamanagement
-git remote set-url origin https://github.com/yudventure/unmehopamanagement
-git push -u origin main
-git push -u origin implement-booking-manager
+git clone unmehopamanagement.bundle unmehopamanagement-histori
 ```
+
+Sejak sekarang push biasa sudah bekerja — tidak perlu lagi lewat zip.
 
 ---
 
 ## 5. TODO / langkah selanjutnya
 
-### Mendesak — pekerjaan ini belum aman
-
-1. **Push repo ke GitHub.** Selama belum ter-push, seluruh pekerjaan hanya ada
-   di container sementara ini dan hilang saat container berakhir. Pakai salah
-   satu dari dua cara di bagian 4.
-
 ### Sesuai roadmap di dokumen handoff teknis
 
-2. **Database.** PostgreSQL + Prisma. Yang paling penting: constraint anti-overlap
+1. **Database.** PostgreSQL + Prisma. Yang paling penting: constraint anti-overlap
    di level database (`daterange` + `EXCLUDE USING gist` per kamar) — jangan
    hanya validasi di aplikasi. Skema lengkap ada di
    `project/Handoff Teknis Booking Manager.dc.html`.
-3. **Autentikasi asli.** Auth.js (NextAuth) credentials provider + `bcrypt` +
+2. **Autentikasi asli.** Auth.js (NextAuth) credentials provider + `bcrypt` +
    session cookie httpOnly. **Peran harus dicek di setiap API route** — saat ini
    pembatasan Owner/Staf hanya menyembunyikan menu di UI, itu tidak aman.
-4. **Sinkronisasi iCal.** Impor (`node-ical`) dan ekspor (`ics`) per kamar
+3. **Sinkronisasi iCal.** Impor (`node-ical`) dan ekspor (`ics`) per kamar
    dengan token rahasia, simpan `external_uid` supaya sinkron ulang tidak
    menduplikasi booking, plus tabel log sinkron (PRD F3.5). Panel "12 menit
    lalu / 5 feed aktif" dan jumlah feed per kamar sekarang masih statis.
-5. **Cron penarik iCal** tiap 15–30 menit, endpoint dilindungi secret header.
+4. **Cron penarik iCal** tiap 15–30 menit, endpoint dilindungi secret header.
 
 ### Fitur yang belum ada
 
-6. Ekspor CSV/Excel laporan (F6.5) — tombolnya sudah ada, aksinya belum.
-7. Perbandingan antar bulan di laporan (F6.2).
-8. Upload bukti transfer (F5.1) + kompresi gambar di browser.
-9. Harga musiman (F1.3) — sekarang baru harga dasar per kamar.
-10. Halaman "Hari Ini" khusus staf (F2.5 / Alur D).
-11. Pengingat pelunasan H-7 / H-3 (F5.4).
-12. PWA + cache read-only supaya kalender terakhir terbaca saat offline (NF1).
+5. Ekspor CSV/Excel laporan (F6.5) — tombolnya sudah ada, aksinya belum.
+6. Perbandingan antar bulan di laporan (F6.2).
+7. Upload bukti transfer (F5.1) + kompresi gambar di browser.
+8. Harga musiman (F1.3) — sekarang baru harga dasar per kamar.
+9. Halaman "Hari Ini" khusus staf (F2.5 / Alur D).
+10. Pengingat pelunasan H-7 / H-3 (F5.4).
+11. PWA + cache read-only supaya kalender terakhir terbaca saat offline (NF1).
 
 ### Kualitas
 
-13. **Tambahkan test.** Vitest + Testing Library. Prioritas: `lib/derive.ts`
+12. **Tambahkan test.** Vitest + Testing Library. Prioritas: `lib/derive.ts`
     (perhitungan okupansi/pendapatan dan deteksi bentrok) dan alur simpan
     booking — di situ letak logika bisnis yang paling mudah rusak diam-diam.
-14. Tambahkan ESLint (`eslint-config-next`) — sengaja belum dipasang untuk
+13. Tambahkan ESLint (`eslint-config-next`) — sengaja belum dipasang untuk
     memperkecil permukaan instalasi awal.

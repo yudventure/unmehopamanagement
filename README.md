@@ -72,7 +72,7 @@ setiap mesin — termasuk satu bentrok iCal yang disengaja di Turtle 03 pada
 |---|---|---|
 | `layarAwal` | `"kalender"` | Layar yang dibuka setelah login |
 | `modeStaf` | `false` | Sembunyikan semua angka rupiah |
-| `bookingPerHari` | `6` | Jumlah bar bertumpuk per baris minggu sebelum "+N lagi" |
+| `bookingPerHari` | `4` | Jumlah chip per hari sebelum "+N lagi" |
 
 ## Yang belum ada
 

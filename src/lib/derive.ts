@@ -47,24 +47,20 @@ export function activeRoomsFor(rooms: Room[], filterProp: PropFilter): Room[] {
   );
 }
 
-/**
- * One booking's run across a single week row. A stay that crosses a Saturday
- * is cut into one segment per row, each remembering whether it is continuing
- * so the bar can be drawn open-ended on that side.
- */
-export interface BookingSpan {
+export interface Chip {
   booking: Booking;
+  /** Guest's first name. */
   label: string;
+  /**
+   * Room, on its own line. Guest and room together overflow a day column, and
+   * truncating the room is exactly what dropping the abbreviation avoided.
+   */
+  room: string;
+  /** "2/4" on a multi-night stay, empty on a one-nighter. */
+  nightLabel: string;
   bg: string;
   fg: string;
   dot: string;
-  /** Column 0-6 where this segment starts, and how many columns it covers. */
-  startCol: number;
-  span: number;
-  /** Stacking row within the week, assigned so segments never overlap. */
-  lane: number;
-  continuesLeft: boolean;
-  continuesRight: boolean;
 }
 
 export interface CalendarCell {
@@ -77,15 +73,9 @@ export interface CalendarCell {
   conflictHere: boolean;
   occupied: number;
   capacity: number;
-  /** Bookings on this day pushed past the lane cap. */
+  chips: Chip[];
+  /** Bookings on this day pushed past the per-day cap. */
   hiddenCount: number;
-}
-
-export interface CalendarWeek {
-  cells: CalendarCell[];
-  spans: BookingSpan[];
-  /** Lanes occupied in this row, before the cap is applied. */
-  lanes: number;
 }
 
 export interface CalendarArgs {
@@ -94,20 +84,17 @@ export interface CalendarArgs {
   month: Date;
   today: string;
   activeRooms: Room[];
-  /** Lanes drawn per week before the rest collapse into "+N lagi". */
+  /** Chips drawn per day before the rest collapse into "+N lagi". */
   perDay: number;
 }
-
-const DAY = 86400000;
-const shift = (date: string, days: number) =>
-  iso(new Date(parse(date).getTime() + days * DAY));
 
 /**
  * Always six rows of seven, so the grid height never jumps between months.
  *
- * Every cell carries a real date, including the neighbour-month days at either
- * end, so a stay straddling the month boundary still draws as one unbroken run
- * instead of stopping at the edge.
+ * A booking appears on every night it occupies, not just its arrival day, so
+ * the length of a stay is readable straight off the grid. Chips are ordered by
+ * room, which keeps a given booking at roughly the same height from one day to
+ * the next — without that the eye cannot follow a stay across the week.
  */
 export function buildCalendar({
   visible,
@@ -116,7 +103,7 @@ export function buildCalendar({
   today,
   activeRooms,
   perDay,
-}: CalendarArgs): CalendarWeek[] {
+}: CalendarArgs): CalendarCell[] {
   const y = month.getFullYear();
   const m = month.getMonth();
   const daysInMonth = new Date(y, m + 1, 0).getDate();
@@ -129,9 +116,13 @@ export function buildCalendar({
     const dayNum = i - firstDow + 1;
     const inMonth = dayNum >= 1 && dayNum <= daysInMonth;
     const dateStr = iso(new Date(y, m, dayNum));
-    const occList = visible.filter(
-      (b) => b.checkIn <= dateStr && b.checkOut > dateStr,
-    );
+    const occList = visible
+      .filter((b) => b.checkIn <= dateStr && b.checkOut > dateStr)
+      .sort((a, b) => {
+        const ra = byId.get(a.roomId)?.name ?? "";
+        const rb = byId.get(b.roomId)?.name ?? "";
+        return ra.localeCompare(rb) || a.id.localeCompare(b.id);
+      });
 
     cells.push({
       label: inMonth
@@ -145,66 +136,29 @@ export function buildCalendar({
       conflictHere: occList.filter((b) => b.conflict).length > 1,
       occupied: occList.length,
       capacity: activeRooms.length,
-      hiddenCount: 0,
-    });
-  }
-
-  const weeks: CalendarWeek[] = [];
-  for (let w = 0; w < 6; w++) {
-    const rowCells = cells.slice(w * 7, w * 7 + 7);
-    const first = rowCells[0].dateStr;
-    const last = rowCells[6].dateStr;
-
-    const spans = visible
-      .filter((b) => b.checkIn <= last && b.checkOut > first)
-      .map((b) => {
-        let s = 0;
-        while (s < 6 && rowCells[s].dateStr < b.checkIn) s += 1;
-        let e = 6;
-        while (e > 0 && rowCells[e].dateStr >= b.checkOut) e -= 1;
+      chips: occList.slice(0, perDay).map((b) => {
         const c = CH[b.channel];
         const room = byId.get(b.roomId);
+        const nights = dayDiff(b.checkIn, b.checkOut);
+        const nth = dayDiff(b.checkIn, dateStr) + 1;
         return {
           booking: b,
-          label: `${b.guest.split(" ")[0]} · ${room?.name ?? ""}`,
+          label: b.guest.split(" ")[0],
+          room: room?.name ?? "",
+          /* Says both that the stay runs past tonight and where tonight sits
+             inside it, so the same name on four days reads as one booking
+             rather than four separate ones. */
+          nightLabel: nights > 1 ? `${nth}/${nights}` : "",
           bg: b.conflict ? "#FEE4E2" : c.bg,
           fg: b.conflict ? "#B42318" : c.fg,
           dot: b.conflict ? "#DC2626" : c.dot,
-          startCol: s,
-          span: e - s + 1,
-          lane: 0,
-          continuesLeft: b.checkIn < first,
-          continuesRight: b.checkOut > shift(last, 1),
         };
-      })
-      /* Longest run first at a given start, so the wide bars settle into the
-         top lanes and the short ones fill in beneath. Id breaks ties to keep
-         the layout stable across re-renders. */
-      .sort(
-        (a, b) =>
-          a.startCol - b.startCol ||
-          b.span - a.span ||
-          a.booking.id.localeCompare(b.booking.id),
-      );
-
-    const laneEnd: number[] = [];
-    spans.forEach((s) => {
-      let lane = 0;
-      while (lane < laneEnd.length && laneEnd[lane] >= s.startCol) lane += 1;
-      s.lane = lane;
-      laneEnd[lane] = s.startCol + s.span - 1;
+      }),
+      hiddenCount: Math.max(0, occList.length - perDay),
     });
-
-    rowCells.forEach((cell, col) => {
-      cell.hiddenCount = spans.filter(
-        (s) => s.lane >= perDay && s.startCol <= col && s.startCol + s.span > col,
-      ).length;
-    });
-
-    weeks.push({ cells: rowCells, spans, lanes: laneEnd.length });
   }
 
-  return weeks;
+  return cells;
 }
 
 export interface MonthStats {

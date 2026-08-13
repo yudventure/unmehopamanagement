@@ -69,13 +69,13 @@ scope yang disepakati, bukan pekerjaan yang terlewat.
 - **Halaman login dua panel** — pilih peran Owner/Staf (email terisi otomatis),
   panel foto kanan dengan overlay gradient dan tiga angka ringkas.
 - **Kalender bulanan** (Agustus 2026) — grid 6×7, penghitung okupansi per hari
-  (`terisi/kapasitas`), bar booking berwarna per saluran yang membentang
-  sepanjang malam menginap, collapse "+N lagi",
-  banner konflik iCal, kartu "Check-in hari ini" dan "Belum lunas".
+  (`terisi/kapasitas`), chip booking berwarna per saluran di setiap malam yang
+  ditempati, collapse "+N lagi", banner konflik iCal, kartu "Check-in hari ini"
+  dan "Belum lunas".
 - **Daftar per tanggal** — klik angka tanggal (atau tautan "+N lagi") dan bilah
   kanan menampilkan **semua** tamu yang menginap hari itu, termasuk yang tidak
-  muat digambar sebagai bar. Sasaran kliknya angka tanggal, bukan seluruh sel:
-  di hari penuh, bar menutupi hampir seluruh sel.
+  muat sebagai chip. Sasaran kliknya angka tanggal, bukan seluruh sel: chip
+  memenuhi sisa sel.
 - **Drawer detail booking** — transisi status (Tentative → Confirmed →
   Checked-in → Checked-out, atau Cancelled), rincian bayar, tombol catat
   pelunasan, jejak audit.
@@ -153,7 +153,7 @@ jangan diganti jadi media query tanpa menguji kasus drawer terbuka di ~1000px.
 
 ### Penyimpangan yang disengaja dari prototype
 
-Enam hal berikut sengaja berbeda dari prototype. Masing-masing satu baris
+Delapan hal berikut sengaja berbeda dari prototype. Masing-masing satu baris
 kalau mau dikembalikan:
 
 1. `iso()` memformat tanggal kalender lokal, bukan `toISOString().slice(0,10)`.
@@ -168,11 +168,13 @@ kalau mau dikembalikan:
 5. Modal tertutup dengan Escape / klik backdrop; login submit dengan Enter.
 6. Tombol Ekspor CSV dan Bandingkan bulan memberi tahu bahwa fiturnya belum
    ada, bukan diam saja saat diklik.
-7. **Kalender menggambar booking sebagai bar sepanjang malam menginap**, bukan
-   satu chip di hari check-in saja. Bar dipotong per baris minggu dan ujungnya
-   dibuat siku kalau menginapnya berlanjut ke baris berikutnya. Karena satu bar
-   menahan lane-nya selama menginap, `bookingPerHari` dinaikkan dari 3 ke 6 —
-   dengan 3 lane sebagian besar bulan tersembunyi di balik "+N lagi".
+7. **Booking muncul di setiap malam yang ditempatinya**, bukan hanya di hari
+   check-in. Chip-nya dua baris: nama tamu dengan penghitung malam `2/5` di
+   kanan, lalu nama kamar di bawahnya — pemisahan ini yang membuat nama kamar
+   tidak pernah terpotong. Chip diurutkan per kamar supaya satu booking berada
+   di ketinggian yang kurang lebih sama dari hari ke hari; tanpa itu mata tidak
+   bisa mengikutinya. `bookingPerHari` naik dari 3 ke 4 karena satu hari kini
+   memuat lebih banyak chip.
 8. **Tidak ada status "DP masuk".** Bisnis ini tidak memakai uang muka, jadi
    pembayaran biner: `Belum bayar`, `Lunas`, atau `Dibayar via OTA`. Seed masih
    memakai satu `rnd()` di posisi yang sama seperti dulu supaya seluruh field

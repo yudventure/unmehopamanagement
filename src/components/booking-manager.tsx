@@ -79,9 +79,9 @@ export interface BookingManagerProps {
   /** Hide every rupiah figure, the way staff accounts see the app. */
   modeStaf?: boolean;
   /**
-   * Booking bars stacked per week row before the rest collapse into "+N lagi".
-   * Higher than the prototype's 3: a bar now holds its lane for the whole stay
-   * rather than just the arrival day, so three lanes hid most of the month.
+   * Booking chips drawn per calendar day before the rest collapse into
+   * "+N lagi". Higher than the prototype's 3: a stay now appears on every
+   * night it occupies, not only its arrival day, so days carry more chips.
    */
   bookingPerHari?: number;
 }
@@ -108,7 +108,7 @@ const EMPTY_INVITE: InviteForm = {
 export function BookingManager({
   layarAwal = "kalender",
   modeStaf = false,
-  bookingPerHari = 6,
+  bookingPerHari = 4,
 }: BookingManagerProps) {
   const [rooms] = useState(seedRooms);
   const [bookings, setBookings] = useState<Booking[]>(() => seedBookings(rooms));
@@ -192,7 +192,7 @@ export function BookingManager({
   const daysInMonth = new Date(y, m + 1, 0).getDate();
   const monthLabel = `${MONTHS[m]} ${y}`;
 
-  const weeks = useMemo(
+  const cells = useMemo(
     () =>
       buildCalendar({
         visible,
@@ -555,8 +555,7 @@ export function BookingManager({
                   occLabel={`${stats.occPct}%`}
                   nightsLabel={`${stats.nights} malam`}
                   revenueLabel={fmt(stats.revenue)}
-                  weeks={weeks}
-                  laneCap={perDay}
+                  cells={cells}
                   onSelect={setSelectedId}
                   selectedDate={selectedDate}
                   onSelectDate={pickDate}

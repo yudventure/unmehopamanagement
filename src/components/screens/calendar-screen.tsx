@@ -1,6 +1,6 @@
 "use client";
 
-import type { CalendarCell, CalendarWeek } from "@/lib/derive";
+import type { CalendarCell } from "@/lib/derive";
 import { WEEKDAYS } from "@/lib/format";
 
 export interface CalendarScreenProps {
@@ -15,19 +15,11 @@ export interface CalendarScreenProps {
   occLabel: string;
   nightsLabel: string;
   revenueLabel: string;
-  weeks: CalendarWeek[];
-  /** Lanes drawn per week before the rest collapse into "+N lagi". */
-  laneCap: number;
+  cells: CalendarCell[];
   onSelect: (id: string) => void;
   selectedDate: string | null;
   onSelectDate: (date: string) => void;
 }
-
-/* A booking bar sits in a lane below the date header; these three numbers are
-   what keeps the overlay aligned with the cells underneath it. */
-const HEADER_H = 34;
-const LANE_H = 22;
-const BAR_H = 19;
 
 const ARROW_BUTTON =
   "h-[34px] w-[34px] cursor-pointer rounded-[11px] border border-line-strong bg-surface text-[15px] text-slate hover:bg-surface-hover";
@@ -51,8 +43,7 @@ export function CalendarScreen({
   occLabel,
   nightsLabel,
   revenueLabel,
-  weeks,
-  laneCap,
+  cells,
   onSelect,
   selectedDate,
   onSelectDate,
@@ -91,7 +82,9 @@ export function CalendarScreen({
           >
             ‹
           </button>
-          <div className="min-w-[190px] text-[22px] font-bold">{monthLabel}</div>
+          <div className="min-w-[190px] text-[22px] font-bold">
+            {monthLabel}
+          </div>
           <button
             type="button"
             onClick={onNextMonth}
@@ -103,7 +96,9 @@ export function CalendarScreen({
         </div>
         <div className="ml-auto flex flex-wrap gap-[22px]">
           <div>
-            <div className="text-[11.5px] text-slate-soft">Okupansi bulan ini</div>
+            <div className="text-[11.5px] text-slate-soft">
+              Okupansi bulan ini
+            </div>
             <div className="text-[19px] font-bold">{occLabel}</div>
           </div>
           <div>
@@ -134,117 +129,100 @@ export function CalendarScreen({
             </div>
           ))}
         </div>
-        {weeks.map((week, wi) => {
-          const shown = Math.min(week.lanes, laneCap);
-          const rowHeight = Math.max(126, HEADER_H + shown * LANE_H + 22);
-          return (
-            <div key={wi} className="relative grid" style={gridCols}>
-              {week.cells.map((cell, ci) => (
-                <div
-                  key={ci}
-                  className="relative border-r border-b border-line-fine px-[11px] py-[10px]"
-                  style={{
-                    minHeight: rowHeight,
-                    background: cellBackground(cell),
-                    opacity: cell.inMonth ? 1 : 0.5,
-                    /* Outline rather than a border: it paints inside the cell
-                       without adding width, so picking a day cannot nudge the
-                       grid the bars are positioned against. */
-                    outline:
-                      selectedDate === cell.dateStr
-                        ? "2px solid var(--color-teal)"
-                        : undefined,
-                    outlineOffset: -2,
-                  }}
+        <div className="grid" style={gridCols}>
+          {cells.map((cell, ci) => (
+            <div
+              key={ci}
+              className="relative min-h-[126px] border-r border-b border-line-fine px-[11px] py-[10px]"
+              style={{
+                background: cellBackground(cell),
+                opacity: cell.inMonth ? 1 : 0.5,
+                /* Outline rather than a border: it paints inside the cell
+                       and adds no width, so picking a day cannot nudge the
+                       grid sideways. */
+                outline:
+                  selectedDate === cell.dateStr
+                    ? "2px solid var(--color-teal)"
+                    : undefined,
+                outlineOffset: -2,
+              }}
+            >
+              <div className="flex items-center justify-between">
+                {/* The date opens the day list. Chips fill the rest of the
+                        cell, so this corner is the one dependable target. */}
+                <button
+                  type="button"
+                  onClick={() => onSelectDate(cell.dateStr)}
+                  aria-pressed={selectedDate === cell.dateStr}
+                  aria-label={`Lihat booking pada ${cell.dateStr}`}
+                  title="Lihat semua booking pada tanggal ini"
+                  className={
+                    cell.isToday
+                      ? "flex h-[26px] w-[26px] cursor-pointer items-center justify-center rounded-full border-none bg-teal text-[12.5px] font-bold text-white hover:bg-teal-deep"
+                      : "flex h-[26px] min-w-[26px] cursor-pointer items-center justify-center rounded-full border-none bg-transparent text-[13px] font-medium text-ink-soft hover:bg-surface-hover"
+                  }
                 >
-                  <div className="flex items-center justify-between">
-                    {/* The date itself opens the day list. On a full day the
-                        bars cover nearly the whole cell, so the cell at large
-                        cannot be the target — this corner always is. */}
-                    <button
-                      type="button"
-                      onClick={() => onSelectDate(cell.dateStr)}
-                      aria-pressed={selectedDate === cell.dateStr}
-                      aria-label={`Lihat booking pada ${cell.dateStr}`}
-                      title="Lihat semua booking pada tanggal ini"
-                      className={
-                        cell.isToday
-                          ? "flex h-[26px] w-[26px] cursor-pointer items-center justify-center rounded-full border-none bg-teal text-[12.5px] font-bold text-white hover:bg-teal-deep"
-                          : "flex h-[26px] min-w-[26px] cursor-pointer items-center justify-center rounded-full border-none bg-transparent text-[13px] font-medium text-ink-soft hover:bg-surface-hover"
-                      }
-                    >
-                      {cell.label}
-                    </button>
-                    {cell.inMonth && cell.capacity > 0 && (
-                      <div
-                        className="font-mono text-[10.5px]"
-                        style={{
-                          color:
-                            cell.occupied >= cell.capacity
-                              ? "#B42318"
-                              : "#8B9C96",
-                        }}
-                      >
-                        {cell.occupied}/{cell.capacity}
-                      </div>
-                    )}
+                  {cell.label}
+                </button>
+                {cell.inMonth && cell.capacity > 0 && (
+                  <div
+                    className="font-mono text-[10.5px]"
+                    style={{
+                      color:
+                        cell.occupied >= cell.capacity ? "#B42318" : "#8B9C96",
+                    }}
+                  >
+                    {cell.occupied}/{cell.capacity}
                   </div>
-                  {cell.hiddenCount > 0 && (
-                    <button
-                      type="button"
-                      onClick={() => onSelectDate(cell.dateStr)}
-                      title="Lihat semua booking pada tanggal ini"
-                      className="absolute bottom-[6px] left-[11px] cursor-pointer rounded-[6px] border-none bg-transparent px-[3px] py-[1px] text-[11px] text-slate-mute underline decoration-dotted underline-offset-2 hover:bg-surface-hover hover:text-teal"
-                    >
-                      +{cell.hiddenCount} lagi
-                    </button>
-                  )}
-                </div>
-              ))}
-
-              {/* Bars ride above the cells so one booking stays a single
-                  element across the days it covers, instead of a chip repeated
-                  per cell that the eye has to reassemble. */}
-              <div className="pointer-events-none absolute inset-0">
-                {week.spans
-                  .filter((s) => s.lane < laneCap)
-                  .map((s) => (
-                    <button
-                      key={s.booking.id}
-                      type="button"
-                      onClick={() => onSelect(s.booking.id)}
-                      title={`${s.booking.guest} · ${s.booking.checkIn} → ${s.booking.checkOut}`}
-                      className="pointer-events-auto absolute flex cursor-pointer items-center gap-[6px] overflow-hidden border-none px-[7px] text-left text-[11.5px]"
-                      style={{
-                        left: `calc(${(s.startCol / 7) * 100}% + 7px)`,
-                        width: `calc(${(s.span / 7) * 100}% - 14px)`,
-                        top: HEADER_H + s.lane * LANE_H,
-                        height: BAR_H,
-                        background: s.bg,
-                        color: s.fg,
-                        borderTopLeftRadius: s.continuesLeft ? 0 : 7,
-                        borderBottomLeftRadius: s.continuesLeft ? 0 : 7,
-                        borderTopRightRadius: s.continuesRight ? 0 : 7,
-                        borderBottomRightRadius: s.continuesRight ? 0 : 7,
-                      }}
-                    >
-                      {!s.continuesLeft && (
-                        <span
-                          className="h-3 w-[3px] shrink-0 rounded-[2px]"
-                          style={{ background: s.dot }}
-                        />
-                      )}
-                      <span className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap">
-                        {s.label}
+                )}
+              </div>
+              <div className="mt-[7px] flex flex-col gap-1">
+                {cell.chips.map((chip) => (
+                  <button
+                    key={chip.booking.id}
+                    type="button"
+                    onClick={() => onSelect(chip.booking.id)}
+                    title={`${chip.booking.guest} · ${chip.booking.checkIn} → ${chip.booking.checkOut}`}
+                    className="flex w-full min-w-0 cursor-pointer flex-col gap-[1px] overflow-hidden rounded-[7px] border-none px-[7px] py-[4px] text-left"
+                    style={{ background: chip.bg, color: chip.fg }}
+                  >
+                    <span className="flex w-full min-w-0 items-center gap-[5px]">
+                      <span
+                        className="h-3 w-[3px] shrink-0 rounded-[2px]"
+                        style={{ background: chip.dot }}
+                      />
+                      <span className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-[11.5px] font-medium">
+                        {chip.label}
                       </span>
-                    </button>
-                  ))}
+                      {chip.nightLabel && (
+                        <span
+                          className="shrink-0 font-mono text-[9.5px] opacity-70"
+                          title={`Malam ke-${chip.nightLabel.split("/")[0]} dari ${chip.nightLabel.split("/")[1]}`}
+                        >
+                          {chip.nightLabel}
+                        </span>
+                      )}
+                    </span>
+                    <span className="min-w-0 overflow-hidden pl-[8px] text-[9.5px] text-ellipsis whitespace-nowrap opacity-75">
+                      {chip.room}
+                    </span>
+                  </button>
+                ))}
+                {cell.hiddenCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => onSelectDate(cell.dateStr)}
+                    title="Lihat semua booking pada tanggal ini"
+                    className="cursor-pointer self-start rounded-[6px] border-none bg-transparent px-[3px] py-[1px] text-[11px] text-slate-mute underline decoration-dotted underline-offset-2 hover:bg-surface-hover hover:text-teal"
+                  >
+                    +{cell.hiddenCount} lagi
+                  </button>
+                )}
               </div>
             </div>
-          );
-        })}
+          ))}
+        </div>
       </div>
-
     </div>
   );
 }

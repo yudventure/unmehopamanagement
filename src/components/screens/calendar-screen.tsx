@@ -1,10 +1,7 @@
 "use client";
 
-import { Pill } from "@/components/ui/pill";
 import type { CalendarCell } from "@/lib/derive";
-import { WEEKDAYS, fmtShort } from "@/lib/format";
-import { payColors } from "@/lib/pills";
-import type { Booking } from "@/lib/types";
+import { WEEKDAYS } from "@/lib/format";
 
 export interface CalendarScreenProps {
   narrow: boolean;
@@ -20,8 +17,6 @@ export interface CalendarScreenProps {
   revenueLabel: string;
   cells: CalendarCell[];
   onSelect: (id: string) => void;
-  todayIn: { booking: Booking; roomName: string; dotColor: string }[];
-  unpaid: Booking[];
 }
 
 const ARROW_BUTTON =
@@ -48,8 +43,6 @@ export function CalendarScreen({
   revenueLabel,
   cells,
   onSelect,
-  todayIn,
-  unpaid,
 }: CalendarScreenProps) {
   const gridCols = {
     gridTemplateColumns: "repeat(7, minmax(0, 1fr))",
@@ -189,58 +182,6 @@ export function CalendarScreen({
         </div>
       </div>
 
-      <div className="mt-4 flex flex-wrap gap-4">
-        <div className="min-w-[280px] flex-1 rounded-[18px] border border-line-soft bg-surface px-[18px] py-4">
-          <div className="mb-3 text-[14px] font-bold">Check-in hari ini</div>
-          <div className="flex flex-col gap-[9px]">
-            {todayIn.map(({ booking, roomName, dotColor }) => (
-              <button
-                key={booking.id}
-                type="button"
-                onClick={() => onSelect(booking.id)}
-                className="flex w-full cursor-pointer items-center gap-3 rounded-xl border border-line bg-surface-mute px-3 py-[10px] text-left hover:bg-surface-hover"
-              >
-                <span
-                  className="h-2 w-2 rounded-[3px]"
-                  style={{ background: dotColor }}
-                />
-                <span className="flex-1 text-[13.5px] font-medium">
-                  {booking.guest}
-                </span>
-                <span className="text-[12px] text-slate-soft">{roomName}</span>
-                <Pill colors={payColors(booking.pay)}>{booking.pay}</Pill>
-              </button>
-            ))}
-            {todayIn.length === 0 && (
-              <div className="text-[13px] text-slate-mute">
-                Tidak ada check-in pada tanggal ini.
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="min-w-[280px] flex-1 rounded-[18px] border border-line-soft bg-surface px-[18px] py-4">
-          <div className="mb-3 text-[14px] font-bold">Belum lunas</div>
-          <div className="flex flex-col gap-[9px]">
-            {unpaid.map((booking) => (
-              <button
-                key={booking.id}
-                type="button"
-                onClick={() => onSelect(booking.id)}
-                className="flex w-full cursor-pointer items-center gap-3 rounded-xl border border-line bg-surface-mute px-3 py-[10px] text-left hover:bg-surface-hover"
-              >
-                <span className="flex-1 text-[13.5px] font-medium">
-                  {booking.guest}
-                </span>
-                <span className="text-[12px] text-slate-soft">
-                  {fmtShort(booking.checkIn)}
-                </span>
-                <Pill colors={payColors(booking.pay)}>{booking.pay}</Pill>
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { BookingDrawer } from "@/components/booking-drawer";
 import { BookingFormModal } from "@/components/booking-form-modal";
+import { DashboardRail } from "@/components/dashboard-rail";
 import { InviteModal } from "@/components/invite-modal";
 import { LoginScreen } from "@/components/login-screen";
 import { CalendarScreen } from "@/components/screens/calendar-screen";
@@ -529,8 +530,6 @@ export function BookingManager({
                   revenueLabel={fmt(stats.revenue)}
                   cells={cells}
                   onSelect={setSelectedId}
-                  todayIn={todayIn}
-                  unpaid={unpaid}
                 />
               )}
 
@@ -564,6 +563,15 @@ export function BookingManager({
                 />
               )}
             </div>
+
+            {screen === "kalender" && !selected && (
+              <DashboardRail
+                narrow={nw}
+                todayIn={todayIn}
+                unpaid={unpaid}
+                onSelect={setSelectedId}
+              />
+            )}
 
             {selected && (
               <BookingDrawer

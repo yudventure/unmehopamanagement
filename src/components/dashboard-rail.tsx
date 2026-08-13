@@ -1,0 +1,158 @@
+"use client";
+
+import { Pill } from "@/components/ui/pill";
+import { fmtShort } from "@/lib/format";
+import { payColors } from "@/lib/pills";
+import type { Booking } from "@/lib/types";
+
+export interface DashboardRailProps {
+  narrow: boolean;
+  todayIn: { booking: Booking; roomName: string; dotColor: string }[];
+  unpaid: Booking[];
+  onSelect: (id: string) => void;
+}
+
+/**
+ * Today's arrivals and the outstanding balances, parked in the right-hand
+ * column so they sit beside the calendar instead of below it.
+ *
+ * The rail shares its slot with `BookingDrawer` — the caller renders one or the
+ * other, never both. That keeps the shell exactly as wide as it was, so the
+ * measured-width rules that decide when the drawer becomes an overlay
+ * (NARROW_MAX / DRAWER_OVERLAY_MAX in booking-manager.tsx) still hold.
+ *
+ * Below NARROW_MAX the shell stacks vertically, so the rail drops under the
+ * calendar and lays its two sections out side by side as cards again.
+ */
+
+function Row({
+  guest,
+  meta,
+  pay,
+  dotColor,
+  onClick,
+}: {
+  guest: string;
+  meta: string;
+  pay: Booking["pay"];
+  dotColor?: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex w-full cursor-pointer flex-col gap-[3px] rounded-xl border border-line bg-surface-mute px-3 py-[9px] text-left hover:bg-surface-hover"
+    >
+      <span className="flex items-center gap-[9px]">
+        <span
+          className="h-2 w-2 shrink-0 rounded-[3px]"
+          style={{ background: dotColor ?? "transparent" }}
+        />
+        <span className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-[13.5px] font-medium">
+          {guest}
+        </span>
+        <Pill colors={payColors(pay)}>{pay}</Pill>
+      </span>
+      <span className="pl-[17px] text-[12px] text-slate-soft">{meta}</span>
+    </button>
+  );
+}
+
+function Section({
+  title,
+  count,
+  card,
+  empty,
+  children,
+}: {
+  title: string;
+  count: number;
+  card: boolean;
+  empty: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section
+      className={
+        card
+          ? "min-w-[280px] flex-1 rounded-[18px] border border-line-soft bg-surface px-[18px] py-4"
+          : ""
+      }
+    >
+      <div className="mb-3 flex items-center gap-2">
+        <h2 className="text-[14px] font-bold">{title}</h2>
+        <span className="rounded-full bg-surface-tint px-[7px] py-[1px] font-mono text-[10.5px] text-slate-soft">
+          {count}
+        </span>
+      </div>
+      <div className="flex flex-col gap-[9px]">
+        {count === 0 ? (
+          <div className="text-[13px] text-slate-mute">{empty}</div>
+        ) : (
+          children
+        )}
+      </div>
+    </section>
+  );
+}
+
+export function DashboardRail({
+  narrow,
+  todayIn,
+  unpaid,
+  onSelect,
+}: DashboardRailProps) {
+  const sections = (
+    <>
+      <Section
+        title="Check-in hari ini"
+        count={todayIn.length}
+        card={narrow}
+        empty="Tidak ada check-in pada tanggal ini."
+      >
+        {todayIn.map(({ booking, roomName, dotColor }) => (
+          <Row
+            key={booking.id}
+            guest={booking.guest}
+            meta={roomName}
+            pay={booking.pay}
+            dotColor={dotColor}
+            onClick={() => onSelect(booking.id)}
+          />
+        ))}
+      </Section>
+
+      <Section
+        title="Belum lunas"
+        count={unpaid.length}
+        card={narrow}
+        empty="Semua booking sudah lunas."
+      >
+        {unpaid.map((booking) => (
+          <Row
+            key={booking.id}
+            guest={booking.guest}
+            meta={`Check-in ${fmtShort(booking.checkIn)}`}
+            pay={booking.pay}
+            onClick={() => onSelect(booking.id)}
+          />
+        ))}
+      </Section>
+    </>
+  );
+
+  if (narrow) {
+    return (
+      <div className="flex flex-wrap gap-4 bg-surface-soft px-[14px] pb-6">
+        {sections}
+      </div>
+    );
+  }
+
+  return (
+    <aside className="flex max-h-screen w-[352px] shrink-0 flex-col gap-6 overflow-auto border-l border-line bg-surface px-[22px] pt-[22px] pb-[26px]">
+      {sections}
+    </aside>
+  );
+}

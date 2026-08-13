@@ -1,15 +1,25 @@
 "use client";
 
 import { Pill } from "@/components/ui/pill";
-import { fmtShort } from "@/lib/format";
+import { fmtDate, fmtShort } from "@/lib/format";
 import { payColors } from "@/lib/pills";
 import type { Booking } from "@/lib/types";
 
+export interface DayEntry {
+  booking: Booking;
+  roomName: string;
+  dotColor: string;
+}
+
 export interface DashboardRailProps {
   narrow: boolean;
-  todayIn: { booking: Booking; roomName: string; dotColor: string }[];
+  todayIn: DayEntry[];
   unpaid: Booking[];
   onSelect: (id: string) => void;
+  /** Day picked on the calendar, or null for the standing lists. */
+  selectedDate: string | null;
+  dayBookings: DayEntry[];
+  onClearDate: () => void;
 }
 
 /**
@@ -102,8 +112,62 @@ export function DashboardRail({
   todayIn,
   unpaid,
   onSelect,
+  selectedDate,
+  dayBookings,
+  onClearDate,
 }: DashboardRailProps) {
-  const sections = (
+  /* A picked day replaces the standing lists rather than stacking above them:
+     it answers a question the owner just asked, and it is the only place the
+     bookings hidden behind "+N lagi" can be read. */
+  const sections = selectedDate ? (
+    <section
+      className={
+        narrow
+          ? "min-w-[280px] flex-1 rounded-[18px] border border-line-soft bg-surface px-[18px] py-4"
+          : ""
+      }
+    >
+      <div className="mb-3 flex items-start gap-2">
+        <div className="flex-1">
+          <div className="text-[11.5px] text-slate-soft">Booking pada</div>
+          <h2 className="text-[14px] font-bold">{fmtDate(selectedDate)}</h2>
+        </div>
+        <span className="mt-[2px] rounded-full bg-surface-tint px-[7px] py-[1px] font-mono text-[10.5px] text-slate-soft">
+          {dayBookings.length}
+        </span>
+        <button
+          type="button"
+          onClick={onClearDate}
+          aria-label="Tutup daftar tanggal"
+          className="mt-[1px] flex h-[22px] w-[22px] cursor-pointer items-center justify-center rounded-full border-none bg-surface-tint text-[13px] text-slate hover:bg-surface-hover"
+        >
+          ×
+        </button>
+      </div>
+      <div className="flex flex-col gap-[9px]">
+        {dayBookings.length === 0 ? (
+          <div className="text-[13px] text-slate-mute">
+            Tidak ada tamu menginap pada tanggal ini.
+          </div>
+        ) : (
+          dayBookings.map(({ booking, roomName, dotColor }) => (
+            <Row
+              key={booking.id}
+              guest={booking.guest}
+              meta={
+                booking.checkIn === selectedDate
+                  ? `${roomName} · check-in hari ini`
+                  : `${roomName} · ${fmtShort(booking.checkIn)}–${fmtShort(booking.checkOut)}`
+              }
+              pay={booking.pay}
+              dotColor={dotColor}
+              onClick={() => onSelect(booking.id)}
+            />
+          ))
+        )}
+      </div>
+    </section>
+  ) : (
     <>
       <Section
         title="Check-in hari ini"

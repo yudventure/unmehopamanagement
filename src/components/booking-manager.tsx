@@ -117,6 +117,8 @@ export function BookingManager({
   const [screen, setScreen] = useState<Screen>(layarAwal);
   const [month, setMonth] = useState(DEMO_MONTH);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  /** Day picked on the calendar, listed in the rail. Null = default rail. */
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [filterProp, setFilterProp] = useState<PropFilter>("all");
   const [filterCh, setFilterCh] = useState<ChannelFilter>("all");
@@ -174,6 +176,13 @@ export function BookingManager({
     () => bookings.find((b) => b.id === selectedId) ?? null,
     [bookings, selectedId],
   );
+
+  /* Clicking the same day again clears it. The booking drawer shares the
+     rail's slot, so any open drawer has to close or the list stays hidden. */
+  const pickDate = useCallback((date: string) => {
+    setSelectedId(null);
+    setSelectedDate((cur) => (cur === date ? null : date));
+  }, []);
 
   const narrow = vw <= NARROW_MAX;
   const nw = narrow || (!!selected && vw <= DRAWER_OVERLAY_MAX);
@@ -386,6 +395,20 @@ export function BookingManager({
     .sort((a, b) => a.checkIn.localeCompare(b.checkIn))
     .slice(0, 4);
 
+  /* Everyone staying on the picked date, room order — including the ones the
+     calendar had to hide behind "+N lagi". */
+  const dayBookings = useMemo(() => {
+    if (!selectedDate) return [];
+    return visible
+      .filter((b) => b.checkIn <= selectedDate && b.checkOut > selectedDate)
+      .map((b) => ({
+        booking: b,
+        roomName: roomById.get(b.roomId)?.name ?? "",
+        dotColor: CH[b.channel].dot,
+      }))
+      .sort((a, b) => a.roomName.localeCompare(b.roomName));
+  }, [selectedDate, visible, roomById]);
+
   const avgStay = visible.length
     ? (
         visible.reduce((t, b) => t + dayDiff(b.checkIn, b.checkOut), 0) /
@@ -535,6 +558,8 @@ export function BookingManager({
                   weeks={weeks}
                   laneCap={perDay}
                   onSelect={setSelectedId}
+                  selectedDate={selectedDate}
+                  onSelectDate={pickDate}
                 />
               )}
 
@@ -575,6 +600,9 @@ export function BookingManager({
                 todayIn={todayIn}
                 unpaid={unpaid}
                 onSelect={setSelectedId}
+                selectedDate={selectedDate}
+                dayBookings={dayBookings}
+                onClearDate={() => setSelectedDate(null)}
               />
             )}
 

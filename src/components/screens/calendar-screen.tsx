@@ -19,6 +19,8 @@ export interface CalendarScreenProps {
   /** Lanes drawn per week before the rest collapse into "+N lagi". */
   laneCap: number;
   onSelect: (id: string) => void;
+  selectedDate: string | null;
+  onSelectDate: (date: string) => void;
 }
 
 /* A booking bar sits in a lane below the date header; these three numbers are
@@ -52,6 +54,8 @@ export function CalendarScreen({
   weeks,
   laneCap,
   onSelect,
+  selectedDate,
+  onSelectDate,
 }: CalendarScreenProps) {
   const gridCols = {
     gridTemplateColumns: "repeat(7, minmax(0, 1fr))",
@@ -143,18 +147,34 @@ export function CalendarScreen({
                     minHeight: rowHeight,
                     background: cellBackground(cell),
                     opacity: cell.inMonth ? 1 : 0.5,
+                    /* Outline rather than a border: it paints inside the cell
+                       without adding width, so picking a day cannot nudge the
+                       grid the bars are positioned against. */
+                    outline:
+                      selectedDate === cell.dateStr
+                        ? "2px solid var(--color-teal)"
+                        : undefined,
+                    outlineOffset: -2,
                   }}
                 >
                   <div className="flex items-center justify-between">
-                    <div
+                    {/* The date itself opens the day list. On a full day the
+                        bars cover nearly the whole cell, so the cell at large
+                        cannot be the target — this corner always is. */}
+                    <button
+                      type="button"
+                      onClick={() => onSelectDate(cell.dateStr)}
+                      aria-pressed={selectedDate === cell.dateStr}
+                      aria-label={`Lihat booking pada ${cell.dateStr}`}
+                      title="Lihat semua booking pada tanggal ini"
                       className={
                         cell.isToday
-                          ? "flex h-[26px] w-[26px] items-center justify-center rounded-full bg-teal text-[12.5px] font-bold text-white"
-                          : "pl-[3px] text-[13px] font-medium text-ink-soft"
+                          ? "flex h-[26px] w-[26px] cursor-pointer items-center justify-center rounded-full border-none bg-teal text-[12.5px] font-bold text-white hover:bg-teal-deep"
+                          : "flex h-[26px] min-w-[26px] cursor-pointer items-center justify-center rounded-full border-none bg-transparent text-[13px] font-medium text-ink-soft hover:bg-surface-hover"
                       }
                     >
                       {cell.label}
-                    </div>
+                    </button>
                     {cell.inMonth && cell.capacity > 0 && (
                       <div
                         className="font-mono text-[10.5px]"
@@ -170,9 +190,14 @@ export function CalendarScreen({
                     )}
                   </div>
                   {cell.hiddenCount > 0 && (
-                    <div className="absolute bottom-[7px] left-[14px] text-[11px] text-slate-mute">
+                    <button
+                      type="button"
+                      onClick={() => onSelectDate(cell.dateStr)}
+                      title="Lihat semua booking pada tanggal ini"
+                      className="absolute bottom-[6px] left-[11px] cursor-pointer rounded-[6px] border-none bg-transparent px-[3px] py-[1px] text-[11px] text-slate-mute underline decoration-dotted underline-offset-2 hover:bg-surface-hover hover:text-teal"
+                    >
                       +{cell.hiddenCount} lagi
-                    </div>
+                    </button>
                   )}
                 </div>
               ))}

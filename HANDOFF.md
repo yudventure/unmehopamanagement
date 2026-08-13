@@ -72,6 +72,10 @@ scope yang disepakati, bukan pekerjaan yang terlewat.
   (`terisi/kapasitas`), bar booking berwarna per saluran yang membentang
   sepanjang malam menginap, collapse "+N lagi",
   banner konflik iCal, kartu "Check-in hari ini" dan "Belum lunas".
+- **Daftar per tanggal** — klik angka tanggal (atau tautan "+N lagi") dan bilah
+  kanan menampilkan **semua** tamu yang menginap hari itu, termasuk yang tidak
+  muat digambar sebagai bar. Sasaran kliknya angka tanggal, bukan seluruh sel:
+  di hari penuh, bar menutupi hampir seluruh sel.
 - **Drawer detail booking** — transisi status (Tentative → Confirmed →
   Checked-in → Checked-out, atau Cancelled), rincian bayar, tombol catat
   pelunasan, jejak audit.

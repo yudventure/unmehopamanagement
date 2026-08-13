@@ -93,7 +93,9 @@
 @layer base {
   body {
     margin: 0;
-    background: var(--color-canvas);
+    /* The shell is full-bleed now, so the page ground is the shell's own
+       surface — canvas would only ever flash on overscroll. */
+    background: var(--color-surface);
     color: var(--color-ink);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;

@@ -2,6 +2,8 @@
 
 import { useEffect, useRef } from "react";
 
+import { BrandLogo } from "@/components/brand-logo";
+
 export interface TopBarProps {
   query: string;
   onQuery: (value: string) => void;
@@ -50,9 +52,7 @@ export function TopBar({
   return (
     <div className="flex flex-wrap items-center gap-5 border-b border-line px-[26px] py-[18px]">
       <div className="flex min-w-[210px] items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-[13px] bg-teal text-[17px] font-bold text-white">
-          R
-        </div>
+        <BrandLogo size={40} className="shrink-0" />
         <div className="leading-[1.15]">
           <div className="text-[15px] font-bold">Rumah Papua</div>
           <div className="text-[12px] text-slate-soft">Booking Manager</div>

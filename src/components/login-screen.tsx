@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { BrandLogo } from "@/components/brand-logo";
 import { LoginIllustration } from "@/components/login-illustration";
 import { OWNER_EMAIL, STAFF_EMAIL } from "@/lib/data";
 import type { Role } from "@/lib/types";
@@ -112,33 +113,29 @@ export function LoginScreen({
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-start justify-center overflow-auto bg-canvas p-7">
-      <div
-        className="m-auto flex w-full overflow-hidden rounded-[26px] bg-surface shadow-[0_30px_70px_rgba(20,50,42,.16)]"
-        style={{
-          maxWidth: narrow ? 430 : 1000,
-          minHeight: narrow ? "auto" : 604,
+    <div className="fixed inset-0 z-[100] flex overflow-auto bg-surface">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          onSubmit();
         }}
+        className={`flex min-h-full flex-col ${
+          narrow
+            ? "w-full px-[26px] pt-[30px] pb-7"
+            : "w-[42%] min-w-[430px] max-w-[560px] shrink-0 px-[52px] py-[42px]"
+        }`}
       >
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            onSubmit();
-          }}
-          className={`flex shrink-0 flex-col ${
-            narrow ? "w-full px-[26px] pt-[30px] pb-7" : "w-[430px] px-[46px] py-[40px]"
-          }`}
-        >
-          <div className="flex items-center gap-[10px]">
-            <div className="flex h-[34px] w-[34px] items-center justify-center rounded-[12px] bg-teal text-[15px] font-bold text-white">
-              R
-            </div>
-            <div className="text-[17px] font-bold tracking-[-.01em] text-teal">
-              Rumah Papua
-            </div>
+        <div className="flex items-center gap-[10px]">
+          <BrandLogo size={42} className="shrink-0" />
+          <div className="text-[17px] font-bold tracking-[-.01em] text-teal">
+            Rumah Papua
           </div>
+        </div>
 
-          <div className="mt-auto pt-10">
+        {/* Centred in the leftover height so the form sits mid-panel on tall
+            screens instead of drifting to the bottom edge. */}
+        <div className="flex flex-1 flex-col justify-center py-10">
+          <div>
             <h1 className="text-[26px] leading-[1.28] font-bold tracking-[-.02em] text-balance text-ink">
               Satu kalender untuk semua booking homestay Anda
             </h1>
@@ -238,10 +235,10 @@ export function LoginScreen({
               </button>
             ))}
           </div>
-        </form>
+        </div>
+      </form>
 
-        {!narrow && <LoginHero />}
-      </div>
+      {!narrow && <LoginHero />}
     </div>
   );
 }

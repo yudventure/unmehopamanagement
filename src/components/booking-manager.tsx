@@ -468,8 +468,9 @@ export function BookingManager({
 
   return (
     <>
-      <div className="flex min-h-screen justify-center p-6">
-        <div className="flex w-full max-w-[1480px] flex-col overflow-hidden rounded-[28px] bg-surface shadow-[0_24px_60px_rgba(20,50,42,.10)]">
+      {/* Full-bleed: the shell is the viewport, with no canvas margin around it. */}
+      <div className="flex min-h-screen">
+        <div className="flex w-full flex-col bg-surface">
           <TopBar
             query={query}
             onQuery={setQuery}

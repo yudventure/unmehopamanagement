@@ -1,18 +1,8 @@
-import type { BookingStatus, PaymentStatus } from "./types";
+import type { BookingStatus } from "./types";
 
 export interface PillColors {
   bg: string;
   fg: string;
-}
-
-const PAY_COLORS: Record<PaymentStatus, PillColors> = {
-  Lunas: { bg: "#D6F2E7", fg: "#0B5F52" },
-  "Belum bayar": { bg: "#FEE4E2", fg: "#B42318" },
-  "Dibayar via OTA": { bg: "#E8EEFB", fg: "#1D4ED8" },
-};
-
-export function payColors(pay: PaymentStatus): PillColors {
-  return PAY_COLORS[pay] ?? { bg: "#F0F5F3", fg: "#5C6E68" };
 }
 
 export function statusColors(status: BookingStatus): PillColors {

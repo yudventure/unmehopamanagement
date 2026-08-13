@@ -111,7 +111,9 @@ export function BookingManager({
   bookingPerHari = 4,
 }: BookingManagerProps) {
   const [rooms] = useState(seedRooms);
-  const [bookings, setBookings] = useState<Booking[]>(() => seedBookings(rooms));
+  const [bookings, setBookings] = useState<Booking[]>(() =>
+    seedBookings(rooms),
+  );
   const [users, setUsers] = useState<User[]>(seedUsers);
 
   const [screen, setScreen] = useState<Screen>(layarAwal);
@@ -157,10 +159,7 @@ export function BookingManager({
   const showMoney = isOwner && !modeStaf;
   const perDay = bookingPerHari;
 
-  const roomById = useMemo(
-    () => new Map(rooms.map((r) => [r.id, r])),
-    [rooms],
-  );
+  const roomById = useMemo(() => new Map(rooms.map((r) => [r.id, r])), [rooms]);
 
   const visible = useMemo(
     () => visibleBookings({ bookings, rooms, filterProp, filterCh, query }),
@@ -275,8 +274,6 @@ export function BookingManager({
         checkIn: form.checkIn,
         checkOut: form.checkOut,
         total,
-        paid: 0,
-        pay: "Belum bayar",
         status,
         notes: form.notes || "Booking baru dari input manual.",
         src: "manual",
@@ -374,7 +371,11 @@ export function BookingManager({
   ];
 
   const channelCounts = [
-    { key: "all" as ChannelFilter, label: "Semua saluran", count: visible.length },
+    {
+      key: "all" as ChannelFilter,
+      label: "Semua saluran",
+      count: visible.length,
+    },
     ...CHANNEL_KEYS.map((k) => ({
       key: k as ChannelFilter,
       label: k,
@@ -388,11 +389,6 @@ export function BookingManager({
       booking: b,
       roomName: roomById.get(b.roomId)?.name ?? "",
     }));
-
-  const unpaid = visible
-    .filter((b) => b.total > b.paid)
-    .sort((a, b) => a.checkIn.localeCompare(b.checkIn))
-    .slice(0, 4);
 
   /* Everyone staying on the picked date, room order — including the ones the
      calendar had to hide behind "+N lagi". */
@@ -529,9 +525,7 @@ export function BookingManager({
 
             <div
               className={`min-w-0 flex-1 bg-surface-soft ${
-                nw
-                  ? "px-[14px] pt-4 pb-6"
-                  : "px-[26px] pt-[22px] pb-[30px]"
+                nw ? "px-[14px] pt-4 pb-6" : "px-[26px] pt-[22px] pb-[30px]"
               }`}
             >
               {screen === "kalender" && (
@@ -575,12 +569,16 @@ export function BookingManager({
                     flash("Ekspor CSV belum tersedia di versi ini.")
                   }
                   onCompare={() =>
-                    flash("Perbandingan antar bulan belum tersedia di versi ini.")
+                    flash(
+                      "Perbandingan antar bulan belum tersedia di versi ini.",
+                    )
                   }
                 />
               )}
 
-              {screen === "properti" && <PropertyScreen cards={propertyCards} />}
+              {screen === "properti" && (
+                <PropertyScreen cards={propertyCards} />
+              )}
 
               {screen === "pengguna" && isOwner && (
                 <UsersScreen
@@ -595,7 +593,6 @@ export function BookingManager({
               <DashboardRail
                 narrow={nw}
                 todayIn={todayIn}
-                unpaid={unpaid}
                 onSelect={setSelectedId}
                 selectedDate={selectedDate}
                 dayBookings={dayBookings}
@@ -622,13 +619,6 @@ export function BookingManager({
                         : status === "Checked-out"
                           ? "Tamu ditandai check-out."
                           : "Booking dibatalkan.",
-                  )
-                }
-                onMarkPaid={() =>
-                  patchBooking(
-                    selected.id,
-                    { paid: selected.total, pay: "Lunas" },
-                    "Pelunasan tercatat.",
                   )
                 }
               />

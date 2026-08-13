@@ -3,7 +3,7 @@
 import { Pill } from "@/components/ui/pill";
 import { CH } from "@/lib/data";
 import { dayDiff, fmt, fmtDate } from "@/lib/format";
-import { payColors, statusColors } from "@/lib/pills";
+import { statusColors } from "@/lib/pills";
 import type { Booking, BookingStatus } from "@/lib/types";
 
 export interface BookingDrawerProps {
@@ -15,7 +15,6 @@ export interface BookingDrawerProps {
   auditName: string;
   onClose: () => void;
   onSetStatus: (status: BookingStatus) => void;
-  onMarkPaid: () => void;
 }
 
 const PRIMARY_ACTION =
@@ -38,18 +37,17 @@ export function BookingDrawer({
   auditName,
   onClose,
   onSetStatus,
-  onMarkPaid,
 }: BookingDrawerProps) {
   const channel = CH[booking.channel];
   const nights = dayDiff(booking.checkIn, booking.checkOut);
-  const due = Math.max(0, booking.total - booking.paid);
 
-  const nextStatus: Partial<Record<BookingStatus, { label: string; to: BookingStatus }>> =
-    {
-      Tentative: { label: "Konfirmasi booking", to: "Confirmed" },
-      Confirmed: { label: "Tandai Check-in", to: "Checked-in" },
-      "Checked-in": { label: "Tandai Check-out", to: "Checked-out" },
-    };
+  const nextStatus: Partial<
+    Record<BookingStatus, { label: string; to: BookingStatus }>
+  > = {
+    Tentative: { label: "Konfirmasi booking", to: "Confirmed" },
+    Confirmed: { label: "Tandai Check-in", to: "Checked-in" },
+    "Checked-in": { label: "Tandai Check-out", to: "Checked-out" },
+  };
   const advance = nextStatus[booking.status];
 
   return (
@@ -72,7 +70,8 @@ export function BookingDrawer({
             {booking.guest}
           </div>
           <div className="mt-1 font-mono text-[11.5px] text-slate-mute">
-            {booking.id} · {booking.src === "iCal" ? "impor iCal" : "input manual"}
+            {booking.id} ·{" "}
+            {booking.src === "iCal" ? "impor iCal" : "input manual"}
           </div>
         </div>
         <button
@@ -98,33 +97,12 @@ export function BookingDrawer({
 
       <div className="mb-4 flex gap-2">
         <Pill colors={statusColors(booking.status)}>{booking.status}</Pill>
-        <Pill colors={payColors(booking.pay)}>{booking.pay}</Pill>
       </div>
 
       {showMoney && (
-        <div className="mb-[14px] rounded-2xl border border-line px-4 py-[14px]">
-          <div className="mb-2 flex justify-between text-[13.5px]">
-            <span className="text-slate">Total {nights} malam</span>
-            <span className="font-bold">{fmt(booking.total)}</span>
-          </div>
-          <div className="flex justify-between border-t border-dashed border-line-strong pt-2 text-[13.5px]">
-            <span className="text-slate">Sisa</span>
-            <span
-              className="font-bold"
-              style={{ color: due > 0 ? "#B42318" : "#0B5F52" }}
-            >
-              {fmt(due)}
-            </span>
-          </div>
-          {due > 0 && (
-            <button
-              type="button"
-              onClick={onMarkPaid}
-              className="mt-3 w-full cursor-pointer rounded-[11px] border-none bg-teal py-[10px] text-[13px] font-medium text-white hover:bg-teal-deep"
-            >
-              Catat pelunasan
-            </button>
-          )}
+        <div className="mb-[14px] flex justify-between rounded-2xl border border-line px-4 py-[14px] text-[13.5px]">
+          <span className="text-slate">Total {nights} malam</span>
+          <span className="font-bold">{fmt(booking.total)}</span>
         </div>
       )}
 
@@ -156,7 +134,9 @@ export function BookingDrawer({
 
       <div className="mt-[18px] text-[11.5px] leading-[1.6] text-slate-ghost">
         Diubah terakhir oleh {auditName}, 13 Agustus 2026 09.41. Sumber data:{" "}
-        {booking.src === "iCal" ? `feed iCal ${booking.channel}` : "input manual"}
+        {booking.src === "iCal"
+          ? `feed iCal ${booking.channel}`
+          : "input manual"}
       </div>
     </div>
   );

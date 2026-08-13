@@ -27,6 +27,8 @@ Masalah yang dipecahkan (dari PRD di `project/uploads/PRD-booking-manager-homest
 2. **Tidak ada gambaran okupansi** — harus buka 3–4 aplikasi untuk tahu kamar
    mana yang kosong.
 3. **Pembayaran WA tidak ter-track** — transfer hanya dicek di mutasi rekening.
+   (Sejak Agustus 2026 aplikasi tidak lagi melacak status bayar sama sekali —
+   lihat penyimpangan no. 8.)
 4. **Tidak ada data untuk keputusan bisnis** — pendapatan per platform/kamar/musim
    tidak terekam.
 5. **Sinyal internet pulau tidak stabil** — aplikasi harus ringan.
@@ -70,18 +72,17 @@ scope yang disepakati, bukan pekerjaan yang terlewat.
   panel foto kanan dengan overlay gradient dan tiga angka ringkas.
 - **Kalender bulanan** (Agustus 2026) — grid 6×7, penghitung okupansi per hari
   (`terisi/kapasitas`), chip booking berwarna per saluran di setiap malam yang
-  ditempati, collapse "+N lagi", banner konflik iCal, kartu "Check-in hari ini"
-  dan "Belum lunas".
+  ditempati, collapse "+N lagi", banner konflik iCal, dan kartu "Check-in hari
+  ini".
 - **Daftar per tanggal** — klik bidang atas sel (angka tanggal, penghitung
   okupansi, dan ruang kosong di antaranya) atau tautan "+N lagi", dan bilah
   kanan menampilkan **semua** tamu yang menginap hari itu, termasuk yang tidak
   muat sebagai chip. Yang bisa diklik hanya bidang atas itu, bukan seluruh sel:
   sisanya diisi chip, yang punya aksinya sendiri.
-  Badge di bilah kanan menunjukkan **asal booking** (OTA mana / WA · langsung),
-  bukan status bayar — status bayar sudah jadi inti judul seksinya.
+  Badge di bilah kanan menunjukkan **asal booking** — OTA mana, atau
+  WA / langsung.
 - **Drawer detail booking** — transisi status (Tentative → Confirmed →
-  Checked-in → Checked-out, atau Cancelled), rincian bayar, tombol catat
-  pelunasan, jejak audit.
+  Checked-in → Checked-out, atau Cancelled), total menginap, jejak audit.
 - **Form booking cepat** — pilih properti/kamar/tanggal dengan **cek
   ketersediaan langsung** (banner merah kalau bentrok), simpan sebagai
   Tentative atau Confirmed.
@@ -116,7 +117,7 @@ src/
     invite-modal.tsx          modal undang pengelola
     login-screen.tsx          login dua panel + panel foto
     screens/
-      calendar-screen.tsx     kalender + kartu check-in/belum lunas
+      calendar-screen.tsx     grid kalender + chip booking
       report-screen.tsx       KPI, pendapatan per saluran, okupansi per kamar
       property-screen.tsx     kartu properti + tabel kamar
       users-screen.tsx        tabel pengguna & peran
@@ -178,10 +179,16 @@ kalau mau dikembalikan:
    di ketinggian yang kurang lebih sama dari hari ke hari; tanpa itu mata tidak
    bisa mengikutinya. `bookingPerHari` naik dari 3 ke 4 karena satu hari kini
    memuat lebih banyak chip.
-8. **Tidak ada status "DP masuk".** Bisnis ini tidak memakai uang muka, jadi
-   pembayaran biner: `Belum bayar`, `Lunas`, atau `Dibayar via OTA`. Seed masih
-   memakai satu `rnd()` di posisi yang sama seperti dulu supaya seluruh field
-   lain tetap identik; rentang yang dulu jadi DP sekarang jatuh ke `Lunas`.
+8. **Tidak ada status pembayaran sama sekali.** Booking baru masuk kalender
+   setelah dibayar, jadi tidak ada lawan dari "lunas" untuk ditampilkan. Yang
+   ikut hilang: tipe `PaymentStatus`, field `pay`/`paid`, `payColors()`, seksi
+   "Belum lunas" di bilah kanan, serta baris "Sisa" dan tombol "Catat
+   pelunasan" di drawer. Nominal booking tetap ada sebagai `total`.
+
+   **Satu `rnd()` di `seedBookings` sengaja dibiarkan menyala tanpa dipakai.**
+   Dulu ia menentukan status bayar. Menghapusnya akan menggeser seluruh undian
+   sesudahnya dan mengacak ulang 61 booking, sehingga kecocokan field-per-field
+   dengan generator prototype batal. Jangan dihapus.
 
 ---
 
@@ -297,7 +304,8 @@ Sejak sekarang push biasa sudah bekerja — tidak perlu lagi lewat zip.
 7. Upload bukti transfer (F5.1) + kompresi gambar di browser.
 8. Harga musiman (F1.3) — sekarang baru harga dasar per kamar.
 9. Halaman "Hari Ini" khusus staf (F2.5 / Alur D).
-10. Pengingat pelunasan H-7 / H-3 (F5.4).
+10. ~~Pengingat pelunasan H-7 / H-3 (F5.4)~~ — tidak relevan lagi: booking
+    baru dicatat setelah dibayar.
 11. PWA + cache read-only supaya kalender terakhir terbaca saat offline (NF1).
 
 ### Kualitas

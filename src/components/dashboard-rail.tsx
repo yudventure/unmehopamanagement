@@ -13,7 +13,6 @@ export interface DayEntry {
 export interface DashboardRailProps {
   narrow: boolean;
   todayIn: DayEntry[];
-  unpaid: Booking[];
   onSelect: (id: string) => void;
   /** Day picked on the calendar, or null for the standing lists. */
   selectedDate: string | null;
@@ -22,8 +21,9 @@ export interface DashboardRailProps {
 }
 
 /**
- * Today's arrivals and the outstanding balances, parked in the right-hand
- * column so they sit beside the calendar instead of below it.
+ * Today's arrivals, or the guests staying on a day picked from the calendar,
+ * parked in the right-hand column so they sit beside the grid instead of below
+ * it.
  *
  * The rail shares its slot with `BookingDrawer` — the caller renders one or the
  * other, never both. That keeps the shell exactly as wide as it was, so the
@@ -31,15 +31,10 @@ export interface DashboardRailProps {
  * (NARROW_MAX / DRAWER_OVERLAY_MAX in booking-manager.tsx) still hold.
  *
  * Below NARROW_MAX the shell stacks vertically, so the rail drops under the
- * calendar and lays its two sections out side by side as cards again.
+ * calendar and renders as a card again.
  */
 
-/**
- * The badge names where the booking came from — which OTA, WhatsApp, or a
- * walk-in paid at the property — rather than its payment state. Payment is
- * already the point of the section it sits under, while the source is not
- * recorded anywhere else in the rail.
- */
+/** Badges the booking's source — which OTA, or WhatsApp / walk-in. */
 function Row({
   guest,
   meta,
@@ -114,7 +109,6 @@ function Section({
 export function DashboardRail({
   narrow,
   todayIn,
-  unpaid,
   onSelect,
   selectedDate,
   dayBookings,
@@ -171,41 +165,22 @@ export function DashboardRail({
       </div>
     </section>
   ) : (
-    <>
-      <Section
-        title="Check-in hari ini"
-        count={todayIn.length}
-        card={narrow}
-        empty="Tidak ada check-in pada tanggal ini."
-      >
-        {todayIn.map(({ booking, roomName }) => (
-          <Row
-            key={booking.id}
-            guest={booking.guest}
-            meta={roomName}
-            channel={booking.channel}
-            onClick={() => onSelect(booking.id)}
-          />
-        ))}
-      </Section>
-
-      <Section
-        title="Belum lunas"
-        count={unpaid.length}
-        card={narrow}
-        empty="Semua booking sudah lunas."
-      >
-        {unpaid.map((booking) => (
-          <Row
-            key={booking.id}
-            guest={booking.guest}
-            meta={`Check-in ${fmtShort(booking.checkIn)}`}
-            channel={booking.channel}
-            onClick={() => onSelect(booking.id)}
-          />
-        ))}
-      </Section>
-    </>
+    <Section
+      title="Check-in hari ini"
+      count={todayIn.length}
+      card={narrow}
+      empty="Tidak ada check-in pada tanggal ini."
+    >
+      {todayIn.map(({ booking, roomName }) => (
+        <Row
+          key={booking.id}
+          guest={booking.guest}
+          meta={roomName}
+          channel={booking.channel}
+          onClick={() => onSelect(booking.id)}
+        />
+      ))}
+    </Section>
   );
 
   if (narrow) {

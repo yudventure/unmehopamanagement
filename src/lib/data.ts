@@ -1,12 +1,5 @@
 import { iso } from "./format";
-import type {
-  Booking,
-  ChannelKey,
-  PaymentStatus,
-  PropertyKey,
-  Room,
-  User,
-} from "./types";
+import type { Booking, ChannelKey, PropertyKey, Room, User } from "./types";
 
 export interface ChannelStyle {
   bg: string;
@@ -40,11 +33,18 @@ export const CHANNEL_LABELS: Record<ChannelKey, string> = {
   Blokir: "Blokir",
 };
 
-export const PROPERTIES: { key: PropertyKey; name: string; location: string }[] =
-  [
-    { key: "turtle", name: "Turtle Homestay", location: "Yenbuba, Pulau Mansuar" },
-    { key: "eddo", name: "Eddo Homestay", location: "Sawinggrai, Pulau Gam" },
-  ];
+export const PROPERTIES: {
+  key: PropertyKey;
+  name: string;
+  location: string;
+}[] = [
+  {
+    key: "turtle",
+    name: "Turtle Homestay",
+    location: "Yenbuba, Pulau Mansuar",
+  },
+  { key: "eddo", name: "Eddo Homestay", location: "Sawinggrai, Pulau Gam" },
+];
 
 /** The month the seeded demo data lives in. */
 export const DEMO_MONTH = new Date(2026, 7, 1);
@@ -149,18 +149,12 @@ export function seedBookings(rooms: Room[]): Booking[] {
       const inD = new Date(2026, 7, day);
       const outD = new Date(2026, 7, day + nights);
       const total = r.rate * nights * (ch === "WhatsApp" ? 1 : 1.12);
-      /* One roll, same position in the sequence as before, so every other
-         seeded field stays byte-identical. What used to split into DP below
-         0.4 and Lunas below 0.85 now settles as Lunas across that whole
-         range — there are no deposits to represent. */
-      const paidRoll = rnd();
-      const pay: PaymentStatus =
-        ch === "WhatsApp"
-          ? paidRoll < 0.85
-            ? "Lunas"
-            : "Belum bayar"
-          : "Dibayar via OTA";
-      const paid = pay === "Belum bayar" ? 0 : total;
+      /* Burnt roll. It used to decide a payment status, which the app no
+         longer tracks — a booking only reaches the calendar once it is paid.
+         The call stays because dropping it would shift every draw after it and
+         re-roll all 61 bookings, breaking the field-for-field match with the
+         prototype's generator. */
+      rnd();
 
       bookings.push({
         id: "BK" + String(++n).padStart(4, "0"),
@@ -172,8 +166,6 @@ export function seedBookings(rooms: Room[]): Booking[] {
         checkIn: iso(inD),
         checkOut: iso(outD),
         total,
-        paid,
-        pay,
         status:
           day < 13
             ? "Checked-out"
@@ -201,8 +193,6 @@ export function seedBookings(rooms: Room[]): Booking[] {
     checkIn: "2026-08-19",
     checkOut: "2026-08-22",
     total: 1512000,
-    paid: 1512000,
-    pay: "Dibayar via OTA",
     status: "Confirmed",
     notes:
       "Masuk dari feed iCal Agoda, bentrok dengan booking Booking.com di kamar yang sama.",
@@ -219,8 +209,6 @@ export function seedBookings(rooms: Room[]): Booking[] {
     checkIn: "2026-08-20",
     checkOut: "2026-08-23",
     total: 1512000,
-    paid: 1512000,
-    pay: "Dibayar via OTA",
     status: "Confirmed",
     notes: "Konflik dengan BK9001. Tawarkan pindah ke Turtle 05.",
     src: "iCal",

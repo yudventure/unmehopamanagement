@@ -14,9 +14,6 @@ export type BookingStatus =
   | "Checked-out"
   | "Cancelled";
 
-/** No deposits in this business — a booking is either settled or it is not. */
-export type PaymentStatus = "Belum bayar" | "Lunas" | "Dibayar via OTA";
-
 export type BookingSource = "manual" | "iCal";
 
 export type Role = "owner" | "staf";
@@ -45,8 +42,6 @@ export interface Booking {
   /** Plain date, YYYY-MM-DD. Exclusive — the guest leaves this morning. */
   checkOut: string;
   total: number;
-  paid: number;
-  pay: PaymentStatus;
   status: BookingStatus;
   notes: string;
   src: BookingSource;

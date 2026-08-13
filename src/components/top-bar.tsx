@@ -50,8 +50,8 @@ export function TopBar({
   }, [menuOpen, onCloseMenu]);
 
   return (
-    <div className="flex flex-wrap items-center gap-5 border-b border-line px-[26px] py-[18px]">
-      <div className="flex min-w-[210px] items-center gap-3">
+    <div className="flex flex-wrap items-center gap-x-5 gap-y-3 border-b border-line px-[26px] py-[18px]">
+      <div className="flex shrink-0 items-center gap-3">
         <BrandLogo size={40} className="shrink-0" />
         <div className="leading-[1.15]">
           <div className="text-[15px] font-bold whitespace-nowrap">
@@ -61,19 +61,24 @@ export function TopBar({
         </div>
       </div>
 
-      <div className="flex max-w-[380px] min-w-[180px] flex-1 items-center gap-[10px] rounded-xl border border-line-search bg-surface-tint px-[14px] py-[9px]">
-        <div className="h-[14px] w-[14px] shrink-0 rounded-full border-2 border-[#A9B8B2]" />
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => onQuery(e.target.value)}
-          placeholder="Cari nama tamu, kamar, atau kode booking"
-          aria-label="Cari booking"
-          className="w-full border-none bg-transparent text-[13.5px] outline-none"
-        />
+      {/* Takes the whole gap between brand and actions and centres the field
+          inside it, so the search sits mid-bar rather than tucked against the
+          wordmark. */}
+      <div className="flex min-w-[200px] flex-1 justify-center">
+        <div className="flex w-full max-w-[460px] items-center gap-[10px] rounded-xl border border-line-search bg-surface-tint px-[14px] py-[9px]">
+          <div className="h-[14px] w-[14px] shrink-0 rounded-full border-2 border-[#A9B8B2]" />
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => onQuery(e.target.value)}
+            placeholder="Cari nama tamu, kamar, atau kode booking"
+            aria-label="Cari booking"
+            className="w-full min-w-0 border-none bg-transparent text-[13.5px] outline-none"
+          />
+        </div>
       </div>
 
-      <div className="ml-auto flex items-center gap-[10px]">
+      <div className="flex shrink-0 items-center gap-[10px]">
         <button
           type="button"
           onClick={onOpenForm}

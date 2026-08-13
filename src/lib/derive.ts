@@ -166,7 +166,7 @@ export function buildCalendar({
         const room = byId.get(b.roomId);
         return {
           booking: b,
-          label: `${b.guest.split(" ")[0]} · ${(room?.name ?? "").replace("Turtle ", "T")}`,
+          label: `${b.guest.split(" ")[0]} · ${room?.name ?? ""}`,
           bg: b.conflict ? "#FEE4E2" : c.bg,
           fg: b.conflict ? "#B42318" : c.fg,
           dot: b.conflict ? "#DC2626" : c.dot,

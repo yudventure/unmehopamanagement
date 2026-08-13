@@ -1,6 +1,6 @@
 "use client";
 
-import type { CalendarCell } from "@/lib/derive";
+import type { CalendarCell, CalendarWeek } from "@/lib/derive";
 import { WEEKDAYS } from "@/lib/format";
 
 export interface CalendarScreenProps {
@@ -15,9 +15,17 @@ export interface CalendarScreenProps {
   occLabel: string;
   nightsLabel: string;
   revenueLabel: string;
-  cells: CalendarCell[];
+  weeks: CalendarWeek[];
+  /** Lanes drawn per week before the rest collapse into "+N lagi". */
+  laneCap: number;
   onSelect: (id: string) => void;
 }
+
+/* A booking bar sits in a lane below the date header; these three numbers are
+   what keeps the overlay aligned with the cells underneath it. */
+const HEADER_H = 34;
+const LANE_H = 22;
+const BAR_H = 19;
 
 const ARROW_BUTTON =
   "h-[34px] w-[34px] cursor-pointer rounded-[11px] border border-line-strong bg-surface text-[15px] text-slate hover:bg-surface-hover";
@@ -41,7 +49,8 @@ export function CalendarScreen({
   occLabel,
   nightsLabel,
   revenueLabel,
-  cells,
+  weeks,
+  laneCap,
   onSelect,
 }: CalendarScreenProps) {
   const gridCols = {
@@ -121,65 +130,94 @@ export function CalendarScreen({
             </div>
           ))}
         </div>
-        <div className="grid" style={gridCols}>
-          {cells.map((cell, i) => (
-            <div
-              key={i}
-              className="min-h-[126px] border-r border-b border-line-fine px-[11px] py-[10px]"
-              style={{
-                background: cellBackground(cell),
-                opacity: cell.inMonth ? 1 : 0.5,
-              }}
-            >
-              <div className="mb-[7px] flex items-center justify-between">
+        {weeks.map((week, wi) => {
+          const shown = Math.min(week.lanes, laneCap);
+          const rowHeight = Math.max(126, HEADER_H + shown * LANE_H + 22);
+          return (
+            <div key={wi} className="relative grid" style={gridCols}>
+              {week.cells.map((cell, ci) => (
                 <div
-                  className={
-                    cell.isToday
-                      ? "flex h-[26px] w-[26px] items-center justify-center rounded-full bg-teal text-[12.5px] font-bold text-white"
-                      : "pl-[3px] text-[13px] font-medium text-ink-soft"
-                  }
+                  key={ci}
+                  className="relative border-r border-b border-line-fine px-[11px] py-[10px]"
+                  style={{
+                    minHeight: rowHeight,
+                    background: cellBackground(cell),
+                    opacity: cell.inMonth ? 1 : 0.5,
+                  }}
                 >
-                  {cell.label}
+                  <div className="flex items-center justify-between">
+                    <div
+                      className={
+                        cell.isToday
+                          ? "flex h-[26px] w-[26px] items-center justify-center rounded-full bg-teal text-[12.5px] font-bold text-white"
+                          : "pl-[3px] text-[13px] font-medium text-ink-soft"
+                      }
+                    >
+                      {cell.label}
+                    </div>
+                    {cell.inMonth && cell.capacity > 0 && (
+                      <div
+                        className="font-mono text-[10.5px]"
+                        style={{
+                          color:
+                            cell.occupied >= cell.capacity
+                              ? "#B42318"
+                              : "#8B9C96",
+                        }}
+                      >
+                        {cell.occupied}/{cell.capacity}
+                      </div>
+                    )}
+                  </div>
+                  {cell.hiddenCount > 0 && (
+                    <div className="absolute bottom-[7px] left-[14px] text-[11px] text-slate-mute">
+                      +{cell.hiddenCount} lagi
+                    </div>
+                  )}
                 </div>
-                {cell.inMonth && cell.capacity > 0 && (
-                  <div
-                    className="font-mono text-[10.5px]"
-                    style={{
-                      color:
-                        cell.occupied >= cell.capacity ? "#B42318" : "#8B9C96",
-                    }}
-                  >
-                    {cell.occupied}/{cell.capacity}
-                  </div>
-                )}
-              </div>
-              <div className="flex flex-col gap-1">
-                {cell.chips.map((chip) => (
-                  <button
-                    key={chip.booking.id}
-                    type="button"
-                    onClick={() => onSelect(chip.booking.id)}
-                    className="flex w-full min-w-0 cursor-pointer items-center gap-[6px] overflow-hidden rounded-[7px] border-none px-[7px] py-[5px] text-left text-[11.5px]"
-                    style={{ background: chip.bg, color: chip.fg }}
-                  >
-                    <span
-                      className="h-3 w-[3px] shrink-0 rounded-[2px]"
-                      style={{ background: chip.dot }}
-                    />
-                    <span className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap">
-                      {chip.label}
-                    </span>
-                  </button>
-                ))}
-                {cell.hiddenCount > 0 && (
-                  <div className="pl-[3px] text-[11px] text-slate-mute">
-                    +{cell.hiddenCount} lagi
-                  </div>
-                )}
+              ))}
+
+              {/* Bars ride above the cells so one booking stays a single
+                  element across the days it covers, instead of a chip repeated
+                  per cell that the eye has to reassemble. */}
+              <div className="pointer-events-none absolute inset-0">
+                {week.spans
+                  .filter((s) => s.lane < laneCap)
+                  .map((s) => (
+                    <button
+                      key={s.booking.id}
+                      type="button"
+                      onClick={() => onSelect(s.booking.id)}
+                      title={`${s.booking.guest} · ${s.booking.checkIn} → ${s.booking.checkOut}`}
+                      className="pointer-events-auto absolute flex cursor-pointer items-center gap-[6px] overflow-hidden border-none px-[7px] text-left text-[11.5px]"
+                      style={{
+                        left: `calc(${(s.startCol / 7) * 100}% + 7px)`,
+                        width: `calc(${(s.span / 7) * 100}% - 14px)`,
+                        top: HEADER_H + s.lane * LANE_H,
+                        height: BAR_H,
+                        background: s.bg,
+                        color: s.fg,
+                        borderTopLeftRadius: s.continuesLeft ? 0 : 7,
+                        borderBottomLeftRadius: s.continuesLeft ? 0 : 7,
+                        borderTopRightRadius: s.continuesRight ? 0 : 7,
+                        borderBottomRightRadius: s.continuesRight ? 0 : 7,
+                      }}
+                    >
+                      {!s.continuesLeft && (
+                        <span
+                          className="h-3 w-[3px] shrink-0 rounded-[2px]"
+                          style={{ background: s.dot }}
+                        />
+                      )}
+                      <span className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap">
+                        {s.label}
+                      </span>
+                    </button>
+                  ))}
               </div>
             </div>
-          ))}
-        </div>
+          );
+        })}
       </div>
 
     </div>

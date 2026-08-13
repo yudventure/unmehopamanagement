@@ -47,12 +47,24 @@ export function activeRoomsFor(rooms: Room[], filterProp: PropFilter): Room[] {
   );
 }
 
-export interface Chip {
+/**
+ * One booking's run across a single week row. A stay that crosses a Saturday
+ * is cut into one segment per row, each remembering whether it is continuing
+ * so the bar can be drawn open-ended on that side.
+ */
+export interface BookingSpan {
   booking: Booking;
   label: string;
   bg: string;
   fg: string;
   dot: string;
+  /** Column 0-6 where this segment starts, and how many columns it covers. */
+  startCol: number;
+  span: number;
+  /** Stacking row within the week, assigned so segments never overlap. */
+  lane: number;
+  continuesLeft: boolean;
+  continuesRight: boolean;
 }
 
 export interface CalendarCell {
@@ -65,8 +77,15 @@ export interface CalendarCell {
   conflictHere: boolean;
   occupied: number;
   capacity: number;
-  chips: Chip[];
+  /** Bookings on this day pushed past the lane cap. */
   hiddenCount: number;
+}
+
+export interface CalendarWeek {
+  cells: CalendarCell[];
+  spans: BookingSpan[];
+  /** Lanes occupied in this row, before the cap is applied. */
+  lanes: number;
 }
 
 export interface CalendarArgs {
@@ -75,11 +94,21 @@ export interface CalendarArgs {
   month: Date;
   today: string;
   activeRooms: Room[];
-  /** Chips drawn per day before collapsing into "+N lagi". */
+  /** Lanes drawn per week before the rest collapse into "+N lagi". */
   perDay: number;
 }
 
-/** Always six rows of seven, so the grid height never jumps between months. */
+const DAY = 86400000;
+const shift = (date: string, days: number) =>
+  iso(new Date(parse(date).getTime() + days * DAY));
+
+/**
+ * Always six rows of seven, so the grid height never jumps between months.
+ *
+ * Every cell carries a real date, including the neighbour-month days at either
+ * end, so a stay straddling the month boundary still draws as one unbroken run
+ * instead of stopping at the edge.
+ */
 export function buildCalendar({
   visible,
   rooms,
@@ -87,7 +116,7 @@ export function buildCalendar({
   today,
   activeRooms,
   perDay,
-}: CalendarArgs): CalendarCell[] {
+}: CalendarArgs): CalendarWeek[] {
   const y = month.getFullYear();
   const m = month.getMonth();
   const daysInMonth = new Date(y, m + 1, 0).getDate();
@@ -99,26 +128,40 @@ export function buildCalendar({
   for (let i = 0; i < 42; i++) {
     const dayNum = i - firstDow + 1;
     const inMonth = dayNum >= 1 && dayNum <= daysInMonth;
-    const label = inMonth
-      ? dayNum
-      : dayNum < 1
-        ? prevDays + dayNum
-        : dayNum - daysInMonth;
-    const dateStr = inMonth ? iso(new Date(y, m, dayNum)) : "";
-    const occList = inMonth
-      ? visible.filter((b) => b.checkIn <= dateStr && b.checkOut > dateStr)
-      : [];
-    const starts = inMonth ? visible.filter((b) => b.checkIn === dateStr) : [];
+    const dateStr = iso(new Date(y, m, dayNum));
+    const occList = visible.filter(
+      (b) => b.checkIn <= dateStr && b.checkOut > dateStr,
+    );
 
     cells.push({
-      label,
+      label: inMonth
+        ? dayNum
+        : dayNum < 1
+          ? prevDays + dayNum
+          : dayNum - daysInMonth,
       dateStr,
       inMonth,
       isToday: dateStr === today,
       conflictHere: occList.filter((b) => b.conflict).length > 1,
       occupied: occList.length,
       capacity: activeRooms.length,
-      chips: starts.slice(0, perDay).map((b) => {
+      hiddenCount: 0,
+    });
+  }
+
+  const weeks: CalendarWeek[] = [];
+  for (let w = 0; w < 6; w++) {
+    const rowCells = cells.slice(w * 7, w * 7 + 7);
+    const first = rowCells[0].dateStr;
+    const last = rowCells[6].dateStr;
+
+    const spans = visible
+      .filter((b) => b.checkIn <= last && b.checkOut > first)
+      .map((b) => {
+        let s = 0;
+        while (s < 6 && rowCells[s].dateStr < b.checkIn) s += 1;
+        let e = 6;
+        while (e > 0 && rowCells[e].dateStr >= b.checkOut) e -= 1;
         const c = CH[b.channel];
         const room = byId.get(b.roomId);
         return {
@@ -127,12 +170,41 @@ export function buildCalendar({
           bg: b.conflict ? "#FEE4E2" : c.bg,
           fg: b.conflict ? "#B42318" : c.fg,
           dot: b.conflict ? "#DC2626" : c.dot,
+          startCol: s,
+          span: e - s + 1,
+          lane: 0,
+          continuesLeft: b.checkIn < first,
+          continuesRight: b.checkOut > shift(last, 1),
         };
-      }),
-      hiddenCount: Math.max(0, starts.length - perDay),
+      })
+      /* Longest run first at a given start, so the wide bars settle into the
+         top lanes and the short ones fill in beneath. Id breaks ties to keep
+         the layout stable across re-renders. */
+      .sort(
+        (a, b) =>
+          a.startCol - b.startCol ||
+          b.span - a.span ||
+          a.booking.id.localeCompare(b.booking.id),
+      );
+
+    const laneEnd: number[] = [];
+    spans.forEach((s) => {
+      let lane = 0;
+      while (lane < laneEnd.length && laneEnd[lane] >= s.startCol) lane += 1;
+      s.lane = lane;
+      laneEnd[lane] = s.startCol + s.span - 1;
     });
+
+    rowCells.forEach((cell, col) => {
+      cell.hiddenCount = spans.filter(
+        (s) => s.lane >= perDay && s.startCol <= col && s.startCol + s.span > col,
+      ).length;
+    });
+
+    weeks.push({ cells: rowCells, spans, lanes: laneEnd.length });
   }
-  return cells;
+
+  return weeks;
 }
 
 export interface MonthStats {

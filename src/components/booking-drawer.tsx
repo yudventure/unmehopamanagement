@@ -107,10 +107,6 @@ export function BookingDrawer({
             <span className="text-slate">Total {nights} malam</span>
             <span className="font-bold">{fmt(booking.total)}</span>
           </div>
-          <div className="mb-2 flex justify-between text-[13.5px]">
-            <span className="text-slate">Sudah dibayar</span>
-            <span>{fmt(booking.paid)}</span>
-          </div>
           <div className="flex justify-between border-t border-dashed border-line-strong pt-2 text-[13.5px]">
             <span className="text-slate">Sisa</span>
             <span

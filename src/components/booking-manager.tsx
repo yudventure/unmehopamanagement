@@ -78,7 +78,11 @@ export interface BookingManagerProps {
   layarAwal?: Screen;
   /** Hide every rupiah figure, the way staff accounts see the app. */
   modeStaf?: boolean;
-  /** Booking chips drawn per calendar day before collapsing into "+N lagi". */
+  /**
+   * Booking bars stacked per week row before the rest collapse into "+N lagi".
+   * Higher than the prototype's 3: a bar now holds its lane for the whole stay
+   * rather than just the arrival day, so three lanes hid most of the month.
+   */
   bookingPerHari?: number;
 }
 
@@ -104,7 +108,7 @@ const EMPTY_INVITE: InviteForm = {
 export function BookingManager({
   layarAwal = "kalender",
   modeStaf = false,
-  bookingPerHari = 3,
+  bookingPerHari = 6,
 }: BookingManagerProps) {
   const [rooms] = useState(seedRooms);
   const [bookings, setBookings] = useState<Booking[]>(() => seedBookings(rooms));
@@ -179,7 +183,7 @@ export function BookingManager({
   const daysInMonth = new Date(y, m + 1, 0).getDate();
   const monthLabel = `${MONTHS[m]} ${y}`;
 
-  const cells = useMemo(
+  const weeks = useMemo(
     () =>
       buildCalendar({
         visible,
@@ -262,9 +266,8 @@ export function BookingManager({
         checkIn: form.checkIn,
         checkOut: form.checkOut,
         total,
-        paid:
-          status === "Confirmed" ? Math.round((total * 0.3) / 50000) * 50000 : 0,
-        pay: status === "Confirmed" ? "DP masuk" : "Belum bayar",
+        paid: 0,
+        pay: "Belum bayar",
         status,
         notes: form.notes || "Booking baru dari input manual.",
         src: "manual",
@@ -276,7 +279,7 @@ export function BookingManager({
       setScreen("kalender");
       flash(
         status === "Confirmed"
-          ? "Booking dikonfirmasi, DP tercatat."
+          ? "Booking dikonfirmasi."
           : "Booking disimpan, hold 1×24 jam.",
       );
     },
@@ -529,7 +532,8 @@ export function BookingManager({
                   occLabel={`${stats.occPct}%`}
                   nightsLabel={`${stats.nights} malam`}
                   revenueLabel={fmt(stats.revenue)}
-                  cells={cells}
+                  weeks={weeks}
+                  laneCap={perDay}
                   onSelect={setSelectedId}
                 />
               )}

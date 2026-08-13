@@ -194,7 +194,7 @@ export function BookingFormModal({
           onClick={onSaveConfirmed}
           className="flex-1 cursor-pointer rounded-xl border-none bg-teal py-3 text-[13.5px] font-bold text-white hover:bg-teal-deep"
         >
-          Simpan &amp; DP masuk
+          Simpan &amp; Konfirmasi
         </button>
       </div>
     </Modal>

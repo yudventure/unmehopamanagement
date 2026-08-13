@@ -7,7 +7,6 @@ export interface PillColors {
 
 const PAY_COLORS: Record<PaymentStatus, PillColors> = {
   Lunas: { bg: "#D6F2E7", fg: "#0B5F52" },
-  "DP masuk": { bg: "#FDF0CE", fg: "#8A6200" },
   "Belum bayar": { bg: "#FEE4E2", fg: "#B42318" },
   "Dibayar via OTA": { bg: "#E8EEFB", fg: "#1D4ED8" },
 };

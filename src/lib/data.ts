@@ -135,21 +135,18 @@ export function seedBookings(rooms: Room[]): Booking[] {
       const inD = new Date(2026, 7, day);
       const outD = new Date(2026, 7, day + nights);
       const total = r.rate * nights * (ch === "WhatsApp" ? 1 : 1.12);
+      /* One roll, same position in the sequence as before, so every other
+         seeded field stays byte-identical. What used to split into DP below
+         0.4 and Lunas below 0.85 now settles as Lunas across that whole
+         range — there are no deposits to represent. */
       const paidRoll = rnd();
       const pay: PaymentStatus =
         ch === "WhatsApp"
-          ? paidRoll < 0.4
-            ? "DP masuk"
-            : paidRoll < 0.85
-              ? "Lunas"
-              : "Belum bayar"
+          ? paidRoll < 0.85
+            ? "Lunas"
+            : "Belum bayar"
           : "Dibayar via OTA";
-      const paid =
-        pay === "Lunas" || pay === "Dibayar via OTA"
-          ? total
-          : pay === "DP masuk"
-            ? Math.round((total * 0.3) / 50000) * 50000
-            : 0;
+      const paid = pay === "Belum bayar" ? 0 : total;
 
       bookings.push({
         id: "BK" + String(++n).padStart(4, "0"),

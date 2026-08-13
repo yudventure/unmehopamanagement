@@ -26,7 +26,7 @@ Masalah yang dipecahkan (dari PRD di `project/uploads/PRD-booking-manager-homest
    tidak sinkron; booking WhatsApp hanya tercatat di chat.
 2. **Tidak ada gambaran okupansi** — harus buka 3–4 aplikasi untuk tahu kamar
    mana yang kosong.
-3. **Pembayaran WA tidak ter-track** — DP transfer hanya dicek di mutasi rekening.
+3. **Pembayaran WA tidak ter-track** — transfer hanya dicek di mutasi rekening.
 4. **Tidak ada data untuk keputusan bisnis** — pendapatan per platform/kamar/musim
    tidak terekam.
 5. **Sinyal internet pulau tidak stabil** — aplikasi harus ringan.
@@ -69,14 +69,15 @@ scope yang disepakati, bukan pekerjaan yang terlewat.
 - **Halaman login dua panel** — pilih peran Owner/Staf (email terisi otomatis),
   panel foto kanan dengan overlay gradient dan tiga angka ringkas.
 - **Kalender bulanan** (Agustus 2026) — grid 6×7, penghitung okupansi per hari
-  (`terisi/kapasitas`), chip booking berwarna per saluran, collapse "+N lagi",
+  (`terisi/kapasitas`), bar booking berwarna per saluran yang membentang
+  sepanjang malam menginap, collapse "+N lagi",
   banner konflik iCal, kartu "Check-in hari ini" dan "Belum lunas".
 - **Drawer detail booking** — transisi status (Tentative → Confirmed →
   Checked-in → Checked-out, atau Cancelled), rincian bayar, tombol catat
   pelunasan, jejak audit.
 - **Form booking cepat** — pilih properti/kamar/tanggal dengan **cek
   ketersediaan langsung** (banner merah kalau bentrok), simpan sebagai
-  Tentative atau Confirmed + DP.
+  Tentative atau Confirmed.
 - **Laporan** — KPI (okupansi, pendapatan kotor, ADR, lama menginap), bar
   pendapatan per saluran, okupansi per kamar, estimasi komisi OTA.
 - **Properti & Kamar** — kartu per properti, tabel kamar dengan kapasitas,
@@ -163,6 +164,15 @@ kalau mau dikembalikan:
 5. Modal tertutup dengan Escape / klik backdrop; login submit dengan Enter.
 6. Tombol Ekspor CSV dan Bandingkan bulan memberi tahu bahwa fiturnya belum
    ada, bukan diam saja saat diklik.
+7. **Kalender menggambar booking sebagai bar sepanjang malam menginap**, bukan
+   satu chip di hari check-in saja. Bar dipotong per baris minggu dan ujungnya
+   dibuat siku kalau menginapnya berlanjut ke baris berikutnya. Karena satu bar
+   menahan lane-nya selama menginap, `bookingPerHari` dinaikkan dari 3 ke 6 —
+   dengan 3 lane sebagian besar bulan tersembunyi di balik "+N lagi".
+8. **Tidak ada status "DP masuk".** Bisnis ini tidak memakai uang muka, jadi
+   pembayaran biner: `Belum bayar`, `Lunas`, atau `Dibayar via OTA`. Seed masih
+   memakai satu `rnd()` di posisi yang sama seperti dulu supaya seluruh field
+   lain tetap identik; rentang yang dulu jadi DP sekarang jatuh ke `Lunas`.
 
 ---
 

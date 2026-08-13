@@ -14,11 +14,8 @@ export type BookingStatus =
   | "Checked-out"
   | "Cancelled";
 
-export type PaymentStatus =
-  | "Belum bayar"
-  | "DP masuk"
-  | "Lunas"
-  | "Dibayar via OTA";
+/** No deposits in this business — a booking is either settled or it is not. */
+export type PaymentStatus = "Belum bayar" | "Lunas" | "Dibayar via OTA";
 
 export type BookingSource = "manual" | "iCal";
 

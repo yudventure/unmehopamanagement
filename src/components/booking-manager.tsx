@@ -46,6 +46,7 @@ import {
   type PropFilter,
 } from "@/lib/derive";
 import { MONTHS, dayDiff, fmt, fmtShort, iso, parse } from "@/lib/format";
+import { bookingTotal } from "@/lib/pricing";
 import type {
   Booking,
   BookingForm,
@@ -116,7 +117,7 @@ export function BookingManager({
   modeStaf = false,
   bookingPerHari = 4,
 }: BookingManagerProps) {
-  const [rooms] = useState(seedRooms);
+  const [rooms, setRooms] = useState(seedRooms);
   const [bookings, setBookings] = useState<Booking[]>(() =>
     seedBookings(rooms),
   );
@@ -253,15 +254,25 @@ export function BookingManager({
 
   // ---------------------------------------------------------------- actions
 
+  /* Every change stamps who and when, which is what the drawer's trail
+     prints. Nothing else writes those two fields. */
   const patchBooking = useCallback(
     (id: string, patch: Partial<Booking>, msg: string) => {
+      const stamp = {
+        updatedAt: new Date().toISOString(),
+        updatedBy: userName,
+      };
       setBookings((prev) =>
-        prev.map((b) => (b.id === id ? { ...b, ...patch } : b)),
+        prev.map((b) => (b.id === id ? { ...b, ...patch, ...stamp } : b)),
       );
       flash(msg);
     },
-    [flash],
+    [flash, userName],
   );
+
+  const setRoomRate = useCallback((roomId: string, rate: number) => {
+    setRooms((prev) => prev.map((r) => (r.id === roomId ? { ...r, rate } : r)));
+  }, []);
 
   const setFormField = useCallback(
     <K extends keyof BookingForm>(key: K, value: BookingForm[K]) => {
@@ -299,7 +310,7 @@ export function BookingManager({
       if (!room) return;
 
       const nights = Math.max(1, dayDiff(form.checkIn, form.checkOut));
-      const total = room.rate * nights;
+      const total = bookingTotal(room.rate, nights, form.channel);
       const booking: Booking = {
         id: "BK" + String(9100 + bookings.length).slice(-4),
         roomId: form.room,
@@ -513,17 +524,14 @@ export function BookingManager({
       location: p.location,
       rooms: `${rs.length} kamar`,
       occ: cap ? `${Math.round((soldNights / cap) * 100)}%` : "0%",
-      price: fmt(Math.min(...rs.map((r) => r.rate))) + "+",
+      price: showMoney ? fmt(Math.min(...rs.map((r) => r.rate))) + "+" : "",
       roomList: rs.map((r) => ({
         id: r.id,
         name: r.name,
         cap: r.cap,
-        price: fmt(r.rate),
-        ical: r.active
-          ? r.prop === "turtle"
-            ? "3 feed aktif"
-            : "2 feed aktif"
-          : "dijeda",
+        price: showMoney ? fmt(r.rate) : "",
+        rate: r.rate,
+        ical: "Belum diatur",
         status: r.active ? "Aktif" : "Renovasi",
         active: r.active,
       })),
@@ -620,7 +628,11 @@ export function BookingManager({
               )}
 
               {screen === "properti" && (
-                <PropertyScreen cards={propertyCards} />
+                <PropertyScreen
+                  cards={propertyCards}
+                  showMoney={showMoney}
+                  onRate={setRoomRate}
+                />
               )}
 
               {screen === "pengguna" && isOwner && (
@@ -650,7 +662,6 @@ export function BookingManager({
                 roomName={roomById.get(selected.roomId)?.name ?? ""}
                 narrow={nw}
                 showMoney={showMoney}
-                auditName={currentUser?.name ?? "Yud"}
                 onClose={() => setSelectedId(null)}
                 onSetStatus={(status) =>
                   patchBooking(

@@ -97,7 +97,8 @@ scope yang disepakati, bukan pekerjaan yang terlewat.
 - **Laporan** — KPI (okupansi, pendapatan kotor, ADR, lama menginap), bar
   pendapatan per saluran, okupansi per kamar, estimasi komisi OTA.
 - **Properti & Kamar** — kartu per properti, tabel kamar dengan kapasitas,
-  harga, jumlah feed iCal, status Aktif/Renovasi.
+  status Aktif/Renovasi, dan **harga per malam yang bisa diubah langsung di
+  tabel** (Owner saja). Harga baru langsung dipakai booking berikutnya.
 - **Pengguna & Peran** — daftar akun, nonaktifkan/aktifkan, modal undang
   pengelola per properti.
 - **Filter & pencarian** — filter properti dan saluran di sidebar, pencarian
@@ -138,6 +139,7 @@ src/
     use-viewport-width.ts     lebar viewport terukur (bukan media query)
   lib/
     data.ts                   ★ seed kamar/booking/pengguna (LCG deterministik)
+    pricing.ts                satu-satunya tempat nilai booking dihitung
     derive.ts                 sel kalender, statistik bulan, deteksi bentrok
     format.ts                 tanggal & rupiah (id-ID)
     pills.ts                  warna badge per status
@@ -167,7 +169,7 @@ jangan diganti jadi media query tanpa menguji kasus drawer terbuka di ~1000px.
 
 ### Penyimpangan yang disengaja dari prototype
 
-Sembilan hal berikut sengaja berbeda dari prototype. Masing-masing satu baris
+Sebelas hal berikut sengaja berbeda dari prototype. Masing-masing satu baris
 kalau mau dikembalikan:
 
 1. `iso()` memformat tanggal kalender lokal, bukan `toISOString().slice(0,10)`.
@@ -336,3 +338,23 @@ Sejak sekarang push biasa sudah bekerja — tidak perlu lagi lewat zip.
     booking — di situ letak logika bisnis yang paling mudah rusak diam-diam.
 13. Tambahkan ESLint (`eslint-config-next`) — sengaja belum dipasang untuk
     memperkecil permukaan instalasi awal.
+
+10. **Tidak ada lagi angka karangan di UI.** Prototype mencetak tiga hal
+    sebagai teks mati yang terbaca seolah sistem sudah hidup: panel sidebar
+    "Sinkron iCal terakhir — 12 menit lalu · 5 feed aktif, 1 gagal", kolom
+    "3 feed aktif" per kamar, dan jejak audit "Diubah terakhir oleh Yud,
+    13 Agustus 2026 09.41". Ketiganya diganti keadaan sebenarnya: sidebar
+    menyatakan **Belum tersambung**, kolom iCal berbunyi **Belum diatur**, dan
+    jejak audit kini distempel `patchBooking` (`updatedAt` / `updatedBy`) —
+    hanya muncul kalau booking benar-benar diubah.
+
+11. **Harga dihitung di satu tempat** (`lib/pricing.ts`). Sebelumnya seed
+    memakai `tarif × malam × 1,12` untuk OTA sementara form manual memakai
+    `tarif × malam` polos, jadi booking Booking.com hasil input manual bernilai
+    12% lebih rendah daripada yang identik dari feed. Keduanya kini lewat
+    `bookingTotal()`. Angka seed tidak bergeser — rumusnya sama persis.
+
+    Sekalian menutup kebocoran peran: **Staf sebelumnya bisa melihat harga
+    kamar** di Properti & Kamar, padahal PRD menyebut Staf tidak melihat
+    rupiah sama sekali. Kolom harga sekarang hilang untuk Staf, bukan sekadar
+    disamarkan.

@@ -45,4 +45,9 @@ export const fmtShort = (d: string) => {
   return `${dt.getDate()} ${MONTHS[dt.getMonth()].slice(0, 3)}`;
 };
 
+/** "14 Agu 2026 09.41" — from a real Date, for the audit trail. */
+export const fmtDateTime = (d: Date) =>
+  `${d.getDate()} ${MONTHS[d.getMonth()].slice(0, 3)} ${d.getFullYear()} ` +
+  `${String(d.getHours()).padStart(2, "0")}.${String(d.getMinutes()).padStart(2, "0")}`;
+
 export const WEEKDAYS = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];

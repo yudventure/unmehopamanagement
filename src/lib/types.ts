@@ -45,6 +45,9 @@ export interface Booking {
   status: BookingStatus;
   notes: string;
   src: BookingSource;
+  /** Set only when the booking is actually changed in-session. */
+  updatedAt?: string;
+  updatedBy?: string;
 }
 
 export interface User {

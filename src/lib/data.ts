@@ -1,4 +1,5 @@
 import { iso } from "./format";
+import { bookingTotal } from "./pricing";
 import type { Booking, ChannelKey, PropertyKey, Room, User } from "./types";
 
 export interface ChannelStyle {
@@ -148,7 +149,7 @@ export function seedBookings(rooms: Room[]): Booking[] {
       const ch = chans[Math.floor(rnd() * chans.length)];
       const inD = new Date(2026, 7, day);
       const outD = new Date(2026, 7, day + nights);
-      const total = r.rate * nights * (ch === "WhatsApp" ? 1 : 1.12);
+      const total = bookingTotal(r.rate, nights, ch);
       /* Burnt roll. It used to decide a payment status, which the app no
          longer tracks — a booking only reaches the calendar once it is paid.
          The call stays because dropping it would shift every draw after it and

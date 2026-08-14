@@ -2,7 +2,7 @@
 
 import { Pill } from "@/components/ui/pill";
 import { CH } from "@/lib/data";
-import { dayDiff, fmt, fmtDate } from "@/lib/format";
+import { dayDiff, fmt, fmtDate, fmtDateTime } from "@/lib/format";
 import { statusColors } from "@/lib/pills";
 import type { Booking, BookingStatus } from "@/lib/types";
 
@@ -11,8 +11,6 @@ export interface BookingDrawerProps {
   roomName: string;
   narrow: boolean;
   showMoney: boolean;
-  /** Name of the signed-in user, shown in the audit trail (PRD F4.5). */
-  auditName: string;
   onClose: () => void;
   onSetStatus: (status: BookingStatus) => void;
 }
@@ -34,7 +32,6 @@ export function BookingDrawer({
   roomName,
   narrow,
   showMoney,
-  auditName,
   onClose,
   onSetStatus,
 }: BookingDrawerProps) {
@@ -132,8 +129,16 @@ export function BookingDrawer({
         </button>
       </div>
 
+      {/* Real trail: stamped by patchBooking when the booking actually
+          changes, rather than the fixed date the prototype printed. */}
       <div className="mt-[18px] text-[11.5px] leading-[1.6] text-slate-ghost">
-        Diubah terakhir oleh {auditName}, 13 Agustus 2026 09.41. Sumber data:{" "}
+        {booking.updatedAt && (
+          <>
+            Terakhir diperbarui oleh {booking.updatedBy},{" "}
+            {fmtDateTime(new Date(booking.updatedAt))}.{" "}
+          </>
+        )}
+        Sumber data:{" "}
         {booking.src === "iCal"
           ? `feed iCal ${booking.channel}`
           : "input manual"}

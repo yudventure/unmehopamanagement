@@ -125,14 +125,20 @@ export function Sidebar({
             </div>
           </div>
 
+          {/* Reports the real state, which is that no feed is wired up yet.
+              It used to print "12 menit lalu · 5 feed aktif" as fixed text,
+              which reads as a working sync to anyone being shown the app. */}
           <div className="mt-auto rounded-2xl bg-surface-tint px-[15px] py-[14px]">
             <div className="mb-[6px] text-[12px] text-slate-soft">
-              Sinkron iCal terakhir
+              Sinkronisasi iCal
             </div>
-            <div className="text-[13.5px] font-medium">12 menit lalu</div>
-            <div className="mt-[9px] flex items-center gap-[7px]">
-              <span className="inline-block h-[7px] w-[7px] rounded-full bg-ok" />
-              <span className="text-[12px] text-slate">5 feed aktif, 1 gagal</span>
+            <div className="flex items-center gap-[7px]">
+              <span className="inline-block h-[7px] w-[7px] rounded-full bg-amber-shade" />
+              <span className="text-[13.5px] font-medium">Belum tersambung</span>
+            </div>
+            <div className="mt-[7px] text-[12px] leading-[1.45] text-slate-soft">
+              Belum ada feed OTA terpasang. Booking dari Booking.com, Agoda,
+              dan Traveloka masih dicatat manual.
             </div>
           </div>
         </>

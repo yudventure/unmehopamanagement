@@ -107,6 +107,9 @@ scope yang disepakati, bukan pekerjaan yang terlewat.
   semua nominal rupiah disembunyikan. **Peran diambil dari akun pemilik email**,
   bukan dari tombol Owner/Staf di halaman login — tombol itu hanya mengisi
   alamat demo. Email tak terdaftar dan akun nonaktif ditolak saat login.
+  **`scope` pengguna juga ditegakkan**: Staf yang ditugaskan ke satu homestay
+  hanya melihat kamar, booking, bentrok, filter, dan pilihan properti di form
+  untuk homestay itu saja.
 - **Responsif** — di bawah 900px sidebar jadi baris nav horizontal dan kalender
   bisa digeser; drawer jadi overlay penuh di viewport ≤1160px saat ada booking
   terpilih.
@@ -171,7 +174,7 @@ jangan diganti jadi media query tanpa menguji kasus drawer terbuka di ~1000px.
 
 ### Penyimpangan yang disengaja dari prototype
 
-Dua belas hal berikut sengaja berbeda dari prototype. Masing-masing satu baris
+Tiga belas hal berikut sengaja berbeda dari prototype. Masing-masing satu baris
 kalau mau dikembalikan:
 
 1. `iso()` memformat tanggal kalender lokal, bukan `toISOString().slice(0,10)`.
@@ -368,3 +371,15 @@ Sejak sekarang push biasa sudah bekerja — tidak perlu lagi lewat zip.
     mencari akun berdasarkan email lalu memakai `account.role`. Sekalian:
     email yang tidak terdaftar dan akun yang dinonaktifkan ditolak, yang
     sebelumnya sama-sama bisa masuk.
+
+13. **`scope` pengguna benar-benar membatasi data, bukan sekadar tulisan.**
+    Field itu ada sejak prototype tapi hanya dicetak di tabel Pengguna & Peran,
+    jadi Marthen (Staf · Turtle Homestay) tetap melihat dan bisa mengelola Eddo.
+    Sekarang `allowedProps` diturunkan dari `scope`, lalu `scopedRooms` /
+    `scopedBookings` jadi satu-satunya sumber bagi seluruh view model —
+    kalender, bentrok, filter saluran, kartu properti, dan dropdown properti di
+    form booking. Scope yang tidak dikenali menghasilkan **kosong**, bukan
+    semua: ini batas hak akses, jadi gagal-tertutup.
+
+    Kalau hanya satu properti yang diizinkan, grup filter "Properti" di sidebar
+    disembunyikan seluruhnya — daftarnya cuma akan mengulang angka yang sama.

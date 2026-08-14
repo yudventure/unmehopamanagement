@@ -167,21 +167,59 @@ export function BookingManager({
   const showMoney = isOwner && !modeStaf;
   const perDay = bookingPerHari;
 
-  const roomById = useMemo(() => new Map(rooms.map((r) => [r.id, r])), [rooms]);
+  const currentUser = users.find((u) => u.email === loginEmail);
+
+  /**
+   * Properties this account is allowed to touch, from its `scope`. The field
+   * existed but was only ever printed in the users table, so a staff member
+   * assigned to one homestay could see, filter and edit the other one.
+   *
+   * An unrecognised scope resolves to nothing rather than everything — this is
+   * a permission boundary, so it fails closed.
+   */
+  const allowedProps = useMemo<PropertyKey[]>(() => {
+    const all = PROPERTIES.map((p) => p.key);
+    if (isOwner || currentUser?.scope === "Semua properti") return all;
+    const match = PROPERTIES.find((p) => p.name === currentUser?.scope);
+    return match ? [match.key] : [];
+  }, [isOwner, currentUser]);
+
+  /* Everything downstream reads these, never `rooms`/`bookings` directly, so
+     the scope cannot be sidestepped by one screen forgetting to apply it. */
+  const scopedRooms = useMemo(
+    () => rooms.filter((r) => allowedProps.includes(r.prop)),
+    [rooms, allowedProps],
+  );
+  const scopedBookings = useMemo(() => {
+    const ids = new Set(scopedRooms.map((r) => r.id));
+    return bookings.filter((b) => ids.has(b.roomId));
+  }, [bookings, scopedRooms]);
+
+  const roomById = useMemo(
+    () => new Map(scopedRooms.map((r) => [r.id, r])),
+    [scopedRooms],
+  );
 
   const visible = useMemo(
-    () => visibleBookings({ bookings, rooms, filterProp, filterCh, query }),
-    [bookings, rooms, filterProp, filterCh, query],
+    () =>
+      visibleBookings({
+        bookings: scopedBookings,
+        rooms: scopedRooms,
+        filterProp,
+        filterCh,
+        query,
+      }),
+    [scopedBookings, scopedRooms, filterProp, filterCh, query],
   );
 
   const activeRooms = useMemo(
-    () => activeRoomsFor(rooms, filterProp),
-    [rooms, filterProp],
+    () => activeRoomsFor(scopedRooms, filterProp),
+    [scopedRooms, filterProp],
   );
 
   const selected = useMemo(
-    () => bookings.find((b) => b.id === selectedId) ?? null,
-    [bookings, selectedId],
+    () => scopedBookings.find((b) => b.id === selectedId) ?? null,
+    [scopedBookings, selectedId],
   );
 
   /* Clicking the same day again clears it. The booking drawer shares the
@@ -202,7 +240,10 @@ export function BookingManager({
   /* Computed over every booking, not the filtered view: a sidebar filter must
      never be able to hide a room that has been sold twice. Declared ahead of
      the calendar, which shades its days from these. */
-  const conflicts = useMemo(() => findConflicts(bookings), [bookings]);
+  const conflicts = useMemo(
+    () => findConflicts(scopedBookings),
+    [scopedBookings],
+  );
   const conflictDays = useMemo(() => conflictDates(conflicts), [conflicts]);
   const conflictIds = useMemo(
     () => new Set(conflicts.flatMap((p) => [p.a.id, p.b.id])),
@@ -248,7 +289,6 @@ export function BookingManager({
     [visible, month, activeRooms],
   );
 
-  const currentUser = users.find((u) => u.email === loginEmail);
   const userName = currentUser?.name ?? (isOwner ? "Owner" : "Staf");
   const userInitial = (currentUser?.name ?? "?").charAt(0).toUpperCase();
 
@@ -283,7 +323,7 @@ export function BookingManager({
 
   const setFormProperty = useCallback(
     (property: PropertyKey) => {
-      const first = rooms.find((r) => r.prop === property);
+      const first = scopedRooms.find((r) => r.prop === property);
       setForm((prev) => ({
         ...prev,
         property,
@@ -299,6 +339,16 @@ export function BookingManager({
     },
     [],
   );
+
+  /* The blank form defaults to Turtle; an Eddo-only account must not open it
+     pointed at a property it cannot book. */
+  const openForm = useCallback(() => {
+    const prop = allowedProps.includes(form.property)
+      ? form.property
+      : allowedProps[0];
+    if (prop && prop !== form.property) setFormProperty(prop);
+    setFormOpen(true);
+  }, [allowedProps, form.property, setFormProperty]);
 
   const saveBooking = useCallback(
     (status: Extract<BookingStatus, "Tentative" | "Confirmed">) => {
@@ -430,14 +480,25 @@ export function BookingManager({
     label: NAV_LABELS[k],
   }));
 
-  const propCounts = [
-    { key: "all" as PropFilter, label: "Semua properti", count: rooms.length },
-    ...PROPERTIES.map((p) => ({
-      key: p.key as PropFilter,
-      label: p.name,
-      count: rooms.filter((r) => r.prop === p.key).length,
-    })),
-  ];
+  /* One allowed property needs no chooser — the list would just repeat the
+     same count twice. */
+  const propCounts =
+    allowedProps.length > 1
+      ? [
+          {
+            key: "all" as PropFilter,
+            label: "Semua properti",
+            count: scopedRooms.length,
+          },
+          ...PROPERTIES.filter((p) => allowedProps.includes(p.key)).map(
+            (p) => ({
+              key: p.key as PropFilter,
+              label: p.name,
+              count: scopedRooms.filter((r) => r.prop === p.key).length,
+            }),
+          ),
+        ]
+      : [];
 
   const channelCounts = [
     {
@@ -448,7 +509,7 @@ export function BookingManager({
     ...CHANNEL_KEYS.map((k) => ({
       key: k as ChannelFilter,
       label: k,
-      count: bookings.filter((b) => b.channel === k).length,
+      count: scopedBookings.filter((b) => b.channel === k).length,
     })),
   ];
 
@@ -535,8 +596,10 @@ export function BookingManager({
     pct: Math.round(((stats.byRoom[r.id] ?? 0) / daysInMonth) * 100),
   }));
 
-  const propertyCards: PropertyCard[] = PROPERTIES.map((p) => {
-    const rs = rooms.filter((r) => r.prop === p.key);
+  const propertyCards: PropertyCard[] = PROPERTIES.filter((p) =>
+    allowedProps.includes(p.key),
+  ).map((p) => {
+    const rs = scopedRooms.filter((r) => r.prop === p.key);
     const live = rs.filter((r) => r.active);
     const soldNights = live.reduce((t, r) => t + (stats.byRoom[r.id] ?? 0), 0);
     const cap = live.length * daysInMonth;
@@ -573,7 +636,7 @@ export function BookingManager({
           <TopBar
             query={query}
             onQuery={setQuery}
-            onOpenForm={() => setFormOpen(true)}
+            onOpenForm={openForm}
             userName={userName}
             userInitial={userInitial}
             roleLabel={isOwner ? "Owner" : "Staf"}
@@ -730,12 +793,13 @@ export function BookingManager({
       {formOpen && (
         <BookingFormModal
           form={form}
-          rooms={rooms}
+          rooms={scopedRooms}
           nights={formNights}
           rate={formRoom.rate}
           clash={hasClash(bookings, form.room, form.checkIn, form.checkOut)}
           onChange={setFormField}
           onProperty={setFormProperty}
+          allowedProps={allowedProps}
           onClose={() => setFormOpen(false)}
           onSaveTentative={() => saveBooking("Tentative")}
           onSaveConfirmed={() => saveBooking("Confirmed")}

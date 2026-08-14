@@ -20,6 +20,8 @@ export interface BookingFormModalProps {
   clash: boolean;
   onChange: <K extends keyof BookingForm>(key: K, value: BookingForm[K]) => void;
   onProperty: (property: PropertyKey) => void;
+  /** Properties this account may book into. */
+  allowedProps: PropertyKey[];
   onClose: () => void;
   onSaveTentative: () => void;
   onSaveConfirmed: () => void;
@@ -40,6 +42,7 @@ export function BookingFormModal({
   clash,
   onChange,
   onProperty,
+  allowedProps,
   onClose,
   onSaveTentative,
   onSaveConfirmed,
@@ -61,7 +64,7 @@ export function BookingFormModal({
             onChange={(e) => onProperty(e.target.value as PropertyKey)}
             className={FIELD_SELECT}
           >
-            {PROPERTIES.map((p) => (
+            {PROPERTIES.filter((p) => allowedProps.includes(p.key)).map((p) => (
               <option key={p.key} value={p.key}>
                 {p.name}
               </option>

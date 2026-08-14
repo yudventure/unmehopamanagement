@@ -72,7 +72,9 @@ export function Sidebar({
 
       {!narrow && (
         <>
-          <div>
+          {/* Empty for an account scoped to one property — the heading would
+              stand over nothing. */}
+          <div className={propCounts.length ? "" : "hidden"}>
             <div className={SECTION_LABEL}>Properti</div>
             <div className="flex flex-col gap-[6px]">
               {propCounts.map((p) => (

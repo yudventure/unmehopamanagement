@@ -45,8 +45,6 @@ export interface Booking {
   status: BookingStatus;
   notes: string;
   src: BookingSource;
-  /** Set on the two seeded bookings that deliberately overlap (PRD F2.4). */
-  conflict?: boolean;
 }
 
 export interface User {

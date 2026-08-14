@@ -86,6 +86,10 @@ export interface CalendarArgs {
   activeRooms: Room[];
   /** Chips drawn per day before the rest collapse into "+N lagi". */
   perDay: number;
+  /** Nights any two bookings both claim, shaded on the grid. */
+  conflictDays: Set<string>;
+  /** Bookings caught in an overlap, drawn in the danger palette. */
+  conflictIds: Set<string>;
 }
 
 /**
@@ -103,6 +107,8 @@ export function buildCalendar({
   today,
   activeRooms,
   perDay,
+  conflictDays,
+  conflictIds,
 }: CalendarArgs): CalendarCell[] {
   const y = month.getFullYear();
   const m = month.getMonth();
@@ -133,7 +139,7 @@ export function buildCalendar({
       dateStr,
       inMonth,
       isToday: dateStr === today,
-      conflictHere: occList.filter((b) => b.conflict).length > 1,
+      conflictHere: conflictDays.has(dateStr),
       occupied: occList.length,
       capacity: activeRooms.length,
       chips: occList.slice(0, perDay).map((b) => {
@@ -149,9 +155,9 @@ export function buildCalendar({
              inside it, so the same name on four days reads as one booking
              rather than four separate ones. */
           nightLabel: nights > 1 ? `${nth}/${nights}` : "",
-          bg: b.conflict ? "#FEE4E2" : c.bg,
-          fg: b.conflict ? "#B42318" : c.fg,
-          dot: b.conflict ? "#DC2626" : c.dot,
+          bg: conflictIds.has(b.id) ? "#FEE4E2" : c.bg,
+          fg: conflictIds.has(b.id) ? "#B42318" : c.fg,
+          dot: conflictIds.has(b.id) ? "#DC2626" : c.dot,
         };
       }),
       hiddenCount: Math.max(0, occList.length - perDay),
@@ -215,6 +221,65 @@ export function monthStats(
     capacity,
     occPct: capacity ? Math.round((nights / capacity) * 100) : 0,
   };
+}
+
+/** Two bookings claiming the same room on the same nights. */
+export interface ConflictPair {
+  roomId: string;
+  a: Booking;
+  b: Booking;
+  /** First night both claim. */
+  from: string;
+  /** Morning the overlap ends — exclusive, like `checkOut`. */
+  to: string;
+  nights: number;
+}
+
+/**
+ * Every overlapping pair, found by comparing dates rather than reading a flag
+ * on the seed — a double booking entered by hand has to surface the same way an
+ * imported one does.
+ *
+ * Deliberately fed the unfiltered book: a sidebar filter narrows what you are
+ * looking at, and must never be able to hide a room sold twice.
+ */
+export function findConflicts(bookings: Booking[]): ConflictPair[] {
+  const byRoom = new Map<string, Booking[]>();
+  bookings.forEach((b) => {
+    if (b.status === "Cancelled") return;
+    const list = byRoom.get(b.roomId);
+    if (list) list.push(b);
+    else byRoom.set(b.roomId, [b]);
+  });
+
+  const pairs: ConflictPair[] = [];
+  byRoom.forEach((list, roomId) => {
+    const sorted = [...list].sort((x, y) => x.checkIn.localeCompare(y.checkIn));
+    for (let i = 0; i < sorted.length; i += 1) {
+      for (let j = i + 1; j < sorted.length; j += 1) {
+        const a = sorted[i];
+        const b = sorted[j];
+        /* Sorted by arrival, so once one starts after `a` ends, so does
+           everything behind it. */
+        if (b.checkIn >= a.checkOut) break;
+        const from = a.checkIn > b.checkIn ? a.checkIn : b.checkIn;
+        const to = a.checkOut < b.checkOut ? a.checkOut : b.checkOut;
+        pairs.push({ roomId, a, b, from, to, nights: dayDiff(from, to) });
+      }
+    }
+  });
+  return pairs;
+}
+
+/** Nights covered by any overlap, for shading those days on the grid. */
+export function conflictDates(pairs: ConflictPair[]): Set<string> {
+  const out = new Set<string>();
+  pairs.forEach((p) => {
+    for (let d = 0; d < p.nights; d += 1) {
+      out.add(iso(new Date(parse(p.from).getTime() + d * 86400000)));
+    }
+  });
+  return out;
 }
 
 /** True when the requested range collides with anything already on that room. */

@@ -72,7 +72,12 @@ scope yang disepakati, bukan pekerjaan yang terlewat.
   panel foto kanan dengan overlay gradient dan tiga angka ringkas.
 - **Kalender bulanan** (Agustus 2026) — grid 6×7, penghitung okupansi per hari
   (`terisi/kapasitas`), chip booking berwarna per saluran di setiap malam yang
-  ditempati, collapse "+N lagi", dan banner konflik iCal.
+  ditempati, collapse "+N lagi", dan banner bentrok kamar.
+- **Peninjauan bentrok** — tombol "Tinjau" membuka modal berisi **kedua**
+  booking yang bertabrakan berdampingan (saluran, kode, tanggal, lama, nilai,
+  catatan), dengan tombol *Pertahankan & tandai Check-in* dan *Batalkan booking*
+  di masing-masing. Membatalkan salah satu langsung menghapus pasangan itu; kalau
+  tidak ada bentrok tersisa, modalnya menutup sendiri.
 - **Check-in terdekat** — bilah kanan mendaftar kedatangan dari hari ini
   sampai 7 hari ke depan (`UPCOMING_DAYS` di `booking-manager.tsx`), terurut
   paling dekat dulu, lengkap dengan rentang menginap dan penanda "Hari ini" /
@@ -117,6 +122,8 @@ src/
     sidebar.tsx               nav, filter properti, filter saluran, status iCal
     booking-drawer.tsx        panel detail booking
     booking-form-modal.tsx    form input booking cepat
+    conflict-modal.tsx        tinjau bentrok kamar berdampingan
+    dashboard-rail.tsx        bilah kanan: check-in terdekat / daftar per tanggal
     invite-modal.tsx          modal undang pengelola
     login-screen.tsx          login dua panel + panel foto
     screens/
@@ -160,7 +167,7 @@ jangan diganti jadi media query tanpa menguji kasus drawer terbuka di ~1000px.
 
 ### Penyimpangan yang disengaja dari prototype
 
-Delapan hal berikut sengaja berbeda dari prototype. Masing-masing satu baris
+Sembilan hal berikut sengaja berbeda dari prototype. Masing-masing satu baris
 kalau mau dikembalikan:
 
 1. `iso()` memformat tanggal kalender lokal, bukan `toISOString().slice(0,10)`.
@@ -192,6 +199,17 @@ kalau mau dikembalikan:
    Dulu ia menentukan status bayar. Menghapusnya akan menggeser seluruh undian
    sesudahnya dan mengacak ulang 61 booking, sehingga kecocokan field-per-field
    dengan generator prototype batal. Jangan dihapus.
+
+9. **Bentrok dihitung dari tanggal, bukan dari flag.** Prototype menandai dua
+   booking seed dengan `conflict: true` dan banner-nya mencetak kalimat tetap
+   "20–22 Agustus". Sekarang `findConflicts()` di `derive.ts` membandingkan
+   rentang tanggal per kamar, jadi double booking hasil input manual ikut
+   ketahuan. Sengaja dihitung dari **seluruh** booking, bukan yang lolos filter
+   sidebar — filter tidak boleh bisa menyembunyikan kamar yang terjual dua kali.
+
+   Efeknya: seed ternyata punya **dua** bentrok, bukan satu. Selain pasangan
+   yang disengaja (BK9001 vs BK9002 di Turtle 03), BK9002 juga bertabrakan
+   dengan BK0014 pada 22 Agustus. Flag statis dulu menyembunyikannya.
 
 ---
 

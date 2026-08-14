@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { BookingDrawer } from "@/components/booking-drawer";
 import { BookingFormModal } from "@/components/booking-form-modal";
+import { ConflictModal } from "@/components/conflict-modal";
 import { DashboardRail } from "@/components/dashboard-rail";
 import { InviteModal } from "@/components/invite-modal";
 import { LoginScreen } from "@/components/login-screen";
@@ -36,13 +37,15 @@ import {
 import {
   activeRoomsFor,
   buildCalendar,
+  conflictDates,
+  findConflicts,
   hasClash,
   monthStats,
   visibleBookings,
   type ChannelFilter,
   type PropFilter,
 } from "@/lib/derive";
-import { MONTHS, dayDiff, fmt } from "@/lib/format";
+import { MONTHS, dayDiff, fmt, fmtShort, iso, parse } from "@/lib/format";
 import type {
   Booking,
   BookingForm,
@@ -129,6 +132,7 @@ export function BookingManager({
   const [filterCh, setFilterCh] = useState<ChannelFilter>("all");
 
   const [formOpen, setFormOpen] = useState(false);
+  const [conflictOpen, setConflictOpen] = useState(false);
   const [form, setForm] = useState<BookingForm>(EMPTY_FORM);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [invite, setInvite] = useState<InviteForm>(EMPTY_INVITE);
@@ -194,6 +198,35 @@ export function BookingManager({
   const daysInMonth = new Date(y, m + 1, 0).getDate();
   const monthLabel = `${MONTHS[m]} ${y}`;
 
+  /* Computed over every booking, not the filtered view: a sidebar filter must
+     never be able to hide a room that has been sold twice. Declared ahead of
+     the calendar, which shades its days from these. */
+  const conflicts = useMemo(() => findConflicts(bookings), [bookings]);
+  const conflictDays = useMemo(() => conflictDates(conflicts), [conflicts]);
+  const conflictIds = useMemo(
+    () => new Set(conflicts.flatMap((p) => [p.a.id, p.b.id])),
+    [conflicts],
+  );
+
+  /* Names the room and the nights actually double-sold, instead of the fixed
+     sentence the prototype printed. */
+  const conflictText = useMemo(() => {
+    if (!conflicts.length) return "";
+    const p = conflicts[0];
+    const room = roomById.get(p.roomId)?.name ?? "";
+    const last = iso(
+      new Date(parse(p.from).getTime() + (p.nights - 1) * 86400000),
+    );
+    const when =
+      p.nights === 1
+        ? fmtShort(p.from)
+        : `${fmtShort(p.from)}–${fmtShort(last)}`;
+    const head = `${room} terjual dua kali pada ${when}`;
+    return conflicts.length === 1
+      ? `${head}. Belum ada yang dihapus.`
+      : `${conflicts.length} bentrok kamar. Terdekat: ${head}.`;
+  }, [conflicts, roomById]);
+
   const cells = useMemo(
     () =>
       buildCalendar({
@@ -203,16 +236,16 @@ export function BookingManager({
         today: DEMO_TODAY,
         activeRooms,
         perDay,
+        conflictDays,
+        conflictIds,
       }),
-    [visible, rooms, month, activeRooms, perDay],
+    [visible, rooms, month, activeRooms, perDay, conflictDays, conflictIds],
   );
 
   const stats = useMemo(
     () => monthStats(visible, month, activeRooms),
     [visible, month, activeRooms],
   );
-
-  const conflicts = useMemo(() => visible.filter((b) => b.conflict), [visible]);
 
   const currentUser = users.find((u) => u.email === loginEmail);
   const userName = currentUser?.name ?? (isOwner ? "Owner" : "Staf");
@@ -549,14 +582,8 @@ export function BookingManager({
                   narrow={nw}
                   showMoney={showMoney}
                   conflictCount={conflicts.length}
-                  conflictRoomName={
-                    conflicts.length
-                      ? (roomById.get(conflicts[0].roomId)?.name ?? "")
-                      : ""
-                  }
-                  onReviewConflict={() =>
-                    conflicts[0] && setSelectedId(conflicts[0].id)
-                  }
+                  conflictText={conflictText}
+                  onReviewConflict={() => setConflictOpen(true)}
                   monthLabel={monthLabel}
                   onPrevMonth={() => setMonth(new Date(y, m - 1, 1))}
                   onNextMonth={() => setMonth(new Date(y, m + 1, 1))}
@@ -643,6 +670,29 @@ export function BookingManager({
           </div>
         </div>
       </div>
+
+      {conflictOpen && conflicts.length > 0 && (
+        <ConflictModal
+          pairs={conflicts}
+          roomName={(id) => roomById.get(id)?.name ?? ""}
+          showMoney={showMoney}
+          onClose={() => setConflictOpen(false)}
+          onCancelBooking={(id) =>
+            patchBooking(id, { status: "Cancelled" }, "Booking dibatalkan.")
+          }
+          onCheckIn={(id) =>
+            patchBooking(
+              id,
+              { status: "Checked-in" },
+              "Tamu ditandai check-in.",
+            )
+          }
+          onOpenDetail={(id) => {
+            setConflictOpen(false);
+            setSelectedId(id);
+          }}
+        />
+      )}
 
       {formOpen && (
         <BookingFormModal

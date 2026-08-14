@@ -197,7 +197,6 @@ export function seedBookings(rooms: Room[]): Booking[] {
     notes:
       "Masuk dari feed iCal Agoda, bentrok dengan booking Booking.com di kamar yang sama.",
     src: "iCal",
-    conflict: true,
   });
   bookings.push({
     id: "BK9002",
@@ -212,7 +211,6 @@ export function seedBookings(rooms: Room[]): Booking[] {
     status: "Confirmed",
     notes: "Konflik dengan BK9001. Tawarkan pindah ke Turtle 05.",
     src: "iCal",
-    conflict: true,
   });
 
   return bookings;

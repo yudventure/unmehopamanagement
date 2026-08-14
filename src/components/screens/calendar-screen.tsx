@@ -7,7 +7,8 @@ export interface CalendarScreenProps {
   narrow: boolean;
   showMoney: boolean;
   conflictCount: number;
-  conflictRoomName: string;
+  /** Ready-made sentence naming the room and the nights sold twice. */
+  conflictText: string;
   onReviewConflict: () => void;
   monthLabel: string;
   onPrevMonth: () => void;
@@ -35,7 +36,7 @@ export function CalendarScreen({
   narrow,
   showMoney,
   conflictCount,
-  conflictRoomName,
+  conflictText,
   onReviewConflict,
   monthLabel,
   onPrevMonth,
@@ -59,8 +60,7 @@ export function CalendarScreen({
         <div className="mb-4 flex items-center gap-[14px] rounded-[14px] border border-danger-line bg-danger-tint px-4 py-[13px]">
           <span className="h-[9px] w-[9px] shrink-0 rounded-full bg-danger" />
           <div className="flex-1 text-[13.5px] text-danger-deep">
-            {conflictCount} booking bertabrakan di {conflictRoomName} pada 20–22
-            Agustus. Belum ada yang dihapus.
+            {conflictText}
           </div>
           <button
             type="button"

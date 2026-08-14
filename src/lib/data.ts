@@ -1,4 +1,4 @@
-import { iso } from "./format";
+import { iso, parse } from "./format";
 import { bookingTotal } from "./pricing";
 import type { Booking, ChannelKey, PropertyKey, Room, User } from "./types";
 
@@ -215,6 +215,150 @@ export function seedBookings(rooms: Room[]): Booking[] {
   });
 
   return bookings;
+}
+
+/**
+ * Share of nights sold in a month that has already run its course, by calendar
+ * month (0 = Januari). Raja Ampat sells on calm water: October–February is the
+ * peak, May–June the floor when the southeast monsoon runs, and July–August
+ * lifts again on the European holiday. August lands at 0.62 because that is
+ * what the seeded month actually measures.
+ */
+const SEASON = [
+  0.78, 0.72, 0.66, 0.6, 0.44, 0.34, 0.48, 0.62, 0.52, 0.74, 0.8, 0.86,
+];
+
+/**
+ * How much of a month still ahead of `DEMO_TODAY` is already on the books, by
+ * months of lead time. A December that looked full back in August would be a
+ * fiction — and the gap between what the season usually delivers and what is
+ * sold so far is the whole point of looking at the trend.
+ */
+const PICKUP = [1, 0.8, 0.56, 0.38, 0.24];
+
+/** First and last day the surrounding book covers. */
+const LEDGER_FROM = new Date(2025, 8, 1);
+const LEDGER_TO = new Date(2026, 11, 31);
+
+const shift = (d: Date, days: number) =>
+  new Date(d.getFullYear(), d.getMonth(), d.getDate() + days);
+
+/** Season × pickup — the occupancy this month is generated towards. */
+function monthTarget(d: Date): number {
+  const ahead = (d.getFullYear() - 2026) * 12 + (d.getMonth() - 7);
+  const pickup = ahead <= 0 ? 1 : (PICKUP[ahead] ?? 0.15);
+  return SEASON[d.getMonth()] * pickup;
+}
+
+/**
+ * The months around the seeded one — September 2025 through December 2026,
+ * August 2026 excepted.
+ *
+ * `seedBookings` fills a single month, which is enough for a calendar but not
+ * for the question the report asks: when is the season busy and when is it
+ * quiet. A year either side gives that answer a shape to read.
+ *
+ * Runs on its own LCG. Sharing the seeded generator's stream would re-roll all
+ * 61 August bookings and break the field-for-field match with the prototype.
+ *
+ * It is also handed those bookings so it can step over the nights they already
+ * hold. Skipping "August" by the calendar is not enough — a seeded stay that
+ * starts on the 29th runs into September, and a ledger booking landing on the
+ * 1st would invent a double booking the conflict banner would then report as
+ * real.
+ */
+export function seedLedger(rooms: Room[], seeded: Booking[]): Booking[] {
+  let seed = 21;
+  const rnd = () => {
+    seed = (seed * 1103515245 + 12345) % 2147483648;
+    return seed / 2147483648;
+  };
+
+  const chans: ChannelKey[] = [
+    "Booking.com",
+    "Traveloka",
+    "Agoda",
+    "WhatsApp",
+    "WhatsApp",
+    "Booking.com",
+  ];
+  const SEEDED_FROM = "2026-08-01";
+  const SEEDED_TO = "2026-09-01";
+
+  /** Nights the seeded month already holds, per room. */
+  const held = new Map<string, Booking[]>();
+  seeded.forEach((b) => {
+    const list = held.get(b.roomId);
+    if (list) list.push(b);
+    else held.set(b.roomId, [b]);
+  });
+
+  const out: Booking[] = [];
+  let n = 0;
+
+  rooms.forEach((r) => {
+    if (!r.active) return;
+    const taken = held.get(r.id) ?? [];
+    let cursor = new Date(LEDGER_FROM);
+
+    while (cursor <= LEDGER_TO) {
+      const target = monthTarget(cursor);
+      const nights = 2 + Math.floor(rnd() * 4);
+      const checkIn = iso(cursor);
+      const outD = shift(cursor, nights);
+      const checkOut = iso(outD);
+
+      /* Two things are stepped over, and a candidate that hits either is
+         dropped whole rather than trimmed to fit — a stay cut short to fill a
+         gap reads as a booking someone made, and it never was one. Both jumps
+         land the cursor strictly forward, so neither can stall.
+
+         A seeded stay on this room, which may run past 31 August and would
+         otherwise be double-booked on 1 September: */
+      const clash = taken.find(
+        (t) => t.checkIn < checkOut && t.checkOut > checkIn,
+      );
+      if (clash) {
+        cursor = parse(clash.checkOut);
+        continue;
+      }
+      /* …and August itself, whole. The month's figures — 212 malam, 62%,
+         Rp 118.670.000 — are the verified match against the prototype's
+         generator, and a July stay spilling over the 1st would move them. */
+      if (checkOut > SEEDED_FROM && checkIn < SEEDED_TO) {
+        cursor = parse(SEEDED_TO);
+        continue;
+      }
+
+      const ch = chans[Math.floor(rnd() * chans.length)];
+      const settled = checkOut <= DEMO_TODAY;
+      out.push({
+        id: "BH" + String(++n).padStart(4, "0"),
+        roomId: r.id,
+        guest: NAMES[Math.floor(rnd() * NAMES.length)],
+        phone: "0812" + Math.floor(1000000 + rnd() * 8999999),
+        pax: 2 + Math.floor(rnd() * 3),
+        channel: ch,
+        checkIn,
+        checkOut,
+        total: bookingTotal(r.rate, nights, ch),
+        status: settled
+          ? "Checked-out"
+          : rnd() < 0.12
+            ? "Tentative"
+            : "Confirmed",
+        notes: NOTES[Math.floor(rnd() * NOTES.length)],
+        src: ch === "WhatsApp" ? "manual" : "iCal",
+      });
+
+      /* Gap chosen so nights / (nights + gap) lands near the month's target.
+         Zero is allowed — a homestay can turn a room over the same morning. */
+      const base = (nights * (1 - target)) / Math.max(0.05, target);
+      cursor = shift(outD, Math.max(0, Math.round(base * (0.5 + rnd()))));
+    }
+  });
+
+  return out;
 }
 
 export const seedUsers: User[] = [

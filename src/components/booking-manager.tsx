@@ -27,12 +27,14 @@ import { useViewportWidth } from "@/hooks/use-viewport-width";
 import {
   CH,
   CHANNEL_KEYS,
+  CHANNEL_LABELS,
   DEMO_MONTH,
   DEMO_TODAY,
   OWNER_EMAIL,
   PROPERTIES,
   STAFF_EMAIL,
   seedBookings,
+  seedLedger,
   seedRooms,
   seedUsers,
 } from "@/lib/data";
@@ -40,15 +42,24 @@ import {
   activeRoomsFor,
   buildCalendar,
   conflictDates,
+  dailyOccupancy,
   findConflicts,
   hasClash,
+  inMonth,
   monthStats,
+  monthlyTrend,
+  nightsInMonth,
   visibleBookings,
   type ChannelFilter,
   type PropFilter,
 } from "@/lib/derive";
 import { MONTHS, dayDiff, fmt, fmtShort, iso, parse } from "@/lib/format";
 import { bookingTotal } from "@/lib/pricing";
+import {
+  downloadCsv,
+  downloadPdf,
+  type ReportData,
+} from "@/lib/report-export";
 import type {
   Booking,
   BookingForm,
@@ -74,6 +85,14 @@ const DRAWER_OVERLAY_MAX = 1160;
 
 /** How far ahead the rail's arrivals list looks, in days. */
 const UPCOMING_DAYS = 7;
+
+/**
+ * Months either side of the reported one in the trend chart. Eight back covers
+ * a full swing from peak to trough; three forward is as far as the book is
+ * filled in enough to be worth reading.
+ */
+const TREND_BACK = 8;
+const TREND_FORWARD = 3;
 
 const OWNER_SCREENS: Screen[] = [
   "kalender",
@@ -130,9 +149,13 @@ export function BookingManager({
   bookingPerHari = 4,
 }: BookingManagerProps) {
   const [rooms, setRooms] = useState(seedRooms);
-  const [bookings, setBookings] = useState<Booking[]>(() =>
-    seedBookings(rooms),
-  );
+  /* August is the seeded month; the year around it comes from `seedLedger`, on
+     its own generator, so the report has a season to plot rather than a single
+     column. It is handed the seeded book so it can step around those nights. */
+  const [bookings, setBookings] = useState<Booking[]>(() => {
+    const seeded = seedBookings(rooms);
+    return seeded.concat(seedLedger(rooms, seeded));
+  });
   const [users, setUsers] = useState<User[]>(seedUsers);
 
   const [screen, setScreen] = useState<Screen>(layarAwal);
@@ -146,6 +169,8 @@ export function BookingManager({
 
   const [formOpen, setFormOpen] = useState(false);
   const [conflictOpen, setConflictOpen] = useState(false);
+  const [compare, setCompare] = useState(false);
+  const [pdfBusy, setPdfBusy] = useState(false);
   const [feeds, setFeeds] = useState<IcalFeed[]>([]);
   const [tokens, setTokens] = useState<ExportToken[]>([]);
   const [form, setForm] = useState<BookingForm>(EMPTY_FORM);
@@ -305,6 +330,36 @@ export function BookingManager({
 
   const stats = useMemo(
     () => monthStats(visible, month, activeRooms),
+    [visible, month, activeRooms],
+  );
+
+  /* The month before the reported one, computed whether or not the comparison
+     is switched on — it is four small loops, and keeping it unconditional
+     means the toggle only decides what is drawn, never what is known. */
+  const prevMonth = useMemo(
+    () => new Date(month.getFullYear(), month.getMonth() - 1, 1),
+    [month],
+  );
+  const prevStats = useMemo(
+    () => monthStats(visible, prevMonth, activeRooms),
+    [visible, prevMonth, activeRooms],
+  );
+
+  const trend = useMemo(
+    () =>
+      monthlyTrend(
+        visible,
+        activeRooms,
+        month,
+        TREND_BACK,
+        TREND_FORWARD,
+        DEMO_TODAY,
+      ),
+    [visible, activeRooms, month],
+  );
+
+  const daily = useMemo(
+    () => dailyOccupancy(visible, month, activeRooms, DEMO_TODAY),
     [visible, month, activeRooms],
   );
 
@@ -611,16 +666,24 @@ export function BookingManager({
         ]
       : [];
 
+  /* Counted over the month on screen, not the whole book. The ledger now runs
+     a year either side, and a channel total spanning all of it would sit next
+     to a calendar showing one month and read as that month's. */
+  const monthBook = useMemo(
+    () => scopedBookings.filter((b) => b.status !== "Cancelled" && inMonth(b, month)),
+    [scopedBookings, month],
+  );
+
   const channelCounts = [
     {
       key: "all" as ChannelFilter,
       label: "Semua saluran",
-      count: visible.length,
+      count: monthBook.length,
     },
     ...CHANNEL_KEYS.map((k) => ({
       key: k as ChannelFilter,
       label: k,
-      count: scopedBookings.filter((b) => b.channel === k).length,
+      count: monthBook.filter((b) => b.channel === k).length,
     })),
   ];
 
@@ -686,37 +749,103 @@ export function BookingManager({
     };
   }, [selectedDate, occupiedOn, scopedRooms]);
 
-  const avgStay = visible.length
-    ? (
-        visible.reduce((t, b) => t + dayDiff(b.checkIn, b.checkOut), 0) /
-        visible.length
-      ).toFixed(1) + " malam"
+  /* Bookings with at least one night inside the reported month. The book now
+     runs a year either side, so anything averaged over "all bookings" would
+     quietly become an all-time figure sitting under a monthly heading. */
+  const monthBookings = useMemo(
+    () => visible.filter((b) => inMonth(b, month)),
+    [visible, month],
+  );
+  const prevMonthBookings = useMemo(
+    () => visible.filter((b) => inMonth(b, prevMonth)),
+    [visible, prevMonth],
+  );
+
+  const meanStay = (list: Booking[]) =>
+    list.length
+      ? list.reduce((t, b) => t + dayDiff(b.checkIn, b.checkOut), 0) /
+        list.length
+      : 0;
+
+  const avgStayNum = meanStay(monthBookings);
+  const avgStay = monthBookings.length
+    ? avgStayNum.toFixed(1) + " malam"
     : "—";
+  const adr = stats.nights ? stats.revenue / stats.nights : 0;
+  const prevAdr = prevStats.nights ? prevStats.revenue / prevStats.nights : 0;
+  const prevLabel = `${MONTHS[prevMonth.getMonth()]} ${prevMonth.getFullYear()}`;
+
+  /**
+   * A signed change against the previous month. `goodWhenUp` is null where the
+   * direction carries no verdict on its own — a longer average stay is neither
+   * a win nor a loss.
+   */
+  const delta = (
+    now: number,
+    before: number,
+    unit: (n: number) => string,
+    goodWhenUp: boolean | null,
+  ): Kpi["delta"] => {
+    if (!compare) return undefined;
+    if (!prevStats.nights)
+      return { text: `${prevLabel} belum ada data`, good: null };
+    const diff = now - before;
+    if (Math.abs(diff) < 0.05)
+      return { text: `sama dengan ${prevLabel}`, good: null };
+    const sign = diff > 0 ? "+" : "−";
+    return {
+      text: `${sign}${unit(Math.abs(diff))} vs ${prevLabel}`,
+      good: goodWhenUp === null ? null : diff > 0 === goodWhenUp,
+    };
+  };
 
   const kpis: Kpi[] = [
     {
       label: "Okupansi",
       value: `${stats.occPct}%`,
       sub: `${stats.nights} dari ${stats.capacity} malam`,
+      delta: delta(
+        stats.occPct,
+        prevStats.occPct,
+        (n) => `${Math.round(n)} poin`,
+        true,
+      ),
     },
     showMoney
       ? {
           label: "Pendapatan kotor",
           value: fmt(stats.revenue),
           sub: "sebelum komisi OTA",
+          delta: delta(stats.revenue, prevStats.revenue, fmt, true),
         }
       : {
           label: "Malam terjual",
           value: String(stats.nights),
           sub: "seluruh properti",
+          delta: delta(
+            stats.nights,
+            prevStats.nights,
+            (n) => `${Math.round(n)} malam`,
+            true,
+          ),
         },
     {
       label: "ADR",
-      value:
-        showMoney && stats.nights ? fmt(stats.revenue / stats.nights) : "—",
+      value: showMoney && stats.nights ? fmt(adr) : "—",
       sub: "rata-rata per malam terjual",
+      delta: showMoney ? delta(adr, prevAdr, fmt, true) : undefined,
     },
-    { label: "Lama menginap", value: avgStay, sub: "rata-rata semua saluran" },
+    {
+      label: "Lama menginap",
+      value: avgStay,
+      sub: "rata-rata semua saluran",
+      delta: delta(
+        avgStayNum,
+        meanStay(prevMonthBookings),
+        (n) => `${n.toFixed(1)} malam`,
+        null,
+      ),
+    },
   ];
 
   const channelValues = Object.entries(stats.byChannel) as [string, number][];
@@ -735,6 +864,90 @@ export function BookingManager({
     name: r.name,
     pct: Math.round(((stats.byRoom[r.id] ?? 0) / daysInMonth) * 100),
   }));
+
+  /**
+   * Everything both exports read, assembled once. The CSV and the PDF have to
+   * agree with the screen down to the last figure, so neither recomputes
+   * anything — they format what the report is already showing.
+   */
+  const buildReport = (): ReportData => {
+    const propName = (key: PropertyKey) =>
+      PROPERTIES.find((p) => p.key === key)?.name ?? "";
+    return {
+      monthLabel,
+      monthKey: `${y}-${String(m + 1).padStart(2, "0")}`,
+      showMoney,
+      scopeLabel:
+        filterProp === "all"
+          ? allowedProps.map(propName).join(" + ")
+          : propName(filterProp),
+      kpis: kpis.map((k) => ({ label: k.label, value: k.value, sub: k.sub })),
+      channels: (Object.entries(stats.byChannel) as [string, number][])
+        .sort((a, b) => b[1] - a[1])
+        .map(([label, value]) => ({
+          label,
+          value,
+          share: Math.round((value / Math.max(1, stats.revenue)) * 100),
+        })),
+      rooms: activeRooms.map((r) => ({
+        name: r.name,
+        pct: Math.round(((stats.byRoom[r.id] ?? 0) / daysInMonth) * 100),
+        nights: stats.byRoom[r.id] ?? 0,
+      })),
+      trend,
+      daily,
+      commission: stats.commission,
+      generatedAt: new Date(),
+      rows: monthBookings
+        .slice()
+        .sort(
+          (a, b) =>
+            a.checkIn.localeCompare(b.checkIn) ||
+            (roomById.get(a.roomId)?.name ?? "").localeCompare(
+              roomById.get(b.roomId)?.name ?? "",
+            ),
+        )
+        .map((b) => {
+          const room = roomById.get(b.roomId);
+          const nights = dayDiff(b.checkIn, b.checkOut);
+          const inside = nightsInMonth(b, y, m);
+          return {
+            id: b.id,
+            property: room ? propName(room.prop) : "",
+            room: room?.name ?? "",
+            guest: b.guest,
+            phone: b.phone,
+            pax: b.pax,
+            channel: CHANNEL_LABELS[b.channel],
+            checkIn: b.checkIn,
+            checkOut: b.checkOut,
+            nights,
+            nightsInMonth: inside,
+            status: b.status,
+            total: b.total,
+            valueInMonth: (b.total / nights) * inside,
+          };
+        }),
+    };
+  };
+
+  const exportCsv = () => {
+    const data = buildReport();
+    downloadCsv(data);
+    flash(`${data.rows.length} booking diekspor ke CSV.`);
+  };
+
+  const exportPdf = async () => {
+    setPdfBusy(true);
+    try {
+      await downloadPdf(buildReport());
+      flash("Laporan PDF diunduh.");
+    } catch {
+      flash("Gagal menyiapkan PDF. Coba lagi.");
+    } finally {
+      setPdfBusy(false);
+    }
+  };
 
   const propertyCards: PropertyCard[] = PROPERTIES.filter((p) =>
     allowedProps.includes(p.key),
@@ -844,6 +1057,7 @@ export function BookingManager({
               {screen === "laporan" && isOwner && (
                 <ReportScreen
                   monthLabel={monthLabel}
+                  prevLabel={prevLabel}
                   kpis={kpis}
                   channelRows={channelRows}
                   roomRows={roomRows}
@@ -852,14 +1066,20 @@ export function BookingManager({
                       ? fmt(stats.commission)
                       : "disembunyikan untuk peran Staf"
                   }
-                  onExport={() =>
-                    flash("Ekspor CSV belum tersedia di versi ini.")
-                  }
-                  onCompare={() =>
-                    flash(
-                      "Perbandingan antar bulan belum tersedia di versi ini.",
-                    )
-                  }
+                  trend={trend}
+                  daily={daily}
+                  anchorKey={`${y}-${String(m + 1).padStart(2, "0")}`}
+                  compareKey={`${prevMonth.getFullYear()}-${String(
+                    prevMonth.getMonth() + 1,
+                  ).padStart(2, "0")}`}
+                  showMoney={showMoney}
+                  compare={compare}
+                  onToggleCompare={() => setCompare((v) => !v)}
+                  onExportCsv={exportCsv}
+                  onExportPdf={exportPdf}
+                  pdfBusy={pdfBusy}
+                  onPrevMonth={() => setMonth(new Date(y, m - 1, 1))}
+                  onNextMonth={() => setMonth(new Date(y, m + 1, 1))}
                 />
               )}
 

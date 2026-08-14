@@ -101,7 +101,23 @@ scope yang disepakati, bukan pekerjaan yang terlewat.
   ketersediaan langsung** (banner merah kalau bentrok), simpan sebagai
   Tentative atau Confirmed.
 - **Laporan** — KPI (okupansi, pendapatan kotor, ADR, lama menginap), bar
-  pendapatan per saluran, okupansi per kamar, estimasi komisi OTA.
+  pendapatan per saluran, okupansi per kamar, estimasi komisi OTA, plus
+  navigasi bulan yang berbagi state dengan Kalender.
+  - **Dua grafik okupansi.** *Tren per bulan* (12 kolom, 8 bulan ke belakang
+    dan 3 ke depan) menjawab kapan musim ramai dan kapan sepi. *Okupansi
+    harian* memperlihatkan bentuk satu bulan, lengkap dengan garis rata-rata
+    dan kolom akhir pekan yang ditandai. Keduanya punya readout yang mengikuti
+    kursor dan tombol **Tabel** — tidak ada angka yang hanya bisa dibaca lewat
+    hover.
+  - **Bandingkan dengan bulan lalu** — tombol pengalih; saat aktif tiap kartu
+    KPI mendapat selisih bertanda terhadap bulan sebelumnya, dan bulan
+    pembanding ikut ditandai di grafik tren.
+  - **Ekspor CSV** — ringkasan + tren + okupansi harian + okupansi per kamar +
+    seluruh booking bulan itu, satu baris per booking. Pemisah `;` dengan BOM
+    UTF-8 supaya Excel berlokal Indonesia membacanya benar.
+  - **Unduh PDF** — ringkasan A4 satu halaman (KPI, kedua grafik, tabel
+    saluran dan kamar) lewat jsPDF yang di-`import()` saat tombolnya ditekan,
+    jadi tidak ikut bundel awal. Rincian per booking sengaja hanya ada di CSV.
 - **Properti & Kamar** — kartu per properti, tabel kamar dengan kapasitas,
   harga per malam, jumlah feed iCal terdaftar, dan status Aktif/Renovasi.
   Owner punya kolom **Aksi** berisi tombol Edit per kamar: nama, kapasitas,
@@ -155,6 +171,7 @@ src/
     screens/
       calendar-screen.tsx     grid kalender + chip booking
       report-screen.tsx       KPI, pendapatan per saluran, okupansi per kamar
+      report-charts.tsx       grafik tren bulanan + okupansi harian (+ tabelnya)
       property-screen.tsx     kartu properti + tabel kamar
       sync-screen.tsx         daftar feed iCal impor/ekspor per kamar
       users-screen.tsx        tabel pengguna & peran
@@ -166,7 +183,8 @@ src/
   lib/
     data.ts                   ★ seed kamar/booking/pengguna (LCG deterministik)
     pricing.ts                satu-satunya tempat nilai booking dihitung
-    derive.ts                 sel kalender, statistik bulan, deteksi bentrok
+    derive.ts                 sel kalender, statistik bulan, tren, deteksi bentrok
+    report-export.ts          penyusun CSV + penggambar PDF laporan
     format.ts                 tanggal & rupiah (id-ID)
     pills.ts                  warna badge per status
     types.ts                  tipe domain
@@ -195,7 +213,7 @@ jangan diganti jadi media query tanpa menguji kasus drawer terbuka di ~1000px.
 
 ### Penyimpangan yang disengaja dari prototype
 
-Empat belas hal berikut sengaja berbeda dari prototype. Masing-masing satu baris
+Lima belas hal berikut sengaja berbeda dari prototype. Masing-masing satu baris
 kalau mau dikembalikan:
 
 1. `iso()` memformat tanggal kalender lokal, bukan `toISOString().slice(0,10)`.
@@ -251,6 +269,7 @@ kalau mau dikembalikan:
 | Font | DM Sans + JetBrains Mono via `next/font/google` |
 | State | React `useState`/`useMemo` di satu komponen root |
 | Data | Seed di memori — belum ada database |
+| PDF | `jspdf` — satu-satunya dependensi runtime di luar Next/React, dimuat lewat `import()` dinamis saat tombol Unduh PDF ditekan |
 
 Stack ini sesuai keputusan di transkrip desain (`chats/chat1.md`): Next.js +
 TypeScript + Tailwind, nanti dilanjut PostgreSQL + Prisma + Auth.js.
@@ -425,3 +444,33 @@ Sejak sekarang push biasa sudah bekerja — tidak perlu lagi lewat zip.
     Sekalian: kolom **iCal** dulu selalu tertulis "Belum diatur" apa pun
     isinya. Sekarang membaca `feeds`, jadi kamar yang sudah didaftarkan di tab
     Sinkronisasi OTA berbunyi "1 feed", "2 feed", dst.
+
+15. **Bukunya sepanjang satu tahun, bukan satu bulan.** Prototype hanya mengisi
+    Agustus 2026. Itu cukup untuk kalender, tapi tidak untuk pertanyaan yang
+    diajukan laporan — kapan musim ramai dan kapan sepi tidak bisa dijawab oleh
+    satu kolom. `seedLedger()` menambah September 2025 sampai Desember 2026 di
+    generator terpisah (`seed = 21`), dengan dua bentuk yang disengaja:
+
+    - **Musim.** Raja Ampat menjual air tenang. Oktober–Februari puncaknya,
+      Mei–Juni titik terendah saat angin tenggara, Juli–Agustus naik lagi oleh
+      libur Eropa. Agustus dipatok 0,62 karena itu angka yang memang terukur di
+      bulan seed.
+    - **Pickup.** Bulan yang belum lewat hanya terisi sebagian, makin jauh
+      makin sedikit — Desember 2026 baru ~23%. Selisih antara apa yang biasanya
+      dihasilkan musim dan apa yang sudah terjual adalah justru yang perlu
+      dilihat pemilik, jadi grafiknya menggambar bulan-bulan itu dengan warna
+      teal yang lebih muda dan menyebutnya "belum lewat", bukan meramal.
+
+    **Agustus 2026 tidak bergeser sama sekali** — 212 malam, 62%,
+    Rp 118.670.000, 61 booking, dua bentrok. Generator baru melangkahi bulan
+    itu utuh, *dan* melangkahi tiap booking seed di kamar yang sama (menginap
+    seed yang mulai tanggal 29 berjalan sampai September; tanpa pemeriksaan
+    kedua itu, 1 September akan jadi double booking yang dilaporkan banner
+    bentrok sebagai nyata).
+
+    Efek sampingnya di UI: hitungan di grup **Saluran** pada sidebar sekarang
+    dihitung per bulan yang sedang ditampilkan. Sebelumnya menghitung seluruh
+    buku — kebetulan sama saja ketika buku hanya berisi satu bulan, tapi angka
+    setahun yang duduk di sebelah kalender satu bulan akan terbaca sebagai
+    angka bulan itu. `Lama menginap` di KPI juga ikut dibatasi ke bulan
+    laporan, dengan alasan yang sama.

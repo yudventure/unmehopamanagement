@@ -297,3 +297,149 @@ export function hasClash(
       b.checkOut > checkIn,
   );
 }
+
+// ------------------------------------------------------------------- trends
+
+/** Nights of this stay that land inside the given month. */
+export function nightsInMonth(b: Booking, y: number, m: number): number {
+  const span = dayDiff(b.checkIn, b.checkOut);
+  let n = 0;
+  for (let d = 0; d < span; d += 1) {
+    const dt = new Date(parse(b.checkIn).getTime() + d * 86400000);
+    if (dt.getMonth() === m && dt.getFullYear() === y) n += 1;
+  }
+  return n;
+}
+
+/** A booking with at least one night in the month — what the month "contains". */
+export function inMonth(b: Booking, month: Date): boolean {
+  return nightsInMonth(b, month.getFullYear(), month.getMonth()) > 0;
+}
+
+export interface DayOccupancy {
+  date: string;
+  /** Day of month as printed. */
+  day: number;
+  /** 0 = Minggu. */
+  dow: number;
+  occupied: number;
+  capacity: number;
+  pct: number;
+  isToday: boolean;
+  isWeekend: boolean;
+  past: boolean;
+}
+
+/**
+ * Rooms sold per night across one month. This is the shape a month actually
+ * has — the monthly average hides a fortnight that ran full and a fortnight
+ * that ran empty behind one number.
+ */
+export function dailyOccupancy(
+  visible: Booking[],
+  month: Date,
+  activeRooms: Room[],
+  today: string,
+): DayOccupancy[] {
+  const y = month.getFullYear();
+  const m = month.getMonth();
+  const daysInMonth = new Date(y, m + 1, 0).getDate();
+  const capacity = activeRooms.length;
+
+  const sold = new Map<string, number>();
+  visible.forEach((b) => {
+    const span = dayDiff(b.checkIn, b.checkOut);
+    for (let d = 0; d < span; d += 1) {
+      const dt = new Date(parse(b.checkIn).getTime() + d * 86400000);
+      if (dt.getMonth() !== m || dt.getFullYear() !== y) continue;
+      const key = iso(dt);
+      sold.set(key, (sold.get(key) ?? 0) + 1);
+    }
+  });
+
+  const out: DayOccupancy[] = [];
+  for (let day = 1; day <= daysInMonth; day += 1) {
+    const dt = new Date(y, m, day);
+    const date = iso(dt);
+    const occupied = sold.get(date) ?? 0;
+    out.push({
+      date,
+      day,
+      dow: dt.getDay(),
+      occupied,
+      capacity,
+      pct: capacity ? Math.round((occupied / capacity) * 100) : 0,
+      isToday: date === today,
+      isWeekend: dt.getDay() === 0 || dt.getDay() === 6,
+      past: date < today,
+    });
+  }
+  return out;
+}
+
+export interface MonthPoint {
+  /** "2026-08" — stable key for React and for the CSV. */
+  key: string;
+  year: number;
+  monthIndex: number;
+  nights: number;
+  capacity: number;
+  pct: number;
+  revenue: number;
+  /** The month has run its course; nothing more can be sold into it. */
+  settled: boolean;
+  /** Today falls inside this month. */
+  current: boolean;
+}
+
+/**
+ * A window of months around `anchor`, each with its own occupancy and revenue.
+ *
+ * Months still ahead are reported exactly as what they are — sold so far, not
+ * a forecast. They read low next to a settled month and that is the honest
+ * picture: in August you have not yet sold December. Callers draw them
+ * differently for the same reason.
+ */
+export function monthlyTrend(
+  visible: Booking[],
+  activeRooms: Room[],
+  anchor: Date,
+  back: number,
+  forward: number,
+  today: string,
+): MonthPoint[] {
+  const out: MonthPoint[] = [];
+  const todayY = parse(today).getFullYear();
+  const todayM = parse(today).getMonth();
+
+  for (let i = -back; i <= forward; i += 1) {
+    const d = new Date(anchor.getFullYear(), anchor.getMonth() + i, 1);
+    const y = d.getFullYear();
+    const m = d.getMonth();
+    const daysInMonth = new Date(y, m + 1, 0).getDate();
+
+    let nights = 0;
+    let revenue = 0;
+    visible.forEach((b) => {
+      const n = nightsInMonth(b, y, m);
+      if (!n) return;
+      nights += n;
+      revenue += (b.total / dayDiff(b.checkIn, b.checkOut)) * n;
+    });
+
+    const capacity = activeRooms.length * daysInMonth;
+    const ordinal = y * 12 + m;
+    out.push({
+      key: `${y}-${String(m + 1).padStart(2, "0")}`,
+      year: y,
+      monthIndex: m,
+      nights,
+      capacity,
+      pct: capacity ? Math.round((nights / capacity) * 100) : 0,
+      revenue,
+      settled: ordinal < todayY * 12 + todayM,
+      current: ordinal === todayY * 12 + todayM,
+    });
+  }
+  return out;
+}

@@ -1,9 +1,17 @@
 "use client";
 
+import { DailyChart, TrendChart } from "@/components/screens/report-charts";
+import type { DayOccupancy, MonthPoint } from "@/lib/derive";
+
 export interface Kpi {
   label: string;
   value: string;
   sub: string;
+  /**
+   * Set only while the comparison is on. `good` is null where the direction
+   * carries no verdict — a longer stay is neither win nor loss on its own.
+   */
+  delta?: { text: string; good: boolean | null };
 }
 
 export interface ChannelRow {
@@ -22,29 +30,88 @@ export interface RoomRow {
 
 export interface ReportScreenProps {
   monthLabel: string;
+  prevLabel: string;
   kpis: Kpi[];
   channelRows: ChannelRow[];
   roomRows: RoomRow[];
   commissionLabel: string;
-  onExport: () => void;
-  onCompare: () => void;
+  trend: MonthPoint[];
+  daily: DayOccupancy[];
+  anchorKey: string;
+  compareKey: string;
+  showMoney: boolean;
+  compare: boolean;
+  onToggleCompare: () => void;
+  onExportCsv: () => void;
+  onExportPdf: () => void;
+  /** True while jsPDF is being fetched and the page drawn. */
+  pdfBusy: boolean;
+  /** Shared with the calendar — both screens report the same month. */
+  onPrevMonth: () => void;
+  onNextMonth: () => void;
 }
+
+const STEP_BUTTON =
+  "flex h-[30px] w-[30px] cursor-pointer items-center justify-center rounded-[10px] border border-line-strong bg-surface text-[15px] text-slate hover:bg-surface-hover";
 
 const GHOST_BUTTON =
   "cursor-pointer rounded-xl border border-line-strong bg-surface px-4 py-[10px] text-[13px] hover:bg-surface-hover";
 
+function DeltaLine({ delta }: { delta: NonNullable<Kpi["delta"]> }) {
+  const tone =
+    delta.good === null
+      ? "text-slate-soft"
+      : delta.good
+        ? "text-teal-deep"
+        : "text-danger-ink";
+  return <div className={`mt-[6px] text-[12px] font-medium ${tone}`}>{delta.text}</div>;
+}
+
 export function ReportScreen({
   monthLabel,
+  prevLabel,
   kpis,
   channelRows,
   roomRows,
   commissionLabel,
-  onExport,
-  onCompare,
+  trend,
+  daily,
+  anchorKey,
+  compareKey,
+  showMoney,
+  compare,
+  onToggleCompare,
+  onExportCsv,
+  onExportPdf,
+  pdfBusy,
+  onPrevMonth,
+  onNextMonth,
 }: ReportScreenProps) {
   return (
     <div>
-      <div className="mb-1 text-[22px] font-bold">Laporan {monthLabel}</div>
+      <div className="mb-1 flex flex-wrap items-center gap-3">
+        <div className="text-[22px] font-bold">Laporan {monthLabel}</div>
+        {/* The same month the calendar is on — stepping it here saves crossing
+            back to that screen just to move the report a month. */}
+        <div className="flex gap-[6px]">
+          <button
+            type="button"
+            onClick={onPrevMonth}
+            aria-label="Bulan sebelumnya"
+            className={STEP_BUTTON}
+          >
+            ‹
+          </button>
+          <button
+            type="button"
+            onClick={onNextMonth}
+            aria-label="Bulan berikutnya"
+            className={STEP_BUTTON}
+          >
+            ›
+          </button>
+        </div>
+      </div>
       <div className="mb-5 text-[13.5px] text-slate-soft">
         Okupansi dan pendapatan seluruh properti. Nilai OTA sudah dikurangi
         estimasi komisi.
@@ -61,8 +128,19 @@ export function ReportScreen({
               {k.value}
             </div>
             <div className="mt-[6px] text-[12px] text-slate-mute">{k.sub}</div>
+            {k.delta && <DeltaLine delta={k.delta} />}
           </div>
         ))}
+      </div>
+
+      <div className="mb-4 flex flex-col gap-4">
+        <TrendChart
+          points={trend}
+          anchorKey={anchorKey}
+          compareKey={compare ? compareKey : null}
+          showMoney={showMoney}
+        />
+        <DailyChart days={daily} monthLabel={monthLabel} />
       </div>
 
       <div className="flex flex-wrap gap-4">
@@ -120,13 +198,33 @@ export function ReportScreen({
         </div>
       </div>
 
-      <div className="mt-4 flex gap-3">
-        <button type="button" onClick={onExport} className={GHOST_BUTTON}>
+      <div className="mt-4 flex flex-wrap items-center gap-3">
+        <button type="button" onClick={onExportCsv} className={GHOST_BUTTON}>
           Ekspor CSV
         </button>
-        <button type="button" onClick={onCompare} className={GHOST_BUTTON}>
-          Bandingkan dengan bulan lalu
+        <button
+          type="button"
+          onClick={onExportPdf}
+          disabled={pdfBusy}
+          className={`${GHOST_BUTTON} ${pdfBusy ? "cursor-wait text-slate-mute" : ""}`}
+        >
+          {pdfBusy ? "Menyiapkan PDF…" : "Unduh PDF"}
         </button>
+        <button
+          type="button"
+          onClick={onToggleCompare}
+          aria-pressed={compare}
+          className={
+            compare
+              ? "cursor-pointer rounded-xl border border-teal bg-teal-tint px-4 py-[10px] text-[13px] font-medium text-teal-deep"
+              : GHOST_BUTTON
+          }
+        >
+          {compare ? `Bandingkan: aktif (${prevLabel})` : "Bandingkan dengan bulan lalu"}
+        </button>
+        <span className="text-[12px] text-slate-mute">
+          CSV berisi rincian per booking; PDF berisi ringkasan satu halaman.
+        </span>
       </div>
     </div>
   );

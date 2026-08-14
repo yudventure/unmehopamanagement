@@ -619,16 +619,45 @@ export function BookingManager({
 
   /* Everyone staying on the picked date, room order — including the ones the
      calendar had to hide behind "+N lagi". */
-  const dayBookings = useMemo(() => {
+  /**
+   * Read from the scoped book rather than the filtered view. The panel answers
+   * an operational question — who is in tonight, and which rooms are free to
+   * prepare — and that answer must not change because a channel filter or a
+   * search term happens to be on.
+   */
+  const occupiedOn = useMemo(() => {
     if (!selectedDate) return [];
-    return visible
-      .filter((b) => b.checkIn <= selectedDate && b.checkOut > selectedDate)
-      .map((b) => ({
-        booking: b,
-        roomName: roomById.get(b.roomId)?.name ?? "",
-      }))
-      .sort((a, b) => a.roomName.localeCompare(b.roomName));
-  }, [selectedDate, visible, roomById]);
+    return scopedBookings.filter(
+      (b) =>
+        b.status !== "Cancelled" &&
+        b.checkIn <= selectedDate &&
+        b.checkOut > selectedDate,
+    );
+  }, [selectedDate, scopedBookings]);
+
+  const dayBookings = useMemo(
+    () =>
+      occupiedOn
+        .map((b) => ({
+          booking: b,
+          roomName: roomById.get(b.roomId)?.name ?? "",
+        }))
+        .sort((a, b) => a.roomName.localeCompare(b.roomName)),
+    [occupiedOn, roomById],
+  );
+
+  /* A room under renovation is not "kosong" — it cannot be sold — so it is
+     named separately instead of padding the free list. */
+  const dayRooms = useMemo(() => {
+    if (!selectedDate) return { free: [], renovating: [] };
+    const taken = new Set(occupiedOn.map((b) => b.roomId));
+    return {
+      free: scopedRooms
+        .filter((r) => r.active && !taken.has(r.id))
+        .map((r) => r.name),
+      renovating: scopedRooms.filter((r) => !r.active).map((r) => r.name),
+    };
+  }, [selectedDate, occupiedOn, scopedRooms]);
 
   const avgStay = visible.length
     ? (
@@ -835,6 +864,7 @@ export function BookingManager({
                 onSelect={setSelectedId}
                 selectedDate={selectedDate}
                 dayBookings={dayBookings}
+                dayRooms={dayRooms}
                 onClearDate={() => setSelectedDate(null)}
               />
             )}

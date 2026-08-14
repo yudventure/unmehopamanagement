@@ -21,6 +21,8 @@ export interface DashboardRailProps {
   /** Day picked on the calendar, or null for the standing list. */
   selectedDate: string | null;
   dayBookings: DayEntry[];
+  /** Rooms free on the picked day, and any that cannot be sold at all. */
+  dayRooms: { free: string[]; renovating: string[] };
   onClearDate: () => void;
 }
 
@@ -134,6 +136,7 @@ export function DashboardRail({
   onSelect,
   selectedDate,
   dayBookings,
+  dayRooms,
   onClearDate,
 }: DashboardRailProps) {
   const stay = (b: Booking) =>
@@ -183,6 +186,39 @@ export function DashboardRail({
               onClick={() => onSelect(booking.id)}
             />
           ))
+        )}
+      </div>
+
+      {/* Which rooms are free that night — the other half of the question,
+          and what tells the staff what to make up. */}
+      <div className="mt-5 border-t border-line-soft pt-4">
+        <div className="mb-[9px] flex items-center gap-2">
+          <h3 className="text-[13px] font-bold">Kamar kosong</h3>
+          <span className="rounded-full bg-surface-tint px-[7px] py-[1px] font-mono text-[10.5px] text-slate-soft">
+            {dayRooms.free.length}
+          </span>
+        </div>
+        {dayRooms.free.length === 0 ? (
+          <div className="text-[13px] text-slate-mute">
+            Penuh — semua kamar terisi.
+          </div>
+        ) : (
+          <div className="flex flex-wrap gap-[6px]">
+            {dayRooms.free.map((name) => (
+              <span
+                key={name}
+                className="rounded-[8px] border border-teal-line bg-teal-tint px-[9px] py-[4px] text-[12px] text-teal-deep"
+              >
+                {name}
+              </span>
+            ))}
+          </div>
+        )}
+        {dayRooms.renovating.length > 0 && (
+          <div className="mt-[9px] text-[11.5px] leading-[1.45] text-slate-mute">
+            {dayRooms.renovating.join(", ")} sedang renovasi — tidak dihitung
+            sebagai kamar kosong.
+          </div>
         )}
       </div>
     </section>

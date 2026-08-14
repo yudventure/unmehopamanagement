@@ -86,7 +86,13 @@ scope yang disepakati, bukan pekerjaan yang terlewat.
   okupansi, dan ruang kosong di antaranya) atau tautan "+N lagi", dan bilah
   kanan menampilkan **semua** tamu yang menginap hari itu, termasuk yang tidak
   muat sebagai chip. Yang bisa diklik hanya bidang atas itu, bukan seluruh sel:
-  sisanya diisi chip, yang punya aksinya sendiri.
+  sisanya diisi chip, yang punya aksinya sendiri. Di bawah daftar tamu ada
+  **Kamar kosong** — nama kamar yang bebas malam itu, untuk persiapan.
+  Kamar renovasi disebut terpisah, bukan dihitung sebagai kosong.
+
+  Daftar ini dibaca dari seluruh booking dalam scope, **bukan dari hasil
+  filter** — pertanyaannya operasional ("siapa menginap, kamar mana bebas") dan
+  jawabannya tidak boleh berubah karena filter saluran sedang menyala.
   Badge di bilah kanan menunjukkan **asal booking** — OTA mana, atau
   WA / langsung.
 - **Drawer detail booking** — transisi status (Tentative → Confirmed →

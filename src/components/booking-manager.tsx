@@ -339,19 +339,41 @@ export function BookingManager({
     [form, roomById, bookings.length, flash],
   );
 
+  /**
+   * The role comes from the account the email belongs to, never from the
+   * chooser on the login screen — that chooser only prefills a demo address.
+   * Reading it from the chooser meant signing in with a staff address while it
+   * still said "Owner" handed out Owner access, including the screens and the
+   * rupiah figures staff are not supposed to see.
+   */
   const doLogin = useCallback(() => {
-    if (!loginEmail.trim() || !loginPass.trim()) {
+    const email = loginEmail.trim().toLowerCase();
+    if (!email || !loginPass.trim()) {
       setLoginError("Email dan kata sandi wajib diisi.");
       return;
     }
-    const allowed = loginRole === "owner" ? OWNER_SCREENS : STAFF_SCREENS;
+    const account = users.find((u) => u.email.toLowerCase() === email);
+    if (!account) {
+      setLoginError("Email tidak terdaftar.");
+      return;
+    }
+    if (!account.active) {
+      setLoginError("Akun ini dinonaktifkan. Hubungi Owner.");
+      return;
+    }
+
+    const actual: Role = account.role === "Owner" ? "owner" : "staf";
+    const allowed = actual === "owner" ? OWNER_SCREENS : STAFF_SCREENS;
     setAuth(true);
-    setRole(loginRole);
+    setRole(actual);
+    setLoginRole(actual);
+    setLoginEmail(account.email);
     setLoginError("");
     setLoginPass("");
     setScreen(allowed.includes(layarAwal) ? layarAwal : "kalender");
     setSelectedId(null);
-  }, [loginEmail, loginPass, loginRole, layarAwal]);
+    setSelectedDate(null);
+  }, [loginEmail, loginPass, users, layarAwal]);
 
   const doLogout = useCallback(() => {
     setAuth(false);

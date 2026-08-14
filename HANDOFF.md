@@ -104,7 +104,9 @@ scope yang disepakati, bukan pekerjaan yang terlewat.
 - **Filter & pencarian** — filter properti dan saluran di sidebar, pencarian
   nama tamu / kamar / kode booking di header.
 - **Pembatasan peran** — Staf hanya melihat Kalender dan Properti & Kamar,
-  semua nominal rupiah disembunyikan.
+  semua nominal rupiah disembunyikan. **Peran diambil dari akun pemilik email**,
+  bukan dari tombol Owner/Staf di halaman login — tombol itu hanya mengisi
+  alamat demo. Email tak terdaftar dan akun nonaktif ditolak saat login.
 - **Responsif** — di bawah 900px sidebar jadi baris nav horizontal dan kalender
   bisa digeser; drawer jadi overlay penuh di viewport ≤1160px saat ada booking
   terpilih.
@@ -169,7 +171,7 @@ jangan diganti jadi media query tanpa menguji kasus drawer terbuka di ~1000px.
 
 ### Penyimpangan yang disengaja dari prototype
 
-Sebelas hal berikut sengaja berbeda dari prototype. Masing-masing satu baris
+Dua belas hal berikut sengaja berbeda dari prototype. Masing-masing satu baris
 kalau mau dikembalikan:
 
 1. `iso()` memformat tanggal kalender lokal, bukan `toISOString().slice(0,10)`.
@@ -358,3 +360,11 @@ Sejak sekarang push biasa sudah bekerja — tidak perlu lagi lewat zip.
     kamar** di Properti & Kamar, padahal PRD menyebut Staf tidak melihat
     rupiah sama sekali. Kolom harga sekarang hilang untuk Staf, bukan sekadar
     disamarkan.
+
+12. **Login menentukan peran dari akun, bukan dari pilihan di layar login.**
+    Prototype menjalankan `setRole(loginRole)`, jadi masuk dengan alamat Staf
+    sementara tombolnya masih "Owner" memberi hak Owner penuh — termasuk
+    Laporan, Pengguna & Peran, dan semua angka rupiah. Sekarang `doLogin`
+    mencari akun berdasarkan email lalu memakai `account.role`. Sekalian:
+    email yang tidak terdaftar dan akun yang dinonaktifkan ditolak, yang
+    sebelumnya sama-sama bisa masuk.

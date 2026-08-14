@@ -15,6 +15,8 @@ export interface SidebarProps {
   screen: Screen;
   onScreen: (screen: Screen) => void;
   propCounts: { key: PropFilter; label: string; count: number }[];
+  /** Import feeds the owner has registered. Zero means nothing is wired up. */
+  feedCount: number;
   filterProp: PropFilter;
   onFilterProp: (key: PropFilter) => void;
   channelCounts: { key: ChannelFilter; label: string; count: number }[];
@@ -37,6 +39,7 @@ export function Sidebar({
   screen,
   onScreen,
   propCounts,
+  feedCount,
   filterProp,
   onFilterProp,
   channelCounts,
@@ -136,11 +139,14 @@ export function Sidebar({
             </div>
             <div className="flex items-center gap-[7px]">
               <span className="inline-block h-[7px] w-[7px] rounded-full bg-amber-shade" />
-              <span className="text-[13.5px] font-medium">Belum tersambung</span>
+              <span className="text-[13.5px] font-medium">
+                {feedCount ? `${feedCount} feed terdaftar` : "Belum tersambung"}
+              </span>
             </div>
             <div className="mt-[7px] text-[12px] leading-[1.45] text-slate-soft">
-              Belum ada feed OTA terpasang. Booking dari Booking.com, Agoda,
-              dan Traveloka masih dicatat manual.
+              {feedCount
+                ? "Belum pernah ditarik — penjadwal jalan setelah backend siap."
+                : "Belum ada feed OTA terpasang. Booking dari Booking.com, Agoda, dan Traveloka masih dicatat manual."}
             </div>
           </div>
         </>

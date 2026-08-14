@@ -18,6 +18,7 @@ import {
   PropertyScreen,
   type PropertyCard,
 } from "@/components/screens/property-screen";
+import { SyncScreen } from "@/components/screens/sync-screen";
 import { UsersScreen } from "@/components/screens/users-screen";
 import { Sidebar, type NavItem } from "@/components/sidebar";
 import { TopBar } from "@/components/top-bar";
@@ -51,6 +52,9 @@ import type {
   Booking,
   BookingForm,
   BookingStatus,
+  ChannelKey,
+  ExportToken,
+  IcalFeed,
   InviteForm,
   PropertyKey,
   Role,
@@ -70,13 +74,20 @@ const DRAWER_OVERLAY_MAX = 1160;
 /** How far ahead the rail's arrivals list looks, in days. */
 const UPCOMING_DAYS = 7;
 
-const OWNER_SCREENS: Screen[] = ["kalender", "laporan", "properti", "pengguna"];
+const OWNER_SCREENS: Screen[] = [
+  "kalender",
+  "laporan",
+  "properti",
+  "sinkron",
+  "pengguna",
+];
 const STAFF_SCREENS: Screen[] = ["kalender", "properti"];
 
 const NAV_LABELS: Record<Screen, string> = {
   kalender: "Kalender",
   laporan: "Laporan",
   properti: "Properti & Kamar",
+  sinkron: "Sinkronisasi OTA",
   pengguna: "Pengguna & Peran",
 };
 
@@ -134,6 +145,8 @@ export function BookingManager({
 
   const [formOpen, setFormOpen] = useState(false);
   const [conflictOpen, setConflictOpen] = useState(false);
+  const [feeds, setFeeds] = useState<IcalFeed[]>([]);
+  const [tokens, setTokens] = useState<ExportToken[]>([]);
   const [form, setForm] = useState<BookingForm>(EMPTY_FORM);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [invite, setInvite] = useState<InviteForm>(EMPTY_INVITE);
@@ -161,6 +174,11 @@ export function BookingManager({
     },
     [],
   );
+
+  /* Filled in after mount. The page is prerendered, so reading location during
+     render would break the build and then mismatch on hydrate. */
+  const [origin, setOrigin] = useState("https://unmehopa.example");
+  useEffect(() => setOrigin(window.location.origin), []);
 
   const vw = useViewportWidth();
   const isOwner = role === "owner";
@@ -308,6 +326,72 @@ export function BookingManager({
       flash(msg);
     },
     [flash, userName],
+  );
+
+  /* Tokens are minted in the click handler, never during render: the page is
+     prerendered, so a random value at render time would not match on hydrate. */
+  const newToken = () => {
+    const bytes = new Uint8Array(16);
+    crypto.getRandomValues(bytes);
+    return Array.from(bytes, (x) => x.toString(16).padStart(2, "0")).join("");
+  };
+
+  const addFeed = useCallback(
+    (roomId: string, channel: ChannelKey, url: string): string | null => {
+      if (!url) return "URL iCal wajib diisi.";
+      if (!/^https?:\/\/\S+$/i.test(url))
+        return "URL harus diawali http:// atau https://.";
+      if (feeds.some((f) => f.roomId === roomId && f.url === url))
+        return "URL ini sudah terdaftar untuk kamar tersebut.";
+      setFeeds((prev) =>
+        prev.concat({
+          id: `FD${Date.now().toString(36)}`,
+          roomId,
+          channel,
+          url,
+          addedAt: new Date().toISOString(),
+        }),
+      );
+      flash("Feed impor ditambahkan.");
+      return null;
+    },
+    [feeds, flash],
+  );
+
+  const removeFeed = useCallback(
+    (id: string) => {
+      setFeeds((prev) => prev.filter((f) => f.id !== id));
+      flash("Feed impor dihapus.");
+    },
+    [flash],
+  );
+
+  const mintToken = useCallback((roomId: string) => {
+    setTokens((prev) =>
+      prev
+        .filter((t) => t.roomId !== roomId)
+        .concat({
+          roomId,
+          token: newToken(),
+          createdAt: new Date().toISOString(),
+        }),
+    );
+  }, []);
+
+  const issueToken = useCallback(
+    (roomId: string) => {
+      mintToken(roomId);
+      flash("URL ekspor dibuat.");
+    },
+    [mintToken, flash],
+  );
+
+  const resetToken = useCallback(
+    (roomId: string) => {
+      mintToken(roomId);
+      flash("Token direset. URL lama tidak berlaku lagi.");
+    },
+    [mintToken, flash],
   );
 
   const setRoomRate = useCallback((roomId: string, rate: number) => {
@@ -658,6 +742,7 @@ export function BookingManager({
               screen={screen}
               onScreen={setScreen}
               propCounts={propCounts}
+              feedCount={feeds.length}
               filterProp={filterProp}
               onFilterProp={setFilterProp}
               channelCounts={channelCounts}
@@ -717,6 +802,19 @@ export function BookingManager({
                   cards={propertyCards}
                   showMoney={showMoney}
                   onRate={setRoomRate}
+                />
+              )}
+
+              {screen === "sinkron" && isOwner && (
+                <SyncScreen
+                  rooms={scopedRooms}
+                  feeds={feeds}
+                  tokens={tokens}
+                  onAddFeed={addFeed}
+                  onRemoveFeed={removeFeed}
+                  onIssueToken={issueToken}
+                  onResetToken={resetToken}
+                  origin={origin}
                 />
               )}
 

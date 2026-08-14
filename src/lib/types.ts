@@ -18,7 +18,29 @@ export type BookingSource = "manual" | "iCal";
 
 export type Role = "owner" | "staf";
 
-export type Screen = "kalender" | "laporan" | "properti" | "pengguna";
+export type Screen =
+  | "kalender"
+  | "laporan"
+  | "properti"
+  | "sinkron"
+  | "pengguna";
+
+/** An OTA calendar pulled into a room. One room may carry several. */
+export interface IcalFeed {
+  id: string;
+  roomId: string;
+  channel: ChannelKey;
+  url: string;
+  /** When the owner added it. Sync state stays empty until a backend runs. */
+  addedAt: string;
+}
+
+/** The secret in a room's outgoing feed URL, resettable. */
+export interface ExportToken {
+  roomId: string;
+  token: string;
+  createdAt: string;
+}
 
 export interface Room {
   id: string;

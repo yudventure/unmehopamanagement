@@ -99,6 +99,16 @@ scope yang disepakati, bukan pekerjaan yang terlewat.
 - **Properti & Kamar** — kartu per properti, tabel kamar dengan kapasitas,
   status Aktif/Renovasi, dan **harga per malam yang bisa diubah langsung di
   tabel** (Owner saja). Harga baru langsung dipakai booking berikutnya.
+- **Sinkronisasi OTA** (Owner saja) — tab untuk mendaftarkan feed iCal per
+  kamar, dua arah. **Impor**: pilih OTA + tempel URL dari extranet, dengan
+  validasi bentuk URL dan tolak duplikat. **Ekspor**: buat URL bertoken per
+  kamar (token 16 byte dari `crypto.getRandomValues`, dicetak di event handler
+  bukan saat render supaya halaman prerender tidak mismatch), tombol salin dan
+  reset token. Panel iCal di sidebar membaca jumlah feed terdaftar dari sini.
+
+  **Belum ada yang menarik atau menyajikan feed** — tidak ada backend. Tiap
+  feed berbunyi "belum pernah ditarik", dan ada peringatan agar URL ekspor
+  jangan dulu dipasang di extranet karena belum bisa diakses OTA.
 - **Pengguna & Peran** — daftar akun, nonaktifkan/aktifkan, modal undang
   pengelola per properti.
 - **Filter & pencarian** — filter properti dan saluran di sidebar, pencarian
@@ -136,6 +146,7 @@ src/
       calendar-screen.tsx     grid kalender + chip booking
       report-screen.tsx       KPI, pendapatan per saluran, okupansi per kamar
       property-screen.tsx     kartu properti + tabel kamar
+      sync-screen.tsx         daftar feed iCal impor/ekspor per kamar
       users-screen.tsx        tabel pengguna & peran
     ui/
       modal.tsx               shell modal + class field form

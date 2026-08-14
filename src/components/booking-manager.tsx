@@ -8,6 +8,7 @@ import { ConflictModal } from "@/components/conflict-modal";
 import { DashboardRail } from "@/components/dashboard-rail";
 import { InviteModal } from "@/components/invite-modal";
 import { LoginScreen } from "@/components/login-screen";
+import type { RoomPatch } from "@/components/room-edit-modal";
 import { CalendarScreen } from "@/components/screens/calendar-screen";
 import {
   ReportScreen,
@@ -394,9 +395,35 @@ export function BookingManager({
     [mintToken, flash],
   );
 
-  const setRoomRate = useCallback((roomId: string, rate: number) => {
-    setRooms((prev) => prev.map((r) => (r.id === roomId ? { ...r, rate } : r)));
-  }, []);
+  /* Room configuration now moves as one saved edit rather than a live field,
+     so it validates in one place and can be rejected as a whole. */
+  const saveRoom = useCallback(
+    (roomId: string, patch: RoomPatch): string | null => {
+      const name = patch.name.trim();
+      const cap = patch.cap.trim();
+      if (!name) return "Nama kamar wajib diisi.";
+      if (!cap) return "Kapasitas wajib diisi.";
+      if (!(patch.rate > 0)) return "Harga per malam harus lebih dari 0.";
+      /* A room's name is how it is identified everywhere else — calendar
+         chips, the rail's free-room list, arrivals. Two rooms sharing one
+         name would make all of those unreadable. */
+      const taken = rooms.some(
+        (r) => r.id !== roomId && r.name.toLowerCase() === name.toLowerCase(),
+      );
+      if (taken) return `Sudah ada kamar bernama "${name}".`;
+
+      setRooms((prev) =>
+        prev.map((r) =>
+          r.id === roomId
+            ? { ...r, name, cap, rate: patch.rate, active: patch.active }
+            : r,
+        ),
+      );
+      flash(`${name} diperbarui.`);
+      return null;
+    },
+    [rooms, flash],
+  );
 
   const setFormField = useCallback(
     <K extends keyof BookingForm>(key: K, value: BookingForm[K]) => {
@@ -729,9 +756,19 @@ export function BookingManager({
         cap: r.cap,
         price: showMoney ? fmt(r.rate) : "",
         rate: r.rate,
-        ical: "Belum diatur",
+        ical: feeds.some((f) => f.roomId === r.id)
+          ? `${feeds.filter((f) => f.roomId === r.id).length} feed`
+          : "Belum diatur",
         status: r.active ? "Aktif" : "Renovasi",
         active: r.active,
+        /* Bookings not yet finished — what a switch to renovation would
+           strand. Counted from the whole book, not the filtered view. */
+        upcoming: scopedBookings.filter(
+          (b) =>
+            b.roomId === r.id &&
+            b.status !== "Cancelled" &&
+            b.checkOut > DEMO_TODAY,
+        ).length,
       })),
     };
   });
@@ -830,7 +867,8 @@ export function BookingManager({
                 <PropertyScreen
                   cards={propertyCards}
                   showMoney={showMoney}
-                  onRate={setRoomRate}
+                  canEdit={isOwner}
+                  onSaveRoom={saveRoom}
                 />
               )}
 

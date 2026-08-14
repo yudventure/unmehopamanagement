@@ -103,8 +103,11 @@ scope yang disepakati, bukan pekerjaan yang terlewat.
 - **Laporan** — KPI (okupansi, pendapatan kotor, ADR, lama menginap), bar
   pendapatan per saluran, okupansi per kamar, estimasi komisi OTA.
 - **Properti & Kamar** — kartu per properti, tabel kamar dengan kapasitas,
-  status Aktif/Renovasi, dan **harga per malam yang bisa diubah langsung di
-  tabel** (Owner saja). Harga baru langsung dipakai booking berikutnya.
+  harga per malam, jumlah feed iCal terdaftar, dan status Aktif/Renovasi.
+  Owner punya kolom **Aksi** berisi tombol Edit per kamar: nama, kapasitas,
+  harga, dan status diubah di dalam modal lalu disimpan sekaligus — tidak ada
+  lagi field harga yang langsung menulis saat diketik. Harga baru dipakai
+  booking berikutnya; booking lama tetap memakai harga saat disimpan.
 - **Sinkronisasi OTA** (Owner saja) — tab untuk mendaftarkan feed iCal per
   kamar, dua arah. **Impor**: pilih OTA + tempel URL dari extranet, dengan
   validasi bentuk URL dan tolak duplikat. **Ekspor**: buat URL bertoken per
@@ -147,6 +150,7 @@ src/
     conflict-modal.tsx        tinjau bentrok kamar berdampingan
     dashboard-rail.tsx        bilah kanan: check-in terdekat / daftar per tanggal
     invite-modal.tsx          modal undang pengelola
+    room-edit-modal.tsx       modal ubah detail kamar (nama/kapasitas/harga/status)
     login-screen.tsx          login dua panel + panel foto
     screens/
       calendar-screen.tsx     grid kalender + chip booking
@@ -191,7 +195,7 @@ jangan diganti jadi media query tanpa menguji kasus drawer terbuka di ~1000px.
 
 ### Penyimpangan yang disengaja dari prototype
 
-Tiga belas hal berikut sengaja berbeda dari prototype. Masing-masing satu baris
+Empat belas hal berikut sengaja berbeda dari prototype. Masing-masing satu baris
 kalau mau dikembalikan:
 
 1. `iso()` memformat tanggal kalender lokal, bukan `toISOString().slice(0,10)`.
@@ -400,3 +404,24 @@ Sejak sekarang push biasa sudah bekerja — tidak perlu lagi lewat zip.
 
     Kalau hanya satu properti yang diizinkan, grup filter "Properti" di sidebar
     disembunyikan seluruhnya — daftarnya cuma akan mengulang angka yang sama.
+
+14. **Detail kamar diubah lewat modal, bukan field hidup di tabel.** Prototype
+    menaruh input harga di setiap baris: satu ketukan di baris yang salah sudah
+    mengubah harga kamar, tanpa konfirmasi dan tanpa cara membatalkan. Sekarang
+    tombol **Edit** membuka `room-edit-modal.tsx` yang memegang draf sendiri —
+    Escape atau Batal membuangnya, Simpan mengirimkannya sekali lewat
+    `saveRoom()` di `booking-manager.tsx`.
+
+    Validasi ikut pindah ke satu tempat: nama dan kapasitas wajib diisi, harga
+    harus di atas nol, dan **nama kamar tidak boleh kembar** — nama itulah yang
+    dipakai chip kalender, daftar kamar kosong di bilah kanan, dan baris
+    check-in, jadi dua kamar bernama sama membuat ketiganya tidak terbaca.
+
+    Tombol Edit hanya muncul untuk Owner; Staf tetap melihat tabel baca-saja
+    tanpa kolom Aksi dan tanpa kolom harga. Menandai kamar Renovasi tidak
+    membatalkan booking yang sudah ada, jadi modalnya menghitung booking yang
+    belum selesai di kamar itu dan memperingatkan sebelum disimpan.
+
+    Sekalian: kolom **iCal** dulu selalu tertulis "Belum diatur" apa pun
+    isinya. Sekarang membaca `feeds`, jadi kamar yang sudah didaftarkan di tab
+    Sinkronisasi OTA berbunyi "1 feed", "2 feed", dst.

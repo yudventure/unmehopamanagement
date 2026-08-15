@@ -426,13 +426,7 @@ export function TurtleSite() {
 
       {/* --------------------------------------------------------- values */}
       <Section className="pt-16 md:pt-24">
-        <div className="flex flex-wrap items-center justify-center gap-3">
-          {t.badges.map((b) => (
-            <Eyebrow key={b}>{b}</Eyebrow>
-          ))}
-        </div>
-
-        <h2 className="mx-auto mt-9 max-w-[860px] text-center text-[clamp(34px,5.4vw,62px)] leading-[1.04] font-bold tracking-[-.03em]">
+        <h2 className="mx-auto max-w-[860px] text-center text-[clamp(34px,5.4vw,62px)] leading-[1.04] font-bold tracking-[-.03em]">
           {t.value.heading}
           <br className="hidden md:block" /> {t.value.headingBreak}
         </h2>

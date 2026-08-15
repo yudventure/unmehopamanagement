@@ -164,7 +164,6 @@ export interface SiteCopy {
   openMenu: string;
   meta: { title: string; description: string };
   hero: { sub: string };
-  badges: string[];
   value: {
     heading: string;
     headingBreak: string;
@@ -250,11 +249,6 @@ const EN: SiteCopy = {
   hero: {
     sub: "A homestay in Yenbuba, on Pulau Mansuar, built by hand from local timber and standing over a reef we leave the way we found it. Kept by the family who has always lived in this bay, at the pace the tide sets.",
   },
-  badges: [
-    "Run by the family that owns it",
-    "10 rooms · 24 guests at most",
-    "Dive centre on our own jetty",
-  ],
   value: {
     heading: "One jetty, one family,",
     headingBreak: "and the reef right in front of it",
@@ -542,11 +536,6 @@ const ID: SiteCopy = {
   hero: {
     sub: "Homestay di Yenbuba, Pulau Mansuar, dibangun dengan tangan dari kayu setempat dan berdiri di atas karang yang kami jaga apa adanya. Dirawat keluarga yang memang lahir dan besar di teluk ini, dengan irama yang diatur pasang surut.",
   },
-  badges: [
-    "Dikelola langsung oleh keluarga pemilik",
-    "10 kamar · maksimal 24 tamu",
-    "Dive center di dermaga sendiri",
-  ],
   value: {
     heading: "Satu dermaga, satu keluarga,",
     headingBreak: "dan karang tepat di depannya",

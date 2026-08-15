@@ -212,7 +212,11 @@ export function TurtleSite() {
               picture rather than becoming a grey field. */}
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(12,32,30,.45)_0%,rgba(12,32,30,.12)_38%,rgba(12,32,30,.55)_100%)]" />
 
-          <div className="absolute inset-x-0 bottom-0 mx-auto flex w-full max-w-[1180px] flex-col items-center px-5 pb-[96px] text-center md:px-8 md:pb-[112px]">
+          {/* No picker bar here. It asked the same three questions the
+              enquiry form asks, so a visitor filled them in twice or wondered
+              which one was the real booking. The hero points at the form
+              instead of duplicating it. */}
+          <div className="absolute inset-x-0 bottom-0 mx-auto flex w-full max-w-[1180px] flex-col items-center px-5 pb-[56px] text-center md:px-8 md:pb-[72px]">
             <h1 className="m-0 text-[clamp(52px,11vw,132px)] leading-[.92] font-bold tracking-[-.035em] text-white">
               Turtle
             </h1>
@@ -221,68 +225,22 @@ export function TurtleSite() {
               Tidur di atas air, sarapan menghadap Selat Dampier, menyelam
               sebelum matahari tinggi.
             </p>
-          </div>
-        </div>
-
-        {/* The picker straddles the hero's lower edge, the way a booking bar
-            does on a travel site — it is the first thing to reach for. */}
-        <Section className="relative -mt-[74px] pb-2">
-          <div className="grid grid-cols-1 overflow-hidden rounded-[20px] bg-surface shadow-[0_18px_50px_-24px_rgba(20,40,35,.45)] md:grid-cols-[1.1fr_1fr_.8fr_auto]">
-            <label className="flex cursor-pointer flex-col gap-[3px] border-b border-line px-5 py-[14px] md:border-r md:border-b-0">
-              <span className="text-[11.5px] text-slate-soft">Mau apa</span>
-              <select
-                value={activity}
-                onChange={(e) => setActivity(e.target.value as ActivityKey)}
-                className="cursor-pointer border-none bg-transparent p-0 text-[14.5px] font-medium outline-none"
-              >
-                {ACTIVITIES.map((a) => (
-                  <option key={a.key} value={a.key}>
-                    {a.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label className="flex cursor-pointer flex-col gap-[3px] border-b border-line px-5 py-[14px] md:border-r md:border-b-0">
-              <span className="text-[11.5px] text-slate-soft">Kapan</span>
-              <select
-                value={when}
-                onChange={(e) => setWhen(e.target.value)}
-                className="cursor-pointer border-none bg-transparent p-0 text-[14.5px] font-medium outline-none"
-              >
-                {MONTHS_AHEAD.map((m) => (
-                  <option key={m} value={m}>
-                    {m}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label className="flex cursor-pointer flex-col gap-[3px] border-b border-line px-5 py-[14px] md:border-r md:border-b-0">
-              <span className="text-[11.5px] text-slate-soft">Berapa orang</span>
-              <select
-                value={people}
-                onChange={(e) => setPeople(e.target.value)}
-                className="cursor-pointer border-none bg-transparent p-0 text-[14.5px] font-medium outline-none"
-              >
-                {["1", "2", "3", "4", "5", "6", "7", "8+"].map((n) => (
-                  <option key={n} value={n}>
-                    {n} orang
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <div className="p-[10px]">
+            <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
               <a
                 href="#pesan"
-                className={`${PILL_DARK} w-full no-underline hover:no-underline`}
+                className="inline-flex items-center justify-center rounded-full bg-white px-7 py-[13px] text-[14px] font-medium text-ink no-underline transition-colors hover:bg-surface-hover hover:no-underline"
               >
                 Tanya ketersediaan
               </a>
+              <a
+                href="#kamar"
+                className="inline-flex items-center justify-center rounded-full border border-white/45 px-7 py-[13px] text-[14px] font-medium text-white no-underline transition-colors hover:bg-white/12 hover:no-underline"
+              >
+                Lihat kamar
+              </a>
             </div>
           </div>
-        </Section>
+        </div>
       </div>
 
       {/* --------------------------------------------------------- values */}

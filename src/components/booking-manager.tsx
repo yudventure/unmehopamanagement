@@ -991,20 +991,17 @@ export function BookingManager({
   return (
     <>
       {/*
-       * Wide: a green shell on the cream ground, with the white panel inset
-       * inside it. The green shows as a frame around the panel and as the
-       * ground the sidebar is drawn straight onto — it is a border's worth of
-       * green, not the canvas margin the app used to waste.
-       *
-       * Narrow there is no shell at all: the panel is the viewport, and the
-       * sidebar collapses to a nav row inside it.
+       * Full-bleed: the shell is the viewport edge to edge, with no frame and
+       * no ground showing around it. Wide, the green is the sidebar's own
+       * column and nothing more; narrow, that column collapses to a nav row
+       * inside the white panel and no green is left at all.
        */}
-      <div className={nw ? "min-h-screen" : "min-h-screen bg-canvas p-[10px]"}>
+      <div className="min-h-screen">
         <div
           className={
             nw
               ? "flex min-h-screen flex-col bg-surface"
-              : "flex min-h-[calc(100vh-20px)] rounded-[28px] bg-teal"
+              : "flex min-h-screen bg-teal"
           }
         >
           {!nw && (
@@ -1027,7 +1024,7 @@ export function BookingManager({
             className={
               nw
                 ? "flex min-h-screen flex-col"
-                : "my-[10px] mr-[10px] flex min-w-0 flex-1 flex-col overflow-hidden rounded-[22px] bg-surface"
+                : "flex min-w-0 flex-1 flex-col bg-surface"
             }
           >
             <TopBar

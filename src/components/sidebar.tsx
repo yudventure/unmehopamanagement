@@ -169,10 +169,14 @@ export function Sidebar({
         </div>
       </div>
 
-      {/* Reports the real state, which is that no feed is wired up yet.
-          It used to print "12 menit lalu · 5 feed aktif" as fixed text,
-          which reads as a working sync to anyone being shown the app. */}
-      <div className="mt-auto rounded-[16px] bg-white/12 px-[15px] py-[14px]">
+      {/* Sits directly under the channel list rather than pinned to the foot
+          of the column: on a long screen the foot is below the fold, and this
+          is the one thing here that is a notice rather than a control.
+
+          Reports the real state, which is that no feed is wired up yet. It
+          used to print "12 menit lalu · 5 feed aktif" as fixed text, which
+          reads as a working sync to anyone being shown the app. */}
+      <div className="rounded-[16px] bg-white/12 px-[15px] py-[14px]">
         <div className="mb-[6px] text-[12px] text-white/65">
           Sinkronisasi iCal
         </div>

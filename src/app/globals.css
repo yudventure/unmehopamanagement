@@ -100,8 +100,8 @@
 @layer base {
   body {
     margin: 0;
-    /* The shell floats on the cream ground, so the page carries it too —
-       otherwise overscroll flashes white past the shell's rounded corners. */
+    /* The shell is full-bleed, so this only ever shows on overscroll. Cream
+       rather than white keeps that flash inside the palette. */
     background: var(--color-canvas);
     color: var(--color-ink);
     font-family: var(--font-sans);

@@ -21,6 +21,7 @@ import {
 } from "@/components/screens/property-screen";
 import { SyncScreen } from "@/components/screens/sync-screen";
 import { UsersScreen } from "@/components/screens/users-screen";
+import { WebsiteScreen } from "@/components/screens/website-screen";
 import { Sidebar, type NavItem } from "@/components/sidebar";
 import { TopBar } from "@/components/top-bar";
 import { useViewportWidth } from "@/hooks/use-viewport-width";
@@ -95,6 +96,7 @@ const OWNER_SCREENS: Screen[] = [
   "laporan",
   "properti",
   "sinkron",
+  "website",
   "pengguna",
 ];
 const STAFF_SCREENS: Screen[] = ["kalender", "properti"];
@@ -104,6 +106,7 @@ const NAV_LABELS: Record<Screen, string> = {
   laporan: "Laporan",
   properti: "Properti & Kamar",
   sinkron: "Sinkronisasi OTA",
+  website: "Website",
   pengguna: "Pengguna & Peran",
 };
 
@@ -1151,6 +1154,10 @@ export function BookingManager({
                     onResetToken={resetToken}
                     origin={origin}
                   />
+                )}
+
+                {screen === "website" && isOwner && (
+                  <WebsiteScreen editor={userName} />
                 )}
 
                 {screen === "pengguna" && isOwner && (

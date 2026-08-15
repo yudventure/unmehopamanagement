@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import {
   ACTIVITY_KEYS,
@@ -48,6 +48,8 @@ const LABEL =
  * White and ink, no cream: the warm surface reads as decoration, and this is
  * the one place on the site where somebody is filling in a form.
  */
+type Status = "idle" | "sending" | "sent" | "no-contact" | "failed";
+
 export function EnquiryModal({
   open,
   onClose,
@@ -56,6 +58,7 @@ export function EnquiryModal({
   value,
   onChange,
   message,
+  lang,
 }: {
   open: boolean;
   onClose: () => void;
@@ -64,7 +67,18 @@ export function EnquiryModal({
   value: Enquiry;
   onChange: (patch: Partial<Enquiry>) => void;
   message: string;
+  lang: string;
 }) {
+  const [status, setStatus] = useState<Status>("idle");
+  /* Bots fill in every field they can see. This one is off-screen rather than
+     display:none, because the crudest ones skip anything hidden. */
+  const [trap, setTrap] = useState("");
+
+  /* A fresh open is a fresh message: leaving "sent" up would tell the next
+     visitor their message went when it has not been written yet. */
+  useEffect(() => {
+    if (open) setStatus("idle");
+  }, [open]);
   /* Escape closes it, and the page behind does not scroll while it is up —
      on a phone a scrolling backdrop makes the dialog feel detached. */
   useEffect(() => {
@@ -84,6 +98,43 @@ export function EnquiryModal({
   if (!open) return null;
 
   const stay = value.activity !== "diving" && value.activity !== "snorkeling";
+
+  const send = async () => {
+    if (!value.phone.trim() && !value.email.trim()) {
+      setStatus("no-contact");
+      return;
+    }
+    setStatus("sending");
+    try {
+      const res = await fetch("/api/enquiry", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...value,
+          activity: t.activities[value.activity],
+          when: months[value.monthIx] ?? months[0],
+          nights: stay ? value.nights : "",
+          lang,
+          website: trap,
+        }),
+      });
+      if (res.ok) {
+        setStatus("sent");
+        return;
+      }
+      /* 503 means nobody has plugged in a mail key yet. Rather than tell the
+         guest the site is broken, hand them the same message over WhatsApp —
+         which is where it was going anyway. */
+      if (res.status === 503) {
+        window.open(waLink(message), "_blank", "noreferrer");
+        setStatus("sent");
+        return;
+      }
+      setStatus(res.status === 422 ? "no-contact" : "failed");
+    } catch {
+      setStatus("failed");
+    }
+  };
 
   return (
     <div
@@ -229,18 +280,44 @@ export function EnquiryModal({
               </label>
             </div>
 
-            {/* One action. Until the enquiry has a server to post to, sending
-                means handing the finished message to WhatsApp — which is where
-                it would end up anyway, and is the one channel that works from
-                the island without an account. */}
-            <a
-              href={waLink(message)}
-              target="_blank"
-              rel="noreferrer"
-              className="mt-6 inline-flex w-full items-center justify-center rounded-full bg-ink px-6 py-[13px] text-[14px] font-medium text-white no-underline transition-colors hover:bg-ink-soft hover:no-underline sm:w-auto sm:min-w-[180px]"
-            >
-              {t.enquiry.submit}
-            </a>
+            {/* Off-screen rather than hidden: the crudest bots skip anything
+                with display:none, and this one is meant to be filled in. */}
+            <input
+              value={trap}
+              onChange={(e) => setTrap(e.target.value)}
+              tabIndex={-1}
+              autoComplete="off"
+              aria-hidden="true"
+              className="absolute left-[-9999px] h-px w-px opacity-0"
+            />
+
+            {status === "sent" ? (
+              <div className="mt-6 rounded-[12px] border border-teal-line bg-teal-tint px-4 py-[14px] text-[13.5px] leading-[1.55] text-teal-deep">
+                {t.enquiry.sent}
+              </div>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={send}
+                  disabled={status === "sending"}
+                  className={`mt-6 inline-flex w-full items-center justify-center rounded-full border-none px-6 py-[13px] text-[14px] font-medium text-white transition-colors sm:w-auto sm:min-w-[180px] ${
+                    status === "sending"
+                      ? "cursor-wait bg-slate"
+                      : "cursor-pointer bg-ink hover:bg-ink-soft"
+                  }`}
+                >
+                  {status === "sending" ? t.enquiry.sending : t.enquiry.submit}
+                </button>
+                {(status === "no-contact" || status === "failed") && (
+                  <div className="mt-3 text-[12.5px] leading-[1.5] text-danger-ink">
+                    {status === "no-contact"
+                      ? t.enquiry.needContact
+                      : t.enquiry.failed}
+                  </div>
+                )}
+              </>
+            )}
           </div>
         </div>
       </div>

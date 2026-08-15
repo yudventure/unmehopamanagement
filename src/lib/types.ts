@@ -23,6 +23,7 @@ export type Screen =
   | "laporan"
   | "properti"
   | "sinkron"
+  | "website"
   | "pengguna";
 
 /** An OTA calendar pulled into a room. One room may carry several. */

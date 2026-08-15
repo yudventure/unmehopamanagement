@@ -889,6 +889,7 @@ export function TurtleSite() {
         value={enquiry}
         onChange={patchEnquiry}
         message={message}
+        lang={lang}
       />
     </div>
   );

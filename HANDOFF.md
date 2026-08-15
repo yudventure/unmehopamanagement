@@ -158,6 +158,8 @@ src/
     layout.tsx                font DM Sans + JetBrains Mono, metadata
     page.tsx                  render <BookingManager />   ← dashboard, di /
     turtle/page.tsx           render <TurtleSite />        ← website publik, di /turtle
+    api/enquiry/route.ts      terima pesan dari website, kirim email ke owner
+    api/content/route.ts      baca/tulis content/site.json lewat GitHub API
   components/
     booking-manager.tsx       ★ SELURUH state aplikasi + view model ada di sini
     top-bar.tsx               logo, pencarian, tombol booking baru, menu profil
@@ -171,6 +173,7 @@ src/
     scenery.tsx               kit SVG bersama: karst, karang, perahu, orang, satwa
     web/site.tsx              seluruh halaman website publik
     web/scenes.tsx            ilustrasi website (hero senja, reef, dermaga)
+    web/enquiry-modal.tsx     popup pesan: nama, WA, email, rencana, catatan
     login-screen.tsx          login dua panel + panel foto
     screens/
       calendar-screen.tsx     grid kalender + chip booking
@@ -179,6 +182,7 @@ src/
       property-screen.tsx     kartu properti + tabel kamar
       sync-screen.tsx         daftar feed iCal impor/ekspor per kamar
       users-screen.tsx        tabel pengguna & peran
+      website-screen.tsx      CMS: kontak + harga selam website publik
     ui/
       modal.tsx               shell modal + class field form
       pill.tsx                badge status
@@ -189,10 +193,16 @@ src/
     pricing.ts                satu-satunya tempat nilai booking dihitung
     derive.ts                 sel kalender, statistik bulan, tren, deteksi bentrok
     report-export.ts          penyusun CSV + penggambar PDF laporan
-    web-content.ts            ★ seluruh teks, harga, dan kontak website publik
+    web-content.ts            ★ seluruh teks website publik, dua bahasa
+    site-config.ts            pembaca content/site.json + penjaga bentuknya
     format.ts                 tanggal & rupiah (id-ID)
     pills.ts                  warna badge per status
     types.ts                  tipe domain
+content/
+  site.json                   kontak + harga selam, ditulis oleh tab Website
+public/
+  hero.jpg 1.jpg 2.jpg 3.jpg  foto website (lihat public/README.md)
+  logo.png                    logo homestay, juga jadi favicon /turtle
 ```
 
 Dua file bertanda ★ adalah tempat memulai kalau mau paham cepat.
@@ -512,35 +522,101 @@ Sejak sekarang push biasa sudah bekerja — tidak perlu lagi lewat zip.
 ## 6. Website publik (`/turtle`)
 
 Terpisah dari dashboard dan **tidak memindahkannya**: manager tetap di `/`,
-website di `/turtle`. Keduanya hanya berbagi dua hal — tarif kamar dan kit
-ilustrasi — jadi salah satunya bisa dipindah ke domain sendiri nanti tanpa
-yang lain ikut berubah (di Vercel itu setelan domain, bukan perubahan kode).
+website di `/turtle`. Keduanya cuma berbagi tarif kamar, kit ilustrasi, dan
+`content/site.json`, jadi salah satunya bisa dipindah ke domain sendiri nanti
+tanpa yang lain ikut berubah (di Vercel itu setelan domain, bukan perubahan
+kode).
 
-Isinya: hero senja dengan pemilih (mau apa / kapan / berapa orang), bagian
-nilai, kamar, dive center, musim, cara sampai, formulir pemesanan, FAQ, footer.
+Isinya: hero foto, bagian nilai, kamar, dive center, musim, cara sampai, FAQ,
+footer. Dua bahasa, default Inggris, tombol ID/EN di header.
 
-**Semua tombol pesan berujung ke WhatsApp** dengan pesan yang sudah tersusun,
-dan panel di sebelah formulir memperlihatkan pesannya sebelum dikirim. Itu
-bukan penampung sementara sampai ada booking engine — begitulah homestay di
-Mansuar menerima pesanan, dan jalan tanpa backend, tanpa payment gateway,
-tanpa akun. Kamar juga diarahkan ke OTA karena di sanalah kalendernya hidup;
-yang benar-benar dipesan lewat situs ini adalah paket menyelam.
+**Setiap tombol pesan membuka satu popup** (`web/enquiry-modal.tsx`) berisi
+nama, WhatsApp, email, mau apa, rencana bulan, jumlah orang, lama menginap,
+dan catatan. Tombolnya cuma satu: Kirim. Kamar tetap diarahkan ke OTA karena
+di sanalah kalendernya hidup; yang benar-benar dipesan lewat situs ini adalah
+paket menyelam.
+
+### Ke mana pesan itu pergi
+
+`POST /api/enquiry` mengirimkannya sebagai email ke `contact.ownerEmail`,
+dengan `reply_to` diisi alamat tamunya sehingga tombol balas di kotak masuk
+langsung tertuju ke orangnya. Tidak ada yang disimpan. Enquiry bukan catatan
+yang perlu dikelola, dia pesan yang perlu dibalas, dan kotak masuk sudah
+melakukan itu dengan baik. Efek sampingnya: tidak ada data tamu di server ini
+yang bisa bocor.
+
+Perlindungannya: honeypot (`website`, diletakkan di luar layar, bukan
+`display:none`, karena bot paling kasar melewati apa pun yang disembunyikan),
+pemotongan 2000 karakter, escape HTML, dan subjek dipaksa satu baris supaya
+newline tidak bisa dipakai menyuntik header. Minimal salah satu dari WhatsApp
+atau email wajib diisi, kalau tidak owner menerima pesan yang tidak bisa
+dijawab (422 `no-contact`).
+
+Butuh dua variabel di Vercel:
+
+| Variabel | Isi |
+|---|---|
+| `RESEND_API_KEY` | dari resend.com |
+| `ENQUIRY_FROM` | pengirim di domain yang sudah diverifikasi di Resend, mis. `Turtle Dive Homestay <web@turtlehomestay.id>` |
+
+Selama keduanya belum ada, endpoint menjawab 503 dan tombol Kirim otomatis
+beralih membuka WhatsApp dengan pesan yang sama. Jadi kunci yang belum
+dipasang tidak menghilangkan satu pesan pun.
+
+### CMS: tab Website di dalam manager
+
+Owner mengubah nomor WhatsApp, email publik, email penerima, dan enam harga
+paket selam dari tab **Website** di manager, bukan dari repo. Isinya duduk di
+`content/site.json`; `PUT /api/content` menuliskannya kembali lewat GitHub
+Contents API, Vercel melihat commit itu dan membangun ulang. Sekitar satu
+menit sampai tayang, dan setiap perubahan tercatat di riwayat repo lengkap
+dengan nama yang menyimpannya. Untuk harga yang bergerak dua kali setahun itu
+tukaran yang lebih baik daripada server yang tidak ada yang menjaga.
+
+Butuh empat variabel di Vercel:
+
+| Variabel | Isi |
+|---|---|
+| `GITHUB_TOKEN` | fine-grained, izin Contents: read and write, repo ini saja |
+| `GITHUB_REPO` | `yudventure/unmehopamanagement` |
+| `GITHUB_BRANCH` | opsional, default `main` |
+| `CMS_PASSWORD` | ditanyakan sebelum menyimpan |
+
+Kata sandi itu satu-satunya penjaga endpoint, jadi dibandingkan dalam waktu
+konstan dan endpoint **menolak jalan sama sekali kalau variabelnya belum ada**.
+Kata sandi kosong tidak boleh berarti "tidak perlu kata sandi". Selama belum
+lengkap, tab Website memperlihatkan isinya tetapi tombol simpannya mati dan
+menerangkan variabel apa yang kurang.
+
+SHA berkas diambil server-side sesaat sebelum menulis, bukan dititipkan dari
+browser. Itu yang membuat tab lama tidak bisa menimpa perubahan yang disimpan
+orang lain semenit sebelumnya: kalau berkasnya sudah bergerak, SHA-nya salah
+dan GitHub menolak.
+
+Teks situs tidak ada di CMS. Salinan dua bahasa, dengan pemenggalan baris dan
+nadanya, jauh lebih baik disunting lewat code review daripada lewat textarea.
+Menaruhnya di form berarti memilih antara setengah terjemahan tayang atau
+pekerjaan penerjemah di dalam formulir.
 
 ### Yang wajib diganti sebelum dipakai
 
-`lib/web-content.ts` memegang seluruh teks, dan di kepalanya ada blok
-PLACEHOLDER yang menyebut apa saja yang masih karangan:
-
 | Isi | Status |
 |---|---|
-| `WHATSAPP`, `EMAIL` | **placeholder** — nomor dan alamat contoh |
-| `DIVE_PACKAGES` | **placeholder** — semua harga, durasi, dan level |
-| Tarif kamar | **nyata** — dibaca dari `seedRooms()`, sumber yang sama dengan manager |
+| `contact.whatsapp`, `contact.email`, `contact.ownerEmail` | **placeholder**, ganti lewat tab Website |
+| `divePrices` (enam angka) | **placeholder**, ganti lewat tab Website |
+| Nama, durasi, dan level paket selam | **placeholder**, ada di `web-content.ts` |
+| Tarif kamar | **nyata**, dibaca dari `seedRooms()`, sumber yang sama dengan manager |
 | Musim, cara sampai, FAQ | tulisan wajar, perlu dikoreksi pemilik |
 
-### Tidak ada foto
+### Foto
 
-Repo ini tidak punya foto dan tidak boleh menarik dari host luar, jadi setiap
-gambar di website digambar sebagai SVG. Itu batasan nyata, bukan pilihan gaya.
-Tiap ilustrasi adalah satu komponen di dalam kotak rasio tetap (`Frame`), jadi
-menggantinya dengan foto asli tidak menggeser apa pun di sekitarnya.
+Empat berkas di `public/`, dan `public/README.md` menerangkan tiap slotnya:
+`hero.jpg` (hero), `1.jpg`/`2.jpg`/`3.jpg` (tiga kartu), `logo.png` (favicon,
+disalin ke `src/app/turtle/icon.png`).
+
+Nama berkas **peka huruf besar-kecil** di server, tidak di Mac. `Hero.jpg`
+tidak akan tampil di Vercel walaupun terlihat baik-baik saja secara lokal.
+
+Di belakang tiap foto masih ada ilustrasi SVG dengan komposisi yang sama
+(`web/scenes.tsx`), dipasang sebagai CSS background. Kalau satu foto hilang,
+yang muncul adalah ilustrasinya, bukan ikon gambar rusak.

@@ -1,4 +1,5 @@
 import { seedRooms } from "./data";
+import { SITE_CONFIG } from "./site-config";
 
 /**
  * Everything the public site says, in both languages, in one place — so copy
@@ -11,20 +12,12 @@ import { seedRooms } from "./data";
  * so a missing translation is a build error rather than a page that silently
  * falls back to the wrong language.
  *
- * ─────────────────────────────────────────────────────────────────────────
- * PLACEHOLDER — REPLACE BEFORE THIS SITE GOES ANYWHERE NEAR A GUEST
- *
- * The owner has not supplied these, so they are stand-ins with plausible
- * shapes, not facts:
- *
- *   · WHATSAPP     the number every booking button opens
- *   · EMAIL        the address in the footer
- *   · DIVE_PRICE   every dive package price
- *
- * Room rates are NOT placeholders — they are read from `seedRooms()`, the
- * same source the booking manager prices new bookings from, so the site and
- * the manager cannot disagree about what a room costs.
- * ─────────────────────────────────────────────────────────────────────────
+ * The contact details and the dive prices are NOT here. They come from
+ * `content/site.json` by way of `site-config.ts`, because those are the things
+ * an owner changes without wanting to open an editor — the CMS tab in the
+ * manager writes that file. Room rates come from `seedRooms()`, the same table
+ * the manager prices bookings from, so the site and the manager cannot
+ * disagree about what a room costs.
  */
 
 export type Lang = "en" | "id";
@@ -39,10 +32,9 @@ export const DEFAULT_LANG: Lang = "en";
 
 // ------------------------------------------------------------------- facts
 
-/** PLACEHOLDER. Digits only, country code first, no +, no spaces. */
-export const WHATSAPP = "6281200000000";
-/** PLACEHOLDER. */
-export const EMAIL = "halo@turtlehomestay.id";
+/** Edited in the CMS tab, stored in `content/site.json`. */
+export const WHATSAPP = SITE_CONFIG.contact.whatsapp;
+export const EMAIL = SITE_CONFIG.contact.email;
 
 /** Proper nouns, which stay as they are in either language. */
 export const PROPERTY = {
@@ -105,15 +97,8 @@ export const DIVE_KEYS = [
 ] as const;
 export type DiveKey = (typeof DIVE_KEYS)[number];
 
-/** PLACEHOLDER — every figure needs the owner's real numbers. */
-export const DIVE_PRICE: Record<DiveKey, number> = {
-  fun2: 1400000,
-  fun3: 1850000,
-  dsd: 1600000,
-  ow: 7500000,
-  snorkel: 750000,
-  gear: 350000,
-};
+/** Edited in the CMS tab, stored in `content/site.json`. */
+export const DIVE_PRICE = SITE_CONFIG.divePrices as Record<DiveKey, number>;
 
 /** Drawn as the accented card. */
 export const DIVE_FEATURED: DiveKey = "fun3";
@@ -214,6 +199,10 @@ export interface SiteCopy {
     notes: string;
     notesPlaceholder: string;
     submit: string;
+    sending: string;
+    sent: string;
+    needContact: string;
+    failed: string;
   };
   faq: { eyebrow: string; title: string; items: { q: string; a: string }[] };
   footer: { contact: string; pages: string; manager: string; colophon: string; tagline: string };
@@ -435,7 +424,7 @@ const EN: SiteCopy = {
   enquiry: {
     modalTitle: "Send us a message",
     modalIntro:
-      "Fill in as much as you like. The button opens WhatsApp with the message already written, so you only have to send it. Nothing is paid here and there is no account to create.",
+      "Fill in as much as you like. Your message goes straight to the family who run the homestay, and one of us will write back. Nothing is paid here and there is no account to create.",
     close: "Close",
     name: "Name",
     namePlaceholder: "Your name",
@@ -452,6 +441,10 @@ const EN: SiteCopy = {
     notesPlaceholder:
       "Food allergies, ferry times, dive certification, anything at all.",
     submit: "Send",
+    sending: "Sending…",
+    sent: "Thank you, your message is with us. We answer the same day, usually within a few hours.",
+    needContact: "Please leave a WhatsApp number or an email, so we can answer.",
+    failed: "That did not go through. Please try again, or message us on WhatsApp.",
   },
   faq: {
     eyebrow: "Asked often",
@@ -726,7 +719,7 @@ const ID: SiteCopy = {
   enquiry: {
     modalTitle: "Kirim pesan ke kami",
     modalIntro:
-      "Isi seadanya. Tombolnya akan membuka WhatsApp dengan pesan yang sudah tertulis, jadi kamu tinggal kirim. Tidak ada pembayaran di sini dan tidak ada akun yang perlu dibuat.",
+      "Isi seadanya. Pesanmu langsung sampai ke keluarga yang mengelola homestay, dan salah satu dari kami akan membalas. Tidak ada pembayaran di sini dan tidak ada akun yang perlu dibuat.",
     close: "Tutup",
     name: "Nama",
     namePlaceholder: "Nama kamu",
@@ -743,6 +736,10 @@ const ID: SiteCopy = {
     notesPlaceholder:
       "Alergi makanan, jadwal kapal, sertifikat selam, apa saja.",
     submit: "Kirim",
+    sending: "Mengirim…",
+    sent: "Terima kasih, pesanmu sudah kami terima. Kami balas hari itu juga, biasanya dalam beberapa jam.",
+    needContact: "Isi nomor WhatsApp atau email dulu, supaya kami bisa membalas.",
+    failed: "Pesannya gagal terkirim. Coba lagi, atau hubungi kami lewat WhatsApp.",
   },
   faq: {
     eyebrow: "Yang sering ditanya",

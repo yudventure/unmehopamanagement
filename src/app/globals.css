@@ -1,68 +1,75 @@
 @import "tailwindcss";
 
 /*
- * Design tokens lifted verbatim from the Claude Design prototype
- * (project/Booking Manager Homestay.dc.html). Every hex here appears in the
- * prototype's inline styles — names are ours, values are not.
+ * Warm palette: cream ground, a green shell, gold as the accent.
+ *
+ * The token *names* are the ones the prototype's values were first mapped
+ * onto, and they stay — every component reads them, so changing the theme is
+ * changing this block and nothing else. Two names now read oddly against
+ * their values and are kept anyway rather than renamed across 20 files:
+ * `teal` is the shell green, and `slate` is a warm grey.
  */
 @theme {
   --font-sans: var(--font-dm-sans), system-ui, sans-serif;
   --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
 
-  /* Surfaces */
-  --color-canvas: #dce8e2;
+  /* Surfaces — cream ground, white panels, sand-tinted fills */
+  --color-canvas: #fbefe0;
   --color-surface: #ffffff;
-  --color-surface-soft: #fafcfb;
-  --color-surface-mute: #f8faf9;
-  --color-surface-tint: #f4f7f6;
-  --color-surface-hover: #f0f5f3;
-  --color-surface-out: #fbfcfc;
+  --color-surface-soft: #fdf9f4;
+  --color-surface-mute: #fcf5ec;
+  --color-surface-tint: #faf2e7;
+  --color-surface-hover: #f5ebdc;
+  --color-surface-out: #fefcf9;
 
-  /* Text */
-  --color-ink: #16211e;
-  --color-ink-soft: #3c4b46;
-  --color-slate: #5c6e68;
-  --color-slate-soft: #7a8b85;
-  --color-slate-mute: #8b9c96;
-  --color-slate-faint: #94a5a0;
-  --color-slate-ghost: #9baba5;
+  /* Text — warm neutrals, never blue-grey */
+  --color-ink: #241f18;
+  --color-ink-soft: #4a4238;
+  --color-slate: #6b6357;
+  --color-slate-soft: #8b8274;
+  --color-slate-mute: #9d9486;
+  --color-slate-faint: #aaa294;
+  --color-slate-ghost: #b7afa1;
 
   /* Lines */
-  --color-line: #eef3f1;
-  --color-line-soft: #edf2f0;
-  --color-line-fine: #f1f5f3;
-  --color-line-row: #f4f7f6;
-  --color-line-strong: #e6ece9;
-  --color-line-input: #e2eae7;
-  --color-line-search: #eaf0ee;
+  --color-line: #f4ebde;
+  --color-line-soft: #f2e8da;
+  --color-line-fine: #f7f0e7;
+  --color-line-row: #f8f2ea;
+  --color-line-strong: #ebe0d0;
+  --color-line-input: #e7dbc9;
+  --color-line-search: #f0e6d8;
 
-  /* Brand */
-  --color-teal: #0e7c6b;
-  --color-teal-deep: #0b5f52;
-  --color-teal-tint: #f2faf7;
-  --color-teal-soft: #d6f2e7;
-  --color-teal-line: #cfe6de;
+  /* Brand — the shell green */
+  --color-teal: #2f8a63;
+  --color-teal-deep: #216b4b;
+  --color-teal-tint: #f0f8f3;
+  --color-teal-soft: #d9ede1;
+  --color-teal-line: #c5e1d1;
 
-  /* Accent */
-  --color-amber: #f6c445;
-  --color-amber-hover: #f9d269;
-  --color-amber-shade: #dca92c;
-  --color-amber-soft: #fdf0ce;
-  --color-amber-ink: #8a6200;
-  --color-amber-deep: #2a2100;
+  /* Accent — the gold on the buttons, gauges and bars */
+  --color-amber: #efc988;
+  --color-amber-hover: #f5d8a5;
+  --color-amber-shade: #d3a75e;
+  --color-amber-soft: #faefd9;
+  --color-amber-ink: #8a6524;
+  --color-amber-deep: #4b3711;
+  /* Chart fills: the sand of an unfinished bar, and its edge. */
+  --color-gold: #d9a94e;
+  --color-gold-soft: #eeddbe;
 
   /* Status */
   --color-danger: #dc2626;
-  --color-danger-ink: #b42318;
+  --color-danger-ink: #b04a3a;
   --color-danger-deep: #7f1d1d;
-  --color-danger-tint: #fef2f2;
-  --color-danger-line: #fecaca;
-  --color-danger-soft: #fee4e2;
-  --color-danger-cell: #fff7f6;
-  --color-danger-edge: #f1d4d1;
-  --color-neutral-soft: #ecefee;
-  --color-ok: #16a34a;
-  --color-dot-all: #c7d5d0;
+  --color-danger-tint: #fdf3f0;
+  --color-danger-line: #f3cfc4;
+  --color-danger-soft: #fbe3da;
+  --color-danger-cell: #fdf6f3;
+  --color-danger-edge: #f0d6cb;
+  --color-neutral-soft: #f0e9de;
+  --color-ok: #2f8a63;
+  --color-dot-all: #d9cbb5;
 
   --animate-pop-in: popIn 0.18s ease-out;
   --animate-slide-in: slideIn 0.18s ease-out;
@@ -93,9 +100,9 @@
 @layer base {
   body {
     margin: 0;
-    /* The shell is full-bleed now, so the page ground is the shell's own
-       surface — canvas would only ever flash on overscroll. */
-    background: var(--color-surface);
+    /* The shell floats on the cream ground, so the page carries it too —
+       otherwise overscroll flashes white past the shell's rounded corners. */
+    background: var(--color-canvas);
     color: var(--color-ink);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
@@ -126,7 +133,7 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    background: #cbd8d2;
+    background: #ddd0bd;
     border-radius: 8px;
     border: 3px solid transparent;
     background-clip: content-box;

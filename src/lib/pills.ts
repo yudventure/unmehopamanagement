@@ -5,26 +5,29 @@ export interface PillColors {
   fg: string;
 }
 
+/*
+ * Chip fills, hard-coded rather than tokenised because `Pill` takes colours as
+ * values (channels supply theirs from `CH`). They sit in the same warm family
+ * as the theme: mint for a settled state, sand for one still in motion, clay
+ * for a cancellation.
+ */
+const MINT: PillColors = { bg: "#DCEFE3", fg: "#216B4B" };
+const SAND: PillColors = { bg: "#F7EEDD", fg: "#8A6524" };
+const CLAY: PillColors = { bg: "#FBE3DA", fg: "#B04A3A" };
+const STONE: PillColors = { bg: "#F2EBE0", fg: "#6B6357" };
+
 export function statusColors(status: BookingStatus): PillColors {
-  return status === "Cancelled"
-    ? { bg: "#FEE4E2", fg: "#B42318" }
-    : { bg: "#F0F5F3", fg: "#3C4B46" };
+  return status === "Cancelled" ? CLAY : STONE;
 }
 
 export function roleColors(role: "Owner" | "Staf"): PillColors {
-  return role === "Owner"
-    ? { bg: "#D6F2E7", fg: "#0B5F52" }
-    : { bg: "#F0F5F3", fg: "#3C4B46" };
+  return role === "Owner" ? MINT : STONE;
 }
 
 export function activeColors(active: boolean): PillColors {
-  return active
-    ? { bg: "#D6F2E7", fg: "#0B5F52" }
-    : { bg: "#ECEFEE", fg: "#5C6E68" };
+  return active ? MINT : STONE;
 }
 
 export function roomStatusColors(active: boolean): PillColors {
-  return active
-    ? { bg: "#D6F2E7", fg: "#0B5F52" }
-    : { bg: "#FDF0CE", fg: "#8A6200" };
+  return active ? MINT : SAND;
 }

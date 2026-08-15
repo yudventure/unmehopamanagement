@@ -5,6 +5,8 @@ import { useEffect, useRef } from "react";
 import { BrandLogo } from "@/components/brand-logo";
 
 export interface TopBarProps {
+  /** Wide, the wordmark lives on the green shell; narrow, there is no shell. */
+  showBrand: boolean;
   query: string;
   onQuery: (value: string) => void;
   onOpenForm: () => void;
@@ -19,6 +21,7 @@ export interface TopBarProps {
 }
 
 export function TopBar({
+  showBrand,
   query,
   onQuery,
   onOpenForm,
@@ -50,23 +53,25 @@ export function TopBar({
   }, [menuOpen, onCloseMenu]);
 
   return (
-    <div className="flex flex-wrap items-center gap-x-5 gap-y-3 border-b border-line px-[26px] py-[18px]">
-      <div className="flex shrink-0 items-center gap-3">
-        <BrandLogo size={40} className="shrink-0" />
-        <div className="leading-[1.15]">
-          <div className="text-[15px] font-bold whitespace-nowrap">
-            Unmehopa Management
+    <div className="flex flex-wrap items-center gap-x-5 gap-y-3 border-b border-line px-[26px] py-[16px]">
+      {showBrand && (
+        <div className="flex shrink-0 items-center gap-3">
+          <BrandLogo size={38} className="shrink-0" />
+          <div className="leading-[1.15]">
+            <div className="text-[15px] font-bold whitespace-nowrap">
+              Unmehopa Management
+            </div>
+            <div className="text-[12px] text-slate-soft">Booking Manager</div>
           </div>
-          <div className="text-[12px] text-slate-soft">Booking Manager</div>
         </div>
-      </div>
+      )}
 
       {/* Takes the whole gap between brand and actions and centres the field
           inside it, so the search sits mid-bar rather than tucked against the
           wordmark. */}
       <div className="flex min-w-[200px] flex-1 justify-center">
-        <div className="flex w-full max-w-[460px] items-center gap-[10px] rounded-xl border border-line-search bg-surface-tint px-[14px] py-[9px]">
-          <div className="h-[14px] w-[14px] shrink-0 rounded-full border-2 border-[#A9B8B2]" />
+        <div className="flex w-full max-w-[460px] items-center gap-[10px] rounded-full border border-line-search bg-surface-tint px-[16px] py-[10px]">
+          <div className="h-[14px] w-[14px] shrink-0 rounded-full border-2 border-slate-ghost" />
           <input
             type="text"
             value={query}
@@ -93,7 +98,7 @@ export function TopBar({
             onClick={onToggleMenu}
             aria-haspopup="menu"
             aria-expanded={menuOpen}
-            className="flex cursor-pointer items-center gap-[9px] rounded-full border-none bg-surface-tint py-[5px] pr-[14px] pl-[5px] hover:bg-[#EDF3F1]"
+            className="flex cursor-pointer items-center gap-[9px] rounded-full border-none bg-surface-tint py-[5px] pr-[14px] pl-[5px] hover:bg-surface-hover"
           >
             <span className="flex h-[30px] w-[30px] items-center justify-center rounded-full bg-teal text-[12.5px] font-bold text-white">
               {userInitial}

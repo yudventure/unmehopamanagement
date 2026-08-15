@@ -9,11 +9,10 @@ import { MONTHS, WEEKDAYS, fmt, fmtDate } from "@/lib/format";
  * Occupancy, drawn twice: across the months so a season is visible, and across
  * the days of one month so its shape is.
  *
- * Both are single-measure column charts in the brand teal — one hue, magnitude
- * carried by height alone. The second, lighter step never means a different
- * thing; it means the same measure in a period that has not finished, so the
- * bar is not yet the whole story. That distinction is the only reason there is
- * a legend at all.
+ * Both are single-measure column charts — magnitude is carried by height
+ * alone. The second colour never means a different measure; it means the same
+ * measure in a period that has not finished, so the bar is not yet the whole
+ * story. That distinction is the only reason there is a legend at all.
  *
  * Every value is reachable three ways: the axis, the readout that follows the
  * pointer, and a table view — so nothing is gated behind a hover.
@@ -22,9 +21,14 @@ import { MONTHS, WEEKDAYS, fmt, fmtDate } from "@/lib/format";
 const PLOT_H = 156;
 const AXIS = [0, 25, 50, 75, 100];
 
-const TEAL = "#0E7C6B";
-/** Same hue, one step light. 3.4:1 on white — still a legible mark. */
-const TEAL_OPEN = "#3E9A8B";
+const TEAL = "#2F8A63";
+/*
+ * Green is a finished period, gold one still filling. Both clear 3:1 on the
+ * surface, and the pair sits in the 6-8 CVD band — legal here because the
+ * distinction is carried three more ways: the legend, the position (open
+ * periods are always the right-hand tail), and the table view.
+ */
+const GOLD_OPEN = "#B5842A";
 
 function Gridlines() {
   return (
@@ -280,7 +284,7 @@ export function TrendChart({
                         className="mx-auto block w-full max-w-[26px] rounded-t-[4px]"
                         style={{
                           height: `${Math.max(p.pct, 0.8)}%`,
-                          background: open ? TEAL_OPEN : TEAL,
+                          background: open ? GOLD_OPEN : TEAL,
                           /* The reported month is ringed in its own hue; the
                              month it is being measured against gets a neutral
                              ring, so the pair reads without a third colour. */
@@ -288,7 +292,7 @@ export function TrendChart({
                             p.key === anchorKey
                               ? `2px solid ${TEAL}`
                               : p.key === compareKey
-                                ? "2px solid #9BABA5"
+                                ? "2px solid #B7AFA1"
                                 : undefined,
                           outlineOffset:
                             p.key === anchorKey || p.key === compareKey
@@ -325,7 +329,7 @@ export function TrendChart({
             items={[
               { color: TEAL, label: "Bulan yang sudah selesai" },
               {
-                color: TEAL_OPEN,
+                color: GOLD_OPEN,
                 label: "Belum lewat — baru sebagian yang terisi",
               },
             ]}
@@ -425,7 +429,7 @@ export function DailyChart({
                       className="mx-auto block w-full max-w-[16px] rounded-t-[3px]"
                       style={{
                         height: `${Math.max(d.pct, 0.8)}%`,
-                        background: d.past || d.isToday ? TEAL : TEAL_OPEN,
+                        background: d.past || d.isToday ? TEAL : GOLD_OPEN,
                         outline: d.isToday ? `2px solid ${TEAL}` : undefined,
                         outlineOffset: d.isToday ? "2px" : undefined,
                       }}
@@ -468,7 +472,7 @@ export function DailyChart({
           <Legend
             items={[
               { color: TEAL, label: "Sudah lewat" },
-              { color: TEAL_OPEN, label: "Belum lewat — masih bisa bertambah" },
+              { color: GOLD_OPEN, label: "Belum lewat — masih bisa bertambah" },
               { color: null, label: "Sabtu & Minggu" },
             ]}
           />

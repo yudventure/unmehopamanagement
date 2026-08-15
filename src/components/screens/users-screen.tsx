@@ -78,7 +78,7 @@ export function UsersScreen({
                     type="button"
                     onClick={() => onToggleUser(u)}
                     className="cursor-pointer rounded-[10px] border border-line-strong bg-surface px-3 py-[7px] text-[12.5px]"
-                    style={{ color: u.active ? "#B42318" : "#0B5F52" }}
+                    style={{ color: u.active ? "#B04A3A" : "#216B4B" }}
                   >
                     {u.active ? "Nonaktifkan" : "Aktifkan kembali"}
                   </button>

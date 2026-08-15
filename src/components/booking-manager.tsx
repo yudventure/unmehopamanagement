@@ -55,11 +55,7 @@ import {
 } from "@/lib/derive";
 import { MONTHS, dayDiff, fmt, fmtShort, iso, parse } from "@/lib/format";
 import { bookingTotal } from "@/lib/pricing";
-import {
-  downloadCsv,
-  downloadPdf,
-  type ReportData,
-} from "@/lib/report-export";
+import { downloadCsv, downloadPdf, type ReportData } from "@/lib/report-export";
 import type {
   Booking,
   BookingForm,
@@ -670,7 +666,10 @@ export function BookingManager({
      a year either side, and a channel total spanning all of it would sit next
      to a calendar showing one month and read as that month's. */
   const monthBook = useMemo(
-    () => scopedBookings.filter((b) => b.status !== "Cancelled" && inMonth(b, month)),
+    () =>
+      scopedBookings.filter(
+        (b) => b.status !== "Cancelled" && inMonth(b, month),
+      ),
     [scopedBookings, month],
   );
 
@@ -768,9 +767,7 @@ export function BookingManager({
       : 0;
 
   const avgStayNum = meanStay(monthBookings);
-  const avgStay = monthBookings.length
-    ? avgStayNum.toFixed(1) + " malam"
-    : "—";
+  const avgStay = monthBookings.length ? avgStayNum.toFixed(1) + " malam" : "—";
   const adr = stats.nights ? stats.revenue / stats.nights : 0;
   const prevAdr = prevStats.nights ? prevStats.revenue / prevStats.nights : 0;
   const prevLabel = `${MONTHS[prevMonth.getMonth()]} ${prevMonth.getFullYear()}`;
@@ -993,30 +990,26 @@ export function BookingManager({
 
   return (
     <>
-      {/* Full-bleed: the shell is the viewport, with no canvas margin around it. */}
-      <div className="flex min-h-screen">
-        <div className="flex w-full flex-col bg-surface">
-          <TopBar
-            query={query}
-            onQuery={setQuery}
-            onOpenForm={openForm}
-            userName={userName}
-            userInitial={userInitial}
-            roleLabel={isOwner ? "Owner" : "Staf"}
-            loginEmail={loginEmail}
-            menuOpen={menuOpen}
-            onToggleMenu={() => setMenuOpen((v) => !v)}
-            onCloseMenu={() => setMenuOpen(false)}
-            onLogout={doLogout}
-          />
-
-          <div
-            className={`flex min-h-[760px] items-stretch ${
-              nw ? "flex-col" : "flex-row"
-            }`}
-          >
+      {/*
+       * Wide: a green shell on the cream ground, with the white panel inset
+       * inside it. The green shows as a frame around the panel and as the
+       * ground the sidebar is drawn straight onto — it is a border's worth of
+       * green, not the canvas margin the app used to waste.
+       *
+       * Narrow there is no shell at all: the panel is the viewport, and the
+       * sidebar collapses to a nav row inside it.
+       */}
+      <div className={nw ? "min-h-screen" : "min-h-screen bg-canvas p-[10px]"}>
+        <div
+          className={
+            nw
+              ? "flex min-h-screen flex-col bg-surface"
+              : "flex min-h-[calc(100vh-20px)] rounded-[28px] bg-teal"
+          }
+        >
+          {!nw && (
             <Sidebar
-              narrow={nw}
+              narrow={false}
               nav={nav}
               screen={screen}
               onScreen={setScreen}
@@ -1028,127 +1021,172 @@ export function BookingManager({
               filterCh={filterCh}
               onFilterCh={setFilterCh}
             />
+          )}
+
+          <div
+            className={
+              nw
+                ? "flex min-h-screen flex-col"
+                : "my-[10px] mr-[10px] flex min-w-0 flex-1 flex-col overflow-hidden rounded-[22px] bg-surface"
+            }
+          >
+            <TopBar
+              showBrand={nw}
+              query={query}
+              onQuery={setQuery}
+              onOpenForm={openForm}
+              userName={userName}
+              userInitial={userInitial}
+              roleLabel={isOwner ? "Owner" : "Staf"}
+              loginEmail={loginEmail}
+              menuOpen={menuOpen}
+              onToggleMenu={() => setMenuOpen((v) => !v)}
+              onCloseMenu={() => setMenuOpen(false)}
+              onLogout={doLogout}
+            />
+
+            {nw && (
+              <Sidebar
+                narrow
+                nav={nav}
+                screen={screen}
+                onScreen={setScreen}
+                propCounts={propCounts}
+                feedCount={feeds.length}
+                filterProp={filterProp}
+                onFilterProp={setFilterProp}
+                channelCounts={channelCounts}
+                filterCh={filterCh}
+                onFilterCh={setFilterCh}
+              />
+            )}
 
             <div
-              className={`min-w-0 flex-1 bg-surface-soft ${
-                nw ? "px-[14px] pt-4 pb-6" : "px-[26px] pt-[22px] pb-[30px]"
+              className={`flex flex-1 items-stretch ${
+                nw ? "flex-col" : "flex-row"
               }`}
             >
-              {screen === "kalender" && (
-                <CalendarScreen
+              <div
+                className={`min-w-0 flex-1 bg-surface-soft ${
+                  nw ? "px-[14px] pt-4 pb-6" : "px-[26px] pt-[22px] pb-[30px]"
+                }`}
+              >
+                {screen === "kalender" && (
+                  <CalendarScreen
+                    narrow={nw}
+                    showMoney={showMoney}
+                    conflictCount={conflicts.length}
+                    conflictText={conflictText}
+                    onReviewConflict={() => setConflictOpen(true)}
+                    monthLabel={monthLabel}
+                    onPrevMonth={() => setMonth(new Date(y, m - 1, 1))}
+                    onNextMonth={() => setMonth(new Date(y, m + 1, 1))}
+                    occLabel={`${stats.occPct}%`}
+                    nightsLabel={`${stats.nights} malam`}
+                    revenueLabel={fmt(stats.revenue)}
+                    cells={cells}
+                    onSelect={setSelectedId}
+                    selectedDate={selectedDate}
+                    onSelectDate={pickDate}
+                  />
+                )}
+
+                {screen === "laporan" && isOwner && (
+                  <ReportScreen
+                    monthLabel={monthLabel}
+                    prevLabel={prevLabel}
+                    kpis={kpis}
+                    channelRows={channelRows}
+                    roomRows={roomRows}
+                    commissionLabel={
+                      showMoney
+                        ? fmt(stats.commission)
+                        : "disembunyikan untuk peran Staf"
+                    }
+                    trend={trend}
+                    daily={daily}
+                    anchorKey={`${y}-${String(m + 1).padStart(2, "0")}`}
+                    compareKey={`${prevMonth.getFullYear()}-${String(
+                      prevMonth.getMonth() + 1,
+                    ).padStart(2, "0")}`}
+                    showMoney={showMoney}
+                    compare={compare}
+                    onToggleCompare={() => setCompare((v) => !v)}
+                    onExportCsv={exportCsv}
+                    onExportPdf={exportPdf}
+                    pdfBusy={pdfBusy}
+                    onPrevMonth={() => setMonth(new Date(y, m - 1, 1))}
+                    onNextMonth={() => setMonth(new Date(y, m + 1, 1))}
+                  />
+                )}
+
+                {screen === "properti" && (
+                  <PropertyScreen
+                    cards={propertyCards}
+                    showMoney={showMoney}
+                    canEdit={isOwner}
+                    onSaveRoom={saveRoom}
+                  />
+                )}
+
+                {screen === "sinkron" && isOwner && (
+                  <SyncScreen
+                    rooms={scopedRooms}
+                    feeds={feeds}
+                    tokens={tokens}
+                    onAddFeed={addFeed}
+                    onRemoveFeed={removeFeed}
+                    onIssueToken={issueToken}
+                    onResetToken={resetToken}
+                    origin={origin}
+                  />
+                )}
+
+                {screen === "pengguna" && isOwner && (
+                  <UsersScreen
+                    users={users}
+                    onOpenInvite={() => setInviteOpen(true)}
+                    onToggleUser={toggleUser}
+                  />
+                )}
+              </div>
+
+              {screen === "kalender" && !selected && (
+                <DashboardRail
                   narrow={nw}
-                  showMoney={showMoney}
-                  conflictCount={conflicts.length}
-                  conflictText={conflictText}
-                  onReviewConflict={() => setConflictOpen(true)}
-                  monthLabel={monthLabel}
-                  onPrevMonth={() => setMonth(new Date(y, m - 1, 1))}
-                  onNextMonth={() => setMonth(new Date(y, m + 1, 1))}
-                  occLabel={`${stats.occPct}%`}
-                  nightsLabel={`${stats.nights} malam`}
-                  revenueLabel={fmt(stats.revenue)}
-                  cells={cells}
+                  upcoming={upcoming}
+                  upcomingDays={UPCOMING_DAYS}
                   onSelect={setSelectedId}
                   selectedDate={selectedDate}
-                  onSelectDate={pickDate}
+                  dayBookings={dayBookings}
+                  dayRooms={dayRooms}
+                  onClearDate={() => setSelectedDate(null)}
                 />
               )}
 
-              {screen === "laporan" && isOwner && (
-                <ReportScreen
-                  monthLabel={monthLabel}
-                  prevLabel={prevLabel}
-                  kpis={kpis}
-                  channelRows={channelRows}
-                  roomRows={roomRows}
-                  commissionLabel={
-                    showMoney
-                      ? fmt(stats.commission)
-                      : "disembunyikan untuk peran Staf"
+              {selected && (
+                <BookingDrawer
+                  booking={selected}
+                  roomName={roomById.get(selected.roomId)?.name ?? ""}
+                  narrow={nw}
+                  showMoney={showMoney}
+                  onClose={() => setSelectedId(null)}
+                  onSetStatus={(status) =>
+                    patchBooking(
+                      selected.id,
+                      { status },
+                      status === "Confirmed"
+                        ? "Booking dikonfirmasi."
+                        : status === "Checked-in"
+                          ? "Tamu ditandai check-in."
+                          : status === "Checked-out"
+                            ? "Tamu ditandai check-out."
+                            : "Booking dibatalkan.",
+                    )
                   }
-                  trend={trend}
-                  daily={daily}
-                  anchorKey={`${y}-${String(m + 1).padStart(2, "0")}`}
-                  compareKey={`${prevMonth.getFullYear()}-${String(
-                    prevMonth.getMonth() + 1,
-                  ).padStart(2, "0")}`}
-                  showMoney={showMoney}
-                  compare={compare}
-                  onToggleCompare={() => setCompare((v) => !v)}
-                  onExportCsv={exportCsv}
-                  onExportPdf={exportPdf}
-                  pdfBusy={pdfBusy}
-                  onPrevMonth={() => setMonth(new Date(y, m - 1, 1))}
-                  onNextMonth={() => setMonth(new Date(y, m + 1, 1))}
-                />
-              )}
-
-              {screen === "properti" && (
-                <PropertyScreen
-                  cards={propertyCards}
-                  showMoney={showMoney}
-                  canEdit={isOwner}
-                  onSaveRoom={saveRoom}
-                />
-              )}
-
-              {screen === "sinkron" && isOwner && (
-                <SyncScreen
-                  rooms={scopedRooms}
-                  feeds={feeds}
-                  tokens={tokens}
-                  onAddFeed={addFeed}
-                  onRemoveFeed={removeFeed}
-                  onIssueToken={issueToken}
-                  onResetToken={resetToken}
-                  origin={origin}
-                />
-              )}
-
-              {screen === "pengguna" && isOwner && (
-                <UsersScreen
-                  users={users}
-                  onOpenInvite={() => setInviteOpen(true)}
-                  onToggleUser={toggleUser}
                 />
               )}
             </div>
-
-            {screen === "kalender" && !selected && (
-              <DashboardRail
-                narrow={nw}
-                upcoming={upcoming}
-                upcomingDays={UPCOMING_DAYS}
-                onSelect={setSelectedId}
-                selectedDate={selectedDate}
-                dayBookings={dayBookings}
-                dayRooms={dayRooms}
-                onClearDate={() => setSelectedDate(null)}
-              />
-            )}
-
-            {selected && (
-              <BookingDrawer
-                booking={selected}
-                roomName={roomById.get(selected.roomId)?.name ?? ""}
-                narrow={nw}
-                showMoney={showMoney}
-                onClose={() => setSelectedId(null)}
-                onSetStatus={(status) =>
-                  patchBooking(
-                    selected.id,
-                    { status },
-                    status === "Confirmed"
-                      ? "Booking dikonfirmasi."
-                      : status === "Checked-in"
-                        ? "Tamu ditandai check-in."
-                        : status === "Checked-out"
-                          ? "Tamu ditandai check-out."
-                          : "Booking dibatalkan.",
-                  )
-                }
-              />
-            )}
           </div>
         </div>
       </div>

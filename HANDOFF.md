@@ -154,7 +154,7 @@ scope yang disepakati, bukan pekerjaan yang terlewat.
 ```
 src/
   app/
-    globals.css               token desain (palet lengkap dari prototype)
+    globals.css               ★ token desain — seluruh palet ada di sini
     layout.tsx                font DM Sans + JetBrains Mono, metadata
     page.tsx                  render <BookingManager />
   components/
@@ -213,7 +213,7 @@ jangan diganti jadi media query tanpa menguji kasus drawer terbuka di ~1000px.
 
 ### Penyimpangan yang disengaja dari prototype
 
-Lima belas hal berikut sengaja berbeda dari prototype. Masing-masing satu baris
+Enam belas hal berikut sengaja berbeda dari prototype. Masing-masing satu baris
 kalau mau dikembalikan:
 
 1. `iso()` memformat tanggal kalender lokal, bukan `toISOString().slice(0,10)`.
@@ -265,7 +265,7 @@ kalau mau dikembalikan:
 |---|---|
 | Framework | Next.js 16 (App Router, Turbopack) |
 | Bahasa | TypeScript (strict) |
-| Styling | Tailwind CSS v4 — palet sebagai token `@theme` di `globals.css` |
+| Styling | Tailwind CSS v4 — palet sebagai token `@theme` di `globals.css`; ganti tema = ganti blok itu |
 | Font | DM Sans + JetBrains Mono via `next/font/google` |
 | State | React `useState`/`useMemo` di satu komponen root |
 | Data | Seed di memori — belum ada database |
@@ -474,3 +474,30 @@ Sejak sekarang push biasa sudah bekerja — tidak perlu lagi lewat zip.
     setahun yang duduk di sebelah kalender satu bulan akan terbaca sebagai
     angka bulan itu. `Lama menginap` di KPI juga ikut dibatasi ke bulan
     laporan, dengan alasan yang sama.
+
+16. **Palet hangat, bukan palet prototype.** Tokennya diganti seluruhnya:
+    dasar krem, cangkang hijau, emas sebagai aksen — mengikuti referensi
+    tampilan yang diminta pemilik. Semua perubahan warna ada di blok `@theme`
+    `globals.css`; komponen tidak memegang hex sendiri kecuali di tiga tempat
+    yang memang butuh nilai, bukan kelas: `CH` (warna saluran), `pills.ts`
+    (isi chip), dan konstanta grafik di `report-charts.tsx`.
+
+    **Dua nama token sekarang berbohong dan sengaja dibiarkan**: `teal` adalah
+    hijau cangkang, dan `slate` adalah abu hangat. Menggantinya berarti
+    menyentuh dua puluh berkas untuk hasil yang identik di layar.
+
+    Bentuk yang ikut berubah:
+
+    - **Cangkang.** Lebar: panel putih membulat yang duduk di dalam bingkai
+      hijau, di atas dasar krem. Hijaunya setebal border (10px), bukan margin
+      kanvas yang dulu dikeluhkan — sidebar digambar langsung di atasnya tanpa
+      panel sendiri. Sempit: tidak ada cangkang sama sekali, panel *adalah*
+      viewport, dan sidebar jadi baris nav di dalamnya.
+    - **Wordmark pindah ke sidebar** saat lebar (kembali ke top bar saat
+      sempit — di sana tidak ada hijau untuk ditempati). Logonya digambar
+      dengan hijau tua yang hilang di atas cangkang, jadi ia diberi cakram
+      putih sebagai alasnya sendiri, bukan diwarnai ulang.
+    - **Grafik**: hijau untuk periode yang sudah selesai, emas untuk yang
+      belum. Pasangan itu lolos kontras 3:1 dan duduk di pita CVD 6–8 —
+      dibolehkan karena pembedanya dibawa tiga cara lain: legenda, posisi
+      (periode terbuka selalu ekor kanan), dan tampilan tabel.

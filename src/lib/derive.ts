@@ -155,8 +155,8 @@ export function buildCalendar({
              inside it, so the same name on four days reads as one booking
              rather than four separate ones. */
           nightLabel: nights > 1 ? `${nth}/${nights}` : "",
-          bg: conflictIds.has(b.id) ? "#FEE4E2" : c.bg,
-          fg: conflictIds.has(b.id) ? "#B42318" : c.fg,
+          bg: conflictIds.has(b.id) ? "#FBE3DA" : c.bg,
+          fg: conflictIds.has(b.id) ? "#B04A3A" : c.fg,
           dot: conflictIds.has(b.id) ? "#DC2626" : c.dot,
         };
       }),

@@ -26,9 +26,9 @@ const ARROW_BUTTON =
   "h-[34px] w-[34px] cursor-pointer rounded-[11px] border border-line-strong bg-surface text-[15px] text-slate hover:bg-surface-hover";
 
 function cellBackground(cell: CalendarCell) {
-  if (!cell.inMonth) return "#FBFCFC";
-  if (cell.conflictHere) return "#FFF7F6";
-  if (cell.isToday) return "#F2FAF7";
+  if (!cell.inMonth) return "#FEFCF9";
+  if (cell.conflictHere) return "#FDF6F3";
+  if (cell.isToday) return "#F0F8F3";
   return "#FFFFFF";
 }
 
@@ -173,7 +173,7 @@ export function CalendarScreen({
                     className="font-mono text-[10.5px]"
                     style={{
                       color:
-                        cell.occupied >= cell.capacity ? "#B42318" : "#8B9C96",
+                        cell.occupied >= cell.capacity ? "#B04A3A" : "#9D9486",
                     }}
                   >
                     {cell.occupied}/{cell.capacity}

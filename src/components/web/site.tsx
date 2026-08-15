@@ -53,10 +53,12 @@ const MONTHS_AHEAD = monthOptions(new Date(2026, 7, 1));
  * The hero photograph, served straight from `public/`.
  *
  * Replacing it is a matter of overwriting the file — no code changes — as long
- * as the name matches. If the file is missing the drawn scene underneath shows
- * instead, so the page never breaks over a bad upload.
+ * as the name matches **exactly**, lowercase included: the server is
+ * case-sensitive even though a Mac is not, so `Hero.jpg` uploaded over this
+ * would 404 without ever looking wrong locally. If the file is missing the
+ * drawn scene underneath shows instead, so the page never breaks outright.
  */
-const HERO_PHOTO = "/hero.png";
+const HERO_PHOTO = "/hero.jpg";
 
 /**
  * The homestay's own badge, used across the site in place of the Unmehopa

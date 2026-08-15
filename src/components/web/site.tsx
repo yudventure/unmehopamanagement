@@ -437,66 +437,67 @@ export function TurtleSite() {
           <br className="hidden md:block" /> {t.value.headingBreak}
         </h2>
 
-        <div className="mt-14 grid grid-cols-1 items-start gap-8 md:grid-cols-[minmax(240px,340px)_1fr]">
-          <div>
-            <Eyebrow>{t.value.eyebrow}</Eyebrow>
-            <h3 className="mt-5 text-[28px] leading-[1.15] font-bold tracking-[-.02em] whitespace-pre-line">
-              {t.value.title}
-            </h3>
-            <p className="mt-3 text-[14.5px] leading-[1.65] text-slate">
-              {t.value.body}
-            </p>
-            <button
-              type="button"
-              onClick={() => ask("stay", t.value.ctaNote)}
-              className={`${PILL_DARK} mt-6 cursor-pointer border-none`}
-            >
-              {t.value.cta}
-            </button>
-          </div>
-
-          {/*
-           * Three frames at different heights, so the cluster reads as a
-           * spread rather than a row of equal tiles.
-           *
-           * The captions follow what each photograph actually shows. Slotted
-           * in the order they were given, 1/2/3 landed under "kamar di atas
-           * air", "karang rumah" and "sore di perahu" — but 1 is dusk on the
-           * jetty, 2 is lunch under the dining hut, and 3 is the bungalow
-           * walk. None of the three shows a reef. Captioning a plate of food
-           * as the house reef is the kind of thing a guest notices, so the
-           * words moved to meet the pictures rather than the other way round.
-           */}
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-            {t.cards.map((c, i) => (
-              <div
-                key={c.title}
-                className={
-                  i === 1 ? "sm:mt-10" : i === 2 ? "hidden sm:mt-4 sm:block" : ""
-                }
-              >
-                <Frame ratio="3 / 4">
-                  {i === 0 ? (
-                    <JettyScene className={FILL} />
-                  ) : i === 1 ? (
-                    <SnorkelScene className={FILL} />
-                  ) : (
-                    <IsletScene className={FILL} warm />
-                  )}
-                  <PhotoFill src={`/${i + 1}.jpg`} alt={c.alt} />
-                  <span className="absolute right-3 bottom-3 rounded-full bg-ink/70 px-[11px] py-[5px] text-[11.5px] text-white">
-                    {c.badge}
-                  </span>
-                </Frame>
-                <div className="mt-[10px] text-[13.5px] font-medium">
-                  {c.title}
-                </div>
-                <div className="text-[12.5px] text-slate-soft">{c.sub}</div>
-              </div>
-            ))}
-          </div>
+        {/* The text no longer sits beside the pictures. Three cards next to
+            a 340px column can only ever be a third of what is left, and the
+            photographs are the argument this section is making. */}
+        <div className="mx-auto mt-12 max-w-[640px] text-center">
+          <Eyebrow>{t.value.eyebrow}</Eyebrow>
+          <h3 className="mt-5 text-[26px] leading-[1.15] font-bold tracking-[-.02em] whitespace-pre-line">
+            {t.value.title}
+          </h3>
+          <p className="mt-3 text-[14.5px] leading-[1.65] text-slate">
+            {t.value.body}
+          </p>
+          <button
+            type="button"
+            onClick={() => ask("stay", t.value.ctaNote)}
+            className={`${PILL_DARK} mt-6 cursor-pointer border-none`}
+          >
+            {t.value.cta}
+          </button>
         </div>
       </Section>
+
+      {/*
+       * Full width rather than inside the 1180px column: at three across,
+       * that column caps each card at about 240px, and these are the whole
+       * argument the section is making. Edge to edge they run about double.
+       *
+       * The captions follow what each photograph actually shows. Slotted in
+       * the order they were given, 1/2/3 landed under "kamar di atas air",
+       * "karang rumah" and "sore di perahu", but 1 is dusk on the jetty, 2 is
+       * lunch under the dining hut, and 3 is the bungalow walk. None of them
+       * shows a reef. Captioning a plate of food as the house reef is the kind
+       * of thing a guest notices, so the words moved to meet the pictures.
+       */}
+      <div className="mt-12 w-full px-5 md:mt-16 md:px-10">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:gap-6">
+          {t.cards.map((c, i) => (
+            <div
+              key={c.title}
+              className={
+                i === 1 ? "sm:mt-12" : i === 2 ? "hidden sm:mt-5 sm:block" : ""
+              }
+            >
+              <Frame ratio="3 / 4" className="rounded-[26px]">
+                {i === 0 ? (
+                  <JettyScene className={FILL} />
+                ) : i === 1 ? (
+                  <SnorkelScene className={FILL} />
+                ) : (
+                  <IsletScene className={FILL} warm />
+                )}
+                <PhotoFill src={`/${i + 1}.jpg`} alt={c.alt} />
+                <span className="absolute right-4 bottom-4 rounded-full bg-ink/70 px-[13px] py-[6px] text-[12.5px] text-white">
+                  {c.badge}
+                </span>
+              </Frame>
+              <div className="mt-[14px] text-[16px] font-medium">{c.title}</div>
+              <div className="text-[14px] text-slate-soft">{c.sub}</div>
+            </div>
+          ))}
+        </div>
+      </div>
 
       {/* ---------------------------------------------------------- rooms */}
       <Section id="kamar" className="pt-20 md:pt-28">

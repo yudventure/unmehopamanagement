@@ -49,6 +49,16 @@ const NAV = [
 
 const MONTHS_AHEAD = monthOptions(new Date(2026, 7, 1));
 
+/**
+ * The hero photograph, served straight from `public/`.
+ *
+ * Drop the file at `public/hero.jpg` and it takes over; until then the drawn
+ * scene underneath shows instead. Landscape, at least 1920px wide, and worth
+ * compressing to somewhere under 400 KB — this is the first thing the page
+ * loads and half the audience is on an island connection.
+ */
+const HERO_PHOTO = "/hero.jpg";
+
 const PILL_DARK =
   "inline-flex items-center justify-center rounded-full bg-ink px-6 py-[13px] text-[14px] font-medium text-white transition-colors hover:bg-ink-soft";
 const PILL_LIGHT =
@@ -207,21 +217,42 @@ export function TurtleSite() {
       {/* ----------------------------------------------------------- hero */}
       <div id="atas" className="relative">
         <div className="relative h-[500px] w-full overflow-hidden sm:h-[580px] md:h-[660px]">
+          {/* The illustration is the floor, not the picture: it only shows if
+              the photograph is missing, so a deploy without `public/hero.jpg`
+              degrades to something drawn instead of to a broken image. */}
           <HeroScene className="absolute inset-0 h-full w-full object-cover" />
-          {/* Enough scrim to hold white type, no more — the picture stays a
-              picture rather than becoming a grey field. */}
-          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(12,32,30,.45)_0%,rgba(12,32,30,.12)_38%,rgba(12,32,30,.55)_100%)]" />
+
+          {/* A background rather than an <img>: a missing file simply does not
+              paint, so the illustration shows through with no broken-image
+              marker and no JavaScript needed to hide one. The photo is
+              decorative — the sentence beneath it carries the meaning. */}
+          <div
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+            style={{ backgroundImage: `url("${HERO_PHOTO}")` }}
+          />
+
+          {/*
+           * Scrim tuned for a bright photograph, not for the illustration.
+           * White sand under white type is the hard case, and the sand is
+           * exactly where the subtitle lands — so the gradient is heaviest at
+           * the foot, lets the middle stay open where the picture does its
+           * work, and darkens the crown again for the fixed header's nav.
+           */}
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(9,26,24,.62)_0%,rgba(9,26,24,.22)_26%,rgba(9,26,24,.30)_50%,rgba(9,26,24,.66)_78%,rgba(9,26,24,.86)_100%)]" />
 
           {/* Nothing to click in the hero: no picker bar, no buttons. It
               carried the same three questions the enquiry form asks, and
               buttons in its place were the same call twice on one screen —
               the header's "Pesan" is already there and stays there while the
               page scrolls. */}
-          <div className="absolute inset-x-0 bottom-0 mx-auto flex w-full max-w-[1180px] flex-col items-center px-5 pb-[64px] text-center md:px-8 md:pb-[84px]">
+          {/* The shadow is the second line of defence behind the scrim: a
+              photograph can put a bright cloud or a strip of sand anywhere,
+              and the gradient alone cannot know where. */}
+          <div className="absolute inset-x-0 bottom-0 mx-auto flex w-full max-w-[1180px] flex-col items-center px-5 pb-[64px] text-center md:px-8 md:pb-[84px] [text-shadow:0_2px_28px_rgba(6,20,18,.62)]">
             <h1 className="m-0 text-[clamp(52px,11vw,132px)] leading-[.92] font-bold tracking-[-.035em] text-white">
               Turtle
             </h1>
-            <p className="mt-4 max-w-[560px] text-[15px] leading-[1.6] text-white/85">
+            <p className="mt-4 max-w-[560px] text-[15px] leading-[1.6] text-white/90">
               Homestay dan dive center milik keluarga di Yenbuba, Pulau Mansuar.
               Tidur di atas air, sarapan menghadap Selat Dampier, menyelam
               sebelum matahari tinggi.

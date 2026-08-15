@@ -212,11 +212,12 @@ export function TurtleSite() {
               picture rather than becoming a grey field. */}
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(12,32,30,.45)_0%,rgba(12,32,30,.12)_38%,rgba(12,32,30,.55)_100%)]" />
 
-          {/* No picker bar here. It asked the same three questions the
-              enquiry form asks, so a visitor filled them in twice or wondered
-              which one was the real booking. The hero points at the form
-              instead of duplicating it. */}
-          <div className="absolute inset-x-0 bottom-0 mx-auto flex w-full max-w-[1180px] flex-col items-center px-5 pb-[56px] text-center md:px-8 md:pb-[72px]">
+          {/* Nothing to click in the hero: no picker bar, no buttons. It
+              carried the same three questions the enquiry form asks, and
+              buttons in its place were the same call twice on one screen —
+              the header's "Pesan" is already there and stays there while the
+              page scrolls. */}
+          <div className="absolute inset-x-0 bottom-0 mx-auto flex w-full max-w-[1180px] flex-col items-center px-5 pb-[64px] text-center md:px-8 md:pb-[84px]">
             <h1 className="m-0 text-[clamp(52px,11vw,132px)] leading-[.92] font-bold tracking-[-.035em] text-white">
               Turtle
             </h1>
@@ -225,20 +226,6 @@ export function TurtleSite() {
               Tidur di atas air, sarapan menghadap Selat Dampier, menyelam
               sebelum matahari tinggi.
             </p>
-            <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
-              <a
-                href="#pesan"
-                className="inline-flex items-center justify-center rounded-full bg-white px-7 py-[13px] text-[14px] font-medium text-ink no-underline transition-colors hover:bg-surface-hover hover:no-underline"
-              >
-                Tanya ketersediaan
-              </a>
-              <a
-                href="#kamar"
-                className="inline-flex items-center justify-center rounded-full border border-white/45 px-7 py-[13px] text-[14px] font-medium text-white no-underline transition-colors hover:bg-white/12 hover:no-underline"
-              >
-                Lihat kamar
-              </a>
-            </div>
           </div>
         </div>
       </div>

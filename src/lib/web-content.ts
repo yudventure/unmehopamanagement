@@ -248,7 +248,7 @@ const EN: SiteCopy = {
       "A family homestay and dive centre in Yenbuba, Pulau Mansuar. Rooms over the water, three meals a day, and daily diving in the Dampier Strait.",
   },
   hero: {
-    sub: "A family-run homestay and dive centre in Yenbuba, Pulau Mansuar. Sleep over the water, eat breakfast facing the Dampier Strait, dive before the sun gets high.",
+    sub: "Yenbuba, Pulau Mansuar — a homestay built by hand from local timber, standing over a reef we leave the way we found it. Kept by the family who has always lived in this bay, at the pace the tide sets.",
   },
   badges: [
     "Run by the family that owns it",
@@ -540,7 +540,7 @@ const ID: SiteCopy = {
       "Homestay keluarga dan dive center di Yenbuba, Pulau Mansuar. Kamar di atas air, tiga kali makan, dan penyelaman harian di Selat Dampier.",
   },
   hero: {
-    sub: "Homestay dan dive center milik keluarga di Yenbuba, Pulau Mansuar. Tidur di atas air, sarapan menghadap Selat Dampier, menyelam sebelum matahari tinggi.",
+    sub: "Yenbuba, Pulau Mansuar — homestay yang dibangun dengan tangan dari kayu setempat, berdiri di atas karang yang kami jaga apa adanya. Dirawat keluarga yang memang lahir dan besar di teluk ini, dengan irama yang diatur pasang surut.",
   },
   badges: [
     "Dikelola langsung oleh keluarga pemilik",

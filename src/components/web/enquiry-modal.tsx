@@ -4,8 +4,6 @@ import { useEffect } from "react";
 
 import {
   ACTIVITY_KEYS,
-  EMAIL,
-  WHATSAPP,
   type ActivityKey,
   type SiteCopy,
   waLink,
@@ -13,6 +11,9 @@ import {
 
 export interface Enquiry {
   name: string;
+  /** The guest's own WhatsApp number, so a reply does not need a reply. */
+  phone: string;
+  email: string;
   activity: ActivityKey;
   /** Index into the month list, so the choice survives a language switch. */
   monthIx: number;
@@ -23,6 +24,8 @@ export interface Enquiry {
 
 export const EMPTY_ENQUIRY: Enquiry = {
   name: "",
+  phone: "",
+  email: "",
   activity: "stay",
   monthIx: 0,
   people: "2",
@@ -119,7 +122,7 @@ export function EnquiryModal({
         <div>
           <div className="px-6 py-6 sm:px-8">
             <div className="grid grid-cols-1 gap-[14px] sm:grid-cols-2">
-              <label className={LABEL}>
+              <label className={`${LABEL} sm:col-span-2`}>
                 {t.enquiry.name}
                 <input
                   value={value.name}
@@ -128,6 +131,34 @@ export function EnquiryModal({
                   className={FIELD}
                 />
               </label>
+
+              <label className={LABEL}>
+                {t.enquiry.phone}
+                <input
+                  value={value.phone}
+                  onChange={(e) => onChange({ phone: e.target.value })}
+                  placeholder={t.enquiry.phonePlaceholder}
+                  inputMode="tel"
+                  autoComplete="tel"
+                  className={FIELD}
+                />
+              </label>
+
+              <label className={LABEL}>
+                {t.enquiry.email}
+                <input
+                  value={value.email}
+                  onChange={(e) => onChange({ email: e.target.value })}
+                  placeholder={t.enquiry.emailPlaceholder}
+                  inputMode="email"
+                  autoComplete="email"
+                  className={FIELD}
+                />
+              </label>
+
+              <div className="text-[11.5px] text-slate-mute sm:col-span-2 sm:-mt-[6px]">
+                {t.enquiry.contactNote}
+              </div>
 
               <label className={LABEL}>
                 {t.enquiry.what}
@@ -198,30 +229,18 @@ export function EnquiryModal({
               </label>
             </div>
 
-            <div className="mt-6 flex flex-wrap items-center gap-[10px]">
-              <a
-                href={waLink(message)}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center justify-center rounded-full bg-ink px-6 py-[12px] text-[14px] font-medium text-white no-underline transition-colors hover:bg-ink-soft hover:no-underline"
-              >
-                {t.enquiry.whatsapp}
-              </a>
-              <a
-                href={`mailto:${EMAIL}?subject=${encodeURIComponent(
-                  t.enquiry.emailSubject(
-                    t.activities[value.activity],
-                    months[value.monthIx] ?? months[0],
-                  ),
-                )}&body=${encodeURIComponent(message)}`}
-                className="inline-flex items-center justify-center rounded-full border border-line-strong bg-surface px-6 py-[12px] text-[14px] font-medium text-ink no-underline transition-colors hover:bg-surface-hover hover:no-underline"
-              >
-                {t.enquiry.email}
-              </a>
-              <span className="text-[12px] text-slate-mute">
-                +{WHATSAPP}
-              </span>
-            </div>
+            {/* One action. Until the enquiry has a server to post to, sending
+                means handing the finished message to WhatsApp — which is where
+                it would end up anyway, and is the one channel that works from
+                the island without an account. */}
+            <a
+              href={waLink(message)}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-6 inline-flex w-full items-center justify-center rounded-full bg-ink px-6 py-[13px] text-[14px] font-medium text-white no-underline transition-colors hover:bg-ink-soft hover:no-underline sm:w-auto sm:min-w-[180px]"
+            >
+              {t.enquiry.submit}
+            </a>
           </div>
         </div>
       </div>

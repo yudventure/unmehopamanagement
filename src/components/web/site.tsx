@@ -268,6 +268,8 @@ export function TurtleSite() {
   const message = t.message({
     activity: t.activities[enquiry.activity],
     name: enquiry.name,
+    phone: enquiry.phone,
+    email: enquiry.email,
     when: monthsAhead[enquiry.monthIx] ?? monthsAhead[0],
     people: enquiry.people,
     nights: enquiry.nights,

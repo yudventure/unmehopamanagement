@@ -202,15 +202,18 @@ export interface SiteCopy {
     close: string;
     name: string;
     namePlaceholder: string;
+    phone: string;
+    phonePlaceholder: string;
+    email: string;
+    emailPlaceholder: string;
+    contactNote: string;
     what: string;
     when: string;
     people: string;
     nights: string;
     notes: string;
     notesPlaceholder: string;
-    whatsapp: string;
-    email: string;
-    emailSubject: (activity: string, when: string) => string;
+    submit: string;
   };
   faq: { eyebrow: string; title: string; items: { q: string; a: string }[] };
   footer: { contact: string; pages: string; manager: string; colophon: string; tagline: string };
@@ -220,6 +223,8 @@ export interface SiteCopy {
   message: (v: {
     activity: string;
     name: string;
+    phone: string;
+    email: string;
     when: string;
     people: string;
     nights: string;
@@ -434,6 +439,11 @@ const EN: SiteCopy = {
     close: "Close",
     name: "Name",
     namePlaceholder: "Your name",
+    phone: "WhatsApp",
+    phonePlaceholder: "+62 …",
+    email: "Email",
+    emailPlaceholder: "you@example.com",
+    contactNote: "Leave at least one, so we can reach you.",
     what: "Looking for",
     when: "When",
     people: "People",
@@ -441,9 +451,7 @@ const EN: SiteCopy = {
     notes: "Notes",
     notesPlaceholder:
       "Food allergies, ferry times, dive certification, anything at all.",
-    whatsapp: "Open WhatsApp",
-    email: "Send an email",
-    emailSubject: (activity, when) => `${activity} enquiry for ${when}`,
+    submit: "Send",
   },
   faq: {
     eyebrow: "Asked often",
@@ -503,6 +511,8 @@ const EN: SiteCopy = {
       `Hello ${PROPERTY.name}, I would like to ask about ${v.activity.toLowerCase()}.`,
       "",
       v.name.trim() && `Name: ${v.name.trim()}`,
+      v.phone.trim() && `WhatsApp: ${v.phone.trim()}`,
+      v.email.trim() && `Email: ${v.email.trim()}`,
       `Dates: ${v.when}`,
       `People: ${v.people}`,
       v.withNights && `Nights: ${v.nights}`,
@@ -720,6 +730,11 @@ const ID: SiteCopy = {
     close: "Tutup",
     name: "Nama",
     namePlaceholder: "Nama kamu",
+    phone: "WhatsApp",
+    phonePlaceholder: "08…",
+    email: "Email",
+    emailPlaceholder: "kamu@contoh.com",
+    contactNote: "Isi salah satu, supaya kami bisa membalas.",
     what: "Mau apa",
     when: "Kapan",
     people: "Orang",
@@ -727,9 +742,7 @@ const ID: SiteCopy = {
     notes: "Catatan",
     notesPlaceholder:
       "Alergi makanan, jadwal kapal, sertifikat selam, apa saja.",
-    whatsapp: "Buka WhatsApp",
-    email: "Kirim email",
-    emailSubject: (activity, when) => `Tanya ${activity} untuk ${when}`,
+    submit: "Kirim",
   },
   faq: {
     eyebrow: "Yang sering ditanya",
@@ -789,6 +802,8 @@ const ID: SiteCopy = {
       `Halo ${PROPERTY.name}, saya ingin bertanya soal ${v.activity.toLowerCase()}.`,
       "",
       v.name.trim() && `Nama: ${v.name.trim()}`,
+      v.phone.trim() && `WhatsApp: ${v.phone.trim()}`,
+      v.email.trim() && `Email: ${v.email.trim()}`,
       `Rencana: ${v.when}`,
       `Jumlah orang: ${v.people}`,
       v.withNights && `Lama menginap: ${v.nights} malam`,

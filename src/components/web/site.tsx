@@ -9,19 +9,22 @@ import {
   ReefScene,
   SnorkelScene,
 } from "@/components/web/scenes";
-import { fmt } from "@/lib/format";
 import {
-  ACTIVITIES,
-  DIVE_PACKAGES,
+  ACTIVITY_KEYS,
+  COPY,
+  DEFAULT_LANG,
+  DIVE_FEATURED,
+  DIVE_KEYS,
+  DIVE_PRICE,
   EMAIL,
-  FAQ,
-  JOURNEY,
+  LANGS,
   PROPERTY,
-  SEASON_BANDS,
   WHATSAPP,
   type ActivityKey,
+  type Lang,
+  money,
   monthOptions,
-  roomTypes,
+  roomFacts,
   waLink,
 } from "@/lib/web-content";
 
@@ -38,16 +41,18 @@ import {
  * live; the dive centre is the part that is genuinely booked here.
  */
 
-const NAV = [
-  { href: "#atas", label: "Beranda" },
-  { href: "#kamar", label: "Kamar" },
-  { href: "#diving", label: "Diving" },
-  { href: "#musim", label: "Musim" },
-  { href: "#perjalanan", label: "Cara Sampai" },
-  { href: "#tanya", label: "Tanya" },
-];
+/** Anchors stay in one language; only the labels move. */
+const NAV_KEYS = [
+  { href: "#atas", key: "home" },
+  { href: "#kamar", key: "rooms" },
+  { href: "#diving", key: "diving" },
+  { href: "#musim", key: "season" },
+  { href: "#perjalanan", key: "journey" },
+  { href: "#tanya", key: "faq" },
+] as const;
 
-const MONTHS_AHEAD = monthOptions(new Date(2026, 7, 1));
+const MONTH_ANCHOR = new Date(2026, 7, 1);
+const LANG_KEY = "turtle-lang";
 
 /**
  * The hero photograph, served straight from `public/`.
@@ -84,6 +89,42 @@ function SiteLogo({ size }: { size: number }) {
         className="h-full w-full object-cover"
       />
     </span>
+  );
+}
+
+/**
+ * Two languages, both always visible — a dropdown would hide the fact that
+ * the other one exists, which is the only thing this control has to say.
+ * `lang` on each button lets a browser pronounce "Bahasa Indonesia"
+ * correctly while the rest of the page is in English.
+ */
+function LangSwitch({
+  lang,
+  onPick,
+}: {
+  lang: Lang;
+  onPick: (next: Lang) => void;
+}) {
+  return (
+    <div className="flex items-center gap-[2px] rounded-full border border-white/25 p-[2px]">
+      {LANGS.map((l) => (
+        <button
+          key={l.key}
+          type="button"
+          lang={l.key}
+          onClick={() => onPick(l.key)}
+          aria-label={l.label}
+          aria-pressed={lang === l.key}
+          className={`cursor-pointer rounded-full border-none px-[10px] py-[5px] text-[12px] font-medium transition-colors ${
+            lang === l.key
+              ? "bg-white text-ink"
+              : "bg-transparent text-white/70 hover:text-white"
+          }`}
+        >
+          {l.short}
+        </button>
+      ))}
+    </div>
   );
 }
 
@@ -163,6 +204,35 @@ function PhotoFill({ src, alt }: { src: string; alt: string }) {
 export function TurtleSite() {
   const [menuOpen, setMenuOpen] = useState(false);
 
+  /*
+   * English is the default because most people reaching this page are not
+   * Indonesian, and the choice is remembered so a returning guest does not
+   * have to make it twice.
+   *
+   * The state starts at the default rather than reading storage during
+   * render: the page is prerendered, and a value read at render time would
+   * not match what the browser hydrates with.
+   */
+  const [lang, setLang] = useState<Lang>(DEFAULT_LANG);
+  useEffect(() => {
+    const saved = window.localStorage.getItem(LANG_KEY);
+    if (saved === "en" || saved === "id") setLang(saved);
+  }, []);
+  const pickLang = (next: Lang) => {
+    setLang(next);
+    window.localStorage.setItem(LANG_KEY, next);
+  };
+
+  const t = COPY[lang];
+  const nav = NAV_KEYS.map((n) => ({ href: n.href, label: t.nav[n.key] }));
+  const monthsAhead = monthOptions(MONTH_ANCHOR, lang);
+
+  /* Screen readers and translation tools go by this, so it has to follow the
+     switch rather than stay at whatever the document was rendered with. */
+  useEffect(() => {
+    document.documentElement.lang = t.htmlLang;
+  }, [t.htmlLang]);
+
   /* The header is bare over the top of the hero and grows its bar once the
      page moves. It starts false rather than reading scrollY during render:
      the page is prerendered, and a value read at render time would not match
@@ -183,29 +253,27 @@ export function TurtleSite() {
   /* The hero picker and every "Pesan" button write into the same enquiry, so
      whichever one the visitor touched, the message that opens is already
      about the thing they touched. */
-  const [activity, setActivity] = useState<ActivityKey>("menginap");
-  const [when, setWhen] = useState(MONTHS_AHEAD[0]);
+  const [activity, setActivity] = useState<ActivityKey>("stay");
+  /* Held as an index, not a name: the names are translated, and a stored
+     "Agustus 2026" would not survive a switch to English. */
+  const [monthIx, setMonthIx] = useState(0);
   const [people, setPeople] = useState("2");
   const [nights, setNights] = useState("3");
   const [detail, setDetail] = useState("");
   const [name, setName] = useState("");
 
-  const activityLabel =
-    ACTIVITIES.find((a) => a.key === activity)?.label ?? "Menginap";
+  const activityLabel = t.activities[activity];
+  const when = monthsAhead[monthIx] ?? monthsAhead[0];
 
-  const message = [
-    `Halo ${PROPERTY.name}, saya ingin bertanya soal ${activityLabel.toLowerCase()}.`,
-    "",
-    name.trim() && `Nama: ${name.trim()}`,
-    `Rencana: ${when}`,
-    `Jumlah orang: ${people}`,
-    activity !== "diving" && activity !== "snorkeling" && `Lama menginap: ${nights} malam`,
-    detail.trim() && `Catatan: ${detail.trim()}`,
-    "",
-    "Terima kasih.",
-  ]
-    .filter(Boolean)
-    .join("\n");
+  const message = t.message({
+    activity: activityLabel,
+    name,
+    when,
+    people,
+    nights,
+    notes: detail,
+    withNights: activity !== "diving" && activity !== "snorkeling",
+  });
 
   /** Points the enquiry at one thing, then jumps to the form. */
   const ask = (next: ActivityKey, note: string) => {
@@ -214,7 +282,7 @@ export function TurtleSite() {
     document.getElementById("pesan")?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const rooms = roomTypes();
+  const rooms = roomFacts();
 
   return (
     <div className="bg-surface text-ink">
@@ -244,7 +312,7 @@ export function TurtleSite() {
             can sit centred rather than pushed to one side by a logo. */}
         <div className="mx-auto flex w-full max-w-[1180px] items-center justify-center gap-4 px-5 py-[14px] md:px-8">
           <nav className="hidden items-center gap-[26px] lg:flex">
-            {NAV.map((n) => (
+            {nav.map((n) => (
               <a
                 key={n.href}
                 href={n.href}
@@ -257,8 +325,9 @@ export function TurtleSite() {
               href="#pesan"
               className="rounded-full bg-white px-[18px] py-[9px] text-[13.5px] font-medium text-ink no-underline hover:bg-surface-hover hover:no-underline"
             >
-              Pesan
+              {t.book}
             </a>
+            <LangSwitch lang={lang} onPick={pickLang} />
           </nav>
 
           {/* Below the nav's breakpoint the row is the two controls, still
@@ -268,12 +337,13 @@ export function TurtleSite() {
               href="#pesan"
               className="rounded-full bg-white px-[18px] py-[9px] text-[13.5px] font-medium text-ink no-underline hover:bg-surface-hover hover:no-underline"
             >
-              Pesan
+              {t.book}
             </a>
+            <LangSwitch lang={lang} onPick={pickLang} />
             <button
               type="button"
               onClick={() => setMenuOpen((v) => !v)}
-              aria-label="Buka menu"
+              aria-label={t.openMenu}
               aria-expanded={menuOpen}
               className="flex h-[36px] w-[36px] cursor-pointer flex-col items-center justify-center gap-[5px] rounded-full border border-white/30 bg-transparent"
             >
@@ -285,7 +355,7 @@ export function TurtleSite() {
 
         {menuOpen && (
           <nav className="border-t border-white/15 bg-ink/90 px-5 py-3 text-center lg:hidden">
-            {NAV.map((n) => (
+            {nav.map((n) => (
               <a
                 key={n.href}
                 href={n.href}
@@ -348,9 +418,7 @@ export function TurtleSite() {
               Turtle Dive Homestay
             </h1>
             <p className="mt-4 max-w-[560px] text-[15px] leading-[1.6] text-white/90">
-              Homestay dan dive center milik keluarga di Yenbuba, Pulau Mansuar.
-              Tidur di atas air, sarapan menghadap Selat Dampier, menyelam
-              sebelum matahari tinggi.
+              {t.hero.sub}
             </p>
           </div>
         </div>
@@ -359,38 +427,31 @@ export function TurtleSite() {
       {/* --------------------------------------------------------- values */}
       <Section className="pt-16 md:pt-24">
         <div className="flex flex-wrap items-center justify-center gap-3">
-          <Eyebrow>Dikelola langsung oleh keluarga pemilik</Eyebrow>
-          <Eyebrow>10 kamar · maksimal 24 tamu</Eyebrow>
-          <Eyebrow>Dive center di dermaga sendiri</Eyebrow>
+          {t.badges.map((b) => (
+            <Eyebrow key={b}>{b}</Eyebrow>
+          ))}
         </div>
 
         <h2 className="mx-auto mt-9 max-w-[860px] text-center text-[clamp(34px,5.4vw,62px)] leading-[1.04] font-bold tracking-[-.03em]">
-          Satu dermaga, satu keluarga,
-          <br className="hidden md:block" /> dan karang tepat di depannya
+          {t.value.heading}
+          <br className="hidden md:block" /> {t.value.headingBreak}
         </h2>
 
         <div className="mt-14 grid grid-cols-1 items-start gap-8 md:grid-cols-[minmax(240px,340px)_1fr]">
           <div>
-            <Eyebrow>01 · Kenapa di sini</Eyebrow>
-            <h3 className="mt-5 text-[28px] leading-[1.15] font-bold tracking-[-.02em]">
-              Bukan resort.
-              <br />
-              Rumah orang.
+            <Eyebrow>{t.value.eyebrow}</Eyebrow>
+            <h3 className="mt-5 text-[28px] leading-[1.15] font-bold tracking-[-.02em] whitespace-pre-line">
+              {t.value.title}
             </h3>
             <p className="mt-3 text-[14.5px] leading-[1.65] text-slate">
-              Kamar dibangun sendiri dari kayu setempat, makanan dimasak di
-              dapur yang sama dengan keluarga, dan yang mengantar kamu menyelam
-              adalah orang yang lahir di teluk ini. Tidak ada resepsionis, tidak
-              ada seragam.
+              {t.value.body}
             </p>
             <button
               type="button"
-              onClick={() =>
-                ask("menginap", "Saya ingin tahu ketersediaan kamar.")
-              }
+              onClick={() => ask("stay", t.value.ctaNote)}
               className={`${PILL_DARK} mt-6 cursor-pointer border-none`}
             >
-              Tanya ketersediaan
+              {t.value.cta}
             </button>
           </div>
 
@@ -407,72 +468,52 @@ export function TurtleSite() {
            * words moved to meet the pictures rather than the other way round.
            */}
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-            <div>
-              <Frame ratio="3 / 4">
-                <JettyScene className={FILL} />
-                <PhotoFill src="/1.jpg" alt="Tamu duduk di ujung dermaga saat matahari terbenam" />
-                <span className="absolute right-3 bottom-3 rounded-full bg-ink/70 px-[11px] py-[5px] text-[11.5px] text-white">
-                  Dermaga
-                </span>
-              </Frame>
-              <div className="mt-[10px] text-[13.5px] font-medium">
-                Sore di dermaga
+            {t.cards.map((c, i) => (
+              <div
+                key={c.title}
+                className={
+                  i === 1 ? "sm:mt-10" : i === 2 ? "hidden sm:mt-4 sm:block" : ""
+                }
+              >
+                <Frame ratio="3 / 4">
+                  {i === 0 ? (
+                    <JettyScene className={FILL} />
+                  ) : i === 1 ? (
+                    <SnorkelScene className={FILL} />
+                  ) : (
+                    <IsletScene className={FILL} warm />
+                  )}
+                  <PhotoFill src={`/${i + 1}.jpg`} alt={c.alt} />
+                  <span className="absolute right-3 bottom-3 rounded-full bg-ink/70 px-[11px] py-[5px] text-[11.5px] text-white">
+                    {c.badge}
+                  </span>
+                </Frame>
+                <div className="mt-[10px] text-[13.5px] font-medium">
+                  {c.title}
+                </div>
+                <div className="text-[12.5px] text-slate-soft">{c.sub}</div>
               </div>
-              <div className="text-[12.5px] text-slate-soft">
-                Senja dari ujung jetty
-              </div>
-            </div>
-
-            <div className="sm:mt-10">
-              <Frame ratio="3 / 4">
-                <SnorkelScene className={FILL} />
-                <PhotoFill src="/2.jpg" alt="Dua tamu makan di bawah pondok kayu beratap rumbia" />
-                <span className="absolute right-3 bottom-3 rounded-full bg-ink/70 px-[11px] py-[5px] text-[11.5px] text-white">
-                  Pondok makan
-                </span>
-              </Frame>
-              <div className="mt-[10px] text-[13.5px] font-medium">
-                Makan bersama
-              </div>
-              <div className="text-[12.5px] text-slate-soft">
-                Tiga kali sehari, satu meja
-              </div>
-            </div>
-
-            <div className="hidden sm:mt-4 sm:block">
-              <Frame ratio="3 / 4">
-                <IsletScene className={FILL} warm />
-                <PhotoFill src="/3.jpg" alt="Jalur papan di depan deretan bungalow beratap rumbia" />
-                <span className="absolute right-3 bottom-3 rounded-full bg-ink/70 px-[11px] py-[5px] text-[11.5px] text-white">
-                  Yenbuba
-                </span>
-              </Frame>
-              <div className="mt-[10px] text-[13.5px] font-medium">
-                Kamar di atas air
-              </div>
-              <div className="text-[12.5px] text-slate-soft">
-                Sepuluh kamar, satu jalur papan
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </Section>
 
       {/* ---------------------------------------------------------- rooms */}
       <Section id="kamar" className="pt-20 md:pt-28">
-        <Eyebrow>Kamar & harga</Eyebrow>
+        <Eyebrow>{t.rooms.eyebrow}</Eyebrow>
         <div className="mt-5 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
           <h2 className="m-0 max-w-[620px] text-[clamp(34px,5.2vw,58px)] leading-[1.05] font-bold tracking-[-.03em]">
-            Pilih Kamarmu
+            {t.rooms.title}
           </h2>
           <p className="max-w-[380px] text-[14px] leading-[1.6] text-slate">
-            Harga per kamar per malam, sudah termasuk tiga kali makan. Kami
-            tidak memungut biaya kebersihan atau biaya layanan.
+            {t.rooms.intro}
           </p>
         </div>
 
         <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2">
-          {rooms.map((r, i) => (
+          {rooms.map((r, i) => {
+            const rc = t.rooms.types[r.key];
+            return (
             <article
               key={r.key}
               className="overflow-hidden rounded-[24px] border border-line-soft bg-surface"
@@ -484,29 +525,31 @@ export function TurtleSite() {
                   <IsletScene className={FILL} />
                 )}
                 <span className="absolute top-4 left-4 rounded-full bg-white/92 px-[12px] py-[6px] text-[12px] font-medium">
-                  {r.count} kamar
+                  {t.rooms.roomsLabel(r.count)}
                 </span>
               </Frame>
 
               <div className="px-6 py-6">
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
                   <h3 className="m-0 text-[21px] font-bold tracking-[-.015em]">
-                    {r.name}
+                    {rc.name}
                   </h3>
                   <div className="text-right">
-                    <div className="text-[19px] font-bold">{fmt(r.rate)}</div>
+                    <div className="text-[19px] font-bold">
+                      {money(r.rate, lang)}
+                    </div>
                     <div className="text-[11.5px] text-slate-soft">
-                      per malam
+                      {t.rooms.perNight}
                     </div>
                   </div>
                 </div>
 
                 <p className="mt-2 text-[14px] leading-[1.6] text-slate">
-                  {r.blurb}
+                  {rc.blurb}
                 </p>
 
                 <ul className="mt-4 mb-0 grid list-none grid-cols-1 gap-x-4 gap-y-[7px] p-0 sm:grid-cols-2">
-                  {r.features.map((f) => (
+                  {rc.features.map((f) => (
                     <li
                       key={f}
                       className="flex items-start gap-[9px] text-[13px] text-ink-soft"
@@ -520,30 +563,23 @@ export function TurtleSite() {
                 <div className="mt-6 flex flex-wrap gap-[10px]">
                   <button
                     type="button"
-                    onClick={() =>
-                      ask(
-                        "menginap",
-                        `Saya tertarik ${r.name} (${r.cap}).`,
-                      )
-                    }
+                    onClick={() => ask("stay", t.rooms.askNote(rc.name))}
                     className={`${PILL_DARK} cursor-pointer border-none`}
                   >
-                    Tanya kamar ini
+                    {t.rooms.ask}
                   </button>
                   <span className="inline-flex items-center text-[12.5px] text-slate-soft">
-                    {r.cap}
+                    {rc.cap}
                   </span>
                 </div>
               </div>
             </article>
-          ))}
+            );
+          })}
         </div>
 
         <p className="mt-6 rounded-[16px] border border-line-soft bg-surface-mute px-5 py-4 text-[13.5px] leading-[1.6] text-slate">
-          Kamar juga terdaftar di Booking.com, Agoda dan Traveloka. Kalau kamu
-          lebih nyaman pesan lewat sana, silakan — harganya sama, hanya lewat
-          kami tidak ada komisi platform. Yang belum bisa dipesan di OTA mana
-          pun adalah paket menyelam; itu diatur langsung lewat WhatsApp.
+          {t.rooms.otaNote}
         </p>
       </Section>
 
@@ -554,18 +590,13 @@ export function TurtleSite() {
             <div>
               <span className="inline-flex items-center gap-[7px] rounded-full border border-white/20 px-[13px] py-[6px] text-[12px] text-white/75">
                 <span className="h-[6px] w-[6px] rounded-full bg-amber" />
-                Turtle Dive Center
+                {t.dive.badge}
               </span>
-              <h2 className="mt-5 mb-0 text-[clamp(34px,5.2vw,58px)] leading-[1.05] font-bold tracking-[-.03em] text-white">
-                Selam pagi,
-                <br />
-                pulang sebelum makan siang
+              <h2 className="mt-5 mb-0 text-[clamp(34px,5.2vw,58px)] leading-[1.05] font-bold tracking-[-.03em] whitespace-pre-line text-white">
+                {t.dive.title}
               </h2>
               <p className="mt-4 max-w-[520px] text-[14.5px] leading-[1.65] text-white/70">
-                Kami menyelam di Selat Dampier — Cape Kri, Mike&apos;s Point,
-                Sardine Reef, Manta Point — semuanya dalam 20 sampai 45 menit
-                perahu dari dermaga. Perahu berangkat dua kali sehari, maksimal
-                enam penyelam per guide.
+                {t.dive.body}
               </p>
             </div>
             <Frame ratio="4 / 3" className="rounded-[26px]">
@@ -574,11 +605,14 @@ export function TurtleSite() {
           </div>
 
           <div className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {DIVE_PACKAGES.map((p) => (
+            {DIVE_KEYS.map((key) => {
+              const p = t.dive.packages[key];
+              const featured = key === DIVE_FEATURED;
+              return (
               <article
-                key={p.key}
+                key={key}
                 className={`flex flex-col rounded-[20px] px-6 py-6 ${
-                  p.featured
+                  featured
                     ? "bg-amber text-amber-deep"
                     : "bg-white/8 text-white"
                 }`}
@@ -589,7 +623,7 @@ export function TurtleSite() {
                   </h3>
                   <span
                     className={`shrink-0 rounded-full px-[10px] py-[4px] text-[11px] whitespace-nowrap ${
-                      p.featured ? "bg-amber-deep/12" : "bg-white/12"
+                      featured ? "bg-amber-deep/12" : "bg-white/12"
                     }`}
                   >
                     {p.duration}
@@ -598,18 +632,18 @@ export function TurtleSite() {
 
                 <p
                   className={`mt-[10px] text-[13.5px] leading-[1.6] ${
-                    p.featured ? "text-amber-deep/80" : "text-white/65"
+                    featured ? "text-amber-deep/80" : "text-white/65"
                   }`}
                 >
                   {p.blurb}
                 </p>
 
                 <ul className="mt-4 mb-0 flex list-none flex-wrap gap-[6px] p-0">
-                  {p.includes.map((inc) => (
+                  {p.includes.map((inc: string) => (
                     <li
                       key={inc}
                       className={`rounded-full px-[10px] py-[4px] text-[11.5px] ${
-                        p.featured
+                        featured
                           ? "bg-amber-deep/10"
                           : "bg-white/10 text-white/75"
                       }`}
@@ -621,14 +655,16 @@ export function TurtleSite() {
 
                 <div
                   className={`mt-5 flex items-end justify-between gap-3 border-t pt-4 ${
-                    p.featured ? "border-amber-deep/15" : "border-white/12"
+                    featured ? "border-amber-deep/15" : "border-white/12"
                   }`}
                 >
                   <div>
-                    <div className="text-[20px] font-bold">{fmt(p.price)}</div>
+                    <div className="text-[20px] font-bold">
+                      {money(DIVE_PRICE[key], lang)}
+                    </div>
                     <div
                       className={`text-[11.5px] ${
-                        p.featured ? "text-amber-deep/70" : "text-white/55"
+                        featured ? "text-amber-deep/70" : "text-white/55"
                       }`}
                     >
                       {p.unit} · {p.level}
@@ -638,52 +674,50 @@ export function TurtleSite() {
                     type="button"
                     onClick={() =>
                       ask(
-                        p.key === "snorkel" ? "snorkeling" : "diving",
-                        `Saya tertarik paket "${p.name}".`,
+                        key === "snorkel" ? "snorkeling" : "diving",
+                        t.dive.orderNote(p.name),
                       )
                     }
                     className={`cursor-pointer rounded-full border-none px-[16px] py-[9px] text-[13px] font-medium ${
-                      p.featured
+                      featured
                         ? "bg-amber-deep text-amber"
                         : "bg-white text-ink hover:bg-surface-hover"
                     }`}
                   >
-                    Pesan
+                    {t.dive.order}
                   </button>
                 </div>
               </article>
-            ))}
+              );
+            })}
           </div>
 
           <p className="mt-6 text-[13px] leading-[1.6] text-white/50">
-            Penyelam bersertifikat harap membawa kartu dan buku log. Untuk
-            kursus Open Water, kabari minimal satu minggu sebelumnya supaya
-            materi dan jadwal instruktur bisa disiapkan.
+            {t.dive.footnote}
           </p>
         </Section>
       </div>
 
       {/* --------------------------------------------------------- season */}
       <Section id="musim" className="pt-20 md:pt-28">
-        <Eyebrow>Kapan sebaiknya datang</Eyebrow>
+        <Eyebrow>{t.season.eyebrow}</Eyebrow>
         <div className="mt-5 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
           <h2 className="m-0 max-w-[560px] text-[clamp(34px,5.2vw,58px)] leading-[1.05] font-bold tracking-[-.03em]">
-            Laut punya musimnya
+            {t.season.title}
           </h2>
           <p className="max-w-[400px] text-[14px] leading-[1.6] text-slate">
-            Raja Ampat bisa dikunjungi sepanjang tahun, tapi airnya tidak sama
-            tiap bulan. Ini yang kami lihat dari dermaga sendiri.
+            {t.season.intro}
           </p>
         </div>
 
         <div className="mt-10 grid grid-cols-1 gap-4 md:grid-cols-3">
-          {SEASON_BANDS.map((b) => (
+          {t.season.bands.map((b, i) => (
             <article
               key={b.label}
               className={`rounded-[20px] border px-6 py-6 ${
-                b.tone === "peak"
+                i === 0
                   ? "border-teal-line bg-teal-tint"
-                  : b.tone === "good"
+                  : i === 1
                     ? "border-amber-soft bg-amber-soft/45"
                     : "border-line-soft bg-surface-mute"
               }`}
@@ -704,13 +738,12 @@ export function TurtleSite() {
       <Section id="perjalanan" className="pt-20 md:pt-28">
         <div className="grid grid-cols-1 gap-10 md:grid-cols-[minmax(240px,380px)_1fr]">
           <div>
-            <Eyebrow>Cara sampai</Eyebrow>
+            <Eyebrow>{t.journey.eyebrow}</Eyebrow>
             <h2 className="mt-5 mb-0 text-[clamp(30px,4.4vw,46px)] leading-[1.08] font-bold tracking-[-.025em]">
-              Empat langkah dari Jakarta
+              {t.journey.title}
             </h2>
             <p className="mt-3 text-[14px] leading-[1.65] text-slate">
-              Perjalanan panjang, tapi lurus. Kabari kami jadwal kapalmu dan
-              perahu sudah menunggu di Waisai.
+              {t.journey.intro}
             </p>
             <Frame ratio="4 / 3" className="mt-6 hidden md:block">
               <IsletScene className={FILL} />
@@ -718,12 +751,14 @@ export function TurtleSite() {
           </div>
 
           <ol className="m-0 grid list-none grid-cols-1 gap-4 p-0 sm:grid-cols-2">
-            {JOURNEY.map((j) => (
+            {t.journey.steps.map((j, i) => (
               <li
-                key={j.step}
+                key={j.title}
                 className="rounded-[20px] border border-line-soft bg-surface-mute px-6 py-6"
               >
-                <div className="font-mono text-[12px] text-teal">{j.step}</div>
+                <div className="font-mono text-[12px] text-teal">
+                  {String(i + 1).padStart(2, "0")}
+                </div>
                 <div className="mt-2 text-[17px] font-bold tracking-[-.015em]">
                   {j.title}
                 </div>
@@ -741,53 +776,49 @@ export function TurtleSite() {
         <div className="overflow-hidden rounded-[28px] border border-line-soft bg-surface-mute">
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_minmax(300px,420px)]">
             <div className="px-7 py-9 md:px-10 md:py-11">
-              <Eyebrow>Pesan langsung</Eyebrow>
-              <h2 className="mt-5 mb-0 text-[clamp(30px,4.4vw,48px)] leading-[1.06] font-bold tracking-[-.025em]">
-                Kirim satu pesan,
-                <br />
-                kami balas hari itu juga
+              <Eyebrow>{t.enquiry.eyebrow}</Eyebrow>
+              <h2 className="mt-5 mb-0 text-[clamp(30px,4.4vw,48px)] leading-[1.06] font-bold tracking-[-.025em] whitespace-pre-line">
+                {t.enquiry.title}
               </h2>
               <p className="mt-3 max-w-[520px] text-[14px] leading-[1.65] text-slate">
-                Isi seadanya di bawah. Tombolnya akan membuka WhatsApp dengan
-                pesan yang sudah tertulis — kamu tinggal kirim. Tidak ada
-                pembayaran di halaman ini dan tidak ada akun yang perlu dibuat.
+                {t.enquiry.intro}
               </p>
 
               <div className="mt-7 grid grid-cols-1 gap-[14px] sm:grid-cols-2">
                 <label className="flex flex-col gap-[6px] text-[12.5px] text-slate">
-                  Nama
+                  {t.enquiry.name}
                   <input
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="Nama kamu"
+                    placeholder={t.enquiry.namePlaceholder}
                     className="rounded-[12px] border border-line-input bg-surface px-[13px] py-[11px] text-[14px] outline-none focus:border-teal"
                   />
                 </label>
 
                 <label className="flex flex-col gap-[6px] text-[12.5px] text-slate">
-                  Mau apa
+                  {t.enquiry.what}
                   <select
                     value={activity}
                     onChange={(e) => setActivity(e.target.value as ActivityKey)}
                     className="cursor-pointer rounded-[12px] border border-line-input bg-surface px-[13px] py-[11px] text-[14px] outline-none focus:border-teal"
                   >
-                    {ACTIVITIES.map((a) => (
-                      <option key={a.key} value={a.key}>
-                        {a.label}
+                    {ACTIVITY_KEYS.map((a) => (
+                      <option key={a} value={a}>
+                        {t.activities[a]}
                       </option>
                     ))}
                   </select>
                 </label>
 
                 <label className="flex flex-col gap-[6px] text-[12.5px] text-slate">
-                  Kapan
+                  {t.enquiry.when}
                   <select
-                    value={when}
-                    onChange={(e) => setWhen(e.target.value)}
+                    value={monthIx}
+                    onChange={(e) => setMonthIx(Number(e.target.value))}
                     className="cursor-pointer rounded-[12px] border border-line-input bg-surface px-[13px] py-[11px] text-[14px] outline-none focus:border-teal"
                   >
-                    {MONTHS_AHEAD.map((m) => (
-                      <option key={m} value={m}>
+                    {monthsAhead.map((m, i) => (
+                      <option key={m} value={i}>
                         {m}
                       </option>
                     ))}
@@ -796,7 +827,7 @@ export function TurtleSite() {
 
                 <div className="grid grid-cols-2 gap-[14px]">
                   <label className="flex flex-col gap-[6px] text-[12.5px] text-slate">
-                    Orang
+                    {t.enquiry.people}
                     <input
                       value={people}
                       onChange={(e) => setPeople(e.target.value)}
@@ -805,7 +836,7 @@ export function TurtleSite() {
                     />
                   </label>
                   <label className="flex flex-col gap-[6px] text-[12.5px] text-slate">
-                    Malam
+                    {t.enquiry.nights}
                     <input
                       value={nights}
                       onChange={(e) => setNights(e.target.value)}
@@ -816,12 +847,12 @@ export function TurtleSite() {
                 </div>
 
                 <label className="flex flex-col gap-[6px] text-[12.5px] text-slate sm:col-span-2">
-                  Catatan
+                  {t.enquiry.notes}
                   <textarea
                     value={detail}
                     onChange={(e) => setDetail(e.target.value)}
                     rows={3}
-                    placeholder="Alergi makanan, jadwal kapal, sertifikat selam, apa saja."
+                    placeholder={t.enquiry.notesPlaceholder}
                     className="resize-y rounded-[12px] border border-line-input bg-surface px-[13px] py-[11px] text-[14px] outline-none focus:border-teal"
                   />
                 </label>
@@ -834,15 +865,15 @@ export function TurtleSite() {
                   rel="noreferrer"
                   className={`${PILL_DARK} no-underline hover:no-underline`}
                 >
-                  Buka WhatsApp
+                  {t.enquiry.whatsapp}
                 </a>
                 <a
                   href={`mailto:${EMAIL}?subject=${encodeURIComponent(
-                    `Tanya ${activityLabel} — ${when}`,
+                    t.enquiry.emailSubject(activityLabel, when),
                   )}&body=${encodeURIComponent(message)}`}
                   className={`${PILL_LIGHT} no-underline hover:no-underline`}
                 >
-                  Kirim email
+                  {t.enquiry.email}
                 </a>
               </div>
             </div>
@@ -850,7 +881,7 @@ export function TurtleSite() {
             {/* What the message will say, before it is sent. */}
             <div className="border-t border-line-soft bg-surface px-7 py-9 md:px-8 lg:border-t-0 lg:border-l">
               <div className="font-mono text-[10.5px] tracking-[.08em] text-slate-faint uppercase">
-                Pesan yang akan terkirim
+                {t.enquiry.preview}
               </div>
               <pre className="mt-4 mb-0 font-sans text-[13.5px] leading-[1.65] whitespace-pre-wrap text-ink-soft">
                 {message}
@@ -864,14 +895,14 @@ export function TurtleSite() {
       <Section id="tanya" className="pt-20 md:pt-28">
         <div className="grid grid-cols-1 gap-10 md:grid-cols-[minmax(220px,320px)_1fr]">
           <div>
-            <Eyebrow>Yang sering ditanya</Eyebrow>
+            <Eyebrow>{t.faq.eyebrow}</Eyebrow>
             <h2 className="mt-5 mb-0 text-[clamp(30px,4.4vw,46px)] leading-[1.08] font-bold tracking-[-.025em]">
-              Sebelum kamu tanya
+              {t.faq.title}
             </h2>
           </div>
 
           <div className="border-t border-line-soft">
-            {FAQ.map((f) => (
+            {t.faq.items.map((f) => (
               <details
                 key={f.q}
                 className="group border-b border-line-soft py-[18px]"
@@ -903,20 +934,20 @@ export function TurtleSite() {
                     {PROPERTY.name}
                   </div>
                   <div className="text-[12.5px] text-white/70">
-                    {PROPERTY.tagline}
+                    {t.footer.tagline}
                   </div>
                 </div>
               </div>
               <p className="mt-5 mb-0 max-w-[320px] text-[13.5px] leading-[1.65] text-white/70">
                 {PROPERTY.village}, {PROPERTY.island}
                 <br />
-                {PROPERTY.region}
+                Raja Ampat, Papua Barat Daya
               </p>
             </div>
 
             <div>
               <div className="font-mono text-[10.5px] tracking-[.08em] text-white/50 uppercase">
-                Kontak
+                {t.footer.contact}
               </div>
               <div className="mt-4 flex flex-col gap-[10px] text-[13.5px]">
                 <a
@@ -940,10 +971,10 @@ export function TurtleSite() {
 
             <div>
               <div className="font-mono text-[10.5px] tracking-[.08em] text-white/50 uppercase">
-                Halaman
+                {t.footer.pages}
               </div>
               <div className="mt-4 flex flex-col gap-[10px] text-[13.5px]">
-                {NAV.map((n) => (
+                {nav.map((n) => (
                   <a
                     key={n.href}
                     href={n.href}
@@ -956,15 +987,14 @@ export function TurtleSite() {
                   href="/"
                   className="text-white/55 no-underline hover:text-white hover:no-underline"
                 >
-                  Masuk pengelola
+                  {t.footer.manager}
                 </a>
               </div>
             </div>
           </div>
 
           <div className="mt-12 border-t border-white/15 pt-6 text-[12.5px] text-white/55">
-            © {PROPERTY.name}, {PROPERTY.village}. Dikelola bersama Eddo
-            Homestay di Sawinggrai, Pulau Gam.
+            {t.footer.colophon}
           </div>
         </Section>
       </footer>

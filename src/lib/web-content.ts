@@ -197,9 +197,9 @@ export interface SiteCopy {
   season: { eyebrow: string; title: string; intro: string; bands: BandCopy[] };
   journey: { eyebrow: string; title: string; intro: string; steps: { title: string; body: string }[] };
   enquiry: {
-    eyebrow: string;
-    title: string;
-    intro: string;
+    modalTitle: string;
+    modalIntro: string;
+    close: string;
     name: string;
     namePlaceholder: string;
     what: string;
@@ -429,10 +429,10 @@ const EN: SiteCopy = {
     ],
   },
   enquiry: {
-    eyebrow: "Book direct",
-    title: "Send one message,\nwe answer the same day",
-    intro:
-      "Fill in as much as you like. The button opens WhatsApp with the message already written, so you only have to send it. Nothing is paid on this page and there is no account to create.",
+    modalTitle: "Send us a message",
+    modalIntro:
+      "Fill in as much as you like. The button opens WhatsApp with the message already written, so you only have to send it. Nothing is paid here and there is no account to create.",
+    close: "Close",
     name: "Name",
     namePlaceholder: "Your name",
     what: "Looking for",
@@ -716,10 +716,10 @@ const ID: SiteCopy = {
     ],
   },
   enquiry: {
-    eyebrow: "Pesan langsung",
-    title: "Kirim satu pesan,\nkami balas hari itu juga",
-    intro:
-      "Isi seadanya di bawah. Tombolnya akan membuka WhatsApp dengan pesan yang sudah tertulis, jadi kamu tinggal kirim. Tidak ada pembayaran di halaman ini dan tidak ada akun yang perlu dibuat.",
+    modalTitle: "Kirim pesan ke kami",
+    modalIntro:
+      "Isi seadanya. Tombolnya akan membuka WhatsApp dengan pesan yang sudah tertulis, jadi kamu tinggal kirim. Tidak ada pembayaran di sini dan tidak ada akun yang perlu dibuat.",
+    close: "Tutup",
     name: "Nama",
     namePlaceholder: "Nama kamu",
     what: "Mau apa",

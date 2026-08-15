@@ -3,6 +3,11 @@
 import { useEffect, useState } from "react";
 
 import {
+  EMPTY_ENQUIRY,
+  EnquiryModal,
+  type Enquiry,
+} from "@/components/web/enquiry-modal";
+import {
   HeroScene,
   IsletScene,
   JettyScene,
@@ -253,33 +258,28 @@ export function TurtleSite() {
   /* The hero picker and every "Pesan" button write into the same enquiry, so
      whichever one the visitor touched, the message that opens is already
      about the thing they touched. */
-  const [activity, setActivity] = useState<ActivityKey>("stay");
-  /* Held as an index, not a name: the names are translated, and a stored
-     "Agustus 2026" would not survive a switch to English. */
-  const [monthIx, setMonthIx] = useState(0);
-  const [people, setPeople] = useState("2");
-  const [nights, setNights] = useState("3");
-  const [detail, setDetail] = useState("");
-  const [name, setName] = useState("");
-
-  const activityLabel = t.activities[activity];
-  const when = monthsAhead[monthIx] ?? monthsAhead[0];
+  /* One object rather than six states: every button that opens the dialog
+     writes two of these fields, and the dialog reads all of them. */
+  const [enquiry, setEnquiry] = useState<Enquiry>(EMPTY_ENQUIRY);
+  const [enquiryOpen, setEnquiryOpen] = useState(false);
+  const patchEnquiry = (patch: Partial<Enquiry>) =>
+    setEnquiry((prev) => ({ ...prev, ...patch }));
 
   const message = t.message({
-    activity: activityLabel,
-    name,
-    when,
-    people,
-    nights,
-    notes: detail,
-    withNights: activity !== "diving" && activity !== "snorkeling",
+    activity: t.activities[enquiry.activity],
+    name: enquiry.name,
+    when: monthsAhead[enquiry.monthIx] ?? monthsAhead[0],
+    people: enquiry.people,
+    nights: enquiry.nights,
+    notes: enquiry.notes,
+    withNights:
+      enquiry.activity !== "diving" && enquiry.activity !== "snorkeling",
   });
 
-  /** Points the enquiry at one thing, then jumps to the form. */
+  /** Opens the dialog already pointed at whatever was pressed. */
   const ask = (next: ActivityKey, note: string) => {
-    setActivity(next);
-    setDetail(note);
-    document.getElementById("pesan")?.scrollIntoView({ behavior: "smooth" });
+    patchEnquiry({ activity: next, notes: note });
+    setEnquiryOpen(true);
   };
 
   const rooms = roomFacts();
@@ -321,24 +321,26 @@ export function TurtleSite() {
                 {n.label}
               </a>
             ))}
-            <a
-              href="#pesan"
-              className="rounded-full bg-white px-[18px] py-[9px] text-[13.5px] font-medium text-ink no-underline hover:bg-surface-hover hover:no-underline"
+            <button
+              type="button"
+              onClick={() => setEnquiryOpen(true)}
+              className="cursor-pointer rounded-full border-none bg-white px-[18px] py-[9px] text-[13.5px] font-medium text-ink hover:bg-surface-hover"
             >
               {t.book}
-            </a>
+            </button>
             <LangSwitch lang={lang} onPick={pickLang} />
           </nav>
 
           {/* Below the nav's breakpoint the row is the two controls, still
               centred as a pair. */}
           <div className="flex items-center gap-3 lg:hidden">
-            <a
-              href="#pesan"
-              className="rounded-full bg-white px-[18px] py-[9px] text-[13.5px] font-medium text-ink no-underline hover:bg-surface-hover hover:no-underline"
+            <button
+              type="button"
+              onClick={() => setEnquiryOpen(true)}
+              className="cursor-pointer rounded-full border-none bg-white px-[18px] py-[9px] text-[13.5px] font-medium text-ink hover:bg-surface-hover"
             >
               {t.book}
-            </a>
+            </button>
             <LangSwitch lang={lang} onPick={pickLang} />
             <button
               type="button"
@@ -769,126 +771,6 @@ export function TurtleSite() {
         </div>
       </Section>
 
-      {/* ---------------------------------------------------------- enquiry */}
-      <Section id="pesan" className="pt-20 md:pt-28">
-        <div className="overflow-hidden rounded-[28px] border border-line-soft bg-surface-mute">
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_minmax(300px,420px)]">
-            <div className="px-7 py-9 md:px-10 md:py-11">
-              <Eyebrow>{t.enquiry.eyebrow}</Eyebrow>
-              <h2 className="mt-5 mb-0 text-[clamp(30px,4.4vw,48px)] leading-[1.06] font-bold tracking-[-.025em] whitespace-pre-line">
-                {t.enquiry.title}
-              </h2>
-              <p className="mt-3 max-w-[520px] text-[14px] leading-[1.65] text-slate">
-                {t.enquiry.intro}
-              </p>
-
-              <div className="mt-7 grid grid-cols-1 gap-[14px] sm:grid-cols-2">
-                <label className="flex flex-col gap-[6px] text-[12.5px] text-slate">
-                  {t.enquiry.name}
-                  <input
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder={t.enquiry.namePlaceholder}
-                    className="rounded-[12px] border border-line-input bg-surface px-[13px] py-[11px] text-[14px] outline-none focus:border-teal"
-                  />
-                </label>
-
-                <label className="flex flex-col gap-[6px] text-[12.5px] text-slate">
-                  {t.enquiry.what}
-                  <select
-                    value={activity}
-                    onChange={(e) => setActivity(e.target.value as ActivityKey)}
-                    className="cursor-pointer rounded-[12px] border border-line-input bg-surface px-[13px] py-[11px] text-[14px] outline-none focus:border-teal"
-                  >
-                    {ACTIVITY_KEYS.map((a) => (
-                      <option key={a} value={a}>
-                        {t.activities[a]}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-
-                <label className="flex flex-col gap-[6px] text-[12.5px] text-slate">
-                  {t.enquiry.when}
-                  <select
-                    value={monthIx}
-                    onChange={(e) => setMonthIx(Number(e.target.value))}
-                    className="cursor-pointer rounded-[12px] border border-line-input bg-surface px-[13px] py-[11px] text-[14px] outline-none focus:border-teal"
-                  >
-                    {monthsAhead.map((m, i) => (
-                      <option key={m} value={i}>
-                        {m}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-
-                <div className="grid grid-cols-2 gap-[14px]">
-                  <label className="flex flex-col gap-[6px] text-[12.5px] text-slate">
-                    {t.enquiry.people}
-                    <input
-                      value={people}
-                      onChange={(e) => setPeople(e.target.value)}
-                      inputMode="numeric"
-                      className="rounded-[12px] border border-line-input bg-surface px-[13px] py-[11px] text-[14px] outline-none focus:border-teal"
-                    />
-                  </label>
-                  <label className="flex flex-col gap-[6px] text-[12.5px] text-slate">
-                    {t.enquiry.nights}
-                    <input
-                      value={nights}
-                      onChange={(e) => setNights(e.target.value)}
-                      inputMode="numeric"
-                      className="rounded-[12px] border border-line-input bg-surface px-[13px] py-[11px] text-[14px] outline-none focus:border-teal"
-                    />
-                  </label>
-                </div>
-
-                <label className="flex flex-col gap-[6px] text-[12.5px] text-slate sm:col-span-2">
-                  {t.enquiry.notes}
-                  <textarea
-                    value={detail}
-                    onChange={(e) => setDetail(e.target.value)}
-                    rows={3}
-                    placeholder={t.enquiry.notesPlaceholder}
-                    className="resize-y rounded-[12px] border border-line-input bg-surface px-[13px] py-[11px] text-[14px] outline-none focus:border-teal"
-                  />
-                </label>
-              </div>
-
-              <div className="mt-7 flex flex-wrap items-center gap-3">
-                <a
-                  href={waLink(message)}
-                  target="_blank"
-                  rel="noreferrer"
-                  className={`${PILL_DARK} no-underline hover:no-underline`}
-                >
-                  {t.enquiry.whatsapp}
-                </a>
-                <a
-                  href={`mailto:${EMAIL}?subject=${encodeURIComponent(
-                    t.enquiry.emailSubject(activityLabel, when),
-                  )}&body=${encodeURIComponent(message)}`}
-                  className={`${PILL_LIGHT} no-underline hover:no-underline`}
-                >
-                  {t.enquiry.email}
-                </a>
-              </div>
-            </div>
-
-            {/* What the message will say, before it is sent. */}
-            <div className="border-t border-line-soft bg-surface px-7 py-9 md:px-8 lg:border-t-0 lg:border-l">
-              <div className="font-mono text-[10.5px] tracking-[.08em] text-slate-faint uppercase">
-                {t.enquiry.preview}
-              </div>
-              <pre className="mt-4 mb-0 font-sans text-[13.5px] leading-[1.65] whitespace-pre-wrap text-ink-soft">
-                {message}
-              </pre>
-            </div>
-          </div>
-        </div>
-      </Section>
-
       {/* -------------------------------------------------------------- faq */}
       <Section id="tanya" className="pt-20 md:pt-28">
         <div className="grid grid-cols-1 gap-10 md:grid-cols-[minmax(220px,320px)_1fr]">
@@ -996,6 +878,16 @@ export function TurtleSite() {
           </div>
         </Section>
       </footer>
+
+      <EnquiryModal
+        open={enquiryOpen}
+        onClose={() => setEnquiryOpen(false)}
+        t={t}
+        months={monthsAhead}
+        value={enquiry}
+        onChange={patchEnquiry}
+        message={message}
+      />
     </div>
   );
 }

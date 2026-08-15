@@ -28,9 +28,10 @@ export const WHATSAPP = "6281200000000";
 /** PLACEHOLDER. */
 export const EMAIL = "halo@turtlehomestay.id";
 
+/** The name on the badge, so the logo and the words never disagree. */
 export const PROPERTY = {
-  name: "Turtle Homestay",
-  tagline: "Homestay & Dive Center",
+  name: "Turtle Dive Homestay",
+  tagline: "Raja Ampat · est. 2018",
   village: "Yenbuba",
   island: "Pulau Mansuar",
   region: "Raja Ampat, Papua Barat Daya",

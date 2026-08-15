@@ -9,7 +9,7 @@ import { EMAIL, PROPERTY } from "@/lib/web-content";
  * can move to its own domain later without the other noticing.
  */
 export const metadata: Metadata = {
-  title: `${PROPERTY.name} · ${PROPERTY.tagline} di Raja Ampat`,
+  title: `${PROPERTY.name} · Homestay & Dive Center di Raja Ampat`,
   description:
     "Homestay keluarga dan dive center di Yenbuba, Pulau Mansuar. Kamar di atas air, tiga kali makan, dan penyelaman harian di Selat Dampier.",
   openGraph: {

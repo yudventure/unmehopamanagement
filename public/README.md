@@ -18,3 +18,19 @@ kode yang perlu diubah.
   `HERO_PHOTO` di `src/components/web/site.tsx`.
 
 Kalau berkasnya hilang, hero jatuh ke ilustrasi SVG — bukan ke gambar rusak.
+
+## `logo.png` — lencana Turtle Dive Homestay
+
+Dipakai di header dan footer website, dan disalin ke
+`src/app/turtle/icon.png` sebagai ikon tab browser. **Kalau logonya diganti,
+ganti kedua berkas itu.**
+
+Latarnya putih pekat (bukan transparan), jadi di kode ia dipotong jadi
+lingkaran supaya sudut putihnya tidak terlihat di atas header gelap. Tinta
+lencana ini paling jauh 134px dari pusat kanvas 300px — masih di dalam
+lingkaran potong 150px, jadi tidak ada bagian logo yang terpotong. **Logo
+pengganti perlu proporsi serupa**: lencana bulat di tengah kanvas persegi.
+Logo mendatar (wordmark memanjang) akan terpotong.
+
+Logo ini hanya dipakai di website. Dashboard `/` memakai lencana Unmehopa
+(`src/components/brand-logo.tsx`) — dua merek berbeda, sengaja dipisah.

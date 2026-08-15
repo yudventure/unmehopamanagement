@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 
-import { BrandLogo } from "@/components/brand-logo";
 import {
   HeroScene,
   IsletScene,
@@ -27,7 +26,7 @@ import {
 } from "@/lib/web-content";
 
 /**
- * The public site for Turtle Homestay and its dive centre — a separate route
+ * The public site for Turtle Dive Homestay — a separate route
  * from the booking manager, sharing only the room rates and the illustration
  * kit.
  *
@@ -57,6 +56,33 @@ const MONTHS_AHEAD = monthOptions(new Date(2026, 7, 1));
  * instead, so the page never breaks over a bad upload.
  */
 const HERO_PHOTO = "/hero.png";
+
+/**
+ * The homestay's own badge, used across the site in place of the Unmehopa
+ * mark — the manager belongs to the company, this site belongs to one
+ * property, and they are not the same brand.
+ *
+ * The file has a solid white background, so it is masked to a circle. Its ink
+ * sits at most 134px from the centre of a 300px square, which is inside the
+ * 150px mask: the corners go, the badge is untouched.
+ */
+function SiteLogo({ size }: { size: number }) {
+  return (
+    <span
+      className="block shrink-0 overflow-hidden rounded-full bg-white"
+      style={{ width: size, height: size }}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/logo.png"
+        alt={`Logo ${PROPERTY.name}`}
+        width={size}
+        height={size}
+        className="h-full w-full object-cover"
+      />
+    </span>
+  );
+}
 
 const PILL_DARK =
   "inline-flex items-center justify-center rounded-full bg-ink px-6 py-[13px] text-[14px] font-medium text-white transition-colors hover:bg-ink-soft";
@@ -158,10 +184,11 @@ export function TurtleSite() {
       <header className="fixed inset-x-0 top-0 z-50 border-b border-white/15 bg-ink/35 backdrop-blur-md">
         <div className="mx-auto flex w-full max-w-[1180px] items-center gap-4 px-5 py-[14px] md:px-8">
           <a href="#atas" className="flex shrink-0 items-center gap-[10px]">
-            <span className="flex h-[34px] w-[34px] items-center justify-center rounded-full bg-white">
-              <BrandLogo size={27} />
-            </span>
-            <span className="text-[15px] font-bold text-white">
+            <SiteLogo size={36} />
+            {/* The badge alone carries the identity on a phone, where the full
+                name would crowd the Pesan button — and the hero says it in
+                display type a moment later anyway. */}
+            <span className="hidden text-[15px] font-bold whitespace-nowrap text-white sm:inline">
               {PROPERTY.name}
             </span>
           </a>
@@ -248,8 +275,8 @@ export function TurtleSite() {
               photograph can put a bright cloud or a strip of sand anywhere,
               and the gradient alone cannot know where. */}
           <div className="absolute inset-x-0 bottom-0 mx-auto flex w-full max-w-[1180px] flex-col items-center px-5 pb-[64px] text-center md:px-8 md:pb-[84px] [text-shadow:0_2px_28px_rgba(6,20,18,.62)]">
-            <h1 className="m-0 text-[clamp(52px,11vw,132px)] leading-[.92] font-bold tracking-[-.035em] text-white">
-              Turtle
+            <h1 className="m-0 max-w-[15ch] text-[clamp(38px,7vw,92px)] leading-[1.02] font-bold tracking-[-.03em] text-balance text-white">
+              Turtle Dive Homestay
             </h1>
             <p className="mt-4 max-w-[560px] text-[15px] leading-[1.6] text-white/90">
               Homestay dan dive center milik keluarga di Yenbuba, Pulau Mansuar.
@@ -787,10 +814,8 @@ export function TurtleSite() {
         <Section>
           <div className="grid grid-cols-1 gap-10 md:grid-cols-[1.3fr_1fr_1fr]">
             <div>
-              <div className="flex items-center gap-[10px]">
-                <span className="flex h-[38px] w-[38px] items-center justify-center rounded-full bg-white">
-                  <BrandLogo size={30} />
-                </span>
+              <div className="flex items-center gap-[12px]">
+                <SiteLogo size={52} />
                 <div className="leading-[1.2]">
                   <div className="text-[16px] font-bold text-white">
                     {PROPERTY.name}

@@ -253,8 +253,8 @@ const EN: SiteCopy = {
     heading: "One jetty, one family,",
     headingBreak: "and the reef right in front of it",
     eyebrow: "01 · Why here",
-    title: "Not a resort.\nSomeone's home.",
-    body: "The rooms were built by hand from local timber, the food comes out of the same kitchen the family eats from, and the person taking you diving was born in this bay. No reception desk, no uniforms.",
+    title: "Hospitality that feels\nlike family.",
+    body: "Guests are looked after by the family who built this homestay and still live here. The rooms are traditional Papuan work in timber and thatch, simple by design, and a Starlink connection reaches almost every one of them, fast enough for a video call. Every deck opens onto the same view: the Dampier Strait, the karst islands beyond it, and the reef directly below.",
     cta: "Ask about availability",
     ctaNote: "I would like to know what rooms are free.",
   },
@@ -452,8 +452,8 @@ const EN: SiteCopy = {
     title: "Before you ask",
     items: [
       {
-        q: "Is there electricity and phone signal?",
-        a: "Power runs from evening until morning. There is phone signal, enough for WhatsApp, but do not expect to stream anything. Bring a book.",
+        q: "Is there electricity and internet?",
+        a: "Power runs from evening until morning. Alongside the phone signal there is Starlink, fast enough for a video call, and it reaches almost every room. If a reliable connection matters to your stay, say so when you book and we will put you in one of the rooms where the signal is strongest.",
       },
       {
         q: "What about food?",
@@ -540,8 +540,8 @@ const ID: SiteCopy = {
     heading: "Satu dermaga, satu keluarga,",
     headingBreak: "dan karang tepat di depannya",
     eyebrow: "01 · Kenapa di sini",
-    title: "Bukan resort.\nRumah orang.",
-    body: "Kamar dibangun sendiri dari kayu setempat, makanan dimasak di dapur yang sama dengan keluarga, dan yang mengantar kamu menyelam adalah orang yang lahir di teluk ini. Tidak ada resepsionis, tidak ada seragam.",
+    title: "Keramahan yang terasa\nseperti keluarga sendiri.",
+    body: "Tamu dijaga langsung oleh keluarga yang membangun homestay ini dan masih tinggal di sini. Kamarnya dikerjakan dengan cara tradisional Papua, kayu dan rumbia, sederhana memang disengaja, dan jaringan Starlink menjangkau hampir seluruhnya, cukup cepat untuk panggilan video. Semua teras menghadap pemandangan yang sama: Selat Dampier, gugusan karst di seberangnya, dan karang tepat di bawahnya.",
     cta: "Tanya ketersediaan",
     ctaNote: "Saya ingin tahu ketersediaan kamar.",
   },
@@ -739,8 +739,8 @@ const ID: SiteCopy = {
     title: "Sebelum kamu tanya",
     items: [
       {
-        q: "Apakah ada listrik dan sinyal?",
-        a: "Listrik menyala dari sore sampai pagi. Sinyal telepon ada dan cukup untuk WhatsApp, tapi jangan berharap bisa streaming. Bawa buku.",
+        q: "Apakah ada listrik dan internet?",
+        a: "Listrik menyala dari sore sampai pagi. Selain sinyal telepon, ada Starlink yang cukup cepat untuk panggilan video, dan jangkauannya sampai hampir semua kamar. Kalau koneksi penting untuk perjalananmu, beri tahu saat memesan dan kami tempatkan di kamar dengan sinyal paling kuat.",
       },
       {
         q: "Makan bagaimana?",

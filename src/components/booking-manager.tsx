@@ -28,8 +28,8 @@ import {
   CH,
   CHANNEL_KEYS,
   CHANNEL_LABELS,
-  DEMO_MONTH,
-  DEMO_TODAY,
+  SEED_MONTH,
+  SEED_TODAY,
   OWNER_EMAIL,
   PROPERTIES,
   STAFF_EMAIL,
@@ -155,7 +155,7 @@ export function BookingManager({
   const [users, setUsers] = useState<User[]>(seedUsers);
 
   const [screen, setScreen] = useState<Screen>(layarAwal);
-  const [month, setMonth] = useState(DEMO_MONTH);
+  const [month, setMonth] = useState(SEED_MONTH);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   /** Day picked on the calendar, listed in the rail. Null = default rail. */
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -201,6 +201,20 @@ export function BookingManager({
      render would break the build and then mismatch on hydrate. */
   const [origin, setOrigin] = useState("https://unmehopa.example");
   useEffect(() => setOrigin(window.location.origin), []);
+
+  /*
+   * Today, and the month the calendar opens on, come from the real clock —
+   * both settled after mount for the same reason as `origin`. A page rendered
+   * at build time cannot know what day it is when somebody opens it.
+   *
+   * `SEED_TODAY` is only the first paint's stand-in, never the answer.
+   */
+  const [today, setToday] = useState(SEED_TODAY);
+  useEffect(() => {
+    const now = new Date();
+    setToday(iso(now));
+    setMonth(new Date(now.getFullYear(), now.getMonth(), 1));
+  }, []);
 
   const vw = useViewportWidth();
   const isOwner = role === "owner";
@@ -315,7 +329,7 @@ export function BookingManager({
         visible,
         rooms,
         month,
-        today: DEMO_TODAY,
+        today: today,
         activeRooms,
         perDay,
         conflictDays,
@@ -349,13 +363,13 @@ export function BookingManager({
         month,
         TREND_BACK,
         TREND_FORWARD,
-        DEMO_TODAY,
+        today,
       ),
     [visible, activeRooms, month],
   );
 
   const daily = useMemo(
-    () => dailyOccupancy(visible, month, activeRooms, DEMO_TODAY),
+    () => dailyOccupancy(visible, month, activeRooms, today),
     [visible, month, activeRooms],
   );
 
@@ -553,7 +567,7 @@ export function BookingManager({
 
   /**
    * The role comes from the account the email belongs to, never from the
-   * chooser on the login screen — that chooser only prefills a demo address.
+   * chooser on the login screen, which only prefills an address.
    * Reading it from the chooser meant signing in with a staff address while it
    * still said "Owner" handed out Owner access, including the screens and the
    * rupiah figures staff are not supposed to see.
@@ -690,7 +704,7 @@ export function BookingManager({
      rather than just today, so a quiet day still shows what is on its way. */
   const upcoming = visible
     .filter((b) => {
-      const lead = dayDiff(DEMO_TODAY, b.checkIn);
+      const lead = dayDiff(today, b.checkIn);
       return lead >= 0 && lead <= UPCOMING_DAYS;
     })
     .sort(
@@ -703,7 +717,7 @@ export function BookingManager({
     .map((b) => ({
       booking: b,
       roomName: roomById.get(b.roomId)?.name ?? "",
-      leadDays: dayDiff(DEMO_TODAY, b.checkIn),
+      leadDays: dayDiff(today, b.checkIn),
     }));
 
   /* Everyone staying on the picked date, room order — including the ones the
@@ -977,7 +991,7 @@ export function BookingManager({
           (b) =>
             b.roomId === r.id &&
             b.status !== "Cancelled" &&
-            b.checkOut > DEMO_TODAY,
+            b.checkOut > today,
         ).length,
       })),
     };

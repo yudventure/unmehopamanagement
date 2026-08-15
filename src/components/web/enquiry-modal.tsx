@@ -43,9 +43,7 @@ const LABEL =
  * already pointed at the room or the package they pressed it from.
  *
  * White and ink, no cream: the warm surface reads as decoration, and this is
- * the one place on the site where somebody is filling in a form. The message
- * preview sits on ink so it is legible as a literal quotation of what will be
- * sent rather than as more page.
+ * the one place on the site where somebody is filling in a form.
  */
 export function EnquiryModal({
   open,
@@ -94,7 +92,7 @@ export function EnquiryModal({
         aria-modal="true"
         aria-labelledby="enquiry-title"
         onClick={(e) => e.stopPropagation()}
-        className="my-auto w-full max-w-[880px] animate-pop-in overflow-hidden rounded-[18px] bg-surface shadow-[0_30px_80px_-30px_rgba(15,30,26,.55)]"
+        className="my-auto w-full max-w-[560px] animate-pop-in overflow-hidden rounded-[18px] bg-surface shadow-[0_30px_80px_-30px_rgba(15,30,26,.55)]"
       >
         <div className="flex items-start gap-4 border-b border-line px-6 py-5 sm:px-8">
           <div className="min-w-0 flex-1">
@@ -118,7 +116,7 @@ export function EnquiryModal({
           </button>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px]">
+        <div>
           <div className="px-6 py-6 sm:px-8">
             <div className="grid grid-cols-1 gap-[14px] sm:grid-cols-2">
               <label className={LABEL}>
@@ -224,15 +222,6 @@ export function EnquiryModal({
                 +{WHATSAPP}
               </span>
             </div>
-          </div>
-
-          <div className="bg-ink px-6 py-6 sm:px-8 lg:px-6">
-            <div className="font-mono text-[10px] tracking-[.1em] text-white/45 uppercase">
-              {t.enquiry.preview}
-            </div>
-            <pre className="mt-3 mb-0 font-sans text-[13px] leading-[1.6] whitespace-pre-wrap text-white/80">
-              {message}
-            </pre>
           </div>
         </div>
       </div>

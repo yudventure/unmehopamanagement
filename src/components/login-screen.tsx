@@ -14,7 +14,6 @@ import type { Role } from "@/lib/types";
  */
 const HERO_SRC = process.env.NEXT_PUBLIC_LOGIN_HERO ?? "";
 
-const DEMO_PASSWORD = "demo1234";
 
 export interface LoginScreenProps {
   narrow: boolean;
@@ -107,10 +106,6 @@ export function LoginScreen({
   const [remember, setRemember] = useState(false);
   const [showReset, setShowReset] = useState(false);
 
-  const fillDemo = () => {
-    onEmail(role === "owner" ? OWNER_EMAIL : STAFF_EMAIL);
-    onPassword(DEMO_PASSWORD);
-  };
 
   return (
     <div className="fixed inset-0 z-[100] flex overflow-auto bg-surface">
@@ -196,19 +191,12 @@ export function LoginScreen({
             </div>
           )}
 
-          <div className="mt-[22px] flex gap-[11px]">
+          <div className="mt-[22px]">
             <button
               type="submit"
-              className="min-w-[122px] flex-1 cursor-pointer rounded-[9px] border-[1.5px] border-teal bg-teal py-[12px] text-[14px] font-bold text-white hover:border-teal-deep hover:bg-teal-deep"
+              className="w-full cursor-pointer rounded-[9px] border-[1.5px] border-teal bg-teal py-[12px] text-[14px] font-bold text-white hover:border-teal-deep hover:bg-teal-deep"
             >
               Masuk
-            </button>
-            <button
-              type="button"
-              onClick={fillDemo}
-              className="min-w-[122px] flex-1 cursor-pointer rounded-[9px] border-[1.5px] border-teal bg-surface py-[12px] text-[14px] font-bold text-teal hover:bg-teal-tint"
-            >
-              Isi akun demo
             </button>
           </div>
 

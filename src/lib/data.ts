@@ -47,9 +47,16 @@ export const PROPERTIES: {
   { key: "eddo", name: "Eddo Homestay", location: "Sawinggrai, Pulau Gam" },
 ];
 
-/** The month the seeded demo data lives in. */
-export const DEMO_MONTH = new Date(2026, 7, 1);
-export const DEMO_TODAY = "2026-08-16";
+/**
+ * The month the seeded book is centred on, and the day the generator treats as
+ * "now" when it decides which stays have already been and gone.
+ *
+ * The app itself does not use these to mean today. It reads the real clock and
+ * only falls back to `SEED_TODAY` for the first paint, before the browser has
+ * had a chance to say what day it is.
+ */
+export const SEED_MONTH = new Date(2026, 7, 1);
+export const SEED_TODAY = "2026-08-16";
 
 const NAMES = [
   "Ratna Wulandari",
@@ -120,7 +127,7 @@ export function seedRooms(): Room[] {
 }
 
 /**
- * Deterministic demo bookings for August 2026. The LCG is seeded so every
+ * Deterministic seed bookings for August 2026. The LCG is seeded so every
  * reload — and every developer's machine — produces the same calendar.
  */
 export function seedBookings(rooms: Room[]): Booking[] {
@@ -229,7 +236,7 @@ const SEASON = [
 ];
 
 /**
- * How much of a month still ahead of `DEMO_TODAY` is already on the books, by
+ * How much of a month still ahead of `SEED_TODAY` is already on the books, by
  * months of lead time. A December that looked full back in August would be a
  * fiction — and the gap between what the season usually delivers and what is
  * sold so far is the whole point of looking at the trend.
@@ -331,7 +338,7 @@ export function seedLedger(rooms: Room[], seeded: Booking[]): Booking[] {
       }
 
       const ch = chans[Math.floor(rnd() * chans.length)];
-      const settled = checkOut <= DEMO_TODAY;
+      const settled = checkOut <= SEED_TODAY;
       out.push({
         id: "BH" + String(++n).padStart(4, "0"),
         roomId: r.id,

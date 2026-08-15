@@ -211,7 +211,6 @@ export interface SiteCopy {
     whatsapp: string;
     email: string;
     emailSubject: (activity: string, when: string) => string;
-    preview: string;
   };
   faq: { eyebrow: string; title: string; items: { q: string; a: string }[] };
   footer: { contact: string; pages: string; manager: string; colophon: string; tagline: string };
@@ -445,7 +444,6 @@ const EN: SiteCopy = {
     whatsapp: "Open WhatsApp",
     email: "Send an email",
     emailSubject: (activity, when) => `${activity} enquiry for ${when}`,
-    preview: "The message that will be sent",
   },
   faq: {
     eyebrow: "Asked often",
@@ -732,7 +730,6 @@ const ID: SiteCopy = {
     whatsapp: "Buka WhatsApp",
     email: "Kirim email",
     emailSubject: (activity, when) => `Tanya ${activity} untuk ${when}`,
-    preview: "Pesan yang akan terkirim",
   },
   faq: {
     eyebrow: "Yang sering ditanya",

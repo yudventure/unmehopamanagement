@@ -90,9 +90,8 @@ export function ReportScreen({
   return (
     <div>
       <div className="mb-1 flex flex-wrap items-center gap-3">
-        <div className="text-[22px] font-bold">Laporan {monthLabel}</div>
-        {/* The same month the calendar is on — stepping it here saves crossing
-            back to that screen just to move the report a month. */}
+        {/* Ahead of the title, the way the calendar screen steps its month —
+            the arrows are the control, the title is what they change. */}
         <div className="flex gap-[6px]">
           <button
             type="button"
@@ -111,6 +110,7 @@ export function ReportScreen({
             ›
           </button>
         </div>
+        <div className="text-[22px] font-bold">Laporan {monthLabel}</div>
       </div>
       <div className="mb-5 text-[13.5px] text-slate-soft">
         Okupansi dan pendapatan seluruh properti. Nilai OTA sudah dikurangi

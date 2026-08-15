@@ -181,7 +181,7 @@ export function TurtleSite() {
   return (
     <div className="bg-surface text-ink">
       {/* ------------------------------------------------------------ nav */}
-      <header className="fixed inset-x-0 top-0 z-50 border-b border-white/15 bg-ink/35 backdrop-blur-md">
+      <header className="fixed inset-x-0 top-0 z-50 border-b border-white/15 bg-ink/45 backdrop-blur-md">
         <div className="mx-auto flex w-full max-w-[1180px] items-center gap-4 px-5 py-[14px] md:px-8">
           <a href="#atas" className="flex shrink-0 items-center gap-[10px]">
             <SiteLogo size={36} />
@@ -242,7 +242,10 @@ export function TurtleSite() {
 
       {/* ----------------------------------------------------------- hero */}
       <div id="atas" className="relative">
-        <div className="relative h-[500px] w-full overflow-hidden sm:h-[580px] md:h-[660px]">
+        {/* Tall enough that the hut and the ridge sit clear above the
+              headline instead of behind it. The crop is centred; the height
+              is what separates them. */}
+          <div className="relative h-[620px] w-full overflow-hidden sm:h-[720px] md:h-[820px]">
           {/* The illustration is the floor, not the picture: it only shows if
               the photograph is missing, so a deploy without `public/hero.jpg`
               degrades to something drawn instead of to a broken image. */}
@@ -251,20 +254,24 @@ export function TurtleSite() {
           {/* A background rather than an <img>: a missing file simply does not
               paint, so the illustration shows through with no broken-image
               marker and no JavaScript needed to hide one. The photo is
-              decorative — the sentence beneath it carries the meaning. */}
+              decorative — the sentence beneath it carries the meaning.
+
+              A phone crops to roughly a third of the frame, and centred that
+              third cuts the hut in half. Biasing left puts it back in. */}
           <div
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+            className="absolute inset-0 bg-cover bg-no-repeat [background-position:42%_50%] sm:bg-center"
             style={{ backgroundImage: `url("${HERO_PHOTO}")` }}
           />
 
           {/*
-           * Scrim tuned for a bright photograph, not for the illustration.
-           * White sand under white type is the hard case, and the sand is
-           * exactly where the subtitle lands — so the gradient is heaviest at
-           * the foot, lets the middle stay open where the picture does its
-           * work, and darkens the crown again for the fixed header's nav.
+           * Nothing over the top third: the sky and the ridge keep their own
+           * colour, which is the whole reason to use a photograph. The fade
+           * starts below the picture's subject and runs to near-black at the
+           * foot, where the sand is and where the type lands. The header
+           * darkens itself rather than borrowing from this gradient, so the
+           * green stays green right up to the nav.
            */}
-          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(9,26,24,.62)_0%,rgba(9,26,24,.22)_26%,rgba(9,26,24,.30)_50%,rgba(9,26,24,.66)_78%,rgba(9,26,24,.86)_100%)]" />
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(9,26,24,0)_0%,rgba(9,26,24,0)_36%,rgba(9,26,24,.26)_56%,rgba(9,26,24,.68)_78%,rgba(9,26,24,.94)_100%)]" />
 
           {/* Nothing to click in the hero: no picker bar, no buttons. It
               carried the same three questions the enquiry form asks, and

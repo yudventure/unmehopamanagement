@@ -156,7 +156,8 @@ src/
   app/
     globals.css               ★ token desain — seluruh palet ada di sini
     layout.tsx                font DM Sans + JetBrains Mono, metadata
-    page.tsx                  render <BookingManager />
+    page.tsx                  render <BookingManager />   ← dashboard, di /
+    turtle/page.tsx           render <TurtleSite />        ← website publik, di /turtle
   components/
     booking-manager.tsx       ★ SELURUH state aplikasi + view model ada di sini
     top-bar.tsx               logo, pencarian, tombol booking baru, menu profil
@@ -167,6 +168,9 @@ src/
     dashboard-rail.tsx        bilah kanan: check-in terdekat / daftar per tanggal
     invite-modal.tsx          modal undang pengelola
     room-edit-modal.tsx       modal ubah detail kamar (nama/kapasitas/harga/status)
+    scenery.tsx               kit SVG bersama: karst, karang, perahu, orang, satwa
+    web/site.tsx              seluruh halaman website publik
+    web/scenes.tsx            ilustrasi website (hero senja, reef, dermaga)
     login-screen.tsx          login dua panel + panel foto
     screens/
       calendar-screen.tsx     grid kalender + chip booking
@@ -185,6 +189,7 @@ src/
     pricing.ts                satu-satunya tempat nilai booking dihitung
     derive.ts                 sel kalender, statistik bulan, tren, deteksi bentrok
     report-export.ts          penyusun CSV + penggambar PDF laporan
+    web-content.ts            ★ seluruh teks, harga, dan kontak website publik
     format.ts                 tanggal & rupiah (id-ID)
     pills.ts                  warna badge per status
     types.ts                  tipe domain
@@ -501,3 +506,41 @@ Sejak sekarang push biasa sudah bekerja — tidak perlu lagi lewat zip.
       belum. Pasangan itu lolos kontras 3:1 dan duduk di pita CVD 6–8 —
       dibolehkan karena pembedanya dibawa tiga cara lain: legenda, posisi
       (periode terbuka selalu ekor kanan), dan tampilan tabel.
+
+---
+
+## 6. Website publik (`/turtle`)
+
+Terpisah dari dashboard dan **tidak memindahkannya**: manager tetap di `/`,
+website di `/turtle`. Keduanya hanya berbagi dua hal — tarif kamar dan kit
+ilustrasi — jadi salah satunya bisa dipindah ke domain sendiri nanti tanpa
+yang lain ikut berubah (di Vercel itu setelan domain, bukan perubahan kode).
+
+Isinya: hero senja dengan pemilih (mau apa / kapan / berapa orang), bagian
+nilai, kamar, dive center, musim, cara sampai, formulir pemesanan, FAQ, footer.
+
+**Semua tombol pesan berujung ke WhatsApp** dengan pesan yang sudah tersusun,
+dan panel di sebelah formulir memperlihatkan pesannya sebelum dikirim. Itu
+bukan penampung sementara sampai ada booking engine — begitulah homestay di
+Mansuar menerima pesanan, dan jalan tanpa backend, tanpa payment gateway,
+tanpa akun. Kamar juga diarahkan ke OTA karena di sanalah kalendernya hidup;
+yang benar-benar dipesan lewat situs ini adalah paket menyelam.
+
+### Yang wajib diganti sebelum dipakai
+
+`lib/web-content.ts` memegang seluruh teks, dan di kepalanya ada blok
+PLACEHOLDER yang menyebut apa saja yang masih karangan:
+
+| Isi | Status |
+|---|---|
+| `WHATSAPP`, `EMAIL` | **placeholder** — nomor dan alamat contoh |
+| `DIVE_PACKAGES` | **placeholder** — semua harga, durasi, dan level |
+| Tarif kamar | **nyata** — dibaca dari `seedRooms()`, sumber yang sama dengan manager |
+| Musim, cara sampai, FAQ | tulisan wajar, perlu dikoreksi pemilik |
+
+### Tidak ada foto
+
+Repo ini tidak punya foto dan tidak boleh menarik dari host luar, jadi setiap
+gambar di website digambar sebagai SVG. Itu batasan nyata, bukan pilihan gaya.
+Tiap ilustrasi adalah satu komponen di dalam kotak rasio tetap (`Frame`), jadi
+menggantinya dengan foto asli tidak menggeser apa pun di sekitarnya.

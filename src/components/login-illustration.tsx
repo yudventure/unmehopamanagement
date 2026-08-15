@@ -2,192 +2,43 @@
  * Flat-vector illustration for the login hero panel: the karst islets of
  * Piaynemo, an over-water homestay on stilts, longboats and a manta ray.
  *
- * Drawn inline rather than shipped as an asset so the panel needs no file in
- * `public/`, stays sharp at any panel size, and costs no extra request. The
- * ramp below is the app's teal brand palette from `globals.css`, stepped light
- * to dark so depth reads as distance — far islets pale, foreground saturated.
+ * Composed from the shared kit in `scenery.tsx`, which the public site draws
+ * its scenes from as well — one set of paths, several arrangements.
  */
 
-const SKY_TOP = "#F3FAF7";
-const SKY_LOW = "#DDEFE8";
-const SUN = "#F8DFA0";
-const SUN_GLOW = "#FBEBC6";
-const CLOUD = "#FFFFFF";
-
-const KARST_FAR = "#C6E4DA";
-const KARST_MID = "#A2D3C5";
-const KARST_NEAR = "#6FBBA8";
-const KARST_BASE = "#3C9B86";
-const VEG = "#2E8B77";
-const VEG_DEEP = "#1E7A66";
-
-const SEA_TOP = "#B9E2D8";
-const SEA_LOW = "#8FCFC0";
-const SEA_LAGOON = "#D2EDE6";
-const SEA_DEEP = "#6FBCAC";
-
-const WOOD = "#EFE0BF";
-const WOOD_DARK = "#D3BC91";
-const THATCH = "#E8C46E";
-const WALL = "#FFFFFF";
-const ROOF = "#0E7C6B";
-const INK = "#0B5F52";
-const AMBER = "#F6C445";
+import {
+  AMBER,
+  Bird,
+  Boat,
+  CLOUD,
+  Fish,
+  INK,
+  KARST_BASE,
+  KARST_FAR,
+  KARST_MID,
+  KARST_NEAR,
+  Karst,
+  Manta,
+  Palm,
+  Person,
+  ROOF,
+  SEA_DEEP,
+  SEA_LAGOON,
+  SEA_LOW,
+  SEA_TOP,
+  SKY_LOW,
+  SKY_TOP,
+  SUN,
+  SUN_GLOW,
+  THATCH,
+  VEG,
+  VEG_DEEP,
+  WALL,
+  WOOD,
+  WOOD_DARK,
+} from "@/components/scenery";
 
 const HORIZON = 420;
-
-/**
- * Limestone islet in the Piaynemo profile: a crown that bulges wider than the
- * waterline, pinched at the base where the sea has undercut the rock. The
- * pinch is the whole character of these islands — without it they read as
- * ordinary green hills.
- */
-function Karst({
-  x,
-  w,
-  h,
-  fill,
-  canopy,
-  base = HORIZON,
-}: {
-  x: number;
-  w: number;
-  h: number;
-  fill: string;
-  canopy?: string;
-  base?: number;
-}) {
-  const bw = w * 0.72;
-  const shoulder = base - h * 0.52;
-
-  /* Scalloped crown: jungle canopy breaking the silhouette. Tufts ride the
-     same ellipse the path's crown curve approximates, so they hug the edge. */
-  const tufts: { cx: number; cy: number }[] = [];
-  if (canopy) {
-    const rx = w * 0.44;
-    const ry = h * 0.48;
-    const n = Math.max(5, Math.round(w / 20));
-    for (let i = 0; i <= n; i += 1) {
-      const t = Math.PI - (Math.PI * i) / n;
-      tufts.push({ cx: x + rx * Math.cos(t), cy: shoulder - ry * Math.sin(t) });
-    }
-  }
-
-  return (
-    <g>
-      <path
-        fill={fill}
-        d={`M ${x - bw / 2} ${base}
-            C ${x - w * 0.52} ${base - h * 0.1} ${x - w * 0.5} ${base - h * 0.3} ${x - w * 0.44} ${shoulder}
-            C ${x - w * 0.36} ${base - h * 0.8} ${x - w * 0.18} ${base - h} ${x} ${base - h}
-            C ${x + w * 0.18} ${base - h} ${x + w * 0.36} ${base - h * 0.8} ${x + w * 0.44} ${shoulder}
-            C ${x + w * 0.5} ${base - h * 0.3} ${x + w * 0.52} ${base - h * 0.1} ${x + bw / 2} ${base}
-            Z`}
-      />
-      {canopy &&
-        tufts.map((t, i) => (
-          <circle key={i} cx={t.cx} cy={t.cy} r={w * 0.055} fill={canopy} />
-        ))}
-    </g>
-  );
-}
-
-/** Manta seen from above, wings spread — the animal Raja Ampat is known for. */
-function Manta({ x, y, s, fill }: { x: number; y: number; s: number; fill: string }) {
-  return (
-    <g transform={`translate(${x} ${y}) scale(${s})`} fill={fill}>
-      <path
-        d="M 0 -16 C 20 -20 48 -10 72 8 C 50 6 28 12 12 26 C 7 33 -7 33 -12 26
-           C -28 12 -50 6 -72 8 C -48 -10 -20 -20 0 -16 Z"
-      />
-      <path d="M -13 -15 C -17 -23 -13 -28 -8 -26 C -11 -22 -11 -18 -10 -15 Z" />
-      <path d="M 13 -15 C 17 -23 13 -28 8 -26 C 11 -22 11 -18 10 -15 Z" />
-      <path d="M -2.6 28 C -2 42 -1.6 54 -1.2 64 L 1.2 64 C 1.6 54 2 42 2.6 28 Z" />
-    </g>
-  );
-}
-
-function Fish({
-  x,
-  y,
-  s,
-  fill,
-  flip = false,
-}: {
-  x: number;
-  y: number;
-  s: number;
-  fill: string;
-  flip?: boolean;
-}) {
-  return (
-    <g transform={`translate(${x} ${y}) scale(${flip ? -s : s} ${s})`} fill={fill}>
-      <path d="M 0 0 C 6 -7 18 -7 26 0 C 18 7 6 7 0 0 Z" />
-      <path d="M 0.5 0 L -8 -6 L -8 6 Z" />
-    </g>
-  );
-}
-
-function Palm({ x, y, s, fill }: { x: number; y: number; s: number; fill: string }) {
-  return (
-    <g transform={`translate(${x} ${y}) scale(${s})`} fill={fill}>
-      <path d="M -2.2 0 C -3.4 -13 -3.2 -24 -5.6 -35 L 0.6 -35 C -0.6 -24 0.4 -13 2.2 0 Z" />
-      <path d="M -5 -35 C -19 -41 -28 -35 -33 -28 C -22 -33 -13 -33 -4 -31 Z" />
-      <path d="M 5 -35 C 19 -41 28 -35 33 -28 C 22 -33 13 -33 4 -31 Z" />
-      <path d="M -4.4 -37 C -15 -49 -9 -58 -2.4 -63 C -6.6 -54 -4.4 -45 -1.2 -39 Z" />
-      <path d="M 4.4 -37 C 15 -49 9 -58 2.4 -63 C 6.6 -54 4.4 -45 1.2 -39 Z" />
-      <path d="M -6 -34 C -21 -30 -28 -23 -30 -16 C -21 -24 -12 -28 -5 -30 Z" />
-      <path d="M 6 -34 C 21 -30 28 -23 30 -16 C 21 -24 12 -28 5 -30 Z" />
-    </g>
-  );
-}
-
-function Bird({ x, y, s, stroke }: { x: number; y: number; s: number; stroke: string }) {
-  return (
-    <path
-      d="M -7 0 C -4 -5 -1.6 -5 0 -1.4 C 1.6 -5 4 -5 7 0"
-      transform={`translate(${x} ${y}) scale(${s})`}
-      fill="none"
-      stroke={stroke}
-      strokeWidth={1.8}
-      strokeLinecap="round"
-    />
-  );
-}
-
-/** Head, torso and legs at a scale where anything more would turn to mush. */
-function Person({
-  x,
-  y,
-  s,
-  shirt,
-  skin = INK,
-}: {
-  x: number;
-  y: number;
-  s: number;
-  shirt: string;
-  skin?: string;
-}) {
-  return (
-    <g transform={`translate(${x} ${y}) scale(${s})`}>
-      <circle cx={0} cy={-21} r={3.6} fill={skin} />
-      <path d="M -4 -17 C -4 -11 -4.4 -6 -4 -2 L 4 -2 C 4.4 -6 4 -11 4 -17 Z" fill={shirt} />
-      <path d="M -3.4 -2 L -3.4 6 M 3.4 -2 L 3.4 6" stroke={skin} strokeWidth={2.2} strokeLinecap="round" />
-    </g>
-  );
-}
-
-function Boat({ x, y, s, flip = false }: { x: number; y: number; s: number; flip?: boolean }) {
-  return (
-    <g transform={`translate(${x} ${y}) scale(${flip ? -s : s} ${s})`}>
-      <path d="M -30 0 C -26 9 -20 13 0 13 C 20 13 26 9 30 0 Z" fill={WALL} />
-      <path d="M -30 0 C -26 9 -20 13 0 13 C 20 13 26 9 30 0 Z" fill="none" stroke={KARST_BASE} strokeWidth={1.6} />
-      <rect x={-30} y={-3} width={60} height={4} rx={2} fill={AMBER} />
-      <path d="M 22 -3 L 30 -3 L 27 -12 L 21 -12 Z" fill={ROOF} />
-    </g>
-  );
-}
 
 export function LoginIllustration({ className }: { className?: string }) {
   return (
@@ -231,15 +82,15 @@ export function LoginIllustration({ className }: { className?: string }) {
 
       {/* Far range — palest, reads as distance */}
       <g opacity={0.9}>
-        <Karst x={64} w={132} h={112} fill={KARST_FAR} />
-        <Karst x={196} w={112} h={78} fill={KARST_FAR} />
-        <Karst x={454} w={148} h={106} fill={KARST_FAR} />
-        <Karst x={634} w={124} h={84} fill={KARST_FAR} />
+        <Karst x={64} w={132} h={112} fill={KARST_FAR} base={HORIZON} />
+        <Karst x={196} w={112} h={78} fill={KARST_FAR} base={HORIZON} />
+        <Karst x={454} w={148} h={106} fill={KARST_FAR} base={HORIZON} />
+        <Karst x={634} w={124} h={84} fill={KARST_FAR} base={HORIZON} />
       </g>
 
       {/* Mid range */}
-      <Karst x={136} w={152} h={154} fill={KARST_MID} canopy={KARST_MID} />
-      <Karst x={556} w={166} h={142} fill={KARST_MID} canopy={KARST_MID} />
+      <Karst x={136} w={152} h={154} fill={KARST_MID} canopy={KARST_MID} base={HORIZON} />
+      <Karst x={556} w={166} h={142} fill={KARST_MID} canopy={KARST_MID} base={HORIZON} />
       <Palm x={116} y={286} s={0.7} fill={VEG} />
       <Palm x={572} y={298} s={0.64} fill={VEG} />
 

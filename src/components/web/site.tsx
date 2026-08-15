@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import {
   HeroScene,
@@ -143,6 +143,23 @@ const FILL = "absolute inset-0 h-full w-full";
 export function TurtleSite() {
   const [menuOpen, setMenuOpen] = useState(false);
 
+  /* The header is bare over the top of the hero and grows its bar once the
+     page moves. It starts false rather than reading scrollY during render:
+     the page is prerendered, and a value read at render time would not match
+     what the browser hydrates with. The effect settles it on mount, which
+     also covers a reload part-way down the page. */
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 24);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  /* An open drawer needs the bar under it whether or not the page has moved,
+     or the links hang over the photograph with nothing behind them. */
+  const barSolid = scrolled || menuOpen;
+
   /* The hero picker and every "Pesan" button write into the same enquiry, so
      whichever one the visitor touched, the message that opens is already
      about the thing they touched. */
@@ -182,7 +199,26 @@ export function TurtleSite() {
   return (
     <div className="bg-surface text-ink">
       {/* ------------------------------------------------------------ nav */}
-      <header className="fixed inset-x-0 top-0 z-50 border-b border-white/15 bg-ink/45 backdrop-blur-md">
+      <header
+        className={`fixed inset-x-0 top-0 z-50 border-b transition-[background-color,border-color] duration-300 ${
+          barSolid
+            ? "border-white/15 bg-ink/45 backdrop-blur-md"
+            : /*
+               * No bar at the top: no fill, no rule, no blur — the photograph
+               * runs clean under it.
+               *
+               * What is left is a wash that dies out before the header does,
+               * plus a shadow on the type. Neither reads as a bar, and both
+               * are needed: this sky is close to white in places, and white
+               * links on it with nothing behind them cannot be read.
+               */
+              /* bg-no-repeat matters: the bar's height is fractional, so the
+                 gradient tile falls a sliver short and repeats — painting its
+                 darkest row back at the bottom edge as a hairline that looks
+                 exactly like the border this state is meant to drop. */
+              "border-transparent bg-[linear-gradient(180deg,rgba(6,20,18,.42)_0%,rgba(6,20,18,.14)_55%,rgba(6,20,18,0)_88%)] bg-no-repeat [text-shadow:0_1px_16px_rgba(6,20,18,.75)]"
+        }`}
+      >
         {/* No mark and no wordmark: the hero says the name in display type a
             moment below, and with the bar carrying only links the whole row
             can sit centred rather than pushed to one side by a logo. */}

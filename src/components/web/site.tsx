@@ -39,6 +39,7 @@ import {
  */
 
 const NAV = [
+  { href: "#atas", label: "Beranda" },
   { href: "#kamar", label: "Kamar" },
   { href: "#diving", label: "Diving" },
   { href: "#musim", label: "Musim" },
@@ -182,18 +183,11 @@ export function TurtleSite() {
     <div className="bg-surface text-ink">
       {/* ------------------------------------------------------------ nav */}
       <header className="fixed inset-x-0 top-0 z-50 border-b border-white/15 bg-ink/45 backdrop-blur-md">
-        <div className="mx-auto flex w-full max-w-[1180px] items-center gap-4 px-5 py-[14px] md:px-8">
-          <a href="#atas" className="flex shrink-0 items-center gap-[10px]">
-            <SiteLogo size={36} />
-            {/* The badge alone carries the identity on a phone, where the full
-                name would crowd the Pesan button — and the hero says it in
-                display type a moment later anyway. */}
-            <span className="hidden text-[15px] font-bold whitespace-nowrap text-white sm:inline">
-              {PROPERTY.name}
-            </span>
-          </a>
-
-          <nav className="ml-auto hidden items-center gap-[26px] lg:flex">
+        {/* No mark and no wordmark: the hero says the name in display type a
+            moment below, and with the bar carrying only links the whole row
+            can sit centred rather than pushed to one side by a logo. */}
+        <div className="mx-auto flex w-full max-w-[1180px] items-center justify-center gap-4 px-5 py-[14px] md:px-8">
+          <nav className="hidden items-center gap-[26px] lg:flex">
             {NAV.map((n) => (
               <a
                 key={n.href}
@@ -203,29 +197,38 @@ export function TurtleSite() {
                 {n.label}
               </a>
             ))}
+            <a
+              href="#pesan"
+              className="rounded-full bg-white px-[18px] py-[9px] text-[13.5px] font-medium text-ink no-underline hover:bg-surface-hover hover:no-underline"
+            >
+              Pesan
+            </a>
           </nav>
 
-          <a
-            href="#pesan"
-            className="ml-auto rounded-full bg-white px-[18px] py-[9px] text-[13.5px] font-medium text-ink no-underline hover:bg-surface-hover hover:no-underline lg:ml-0"
-          >
-            Pesan
-          </a>
-
-          <button
-            type="button"
-            onClick={() => setMenuOpen((v) => !v)}
-            aria-label="Buka menu"
-            aria-expanded={menuOpen}
-            className="flex h-[36px] w-[36px] cursor-pointer flex-col items-center justify-center gap-[5px] rounded-full border border-white/30 bg-transparent lg:hidden"
-          >
-            <span className="block h-[1.5px] w-[15px] bg-white" />
-            <span className="block h-[1.5px] w-[15px] bg-white" />
-          </button>
+          {/* Below the nav's breakpoint the row is the two controls, still
+              centred as a pair. */}
+          <div className="flex items-center gap-3 lg:hidden">
+            <a
+              href="#pesan"
+              className="rounded-full bg-white px-[18px] py-[9px] text-[13.5px] font-medium text-ink no-underline hover:bg-surface-hover hover:no-underline"
+            >
+              Pesan
+            </a>
+            <button
+              type="button"
+              onClick={() => setMenuOpen((v) => !v)}
+              aria-label="Buka menu"
+              aria-expanded={menuOpen}
+              className="flex h-[36px] w-[36px] cursor-pointer flex-col items-center justify-center gap-[5px] rounded-full border border-white/30 bg-transparent"
+            >
+              <span className="block h-[1.5px] w-[15px] bg-white" />
+              <span className="block h-[1.5px] w-[15px] bg-white" />
+            </button>
+          </div>
         </div>
 
         {menuOpen && (
-          <nav className="border-t border-white/15 bg-ink/90 px-5 py-3 lg:hidden">
+          <nav className="border-t border-white/15 bg-ink/90 px-5 py-3 text-center lg:hidden">
             {NAV.map((n) => (
               <a
                 key={n.href}

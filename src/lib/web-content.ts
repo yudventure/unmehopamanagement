@@ -248,7 +248,7 @@ const EN: SiteCopy = {
       "A family homestay and dive centre in Yenbuba, Pulau Mansuar. Rooms over the water, three meals a day, and daily diving in the Dampier Strait.",
   },
   hero: {
-    sub: "Yenbuba, Pulau Mansuar — a homestay built by hand from local timber, standing over a reef we leave the way we found it. Kept by the family who has always lived in this bay, at the pace the tide sets.",
+    sub: "A homestay in Yenbuba, on Pulau Mansuar, built by hand from local timber and standing over a reef we leave the way we found it. Kept by the family who has always lived in this bay, at the pace the tide sets.",
   },
   badges: [
     "Run by the family that owns it",
@@ -294,7 +294,7 @@ const EN: SiteCopy = {
     ask: "Ask about this room",
     askNote: (name) => `I am interested in the ${name}.`,
     otaNote:
-      "The rooms are also listed on Booking.com, Agoda and Traveloka. If you would rather book there, please do — the price is the same, it is only that booking with us directly skips the platform's commission. What no OTA can sell you is a dive package; those are arranged here.",
+      "The rooms are also listed on Booking.com, Agoda and Traveloka. If you would rather book there, please do. The price is the same; booking with us directly only skips the platform's commission. What no OTA can sell you is a dive package, and those are arranged here.",
     types: {
       standard: {
         name: "Standard Room",
@@ -325,7 +325,7 @@ const EN: SiteCopy = {
   dive: {
     badge: "Turtle Dive Center",
     title: "Dive in the morning,\nback before lunch",
-    body: "We dive the Dampier Strait — Cape Kri, Mike's Point, Sardine Reef, Manta Point — all of them 20 to 45 minutes by boat from the jetty. The boat goes out twice a day, six divers per guide at most.",
+    body: "We dive the Dampier Strait: Cape Kri, Mike's Point, Sardine Reef, Manta Point, all of them 20 to 45 minutes by boat from the jetty. The boat goes out twice a day, six divers per guide at most.",
     order: "Book",
     orderNote: (name) => `I am interested in the "${name}" package.`,
     footnote:
@@ -396,7 +396,7 @@ const EN: SiteCopy = {
       {
         label: "Best season",
         months: "October – February",
-        note: "The calmest water and the longest visibility. Mantas show up most often between December and February. Rooms fill early — book well ahead.",
+        note: "The calmest water and the longest visibility. Mantas show up most often between December and February. Rooms fill early, so book well ahead.",
       },
       {
         label: "Still good",
@@ -406,7 +406,7 @@ const EN: SiteCopy = {
       {
         label: "Quiet season",
         months: "May – July",
-        note: "The southeast wind is up, the swell is bigger, and the further sites are sometimes called off. The emptiest months — right if you want the island to yourself.",
+        note: "The southeast wind is up, the swell is bigger, and the further sites are sometimes called off. The emptiest months, and the right ones if you want the island to yourself.",
       },
     ],
   },
@@ -422,7 +422,7 @@ const EN: SiteCopy = {
       },
       {
         title: "Ferry to Waisai",
-        body: "Fast ferry from Sorong harbour, about 2 hours. Two departures a day — morning and midday.",
+        body: "Fast ferry from Sorong harbour, about 2 hours. Two departures a day, morning and midday.",
       },
       {
         title: "Pay the park fee",
@@ -438,7 +438,7 @@ const EN: SiteCopy = {
     eyebrow: "Book direct",
     title: "Send one message,\nwe answer the same day",
     intro:
-      "Fill in as much as you like. The button opens WhatsApp with the message already written — you only have to send it. Nothing is paid on this page and there is no account to create.",
+      "Fill in as much as you like. The button opens WhatsApp with the message already written, so you only have to send it. Nothing is paid on this page and there is no account to create.",
     name: "Name",
     namePlaceholder: "Your name",
     what: "Looking for",
@@ -447,10 +447,10 @@ const EN: SiteCopy = {
     nights: "Nights",
     notes: "Notes",
     notesPlaceholder:
-      "Food allergies, ferry times, dive certification — anything at all.",
+      "Food allergies, ferry times, dive certification, anything at all.",
     whatsapp: "Open WhatsApp",
     email: "Send an email",
-    emailSubject: (activity, when) => `${activity} enquiry — ${when}`,
+    emailSubject: (activity, when) => `${activity} enquiry for ${when}`,
     preview: "The message that will be sent",
   },
   faq: {
@@ -459,7 +459,7 @@ const EN: SiteCopy = {
     items: [
       {
         q: "Is there electricity and phone signal?",
-        a: "Power runs from evening until morning. There is phone signal, enough for WhatsApp, but do not expect to stream anything — bring a book.",
+        a: "Power runs from evening until morning. There is phone signal, enough for WhatsApp, but do not expect to stream anything. Bring a book.",
       },
       {
         q: "What about food?",
@@ -540,7 +540,7 @@ const ID: SiteCopy = {
       "Homestay keluarga dan dive center di Yenbuba, Pulau Mansuar. Kamar di atas air, tiga kali makan, dan penyelaman harian di Selat Dampier.",
   },
   hero: {
-    sub: "Yenbuba, Pulau Mansuar — homestay yang dibangun dengan tangan dari kayu setempat, berdiri di atas karang yang kami jaga apa adanya. Dirawat keluarga yang memang lahir dan besar di teluk ini, dengan irama yang diatur pasang surut.",
+    sub: "Homestay di Yenbuba, Pulau Mansuar, dibangun dengan tangan dari kayu setempat dan berdiri di atas karang yang kami jaga apa adanya. Dirawat keluarga yang memang lahir dan besar di teluk ini, dengan irama yang diatur pasang surut.",
   },
   badges: [
     "Dikelola langsung oleh keluarga pemilik",
@@ -586,7 +586,7 @@ const ID: SiteCopy = {
     ask: "Tanya kamar ini",
     askNote: (name) => `Saya tertarik ${name}.`,
     otaNote:
-      "Kamar juga terdaftar di Booking.com, Agoda dan Traveloka. Kalau kamu lebih nyaman pesan lewat sana, silakan — harganya sama, hanya lewat kami tidak ada komisi platform. Yang belum bisa dipesan di OTA mana pun adalah paket menyelam; itu diatur langsung di sini.",
+      "Kamar juga terdaftar di Booking.com, Agoda dan Traveloka. Kalau kamu lebih nyaman pesan lewat sana, silakan. Harganya sama; lewat kami saja yang tanpa komisi platform. Yang belum bisa dipesan di OTA mana pun adalah paket menyelam, dan itu diatur langsung di sini.",
     types: {
       standard: {
         name: "Kamar Standar",
@@ -617,7 +617,7 @@ const ID: SiteCopy = {
   dive: {
     badge: "Turtle Dive Center",
     title: "Selam pagi,\npulang sebelum makan siang",
-    body: "Kami menyelam di Selat Dampier — Cape Kri, Mike's Point, Sardine Reef, Manta Point — semuanya dalam 20 sampai 45 menit perahu dari dermaga. Perahu berangkat dua kali sehari, maksimal enam penyelam per guide.",
+    body: "Kami menyelam di Selat Dampier: Cape Kri, Mike's Point, Sardine Reef, Manta Point, semuanya dalam 20 sampai 45 menit perahu dari dermaga. Perahu berangkat dua kali sehari, maksimal enam penyelam per guide.",
     order: "Pesan",
     orderNote: (name) => `Saya tertarik paket "${name}".`,
     footnote:
@@ -698,7 +698,7 @@ const ID: SiteCopy = {
       {
         label: "Musim sepi",
         months: "Mei – Juli",
-        note: "Angin tenggara, ombak lebih besar, beberapa titik jauh kadang dibatalkan. Paling sepi — cocok kalau mau pulau untuk diri sendiri.",
+        note: "Angin tenggara, ombak lebih besar, beberapa titik jauh kadang dibatalkan. Paling sepi, dan paling cocok kalau mau pulau untuk diri sendiri.",
       },
     ],
   },
@@ -714,7 +714,7 @@ const ID: SiteCopy = {
       },
       {
         title: "Kapal ke Waisai",
-        body: "Kapal cepat dari Pelabuhan Sorong, ±2 jam. Berangkat dua kali sehari — pagi dan siang.",
+        body: "Kapal cepat dari Pelabuhan Sorong, ±2 jam. Berangkat dua kali sehari, pagi dan siang.",
       },
       {
         title: "Bayar retribusi",
@@ -730,7 +730,7 @@ const ID: SiteCopy = {
     eyebrow: "Pesan langsung",
     title: "Kirim satu pesan,\nkami balas hari itu juga",
     intro:
-      "Isi seadanya di bawah. Tombolnya akan membuka WhatsApp dengan pesan yang sudah tertulis — kamu tinggal kirim. Tidak ada pembayaran di halaman ini dan tidak ada akun yang perlu dibuat.",
+      "Isi seadanya di bawah. Tombolnya akan membuka WhatsApp dengan pesan yang sudah tertulis, jadi kamu tinggal kirim. Tidak ada pembayaran di halaman ini dan tidak ada akun yang perlu dibuat.",
     name: "Nama",
     namePlaceholder: "Nama kamu",
     what: "Mau apa",
@@ -742,7 +742,7 @@ const ID: SiteCopy = {
       "Alergi makanan, jadwal kapal, sertifikat selam, apa saja.",
     whatsapp: "Buka WhatsApp",
     email: "Kirim email",
-    emailSubject: (activity, when) => `Tanya ${activity} — ${when}`,
+    emailSubject: (activity, when) => `Tanya ${activity} untuk ${when}`,
     preview: "Pesan yang akan terkirim",
   },
   faq: {
@@ -751,7 +751,7 @@ const ID: SiteCopy = {
     items: [
       {
         q: "Apakah ada listrik dan sinyal?",
-        a: "Listrik menyala dari sore sampai pagi. Sinyal telepon ada dan cukup untuk WhatsApp, tapi jangan berharap bisa streaming — bawa buku.",
+        a: "Listrik menyala dari sore sampai pagi. Sinyal telepon ada dan cukup untuk WhatsApp, tapi jangan berharap bisa streaming. Bawa buku.",
       },
       {
         q: "Makan bagaimana?",

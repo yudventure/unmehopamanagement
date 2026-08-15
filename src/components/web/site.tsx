@@ -52,12 +52,11 @@ const MONTHS_AHEAD = monthOptions(new Date(2026, 7, 1));
 /**
  * The hero photograph, served straight from `public/`.
  *
- * Drop the file at `public/hero.jpg` and it takes over; until then the drawn
- * scene underneath shows instead. Landscape, at least 1920px wide, and worth
- * compressing to somewhere under 400 KB — this is the first thing the page
- * loads and half the audience is on an island connection.
+ * Replacing it is a matter of overwriting the file — no code changes — as long
+ * as the name matches. If the file is missing the drawn scene underneath shows
+ * instead, so the page never breaks over a bad upload.
  */
-const HERO_PHOTO = "/hero.jpg";
+const HERO_PHOTO = "/hero.png";
 
 const PILL_DARK =
   "inline-flex items-center justify-center rounded-full bg-ink px-6 py-[13px] text-[14px] font-medium text-white transition-colors hover:bg-ink-soft";

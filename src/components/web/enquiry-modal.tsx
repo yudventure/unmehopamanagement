@@ -301,7 +301,7 @@ export function EnquiryModal({
                   type="button"
                   onClick={send}
                   disabled={status === "sending"}
-                  className={`mt-6 inline-flex w-full items-center justify-center rounded-full border-none px-6 py-[13px] text-[14px] font-medium text-white transition-colors sm:w-auto sm:min-w-[180px] ${
+                  className={`mt-6 flex w-full items-center justify-center rounded-full border-none px-6 py-[13px] text-[14px] font-medium text-white transition-colors ${
                     status === "sending"
                       ? "cursor-wait bg-slate"
                       : "cursor-pointer bg-ink hover:bg-ink-soft"
@@ -310,7 +310,7 @@ export function EnquiryModal({
                   {status === "sending" ? t.enquiry.sending : t.enquiry.submit}
                 </button>
                 {(status === "no-contact" || status === "failed") && (
-                  <div className="mt-3 text-[12.5px] leading-[1.5] text-danger-ink">
+                  <div className="mt-3 text-center text-[12.5px] leading-[1.5] text-danger-ink">
                     {status === "no-contact"
                       ? t.enquiry.needContact
                       : t.enquiry.failed}

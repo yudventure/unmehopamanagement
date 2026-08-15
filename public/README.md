@@ -21,6 +21,26 @@ Tidak ada kode yang perlu diubah.
 Kalau berkasnya hilang atau namanya salah, hero jatuh ke ilustrasi SVG — bukan
 ke gambar rusak.
 
+## `1.jpg`, `2.jpg`, `3.jpg` — tiga kartu di bagian "Satu dermaga"
+
+Urutannya sesuai urutan berkas, kiri ke kanan:
+
+| Berkas | Isi foto | Judul kartu |
+|---|---|---|
+| `1.jpg` | tamu di ujung dermaga saat senja | Sore di dermaga |
+| `2.jpg` | dua tamu makan di pondok | Makan bersama |
+| `3.jpg` | jalur papan di depan bungalow | Kamar di atas air |
+
+Judulnya mengikuti isi fotonya, bukan sebaliknya. Kalau fotonya diganti, cek
+lagi judulnya di `src/components/web/site.tsx` — bagian bertanda "values".
+
+Rasio kartunya 3:4; foto 4:5 (1080×1350) terpotong sedikit di atas-bawah.
+
+**Ketiganya masih berat**: 755 KB, 1,1 MB, dan 840 KB — bersama hero jadi
+sekitar 3 MB untuk satu halaman. Dimuat malas (`loading="lazy"`) jadi tidak
+menahan tampilan pertama, tapi di sinyal pulau tetap terasa. Simpan ulang di
+lebar 1080px dengan kualitas 80 biasanya turun ke 150–250 KB per foto.
+
 ## `logo.png` — lencana Turtle Dive Homestay
 
 Dipakai di footer website, dan disalin ke `src/app/turtle/icon.png` sebagai

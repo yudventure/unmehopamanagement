@@ -142,6 +142,24 @@ function Frame({
 
 const FILL = "absolute inset-0 h-full w-full";
 
+/**
+ * A photograph over the drawn scene inside a `Frame`. Lazy, because these sit
+ * below the fold and the three of them weigh more than the rest of the page
+ * put together.
+ */
+function PhotoFill({ src, alt }: { src: string; alt: string }) {
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={src}
+      alt={alt}
+      loading="lazy"
+      decoding="async"
+      className="absolute inset-0 h-full w-full object-cover"
+    />
+  );
+}
+
 export function TurtleSite() {
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -297,10 +315,13 @@ export function TurtleSite() {
               marker and no JavaScript needed to hide one. The photo is
               decorative — the sentence beneath it carries the meaning.
 
-              A phone crops to roughly a third of the frame, and centred that
-              third cuts the hut in half. Biasing left puts it back in. */}
+              The crop pulls to the bottom on wide screens: this is a shot
+              straight down, the huts and boats sit around the middle of the
+              frame, and anchoring the jungle at the foot lifts them clear of
+              the headline. A phone shows the frame's full height either way,
+              so it stays centred. */}
           <div
-            className="absolute inset-0 bg-cover bg-no-repeat [background-position:42%_50%] sm:bg-center"
+            className="absolute inset-0 bg-cover bg-no-repeat bg-center sm:bg-bottom"
             style={{ backgroundImage: `url("${HERO_PHOTO}")` }}
           />
 
@@ -373,12 +394,55 @@ export function TurtleSite() {
             </button>
           </div>
 
-          {/* Three frames at different heights, so the cluster reads as a
-              spread rather than a row of equal tiles. */}
+          {/*
+           * Three frames at different heights, so the cluster reads as a
+           * spread rather than a row of equal tiles.
+           *
+           * The captions follow what each photograph actually shows. Slotted
+           * in the order they were given, 1/2/3 landed under "kamar di atas
+           * air", "karang rumah" and "sore di perahu" — but 1 is dusk on the
+           * jetty, 2 is lunch under the dining hut, and 3 is the bungalow
+           * walk. None of the three shows a reef. Captioning a plate of food
+           * as the house reef is the kind of thing a guest notices, so the
+           * words moved to meet the pictures rather than the other way round.
+           */}
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
             <div>
               <Frame ratio="3 / 4">
                 <JettyScene className={FILL} />
+                <PhotoFill src="/1.jpg" alt="Tamu duduk di ujung dermaga saat matahari terbenam" />
+                <span className="absolute right-3 bottom-3 rounded-full bg-ink/70 px-[11px] py-[5px] text-[11.5px] text-white">
+                  Dermaga
+                </span>
+              </Frame>
+              <div className="mt-[10px] text-[13.5px] font-medium">
+                Sore di dermaga
+              </div>
+              <div className="text-[12.5px] text-slate-soft">
+                Senja dari ujung jetty
+              </div>
+            </div>
+
+            <div className="sm:mt-10">
+              <Frame ratio="3 / 4">
+                <SnorkelScene className={FILL} />
+                <PhotoFill src="/2.jpg" alt="Dua tamu makan di bawah pondok kayu beratap rumbia" />
+                <span className="absolute right-3 bottom-3 rounded-full bg-ink/70 px-[11px] py-[5px] text-[11.5px] text-white">
+                  Pondok makan
+                </span>
+              </Frame>
+              <div className="mt-[10px] text-[13.5px] font-medium">
+                Makan bersama
+              </div>
+              <div className="text-[12.5px] text-slate-soft">
+                Tiga kali sehari, satu meja
+              </div>
+            </div>
+
+            <div className="hidden sm:mt-4 sm:block">
+              <Frame ratio="3 / 4">
+                <IsletScene className={FILL} warm />
+                <PhotoFill src="/3.jpg" alt="Jalur papan di depan deretan bungalow beratap rumbia" />
                 <span className="absolute right-3 bottom-3 rounded-full bg-ink/70 px-[11px] py-[5px] text-[11.5px] text-white">
                   Yenbuba
                 </span>
@@ -387,37 +451,7 @@ export function TurtleSite() {
                 Kamar di atas air
               </div>
               <div className="text-[12.5px] text-slate-soft">
-                Sepuluh kamar, satu jetty
-              </div>
-            </div>
-
-            <div className="sm:mt-10">
-              <Frame ratio="3 / 4">
-                <SnorkelScene className={FILL} />
-                <span className="absolute right-3 bottom-3 rounded-full bg-ink/70 px-[11px] py-[5px] text-[11.5px] text-white">
-                  Depan dermaga
-                </span>
-              </Frame>
-              <div className="mt-[10px] text-[13.5px] font-medium">
-                Karang rumah
-              </div>
-              <div className="text-[12.5px] text-slate-soft">
-                Tinggal turun dari tangga
-              </div>
-            </div>
-
-            <div className="hidden sm:mt-4 sm:block">
-              <Frame ratio="3 / 4">
-                <IsletScene className={FILL} warm />
-                <span className="absolute right-3 bottom-3 rounded-full bg-ink/70 px-[11px] py-[5px] text-[11.5px] text-white">
-                  Selat Dampier
-                </span>
-              </Frame>
-              <div className="mt-[10px] text-[13.5px] font-medium">
-                Sore di perahu
-              </div>
-              <div className="text-[12.5px] text-slate-soft">
-                Gugusan karst dari air
+                Sepuluh kamar, satu jalur papan
               </div>
             </div>
           </div>

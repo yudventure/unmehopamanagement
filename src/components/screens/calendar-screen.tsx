@@ -178,27 +178,31 @@ export function CalendarScreen({
           </div>
         </div>
       ) : (
+        /* Both arrows together, then the month — the same stepper the report
+           screen uses. Straddling the label meant a fixed 190px reservation to
+           stop the second arrow sliding about between a short month and a long
+           one, which left "Juli" with a hole beside it. */
         <div className="mb-[18px] flex flex-wrap items-center gap-4">
           <div className="flex items-center gap-[10px]">
-            <button
-              type="button"
-              onClick={onPrevMonth}
-              aria-label="Bulan sebelumnya"
-              className={`${ARROW_BUTTON} h-[34px] w-[34px] text-[15px]`}
-            >
-              ‹
-            </button>
-            <div className="min-w-[190px] text-[22px] font-bold">
-              {monthLabel}
+            <div className="flex items-center gap-[6px]">
+              <button
+                type="button"
+                onClick={onPrevMonth}
+                aria-label="Bulan sebelumnya"
+                className={`${ARROW_BUTTON} h-[34px] w-[34px] text-[15px]`}
+              >
+                ‹
+              </button>
+              <button
+                type="button"
+                onClick={onNextMonth}
+                aria-label="Bulan berikutnya"
+                className={`${ARROW_BUTTON} h-[34px] w-[34px] text-[15px]`}
+              >
+                ›
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={onNextMonth}
-              aria-label="Bulan berikutnya"
-              className={`${ARROW_BUTTON} h-[34px] w-[34px] text-[15px]`}
-            >
-              ›
-            </button>
+            <div className="text-[22px] font-bold">{monthLabel}</div>
           </div>
           <div className="ml-auto flex flex-wrap gap-[22px]">{stats}</div>
         </div>

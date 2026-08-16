@@ -302,6 +302,32 @@ export interface SiteCopy {
     needContact: string;
     failed: string;
   };
+  about: {
+    /** The button on the home page that leads here. */
+    cta: string;
+    back: string;
+    title: string;
+    lede: string;
+    storyHeading: string;
+    story: string[];
+    roomsHeading: string;
+    roomsIntro: (total: number) => string;
+    roomsTotal: (total: number) => string;
+    serviceHeading: string;
+    serviceIntro: string;
+    services: { title: string; body: string }[];
+    diveHeading: string;
+    diveStory: string[];
+    /** Reads differently depending on which years the owner has filled in. */
+    since: (year: number) => string;
+    diveSince: (year: number, gap: number) => string;
+    diveSinceNoYear: string;
+    diveLink: string;
+    whereHeading: string;
+    closeHeading: string;
+    closeBody: string;
+    closeCta: string;
+  };
   faq: { eyebrow: string; title: string; items: { q: string; a: string }[] };
   footer: { contact: string; pages: string; manager: string; colophon: string; tagline: string };
   activities: Record<ActivityKey, string>;
@@ -729,6 +755,68 @@ const EN: SiteCopy = {
     sent: "Thank you, your message is with us. We answer the same day, usually within a few hours.",
     needContact: "Please leave a WhatsApp number or an email, so we can answer.",
     failed: "That did not go through. Please try again, or message us on WhatsApp.",
+  },
+  about: {
+    cta: "Know us better",
+    back: "Back to the homestay",
+    title: "The family, the rooms,\nand the dive centre",
+    lede:
+      "Turtle Dive Homestay is one family's house and the ten rooms they built beside it, on the north shore of Pulau Mansuar. This page is the long version: who runs it, what each room actually gives you, and how the dive centre came to sit at the end of the same jetty.",
+    storyHeading: "Who you are staying with",
+    story: [
+      "The family who built this homestay live here, in the house at the top of the sand. They were born in this bay and so were their parents, and the reef in front of the jetty is the one they grew up swimming over. Nobody is on shift. If you need something, you are asking the person whose home it is.",
+      "The rooms are traditional Papuan work, timber and thatch, put up by hand and repaired the same way when a storm takes a panel. That is a choice rather than a shortage: a room built like this can be mended with what is on the island, which matters four hours from the nearest hardware shop.",
+      "What the family will not do is tidy the reef. It is left the way it was found, which is why the snorkelling starts at the bottom of the steps.",
+    ],
+    roomsHeading: "The rooms",
+    roomsIntro: (total) =>
+      `${total} rooms in two types, all of them along one boardwalk, all of them facing the same water. Which one you get is worked out when you book; a room out for repair never appears as available.`,
+    roomsTotal: (total) => `${total} rooms in total`,
+    serviceHeading: "What comes with the room",
+    serviceIntro:
+      "No cleaning fee, no service charge, no resort fee. The rate is the rate.",
+    services: [
+      {
+        title: "Three meals a day",
+        body: "Cooked by the family and eaten at one table in the dining hut. Fish that morning, rice, vegetables, fruit. Tell us before you arrive about allergies or anything you do not eat.",
+      },
+      {
+        title: "Starlink",
+        body: "Fast enough for a video call, and it reaches almost every room. Say so when you book if a reliable connection matters and we will put you where the signal is strongest.",
+      },
+      {
+        title: "Fresh water and power",
+        body: "Fresh water for washing. Power runs from evening until morning, which is enough to charge a camera and a phone overnight.",
+      },
+      {
+        title: "The boat",
+        body: "Ours meets you at Waisai harbour and brings you the last hour. Going home, it takes you back for the ferry you name.",
+      },
+      {
+        title: "Snorkelling from the jetty",
+        body: "Mask and fins are here. The house reef starts a few metres out, and you do not need to book anything or wait for a boat.",
+      },
+      {
+        title: "Getting your washing done",
+        body: "Ask. It comes back the next day. There is no machine on the island, so allow for the weather.",
+      },
+    ],
+    diveHeading: "And then the dive centre",
+    diveStory: [
+      "The homestay came first. Guests kept asking to be taken out to the sites they had read about, and for a while that meant borrowing a boat and finding somebody with a compressor.",
+      "Turtle Dive Center is the answer to that: the family's own boat, their own tanks and kit, and guides who have dived the Dampier Strait since they were children. Cape Kri, Mike's Point, Sardine Reef and Manta Point are all between twenty and forty-five minutes from the jetty, and the boat goes out twice a day with at most six divers to a guide.",
+      "You do not have to dive to stay here, and plenty of guests never put a tank on. But if you came for the water, this is the part of the homestay that was built for you.",
+    ],
+    since: (year) => `Homestay since ${year}`,
+    diveSince: (year, gap) =>
+      `Dive centre since ${year}, ${gap === 1 ? "a year" : `${gap} years`} after the homestay`,
+    diveSinceNoYear: "The dive centre came later than the homestay",
+    diveLink: "See the packages and prices",
+    whereHeading: "Where we are",
+    closeHeading: "Come and see",
+    closeBody:
+      "Ask us anything before you book. We answer the same day, usually within a few hours, and there is no deposit to pay to ask a question.",
+    closeCta: "Send us a message",
   },
   faq: {
     eyebrow: "Asked often",
@@ -1210,6 +1298,68 @@ const ID: SiteCopy = {
     sent: "Terima kasih, pesanmu sudah kami terima. Kami balas hari itu juga, biasanya dalam beberapa jam.",
     needContact: "Isi nomor WhatsApp atau email dulu, supaya kami bisa membalas.",
     failed: "Pesannya gagal terkirim. Coba lagi, atau hubungi kami lewat WhatsApp.",
+  },
+  about: {
+    cta: "Kenali kami",
+    back: "Kembali ke homestay",
+    title: "Keluarganya, kamarnya,\ndan dive center-nya",
+    lede:
+      "Turtle Dive Homestay adalah rumah satu keluarga dan sepuluh kamar yang mereka bangun di sebelahnya, di pesisir utara Pulau Mansuar. Halaman ini versi panjangnya: siapa yang mengelola, apa yang sebenarnya kamu dapat di tiap kamar, dan bagaimana dive center-nya sampai berdiri di ujung dermaga yang sama.",
+    storyHeading: "Kamu menginap bersama siapa",
+    story: [
+      "Keluarga yang membangun homestay ini tinggal di sini juga, di rumah di ujung atas pasir. Mereka lahir di teluk ini, begitu juga orang tua mereka, dan karang di depan dermaga adalah karang tempat mereka berenang sejak kecil. Tidak ada yang sedang bertugas shift. Kalau kamu butuh sesuatu, kamu sedang meminta kepada orang yang rumahnya ini.",
+      "Kamarnya kerja tradisional Papua, kayu dan daun, dibangun dengan tangan dan diperbaiki dengan cara yang sama kalau angin mencopot satu panel. Itu pilihan, bukan keterbatasan: kamar yang dibangun begini bisa diperbaiki dengan apa yang ada di pulau, dan itu penting kalau toko bangunan terdekat empat jam jauhnya.",
+      "Yang tidak akan dilakukan keluarga ini adalah merapikan karangnya. Karangnya dibiarkan apa adanya, dan itu sebabnya snorkeling di sini dimulai dari anak tangga terakhir.",
+    ],
+    roomsHeading: "Kamarnya",
+    roomsIntro: (total) =>
+      `${total} kamar dalam dua tipe, semuanya di sepanjang satu jalur papan, semuanya menghadap air yang sama. Kamar mana yang kamu dapat diatur saat pemesanan; kamar yang sedang diperbaiki tidak pernah muncul sebagai tersedia.`,
+    roomsTotal: (total) => `Total ${total} kamar`,
+    serviceHeading: "Yang sudah termasuk",
+    serviceIntro:
+      "Tidak ada biaya kebersihan, biaya layanan, atau biaya resor. Harganya ya segitu.",
+    services: [
+      {
+        title: "Tiga kali makan sehari",
+        body: "Dimasak keluarganya dan dimakan di satu meja di pondok makan. Ikan pagi itu juga, nasi, sayur, buah. Kabari sebelum datang kalau ada alergi atau ada yang tidak kamu makan.",
+      },
+      {
+        title: "Starlink",
+        body: "Cukup cepat untuk panggilan video, dan sinyalnya sampai ke hampir semua kamar. Bilang saat memesan kalau koneksi yang stabil itu penting buatmu, nanti kami tempatkan di kamar yang sinyalnya paling kuat.",
+      },
+      {
+        title: "Air tawar dan listrik",
+        body: "Air tawar untuk mandi. Listrik menyala dari sore sampai pagi, cukup untuk mengisi kamera dan ponsel semalaman.",
+      },
+      {
+        title: "Perahunya",
+        body: "Perahu kami menjemput di dermaga Waisai dan membawa kamu satu jam terakhirnya. Saat pulang, diantar balik untuk mengejar kapal yang kamu sebutkan.",
+      },
+      {
+        title: "Snorkeling dari dermaga",
+        body: "Masker dan fin ada di sini. Karang rumahnya mulai beberapa meter dari dermaga, tidak perlu memesan apa pun dan tidak perlu menunggu perahu.",
+      },
+      {
+        title: "Cucian",
+        body: "Tinggal minta. Besoknya sudah kembali. Tidak ada mesin cuci di pulau, jadi perhitungkan cuacanya.",
+      },
+    ],
+    diveHeading: "Lalu dive center-nya",
+    diveStory: [
+      "Homestay-nya lebih dulu. Tamu terus-menerus minta diantar ke titik-titik yang mereka baca, dan untuk sementara itu berarti pinjam perahu dan mencari orang yang punya kompresor.",
+      "Turtle Dive Center adalah jawabannya: perahu keluarga sendiri, tabung dan alat sendiri, dan pemandu yang sudah menyelami Selat Dampier sejak kecil. Cape Kri, Mike's Point, Sardine Reef, dan Manta Point semuanya dalam dua puluh sampai empat puluh lima menit dari dermaga, dan perahunya berangkat dua kali sehari dengan maksimal enam penyelam per pemandu.",
+      "Kamu tidak harus menyelam untuk menginap di sini, dan banyak tamu yang sama sekali tidak menyentuh tabung. Tapi kalau kamu datang demi airnya, bagian homestay yang satu ini memang dibangun untukmu.",
+    ],
+    since: (year) => `Homestay sejak ${year}`,
+    diveSince: (year, gap) =>
+      `Dive center sejak ${year}, ${gap} tahun setelah homestay-nya`,
+    diveSinceNoYear: "Dive center-nya berdiri belakangan setelah homestay",
+    diveLink: "Lihat paket dan harganya",
+    whereHeading: "Lokasi kami",
+    closeHeading: "Datang dan lihat sendiri",
+    closeBody:
+      "Tanya apa saja sebelum memesan. Kami balas hari itu juga, biasanya dalam beberapa jam, dan tidak ada uang muka untuk sekadar bertanya.",
+    closeCta: "Kirim pesan ke kami",
   },
   faq: {
     eyebrow: "Yang sering ditanya",

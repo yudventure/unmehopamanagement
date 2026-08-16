@@ -186,6 +186,47 @@ export function WebsiteScreen({ editor }: WebsiteScreenProps) {
         </section>
 
         <section className="rounded-[20px] border border-line-soft bg-surface px-5 py-[18px]">
+          <div className="mb-1 text-[15px] font-bold">Tahun berdiri</div>
+          <div className="mb-4 text-[12.5px] leading-[1.5] text-slate-soft">
+            Dipakai di halaman profil <code className="font-mono">/turtle/about</code>,
+            untuk kalimat &ldquo;dive center berdiri sekian tahun setelah
+            homestay&rdquo;. Selama masih kosong, halamannya cuma menyebut dive
+            center-nya berdiri belakangan tanpa menyebut tahun — itu disengaja.
+            Tahun yang dikarang akan bertahan bertahun-tahun di sana.
+          </div>
+          <div className="grid grid-cols-1 gap-[14px] sm:grid-cols-2">
+            {(
+              [
+                ["homestay", "Homestay berdiri"],
+                ["diveCenter", "Dive center berdiri"],
+              ] as const
+            ).map(([key, label]) => (
+              <label key={key} className={LABEL}>
+                {label}
+                <input
+                  value={config.founded?.[key] ?? ""}
+                  onChange={(e) => {
+                    const v = digits(e.target.value).slice(0, 4);
+                    patch({
+                      founded: {
+                        ...(config.founded ?? {
+                          homestay: null,
+                          diveCenter: null,
+                        }),
+                        [key]: v ? Number(v) : null,
+                      },
+                    });
+                  }}
+                  inputMode="numeric"
+                  placeholder="mis. 2016"
+                  className={`${FIELD} font-mono`}
+                />
+              </label>
+            ))}
+          </div>
+        </section>
+
+        <section className="rounded-[20px] border border-line-soft bg-surface px-5 py-[18px]">
           <div className="mb-1 text-[15px] font-bold">Harga paket selam</div>
           <div className="mb-4 text-[12.5px] leading-[1.5] text-slate-soft">
             Nama dan keterangan tiap paket ada di kode; yang bisa diubah di sini

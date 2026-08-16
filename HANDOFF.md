@@ -162,6 +162,7 @@ src/
     api/content/route.ts      baca/tulis content/site.json lewat GitHub API
     api/rates/route.ts        kurs mata uang, di-cache 6 jam
     turtle/dive/[pack]/       halaman detail per paket selam (6, prerender)
+    turtle/about/             halaman profil homestay
   components/
     booking-manager.tsx       ★ SELURUH state aplikasi + view model ada di sini
     top-bar.tsx               logo, pencarian, tombol booking baru, menu profil
@@ -176,7 +177,11 @@ src/
     web/site.tsx              seluruh halaman website publik
     web/scenes.tsx            ilustrasi website (hero senja, reef, dermaga)
     web/enquiry-modal.tsx     popup pesan: nama, WA, email, rencana, catatan
+    web/about.tsx             isi halaman profil homestay
     web/dive-detail.tsx       isi halaman detail paket selam
+    web/journey-map.tsx       peta sketsa + popup lokasi
+    web/journey-scenes.tsx    ilustrasi 4 langkah, menjorok keluar kartu
+    web/season-scenes.tsx     laut beranimasi di balik kartu musim
     web/dive-diagrams.tsx     diagram pembagian hari + meter kedalaman
     web/price.tsx             harga rupiah + baris konversi, pemilih mata uang
     login-screen.tsx          login dua panel + panel foto
@@ -616,6 +621,27 @@ akun; `RATES_URL` bisa dipakai kalau suatu saat perlu diganti.
 
 Kalau sumbernya mati, route-nya menjawab 503 dan baris konversinya tidak
 digambar sama sekali. Rupiahnya tetap tampil, yang memang harga sebenarnya.
+
+### Halaman profil `/turtle/about`
+
+Tombol di bagian nilai bukan lagi ajakan memesan, tapi **Kenali kami**, dan
+mengarah ke sini. Isinya versi panjang: keluarganya, kesepuluh kamarnya dengan
+foto dan fasilitas per tipe, apa saja yang sudah termasuk harga, cerita dive
+center-nya, dan peta lokasinya.
+
+Jumlah kamarnya dihitung dari `roomFacts()`, tabel yang sama dengan yang
+dipakai manager, jadi halaman ini tidak bisa menyebut angka yang berbeda dari
+dashboard. Bagian dive center-nya **menautkan balik** ke daftar harga di
+`/turtle#diving`, bukan menyalin harganya. Enam harga di dua tempat berarti
+enam harga yang harus dijaga tetap sama.
+
+**Dua tahun berdiri masih kosong.** `founded.homestay` dan `founded.diveCenter`
+di `content/site.json` bernilai `null`, dan diisi dari tab Website. Selama
+kosong, halamannya cuma menulis "dive center-nya berdiri belakangan setelah
+homestay" tanpa menyebut tahun. Begitu keduanya diisi, kalimatnya berubah
+sendiri jadi "Dive center sejak 2019, 5 tahun setelah homestay-nya" — selisih
+tahunnya dihitung, bukan ditulis. Tahun yang dikarang adalah jenis kebohongan
+kecil yang bertahan bertahun-tahun, jadi kosong lebih baik daripada tebakan.
 
 ### CMS: tab Website di dalam manager
 

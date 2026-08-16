@@ -496,13 +496,14 @@ export function TurtleSite() {
           <p className="mt-3 text-[14.5px] leading-[1.65] text-slate">
             {t.value.body}
           </p>
-          <button
-            type="button"
-            onClick={() => ask("stay", t.value.ctaNote)}
-            className={`${PILL_DARK} mt-6 cursor-pointer border-none`}
-          >
-            {t.value.cta}
-          </button>
+          {/* Was an enquiry button. The header already carries one and the
+              dialog is two scrolls away in either direction; what this spot
+              is actually good for is the reader who wants to know more before
+              they ask anything, and that is a page, not a form. A link, so it
+              middle-clicks and opens in a tab like a page should. */}
+          <Link href="/turtle/about" className={`${PILL_DARK} mt-6 no-underline hover:no-underline`}>
+            {t.about.cta}
+          </Link>
         </div>
       </Section>
 

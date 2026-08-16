@@ -27,11 +27,28 @@ export interface SiteConfig {
   };
   /** Rupiah, per the unit named in the copy for that package. */
   divePrices: Record<string, number>;
+  /**
+   * The two years the profile page talks about. Null until an owner fills
+   * them in, and the page simply does not state a year while they are —
+   * which is right, because nobody here knows them. A guessed founding year
+   * is the kind of small invention that survives for years.
+   */
+  founded: {
+    homestay: number | null;
+    diveCenter: number | null;
+  };
   updatedAt: string;
   updatedBy: string;
 }
 
-export const SITE_CONFIG = raw as SiteConfig;
+/* `founded` was added after the first config was written, so a file saved by
+   an earlier CMS will not have it. Defaulted rather than required, so an old
+   file keeps working instead of failing the type guard on save. */
+const parsed = raw as Partial<SiteConfig> & Omit<SiteConfig, "founded">;
+export const SITE_CONFIG: SiteConfig = {
+  ...parsed,
+  founded: parsed.founded ?? { homestay: null, diveCenter: null },
+};
 
 /** The shape the CMS edits and the API validates against. */
 export function isSiteConfig(v: unknown): v is SiteConfig {
@@ -43,6 +60,12 @@ export function isSiteConfig(v: unknown): v is SiteConfig {
     typeof c.contact.email === "string" &&
     typeof c.contact.ownerEmail === "string" &&
     !!c.divePrices &&
-    Object.values(c.divePrices).every((n) => typeof n === "number" && n >= 0)
+    Object.values(c.divePrices).every((n) => typeof n === "number" && n >= 0) &&
+    (c.founded === undefined ||
+      (typeof c.founded === "object" &&
+        c.founded !== null &&
+        [c.founded.homestay, c.founded.diveCenter].every(
+          (y) => y === null || (typeof y === "number" && y > 1900 && y < 2100),
+        )))
   );
 }

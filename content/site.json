@@ -12,6 +12,10 @@
     "snorkel": 750000,
     "gear": 350000
   },
+  "founded": {
+    "homestay": null,
+    "diveCenter": null
+  },
   "updatedAt": "",
   "updatedBy": ""
 }

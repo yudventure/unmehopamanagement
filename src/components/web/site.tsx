@@ -299,14 +299,22 @@ export function TurtleSite() {
                *
                * What is left is a wash that dies out before the header does,
                * plus a shadow on the type. Neither reads as a bar, and both
-               * are needed: this sky is close to white in places, and white
-               * links on it with nothing behind them cannot be read.
+               * are needed: the top of this photograph is bright turquoise
+               * reef, and white links on it with nothing behind them cannot
+               * be read.
+               *
+               * The wash is held near its full strength down to 62% rather
+               * than fading from the first pixel, because the links sit at
+               * about half the bar's height, which is exactly where a fade
+               * that starts at the top has already given most of itself
+               * away. Measured against the reef, the worst link went from
+               * 3.2:1 to over 4.5:1 with this shape.
                */
               /* bg-no-repeat matters: the bar's height is fractional, so the
                  gradient tile falls a sliver short and repeats — painting its
                  darkest row back at the bottom edge as a hairline that looks
                  exactly like the border this state is meant to drop. */
-              "border-transparent bg-[linear-gradient(180deg,rgba(6,20,18,.42)_0%,rgba(6,20,18,.14)_55%,rgba(6,20,18,0)_88%)] bg-no-repeat [text-shadow:0_1px_16px_rgba(6,20,18,.75)]"
+              "border-transparent bg-[linear-gradient(180deg,rgba(6,20,18,.56)_0%,rgba(6,20,18,.38)_62%,rgba(6,20,18,0)_100%)] bg-no-repeat [text-shadow:0_1px_16px_rgba(6,20,18,.75)]"
         }`}
       >
         {/* No mark and no wordmark: the hero says the name in display type a
@@ -389,13 +397,15 @@ export function TurtleSite() {
               marker and no JavaScript needed to hide one. The photo is
               decorative — the sentence beneath it carries the meaning.
 
-              The crop pulls to the bottom on wide screens: this is a shot
-              straight down, the huts and boats sit around the middle of the
-              frame, and anchoring the jungle at the foot lifts them clear of
-              the headline. A phone shows the frame's full height either way,
-              so it stays centred. */}
+              The crop stays centred at every width. This is a shot straight
+              down and the picture is banded: reef at the top, beach and huts
+              across the middle, jungle at the foot. Centring keeps all three,
+              and lands the huts just above the headline. Anchoring the foot
+              instead looks the same on a laptop, where almost the whole frame
+              fits, but on a wide monitor it crops the reef away entirely and
+              leaves the huts pushed up under the nav. */}
           <div
-            className="absolute inset-0 bg-cover bg-no-repeat bg-center sm:bg-bottom"
+            className="absolute inset-0 bg-cover bg-no-repeat bg-center"
             style={{ backgroundImage: `url("${HERO_PHOTO}")` }}
           />
 

@@ -25,6 +25,7 @@ import {
   PROPERTY,
   WHATSAPP,
   type ActivityKey,
+  type DiveKey,
   type Lang,
   type RoomKey,
   money,
@@ -296,6 +297,25 @@ export function TurtleSite() {
   /** Opens the dialog already pointed at whatever was pressed. */
   const ask = (next: ActivityKey, note: string) => {
     patchEnquiry({ activity: next, notes: note });
+    setEnquiryOpen(true);
+  };
+
+  /* The dive bar's own three fields. They are not the dialog's: someone can
+     turn the dials here and never press the button, and the dialog should not
+     have quietly changed underneath them if they later press Book on a card
+     instead. Pressing the bar's button is what copies them across. */
+  const [divePack, setDivePack] = useState<DiveKey>(DIVE_FEATURED);
+  const [diveMonthIx, setDiveMonthIx] = useState(0);
+  const [diveDivers, setDiveDivers] = useState("2");
+
+  const askDive = () => {
+    const name = t.dive.packages[divePack].name;
+    patchEnquiry({
+      activity: divePack === "snorkel" ? "snorkeling" : "diving",
+      monthIx: diveMonthIx,
+      people: diveDivers,
+      notes: t.dive.bar.note(name, diveDivers),
+    });
     setEnquiryOpen(true);
   };
 
@@ -663,7 +683,83 @@ export function TurtleSite() {
             </p>
           </div>
 
-          <div className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {/* The booking bar the hero used to carry, rebuilt for diving.
+              It belongs here and not up there: the hero's version asked the
+              same three questions the enquiry form asks and answered none of
+              them, whereas here it sits directly above the thing being
+              chosen, and diving is the one part of this site that is really
+              booked here rather than through an OTA.
+
+              White on a dark section, the way it was white on a cream one:
+              this is the row to reach for, and nothing else in the section is
+              solid white except the Book buttons it leads to. */}
+          <div className="mt-10 grid grid-cols-1 overflow-hidden rounded-[20px] bg-surface shadow-[0_18px_50px_-24px_rgba(4,16,20,.7)] md:grid-cols-[1.5fr_1fr_.9fr_auto]">
+            <label className="flex cursor-pointer flex-col gap-[3px] border-b border-line px-5 py-[14px] md:border-r md:border-b-0">
+              <span className="text-[11.5px] text-slate">
+                {t.dive.bar.pack}
+              </span>
+              <select
+                value={divePack}
+                onChange={(e) => setDivePack(e.target.value as DiveKey)}
+                className="cursor-pointer border-none bg-transparent p-0 text-[14.5px] font-medium text-ink outline-none"
+              >
+                {DIVE_KEYS.map((k) => (
+                  <option key={k} value={k}>
+                    {t.dive.packages[k].name}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="flex cursor-pointer flex-col gap-[3px] border-b border-line px-5 py-[14px] md:border-r md:border-b-0">
+              <span className="text-[11.5px] text-slate">
+                {t.dive.bar.when}
+              </span>
+              <select
+                value={diveMonthIx}
+                onChange={(e) => setDiveMonthIx(Number(e.target.value))}
+                className="cursor-pointer border-none bg-transparent p-0 text-[14.5px] font-medium text-ink outline-none"
+              >
+                {monthsAhead.map((m, i) => (
+                  <option key={m} value={i}>
+                    {m}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="flex cursor-pointer flex-col gap-[3px] border-b border-line px-5 py-[14px] md:border-r md:border-b-0">
+              <span className="text-[11.5px] text-slate">
+                {t.dive.bar.divers}
+              </span>
+              <select
+                value={diveDivers}
+                onChange={(e) => setDiveDivers(e.target.value)}
+                className="cursor-pointer border-none bg-transparent p-0 text-[14.5px] font-medium text-ink outline-none"
+              >
+                {/* Six per guide is the boat's limit, so the list stops
+                    where the boat does and says so rather than offering a
+                    number that would have to be turned down by email. */}
+                {["1", "2", "3", "4", "5", "6+"].map((n) => (
+                  <option key={n} value={n}>
+                    {t.dive.bar.diverCount(n)}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <div className="p-[10px]">
+              <button
+                type="button"
+                onClick={askDive}
+                className={`${PILL_DARK} w-full cursor-pointer border-none whitespace-nowrap`}
+              >
+                {t.dive.bar.submit}
+              </button>
+            </div>
+          </div>
+
+          <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {DIVE_KEYS.map((key) => {
               const p = t.dive.packages[key];
               const featured = key === DIVE_FEATURED;

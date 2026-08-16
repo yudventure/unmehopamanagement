@@ -180,6 +180,15 @@ export interface SiteCopy {
     orderNote: (name: string) => string;
     footnote: string;
     packages: Record<DiveKey, DiveCopy>;
+    /** The booking bar above the packages. */
+    bar: {
+      pack: string;
+      when: string;
+      divers: string;
+      diverCount: (n: string) => string;
+      submit: string;
+      note: (pack: string, divers: string) => string;
+    };
   };
   season: { eyebrow: string; title: string; intro: string; bands: BandCopy[] };
   journey: { eyebrow: string; title: string; intro: string; steps: { title: string; body: string }[] };
@@ -321,6 +330,15 @@ const EN: SiteCopy = {
     orderNote: (name) => `I am interested in the "${name}" package.`,
     footnote:
       "Certified divers, please bring your card and logbook. For the Open Water course, let us know at least a week ahead so the materials and the instructor's schedule can be arranged.",
+    bar: {
+      pack: "Package",
+      when: "When",
+      divers: "Divers",
+      diverCount: (n) => (n === "1" ? "1 diver" : `${n} divers`),
+      submit: "Check availability",
+      note: (pack, divers) =>
+        `I am interested in the "${pack}" package, for ${divers === "1" ? "one diver" : `${divers} divers`}.`,
+    },
     packages: {
       fun2: {
         name: "Fun Dive · 2 tank",
@@ -618,6 +636,15 @@ const ID: SiteCopy = {
     orderNote: (name) => `Saya tertarik paket "${name}".`,
     footnote:
       "Penyelam bersertifikat harap membawa kartu dan buku log. Untuk kursus Open Water, kabari minimal satu minggu sebelumnya supaya materi dan jadwal instruktur bisa disiapkan.",
+    bar: {
+      pack: "Paket",
+      when: "Kapan",
+      divers: "Berapa orang",
+      diverCount: (n) => `${n} orang`,
+      submit: "Cek ketersediaan",
+      note: (pack, divers) =>
+        `Saya tertarik paket "${pack}", untuk ${divers} orang.`,
+    },
     packages: {
       fun2: {
         name: "Fun Dive · 2 tank",

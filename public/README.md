@@ -90,6 +90,18 @@ Diatur di `src/lib/dive-detail.ts`, satu baris `photo` per paket:
 wajah yang bisa dikenali sebaiknya tidak jadi kepala halaman produk berbayar
 tanpa kita tahu orangnya setuju.
 
+## Perahu di kartu musim
+
+Bukan berkas foto — digambar sebagai SVG di `src/components/web/season-scenes.tsx`.
+Perahu yang sama di ketiga kartu, yang berbeda cuma cara geraknya, dan itu diatur
+di satu tempat (`BOAT`): Oktober–Februari meluncur nyaris rata, bulan peralihan
+terguncang sedang, Mei–Juli melompat keluar dari air dan mendarat keras lengkap
+dengan cipratan. Diukur di browser: geraknya 3px, 11px, dan 22px.
+
+Posisinya dipatok dalam piksel dari dasar kartu, bukan persen, karena pita
+airnya adalah padding tetap 64px sementara tinggi kartunya ikut panjang
+paragrafnya.
+
 ## Galeri di halaman `/turtle/about`
 
 Ada dua galeri: **Tempatnya sendiri** (homestay) dan **Di bawah perahu**

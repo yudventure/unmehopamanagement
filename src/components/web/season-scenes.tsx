@@ -26,6 +26,47 @@
 
 export type SeasonKey = "calm" | "mixed" | "windy";
 
+/**
+ * The boat, one per card, moving the way that season's water moves.
+ *
+ * This is the part of the section a reader understands without reading it:
+ * in October the boat glides, in the shoulder months it works, and from May
+ * to July it leaves the water and lands hard. The copy says the swell is
+ * bigger and the further sites are sometimes called off; the boat says the
+ * same thing before anyone gets to the sentence.
+ *
+ * `boat` names the keyframes, `beat` its period. Nothing else changes between
+ * the three, which is the point: same boat, different sea.
+ */
+const BOAT: Record<SeasonKey, { boat: string; beat: number; spray: boolean }> = {
+  calm: { boat: "boatGlide", beat: 6.5, spray: false },
+  mixed: { boat: "boatChop", beat: 2.9, spray: false },
+  windy: { boat: "boatLeap", beat: 1.7, spray: true },
+};
+
+/**
+ * A speedboat, bow to the right, about seventy pixels across.
+ *
+ * Small on purpose. At any larger size it stops being weather on a card and
+ * starts being a mascot, and the card's subject is the month, not the boat.
+ */
+function SpeedBoat() {
+  return (
+    <svg viewBox="0 0 120 56" className="h-auto w-full">
+      {/* Hull, transom at the left and the bow running out to the right. */}
+      <path d="M10 30h78l26 -5 -12 21H22Z" fill="#ffffff" />
+      <path d="M10 30h78l26 -5 -3 5H14Z" fill="#c5e1d1" />
+      <path d="M22 46h80l-4 5H26Z" fill="#216b4b" opacity=".55" />
+      {/* Windscreen and canopy. */}
+      <path d="M40 30V19h26l12 11Z" fill="#2f8a63" />
+      <path d="M46 28v-6h16l6 6Z" fill="#eaf5ef" opacity=".85" />
+      {/* Outboard at the stern. */}
+      <rect x="2" y="22" width="10" height="15" rx="3" fill="#4a4238" />
+      <rect x="5" y="35" width="4" height="10" rx="2" fill="#4a4238" />
+    </svg>
+  );
+}
+
 /** One period of a sine-ish wave, tiled across four periods. */
 function wave(amp: number, mid: number, period = 100) {
   let d = `M0 ${mid}`;
@@ -77,6 +118,7 @@ const SEA: Record<SeasonKey, { layers: Layer[]; swell: number }> = {
 
 export function SeasonScene({ season }: { season: SeasonKey }) {
   const { layers, swell } = SEA[season];
+  const b = BOAT[season];
 
   return (
     <div
@@ -162,6 +204,39 @@ export function SeasonScene({ season }: { season: SeasonKey }) {
           ))}
         </div>
       )}
+
+      {/* Offset in pixels, not per cent. The card's water band is a fixed
+          64px of bottom padding, so a percentage of a card whose height varies
+          with its paragraph does not stay inside it: on a phone the leap took
+          the boat 22px up into the text. One value at both sizes, measured
+          across 45 frames on each, so the clearance does not depend on how
+          long the copy happens to be. */}
+      <div
+        className="absolute right-[9%] bottom-[8px] w-[62px] sm:w-[72px]"
+        style={{ animation: `${b.boat} ${b.beat}s ease-in-out infinite` }}
+      >
+        <SpeedBoat />
+      </div>
+
+      {/* Spray, only where there is something to land on, and timed to the two
+          landings in the leap rather than running on its own clock. */}
+      {b.spray &&
+        [
+          { left: 4, size: 7, delay: 0 },
+          { left: 16, size: 5, delay: 0.08 },
+          { left: 26, size: 6, delay: 0.04 },
+        ].map((s) => (
+          <span
+            key={s.left}
+            className="absolute bottom-[6px] rounded-full bg-surface"
+            style={{
+              right: `${9 + s.left}%`,
+              width: s.size,
+              height: s.size,
+              animation: `boatSpray ${b.beat}s ease-out ${s.delay}s infinite`,
+            }}
+          />
+        ))}
 
       {season === "windy" && (
         <>

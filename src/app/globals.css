@@ -95,6 +95,7 @@
       opacity: 1;
     }
   }
+
 }
 
 @layer base {
@@ -137,5 +138,74 @@
     border-radius: 8px;
     border: 3px solid transparent;
     background-clip: content-box;
+  }
+}
+
+/* --------------------------------------------------- season card motion */
+
+/*
+ * The season cards' moving water.
+ *
+ * Everything here is transform or opacity and nothing else, so the browser
+ * composites it without touching layout or paint. Three cards running six
+ * layers each is only affordable on a phone under that rule.
+ *
+ * `seaDrift` shifts a wave exactly half its own width. The SVG holds four
+ * periods across, so half of it is two whole periods and the loop has no
+ * seam to see.
+ */
+@keyframes seaDrift {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@keyframes seaSwell {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -4px, 0);
+  }
+}
+
+@keyframes seaGlint {
+  0%,
+  100% {
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
+/** A manta, a cloud, a gust: something crossing the card and leaving. */
+@keyframes seaCross {
+  from {
+    transform: translate3d(-40%, 0, 0);
+  }
+  to {
+    transform: translate3d(190%, 0, 0);
+  }
+}
+
+/*
+ * Reduced motion stops all of it.
+ *
+ * `!important` is right here and nowhere else: the durations are set as inline
+ * styles, because each layer has its own, and an inline style beats any class
+ * a utility could add. This is the one declaration that has to win against it.
+ *
+ * The wave shapes stay. A still sea is still a sea; what goes is the movement,
+ * which is the part that makes people ill.
+ */
+@media (prefers-reduced-motion: reduce) {
+  [data-sea],
+  [data-sea] * {
+    animation: none !important;
   }
 }

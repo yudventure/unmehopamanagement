@@ -15,6 +15,7 @@ import {
   SnorkelScene,
 } from "@/components/web/scenes";
 import { CurrencySwitch, Price } from "@/components/web/price";
+import { SeasonScene, type SeasonKey } from "@/components/web/season-scenes";
 import { useCurrency, useLang, useRates } from "@/hooks/use-site-prefs";
 import {
   ACTIVITY_KEYS,
@@ -88,6 +89,13 @@ const ROOM_PHOTO: Record<RoomKey, string> = {
 
 /** Sits behind the dive section, under a scrim. */
 const DIVE_PHOTO = "/manta.jpg";
+
+/**
+ * Which sea runs behind each season card, in the order the copy lists them:
+ * best, still good, quiet. Held here rather than in the copy because the
+ * weather in May does not change with the reader's language.
+ */
+const SEASON_SCENES: SeasonKey[] = ["calm", "mixed", "windy"];
 
 /**
  * The homestay's own badge, used across the site in place of the Unmehopa
@@ -909,7 +917,14 @@ export function TurtleSite() {
           {t.season.bands.map((b, i) => (
             <article
               key={b.label}
-              className={`rounded-[20px] border px-6 py-6 ${
+              /* relative + overflow-hidden so the sea behind it is clipped to
+                 the card's own corners. */
+              /* A deep foot rather than the usual py-6: it leaves a band of
+                 open water under the last line, which is where the glint, the
+                 shower and the gusts live. Without it they run behind the
+                 paragraph, and a thin horizontal streak crossing a line of
+                 type reads as a strikethrough, not as light on water. */
+              className={`relative overflow-hidden rounded-[20px] border px-6 pt-6 pb-16 ${
                 i === 0
                   ? "border-teal-line bg-teal-tint"
                   : i === 1
@@ -917,13 +932,24 @@ export function TurtleSite() {
                     : "border-line-soft bg-surface-mute"
               }`}
             >
-              <div className="text-[12px] text-slate-soft">{b.label}</div>
-              <div className="mt-1 text-[19px] font-bold tracking-[-.015em]">
-                {b.months}
+              <SeasonScene season={SEASON_SCENES[i] ?? "calm"} />
+
+              {/* Above the water. Everything from here down is the card.
+                  A step darker than body copy elsewhere on the page: these are
+                  the only paragraphs on the site sitting over something that
+                  moves, and at the page's usual slate the roughest card's
+                  longest paragraph measured 4.1:1. Thinning the sea instead
+                  would have taken the roughness out of the card whose whole
+                  subject is rough weather. */}
+              <div className="relative">
+                <div className="text-[12px] text-ink-soft">{b.label}</div>
+                <div className="mt-1 text-[19px] font-bold tracking-[-.015em]">
+                  {b.months}
+                </div>
+                <p className="mt-3 mb-0 text-[13.5px] leading-[1.6] text-ink-soft">
+                  {b.note}
+                </p>
               </div>
-              <p className="mt-3 mb-0 text-[13.5px] leading-[1.6] text-slate">
-                {b.note}
-              </p>
             </article>
           ))}
         </div>

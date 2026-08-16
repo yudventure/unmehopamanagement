@@ -909,14 +909,14 @@ const EN: SiteCopy = {
     feedback: {
       heading: "Tell us how we did",
       intro:
-        "Tell us what fell short and what worked. Every message is read by the family who run the homestay, and we act on what we can put right.",
+        "Tell us what fell short and what worked. Every message is read by the family who run the homestay, and we follow it up promptly.",
       message: "Your message",
       messagePlaceholder: "What would you change?",
       email: "Email, if you would like a reply",
       emailPlaceholder: "Email, only if you want an answer",
       submit: "Send",
       sending: "Sending…",
-      sent: "Thank you. Your message has reached us, and we will act on what we can.",
+      sent: "Thank you. Your message has reached us, and we will follow it up promptly.",
       empty: "Write something first, then send.",
       failed: "That did not go through. Please try again later.",
     },
@@ -1491,14 +1491,14 @@ const ID: SiteCopy = {
     feedback: {
       heading: "Ceritakan pengalamanmu",
       intro:
-        "Sampaikan apa yang kurang dan apa yang sudah baik. Setiap pesan dibaca langsung oleh keluarga yang mengelola homestay, dan kami tindak lanjuti yang memang bisa kami perbaiki.",
+        "Sampaikan apa yang kurang dan apa yang sudah baik. Setiap pesan dibaca langsung oleh keluarga yang mengelola homestay, dan akan segera kami tindak lanjuti.",
       message: "Pesanmu",
       messagePlaceholder: "Apa yang menurutmu perlu diperbaiki?",
       email: "Email, kalau mau dibalas",
       emailPlaceholder: "Email, isi kalau mau dibalas",
       submit: "Kirim",
       sending: "Mengirim…",
-      sent: "Terima kasih. Pesanmu sudah kami terima, dan yang bisa kami perbaiki akan kami tindak lanjuti.",
+      sent: "Terima kasih. Pesanmu sudah kami terima, dan akan segera kami tindak lanjuti.",
       empty: "Tulis dulu pesannya, baru kirim.",
       failed: "Gagal terkirim. Coba lagi nanti.",
     },

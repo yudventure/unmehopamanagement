@@ -1068,16 +1068,16 @@ export function TurtleSite() {
       {/* The Piaynemo viewpoint behind it, under a scrim heavy enough that
           every line here clears AA. Measured: this photograph is bright almost
           everywhere — turquoise water, pale sky, sunlit leaves — so the scrim
-          is a flat 82% rather than a gradient, which would leave one corner
-          readable and another not. `bg-teal` stays underneath as the floor, so
-          a missing file gives back the green footer it replaced. */}
+          is flat rather than a gradient, which would leave one corner readable
+          and another not. `bg-teal` stays underneath as the floor, so a
+          missing file gives back the green footer it replaced. */}
       <footer className="relative mt-20 overflow-hidden bg-teal py-14 md:mt-28">
         <div
           aria-hidden="true"
           className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: 'url("/piaynemo.jpg")' }}
         />
-        <div aria-hidden="true" className="absolute inset-0 bg-[#0d3b2a]/82" />
+        <div aria-hidden="true" className="absolute inset-0 bg-[#08291c]/88" />
 
         <Section className="relative">
           <div className="grid grid-cols-1 gap-10 md:grid-cols-[1.25fr_1fr] lg:grid-cols-[1.25fr_.9fr_1.1fr]">

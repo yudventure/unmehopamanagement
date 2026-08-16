@@ -130,10 +130,18 @@ menyisakan lubang.
 ## `piaynemo.jpg` — latar footer
 
 Foto puncak Piaynemo, dipasang sebagai background seluruh footer dengan lapisan
-gelap kehijauan 82% di atasnya. Rata, bukan gradien: foto ini terang hampir di
-semua bagiannya — air toska, langit pucat, daun kena matahari — jadi gradien
-akan menyisakan satu sudut terbaca dan sudut lain tidak. Diukur: seluruh 18
-potongan teks di footer lolos, yang paling lemah 4,8:1.
+gelap kehijauan **88%** (`#08291c`) di atasnya. Rata, bukan gradien: foto ini
+terang hampir di semua bagiannya — air toska, langit pucat, daun kena matahari
+— jadi gradien akan menyisakan satu sudut terbaca dan sudut lain tidak.
+
+Diukur: seluruh 18 potongan teks di footer lolos AA, yang paling lemah 9,0:1.
+Latarnya sendiri kira-kira separuh lebih gelap dibanding versi 82% sebelumnya
+(luminansi tengahnya 0,024 dari 0,045), tapi bentuk pulau, air, dan pagar
+dermaganya masih kelihatan — jadi gelap, bukan blok hitam.
+
+Kalau mau diubah lagi, cuma satu baris di `src/components/web/site.tsx`,
+bertanda "footer": angka setelah garis miring itu persen kepekatannya. Naikkan
+untuk lebih gelap, turunkan untuk lebih terang.
 
 `bg-teal` tetap ada di bawahnya sebagai lantai, jadi kalau berkasnya hilang
 footernya kembali hijau polos seperti sebelumnya, bukan gambar rusak.

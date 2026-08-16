@@ -27,6 +27,7 @@ import {
   WHATSAPP,
   type ActivityKey,
   type Lang,
+  type RoomKey,
   money,
   monthOptions,
   roomFacts,
@@ -69,6 +70,18 @@ const LANG_KEY = "turtle-lang";
  * drawn scene underneath shows instead, so the page never breaks outright.
  */
 const HERO_PHOTO = "/hero.jpg";
+
+/**
+ * One photograph per room type, named after the type rather than numbered, so
+ * replacing the family room's picture is a matter of overwriting a file called
+ * `family.jpg` and nothing has to be counted. Same case-sensitivity warning as
+ * the hero, and the same fallback: a missing file leaves the drawn scene
+ * showing rather than a broken image.
+ */
+const ROOM_PHOTO: Record<RoomKey, string> = {
+  standard: "/standard.jpg",
+  family: "/family.jpg",
+};
 
 /**
  * The homestay's own badge, used across the site in place of the Unmehopa
@@ -536,6 +549,10 @@ export function TurtleSite() {
                 ) : (
                   <IsletScene className={FILL} />
                 )}
+                {/* Keyed off the room, not the card's position, so the
+                    family photograph cannot end up over the standard room
+                    if the two are ever reordered. */}
+                <PhotoFill src={ROOM_PHOTO[r.key]} alt={rc.alt} />
                 <span className="absolute top-4 left-4 rounded-full bg-white/92 px-[12px] py-[6px] text-[12px] font-medium">
                   {t.rooms.roomsLabel(r.count)}
                 </span>

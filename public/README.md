@@ -29,7 +29,7 @@ Urutannya sesuai urutan berkas, kiri ke kanan:
 |---|---|---|
 | `1.jpg` | tamu di ujung dermaga saat senja | Sore di dermaga |
 | `2.jpg` | dua tamu makan di pondok | Makan bersama |
-| `3.jpg` | jalur papan di depan bungalow | Kamar di atas air |
+| `3.jpg` | jalur papan di depan bungalow | Kamar di tepi air |
 
 Judulnya mengikuti isi fotonya, bukan sebaliknya. Kalau fotonya diganti, cek
 lagi judulnya di `src/components/web/site.tsx` — bagian bertanda "values".
@@ -40,6 +40,24 @@ Rasio kartunya 3:4; foto 4:5 (1080×1350) terpotong sedikit di atas-bawah.
 sekitar 3 MB untuk satu halaman. Dimuat malas (`loading="lazy"`) jadi tidak
 menahan tampilan pertama, tapi di sinyal pulau tetap terasa. Simpan ulang di
 lebar 1080px dengan kualitas 80 biasanya turun ke 150–250 KB per foto.
+
+## `standard.jpg`, `family.jpg` — foto kartu kamar
+
+Satu foto per tipe kamar, dinamai sesuai tipenya, bukan diberi nomor. Jadi
+mengganti foto kamar keluarga berarti menimpa berkas bernama `family.jpg` dan
+tidak ada yang perlu dihitung urutannya.
+
+| Berkas | Kartu | Isi foto sekarang |
+|---|---|---|
+| `standard.jpg` | Kamar Standar | deretan kamar kayu berpanggung di tepi pasir |
+| `family.jpg` | Kamar Keluarga | satu kamar keluarga dari depan, teras lebar + hammock |
+
+Rasio kartunya 16:10, jadi foto mendatar paling pas. Foto tegak akan terpotong
+banyak di atas dan bawah.
+
+Kalau fotonya diganti, cek lagi teks `alt`-nya di `src/lib/web-content.ts`
+(`rooms.types.<tipe>.alt`, dua bahasa) — teks itu menerangkan isi foto untuk
+pembaca yang tidak bisa melihatnya, jadi ikut basi kalau fotonya berubah.
 
 ## `logo.png` — lencana Turtle Dive Homestay
 

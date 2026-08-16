@@ -125,6 +125,8 @@ interface RoomCopy {
   blurb: string;
   cap: string;
   features: string[];
+  /** Describes the photograph, for a reader who cannot see it. */
+  alt: string;
 }
 
 interface DiveCopy {
@@ -237,10 +239,10 @@ const EN: SiteCopy = {
   meta: {
     title: `${PROPERTY.name} · Homestay & Dive Center in Raja Ampat`,
     description:
-      "A family homestay and dive centre in Yenbuba, Pulau Mansuar. Rooms over the water, three meals a day, and daily diving in the Dampier Strait.",
+      "A family homestay and dive centre in Yenbuba, Pulau Mansuar. Rooms on stilts at the water's edge, three meals a day, and daily diving in the Dampier Strait.",
   },
   hero: {
-    sub: "A homestay in Yenbuba, on Pulau Mansuar, built by hand from local timber and standing over a reef we leave the way we found it. Kept by the family who has always lived in this bay, at the pace the tide sets.",
+    sub: "A homestay in Yenbuba, on Pulau Mansuar, built by hand from local timber and standing at the edge of a reef we leave the way we found it. Kept by the family who has always lived in this bay, at the pace the tide sets.",
   },
   value: {
     heading: "One jetty, one family,",
@@ -265,7 +267,7 @@ const EN: SiteCopy = {
       alt: "Two guests eating under a thatched wooden hut",
     },
     {
-      title: "Rooms over the water",
+      title: "Rooms at the water's edge",
       sub: "Ten rooms along one boardwalk",
       badge: "Yenbuba",
       alt: "The boardwalk in front of a row of thatched bungalows",
@@ -286,7 +288,7 @@ const EN: SiteCopy = {
       standard: {
         name: "Standard Room",
         blurb:
-          "A timber room over the water with a small deck facing the strait. Wake up, open the door, and the reef is right there.",
+          "A timber room on stilts at the top of the sand, with a small deck facing the strait. Open the door in the morning and the water is a few steps away.",
         cap: "2 adults",
         features: [
           "Double bed with mosquito net",
@@ -294,6 +296,7 @@ const EN: SiteCopy = {
           "Private deck facing the sea",
           "Three meals a day included",
         ],
+        alt: "A row of timber rooms standing on stilts at the edge of the sand, shaded by trees, the water a few steps away.",
       },
       family: {
         name: "Family Room",
@@ -306,6 +309,7 @@ const EN: SiteCopy = {
           "Wide deck, hammock",
           "Three meals a day included",
         ],
+        alt: "The family room seen head on: a wide deck under a thatched roof, with a hammock slung across it, a table and chairs, and trees on both sides.",
       },
     },
   },
@@ -532,10 +536,10 @@ const ID: SiteCopy = {
   meta: {
     title: `${PROPERTY.name} · Homestay & Dive Center di Raja Ampat`,
     description:
-      "Homestay keluarga dan dive center di Yenbuba, Pulau Mansuar. Kamar di atas air, tiga kali makan, dan penyelaman harian di Selat Dampier.",
+      "Homestay keluarga dan dive center di Yenbuba, Pulau Mansuar. Kamar berpanggung di tepi air, tiga kali makan, dan penyelaman harian di Selat Dampier.",
   },
   hero: {
-    sub: "Homestay di Yenbuba, Pulau Mansuar, dibangun dengan tangan dari kayu setempat dan berdiri di atas karang yang kami jaga apa adanya. Dirawat keluarga yang memang lahir dan besar di teluk ini, dengan irama yang diatur pasang surut.",
+    sub: "Homestay di Yenbuba, Pulau Mansuar, dibangun dengan tangan dari kayu setempat dan berdiri di tepi karang yang kami jaga apa adanya. Dirawat keluarga yang memang lahir dan besar di teluk ini, dengan irama yang diatur pasang surut.",
   },
   value: {
     heading: "Satu dermaga, satu keluarga,",
@@ -560,7 +564,7 @@ const ID: SiteCopy = {
       alt: "Dua tamu makan di bawah pondok kayu beratap rumbia",
     },
     {
-      title: "Kamar di atas air",
+      title: "Kamar di tepi air",
       sub: "Sepuluh kamar, satu jalur papan",
       badge: "Yenbuba",
       alt: "Jalur papan di depan deretan bungalow beratap rumbia",
@@ -581,7 +585,7 @@ const ID: SiteCopy = {
       standard: {
         name: "Kamar Standar",
         blurb:
-          "Kamar kayu di atas air dengan teras kecil menghadap selat. Bangun pagi, buka pintu, langsung lihat karang.",
+          "Kamar kayu berpanggung di tepi pasir, dengan teras kecil menghadap selat. Buka pintu pagi hari, air cuma beberapa langkah dari teras.",
         cap: "2 dewasa",
         features: [
           "Kasur double + kelambu",
@@ -589,6 +593,7 @@ const ID: SiteCopy = {
           "Teras pribadi menghadap laut",
           "Termasuk 3x makan sehari",
         ],
+        alt: "Deretan kamar kayu berpanggung di tepi pasir, teduh di bawah pepohonan, air hanya beberapa langkah dari teras.",
       },
       family: {
         name: "Kamar Keluarga",
@@ -601,6 +606,7 @@ const ID: SiteCopy = {
           "Teras luas, hammock",
           "Termasuk 3x makan sehari",
         ],
+        alt: "Kamar keluarga dilihat dari depan: teras lebar beratap daun, hammock terbentang, meja dan kursi, pepohonan di kedua sisi.",
       },
     },
   },

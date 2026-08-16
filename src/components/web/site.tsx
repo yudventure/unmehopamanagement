@@ -15,6 +15,8 @@ import {
   SnorkelScene,
 } from "@/components/web/scenes";
 import { CurrencySwitch, Price } from "@/components/web/price";
+import { JourneyMap } from "@/components/web/journey-map";
+import { JourneyScene, STEP_SCENES } from "@/components/web/journey-scenes";
 import { SeasonScene, type SeasonKey } from "@/components/web/season-scenes";
 import { useCurrency, useLang, useRates } from "@/hooks/use-site-prefs";
 import {
@@ -956,7 +958,7 @@ export function TurtleSite() {
       </Section>
 
       {/* ------------------------------------------------------- getting here */}
-      <Section id="perjalanan" className="pt-20 md:pt-28">
+      <Section id="perjalanan" className="overflow-x-clip pt-20 md:pt-28">
         <div className="grid grid-cols-1 gap-10 md:grid-cols-[minmax(240px,380px)_1fr]">
           <div>
             <Eyebrow>{t.journey.eyebrow}</Eyebrow>
@@ -966,26 +968,40 @@ export function TurtleSite() {
             <p className="mt-3 text-[14px] leading-[1.65] text-slate">
               {t.journey.intro}
             </p>
-            <Frame ratio="4 / 3" className="mt-6 hidden md:block">
-              <IsletScene className={FILL} />
-            </Frame>
+            {/* The drawn islet that used to sit here is gone. What a reader
+                wants under a heading called "getting here" is where here is,
+                and a map answers that where an illustration cannot. */}
+            <JourneyMap t={t} />
           </div>
 
-          <ol className="m-0 grid list-none grid-cols-1 gap-4 p-0 sm:grid-cols-2">
+          {/* Generous row and column gaps, and no clipping anywhere on this
+              list: the illustrations hang past their cards' edges, and gutters
+              are the space they hang into. */}
+          <ol className="m-0 grid list-none grid-cols-1 gap-x-8 gap-y-10 p-0 sm:grid-cols-2">
             {t.journey.steps.map((j, i) => (
               <li
                 key={j.title}
-                className="rounded-[20px] border border-line-soft bg-surface-mute px-6 py-6"
+                /* isolate + z-10 on hover is not enough on its own: without a
+                   stacking context per card, whichever card comes later in the
+                   document draws over the one before it, and the plane on 01
+                   ends up underneath 02. */
+                className="relative isolate rounded-[20px] border border-line-soft bg-surface-mute px-6 pt-6 pb-8"
               >
-                <div className="font-mono text-[12px] text-teal">
-                  {String(i + 1).padStart(2, "0")}
+                <JourneyScene step={STEP_SCENES[i] ?? "fly"} />
+                <div className="relative">
+                  {/* teal-deep, not teal: 12px teal on this cream measured
+                      3.9:1. Predates the illustrations; caught measuring
+                      them. */}
+                  <div className="font-mono text-[12px] text-teal-deep">
+                    {String(i + 1).padStart(2, "0")}
+                  </div>
+                  <div className="mt-2 max-w-[70%] text-[17px] font-bold tracking-[-.015em]">
+                    {j.title}
+                  </div>
+                  <p className="mt-2 mb-0 max-w-[86%] text-[13.5px] leading-[1.6] text-slate">
+                    {j.body}
+                  </p>
                 </div>
-                <div className="mt-2 text-[17px] font-bold tracking-[-.015em]">
-                  {j.title}
-                </div>
-                <p className="mt-2 mb-0 text-[13.5px] leading-[1.6] text-slate">
-                  {j.body}
-                </p>
               </li>
             ))}
           </ol>

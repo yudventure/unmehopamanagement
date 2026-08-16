@@ -43,6 +43,33 @@ export const PROPERTY = {
   island: "Pulau Mansuar",
 };
 
+/**
+ * Where the homestay is.
+ *
+ * The plus code is what the owner gave; `lat`/`lng` are that code decoded and
+ * round-tripped back to the same code, so the two cannot drift apart. The cell
+ * a full plus code names is about three metres across, which is a doorway, not
+ * a village.
+ *
+ * Every map link is built from the coordinates rather than from the address
+ * text: a place name has to be searched and can match the wrong thing, while a
+ * coordinate lands where it lands.
+ */
+export const LOCATION = {
+  plusCode: "CMP9+HJR",
+  lat: -0.563516,
+  lng: 130.669038,
+  area: "Pulau Mansuar Kecil (Kri)",
+  admin: "Meos Mansar, Raja Ampat Regency, West Papua",
+};
+
+export const MAP_LINKS = {
+  google: `https://www.google.com/maps/search/?api=1&query=${LOCATION.lat},${LOCATION.lng}`,
+  osm: `https://www.openstreetmap.org/?mlat=${LOCATION.lat}&mlon=${LOCATION.lng}#map=14/${LOCATION.lat}/${LOCATION.lng}`,
+  /** Documented, key-free embed. Loaded only once the dialog is open. */
+  embed: `https://www.openstreetmap.org/export/embed.html?bbox=${LOCATION.lng - 0.055},${LOCATION.lat - 0.035},${LOCATION.lng + 0.055},${LOCATION.lat + 0.035}&layer=mapnik&marker=${LOCATION.lat},${LOCATION.lng}`,
+};
+
 export function waLink(message: string) {
   return `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(message)}`;
 }
@@ -232,7 +259,26 @@ export interface SiteCopy {
     };
   };
   season: { eyebrow: string; title: string; intro: string; bands: BandCopy[] };
-  journey: { eyebrow: string; title: string; intro: string; steps: { title: string; body: string }[] };
+  journey: {
+    eyebrow: string;
+    title: string;
+    intro: string;
+    steps: { title: string; body: string }[];
+    map: {
+      open: string;
+      title: string;
+      here: string;
+      sorong: string;
+      waisai: string;
+      sketchAlt: string;
+      copy: string;
+      copied: string;
+      google: string;
+      osm: string;
+      live: string;
+      note: string;
+    };
+  };
   enquiry: {
     modalTitle: string;
     modalIntro: string;
@@ -643,6 +689,21 @@ const EN: SiteCopy = {
         body: "Our boat meets you at Waisai harbour, about an hour to Yenbuba. Send us your ferry time on WhatsApp.",
       },
     ],
+    map: {
+      open: "Open the map",
+      title: "Where we are",
+      here: "Us",
+      sorong: "Sorong",
+      waisai: "Waisai",
+      sketchAlt:
+        "A sketch map of the route: Sorong on the mainland, a ferry north-east to Waisai on Waigeo, then a boat south-west to the homestay on Pulau Mansuar.",
+      copy: "Copy the address",
+      copied: "Copied",
+      google: "Open in Google Maps",
+      osm: "Open in OpenStreetMap",
+      live: "Load the live map",
+      note: "The drawing is a sketch, there to show the three places in relation to each other. Both links, and the live map, are on the exact coordinates. The live map is loaded only when you ask for it, so nothing here talks to a map server unless you press the button.",
+    },
   },
   enquiry: {
     modalTitle: "Send us a message",
@@ -1109,6 +1170,21 @@ const ID: SiteCopy = {
         body: "Perahu kami menjemput di dermaga Waisai, ±1 jam ke Yenbuba. Kabari jadwal kapalmu lewat WhatsApp.",
       },
     ],
+    map: {
+      open: "Buka peta",
+      title: "Lokasi kami",
+      here: "Kami",
+      sorong: "Sorong",
+      waisai: "Waisai",
+      sketchAlt:
+        "Peta sketsa rutenya: Sorong di daratan, kapal ke timur laut menuju Waisai di Waigeo, lalu perahu ke barat daya menuju homestay di Pulau Mansuar.",
+      copy: "Salin alamat",
+      copied: "Tersalin",
+      google: "Buka di Google Maps",
+      osm: "Buka di OpenStreetMap",
+      live: "Muat peta sungguhan",
+      note: "Gambarnya sketsa, gunanya menunjukkan posisi ketiga tempat itu satu sama lain. Kedua tautannya, dan peta sungguhannya, memakai koordinat yang persis. Peta sungguhan baru dimuat kalau kamu memintanya, jadi tidak ada yang menghubungi server peta sebelum tombolnya ditekan.",
+    },
   },
   enquiry: {
     modalTitle: "Kirim pesan ke kami",

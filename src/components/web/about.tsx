@@ -8,9 +8,11 @@ import {
   EnquiryModal,
   type Enquiry,
 } from "@/components/web/enquiry-modal";
+import { Gallery } from "@/components/web/gallery";
 import { JourneyMap } from "@/components/web/journey-map";
 import { CurrencySwitch, Price } from "@/components/web/price";
 import { useCurrency, useLang, useRates } from "@/hooks/use-site-prefs";
+import { DIVE_GALLERY, STAY_GALLERY } from "@/lib/gallery";
 import { SITE_CONFIG } from "@/lib/site-config";
 import {
   COPY,
@@ -265,6 +267,21 @@ export function AboutPage() {
             ))}
           </div>
         </section>
+
+        {/* ----------------------------------------------------- gallery */}
+        <section className="mt-20 md:mt-28">
+          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <h2 className="m-0 max-w-[520px] text-[clamp(26px,3.4vw,38px)] leading-[1.1] font-bold tracking-[-.025em]">
+              {a.gallery.stayHeading}
+            </h2>
+            <p className="m-0 max-w-[440px] text-[14px] leading-[1.65] text-slate">
+              {a.gallery.stayIntro}
+            </p>
+          </div>
+          <div className="mt-10">
+            <Gallery items={STAY_GALLERY} t={t} />
+          </div>
+        </section>
       </div>
 
       {/* -------------------------------------------------------- diving */}
@@ -308,6 +325,20 @@ export function AboutPage() {
               {a.diveLink}
               <span aria-hidden="true">→</span>
             </Link>
+          </div>
+
+          <div className="mt-14 md:mt-20">
+            <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+              <h3 className="m-0 text-[clamp(22px,2.6vw,30px)] leading-[1.15] font-bold tracking-[-.02em] text-white">
+                {a.gallery.diveHeading}
+              </h3>
+              <p className="m-0 max-w-[420px] text-[13.5px] leading-[1.6] text-white/70">
+                {a.gallery.diveIntro}
+              </p>
+            </div>
+            <div className="mt-6">
+              <Gallery items={DIVE_GALLERY} t={t} tone="dark" />
+            </div>
           </div>
         </div>
       </div>

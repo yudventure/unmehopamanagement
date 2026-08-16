@@ -90,6 +90,31 @@ Diatur di `src/lib/dive-detail.ts`, satu baris `photo` per paket:
 wajah yang bisa dikenali sebaiknya tidak jadi kepala halaman produk berbayar
 tanpa kita tahu orangnya setuju.
 
+## Galeri di halaman `/turtle/about`
+
+Ada dua galeri: **Tempatnya sendiri** (homestay) dan **Di bawah perahu**
+(selam). Isinya diatur di `src/lib/gallery.ts`, bukan dengan memindai isi
+folder ini — galeri yang mengambil apa saja yang kebetulan ada di `public/`
+suatu hari akan menampilkan logo, tangkapan layar, atau foto yang tidak
+dimaksudkan untuk publik.
+
+Sekarang: 6 foto untuk homestay (`hero`, `3`, `standard`, `family`, `2`, `1`)
+dan **1 foto untuk selam** (`manta`). Yang selam tipis karena memang cuma ada
+satu foto bawah air di repo ini. Dengan satu foto, galerinya tampil melebar
+penuh, bukan sebagai grid berlubang.
+
+**Menambah foto:**
+
+1. Taruh berkasnya di `public/`, huruf kecil semua, mis. `dive-2.jpg`.
+2. Tambahkan satu baris di `src/lib/gallery.ts` dengan `caption` baru.
+3. Tambahkan kunci caption itu di `about.gallery.captions` **di dua bahasa**
+   pada `src/lib/web-content.ts`. Bertipe, jadi terjemahan yang lupa diisi akan
+   menggagalkan build, bukan menayangkan caption Inggris di halaman Indonesia.
+
+Grid-nya pas untuk **6 foto** (satu memimpin 2 kolom × 2 baris, lima sisanya
+mengisi tepat). Jumlah lain tetap jalan, cuma barisan terakhirnya bisa
+menyisakan lubang.
+
 ## `logo.png` — lencana Turtle Dive Homestay
 
 Dipakai di footer website, dan disalin ke `src/app/turtle/icon.png` sebagai

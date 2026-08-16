@@ -323,6 +323,17 @@ export interface SiteCopy {
     diveSince: (year: number, gap: number) => string;
     diveSinceNoYear: string;
     diveLink: string;
+    gallery: {
+      stayHeading: string;
+      stayIntro: string;
+      diveHeading: string;
+      diveIntro: string;
+      open: string;
+      prev: string;
+      next: string;
+      /** Keyed by the caption names in `lib/gallery.ts`. */
+      captions: Record<string, string>;
+    };
     whereHeading: string;
     closeHeading: string;
     closeBody: string;
@@ -812,6 +823,31 @@ const EN: SiteCopy = {
       `Dive centre since ${year}, ${gap === 1 ? "a year" : `${gap} years`} after the homestay`,
     diveSinceNoYear: "The dive centre came later than the homestay",
     diveLink: "See the packages and prices",
+    gallery: {
+      stayHeading: "The place itself",
+      stayIntro:
+        "Photographs taken here, not staged for a brochure. Press any of them to see it larger.",
+      diveHeading: "Under the boat",
+      diveIntro: "The reason most people come this far.",
+      open: "open larger",
+      prev: "Previous photograph",
+      next: "Next photograph",
+      captions: {
+        aerial:
+          "The whole place from above. The jetty, the sand, and the reef that starts a few metres out.",
+        boardwalk:
+          "The boardwalk that runs in front of every room, and the water at the end of it.",
+        standardRow:
+          "The standard rooms, on stilts at the top of the sand under the trees.",
+        familyFront:
+          "The family room, seen head on: a wide deck, a hammock across it, and room for four.",
+        lunch:
+          "Lunch under the dining hut, with the hammocks strung behind and the bungalows beyond.",
+        dusk: "The jetty in the last of the light, looking back across the bay.",
+        manta:
+          "A manta over the reef in the Dampier Strait, twenty to forty-five minutes from the jetty.",
+      },
+    },
     whereHeading: "Where we are",
     closeHeading: "Come and see",
     closeBody:
@@ -1355,6 +1391,31 @@ const ID: SiteCopy = {
       `Dive center sejak ${year}, ${gap} tahun setelah homestay-nya`,
     diveSinceNoYear: "Dive center-nya berdiri belakangan setelah homestay",
     diveLink: "Lihat paket dan harganya",
+    gallery: {
+      stayHeading: "Tempatnya sendiri",
+      stayIntro:
+        "Foto yang diambil di sini, bukan hasil penataan untuk brosur. Klik salah satunya untuk melihat lebih besar.",
+      diveHeading: "Di bawah perahu",
+      diveIntro: "Alasan kenapa kebanyakan orang datang sejauh ini.",
+      open: "lihat lebih besar",
+      prev: "Foto sebelumnya",
+      next: "Foto berikutnya",
+      captions: {
+        aerial:
+          "Seluruh tempatnya dari atas. Dermaganya, pasirnya, dan karang yang mulai beberapa meter dari bibir pantai.",
+        boardwalk:
+          "Jalur papan yang membentang di depan semua kamar, dan air di ujungnya.",
+        standardRow:
+          "Kamar-kamar standar, berpanggung di tepi atas pasir, teduh di bawah pepohonan.",
+        familyFront:
+          "Kamar keluarga dilihat dari depan: teras lebar, hammock terbentang, muat berempat.",
+        lunch:
+          "Makan siang di pondok makan, dengan hammock terpasang di belakang dan bungalow di kejauhan.",
+        dusk: "Dermaga di sisa cahaya terakhir, memandang balik ke seberang teluk.",
+        manta:
+          "Manta di atas karang Selat Dampier, dua puluh sampai empat puluh lima menit dari dermaga.",
+      },
+    },
     whereHeading: "Lokasi kami",
     closeHeading: "Datang dan lihat sendiri",
     closeBody:

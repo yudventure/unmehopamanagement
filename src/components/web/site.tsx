@@ -11,7 +11,6 @@ import {
   HeroScene,
   IsletScene,
   JettyScene,
-  ReefScene,
   SnorkelScene,
 } from "@/components/web/scenes";
 import {
@@ -82,6 +81,9 @@ const ROOM_PHOTO: Record<RoomKey, string> = {
   standard: "/standard.jpg",
   family: "/family.jpg",
 };
+
+/** Sits behind the dive section, under a scrim. */
+const DIVE_PHOTO = "/manta.jpg";
 
 /**
  * The homestay's own badge, used across the site in place of the Unmehopa
@@ -613,24 +615,52 @@ export function TurtleSite() {
       </Section>
 
       {/* --------------------------------------------------------- diving */}
-      <div id="diving" className="mt-20 scroll-mt-[84px] bg-ink py-20 md:mt-28 md:py-28">
-        <Section>
-          <div className="grid grid-cols-1 items-center gap-10 md:grid-cols-[1fr_minmax(280px,460px)]">
-            <div>
-              <span className="inline-flex items-center gap-[7px] rounded-full border border-white/20 px-[13px] py-[6px] text-[12px] text-white/75">
-                <span className="h-[6px] w-[6px] rounded-full bg-amber" />
-                {t.dive.badge}
-              </span>
-              <h2 className="mt-5 mb-0 text-[clamp(34px,5.2vw,58px)] leading-[1.05] font-bold tracking-[-.03em] whitespace-pre-line text-white">
-                {t.dive.title}
-              </h2>
-              <p className="mt-4 max-w-[520px] text-[14.5px] leading-[1.65] text-white/70">
-                {t.dive.body}
-              </p>
-            </div>
-            <Frame ratio="4 / 3" className="rounded-[26px]">
-              <ReefScene className={FILL} />
-            </Frame>
+      <div
+        id="diving"
+        className="relative mt-20 scroll-mt-[84px] overflow-hidden bg-ink py-20 md:mt-28 md:py-28"
+      >
+        {/* The manta, behind everything in this section. `bg-ink` stays on the
+            wrapper as the floor, so a missing file leaves the section exactly
+            as it was rather than leaving it unreadable. */}
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url("${DIVE_PHOTO}")` }}
+        />
+        {/*
+         * The scrim is not decoration, it is what makes the type readable.
+         * The manta's belly is close to white, and this section carries the
+         * most text on the page: a heading, a paragraph, six cards and a
+         * footnote.
+         *
+         * It only has to cover the type that sits directly on it, though,
+         * because the cards now bring their own backdrop. That is what keeps
+         * it at two thirds instead of the four fifths it needed when the
+         * cards were a pale tint, and two thirds is the difference between a
+         * manta you can see and a dark blue rectangle.
+         *
+         * A blue-black rather than the section's own warm ink: over water a
+         * warm scrim turns the blue olive, and what is left of the photograph
+         * is the whole reason for putting it there.
+         */}
+        <div aria-hidden="true" className="absolute inset-0 bg-[#06141a]/66" />
+
+        <Section className="relative">
+          {/* The drawn reef that used to sit beside this heading is gone. It
+              was standing in for a photograph, and the photograph is now the
+              section itself; a flat illustration in a rounded box on top of a
+              real manta only read as the cheaper of the two. */}
+          <div className="max-w-[720px]">
+            <span className="inline-flex items-center gap-[7px] rounded-full border border-white/20 px-[13px] py-[6px] text-[12px] text-white/75">
+              <span className="h-[6px] w-[6px] rounded-full bg-amber" />
+              {t.dive.badge}
+            </span>
+            <h2 className="mt-5 mb-0 text-[clamp(34px,5.2vw,58px)] leading-[1.05] font-bold tracking-[-.03em] whitespace-pre-line text-white">
+              {t.dive.title}
+            </h2>
+            <p className="mt-4 max-w-[560px] text-[14.5px] leading-[1.65] text-white/80">
+              {t.dive.body}
+            </p>
           </div>
 
           <div className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -640,10 +670,17 @@ export function TurtleSite() {
               return (
               <article
                 key={key}
+                /* The plain cards are dark glass rather than the white tint
+                   they were. A tint that pale over a photograph is barely a
+                   card at all: whatever the manta happens to be doing behind
+                   it decides whether the text can be read. Tinting dark and
+                   blurring makes each card carry its own backdrop, which is
+                   also what lets the scrim stay light enough to see the
+                   photograph through. */
                 className={`flex flex-col rounded-[20px] px-6 py-6 ${
                   featured
                     ? "bg-amber text-amber-deep"
-                    : "bg-white/8 text-white"
+                    : "border border-white/10 bg-[#06141a]/62 text-white backdrop-blur-md"
                 }`}
               >
                 <div className="flex items-start justify-between gap-3">
@@ -693,7 +730,10 @@ export function TurtleSite() {
                     </div>
                     <div
                       className={`text-[11.5px] ${
-                        featured ? "text-amber-deep/70" : "text-white/55"
+                        /* 70% of amber-deep on amber measured 3.6:1, under
+                           the 4.5 this 11.5px line needs. Predates the
+                           photograph; caught while checking the section. */
+                        featured ? "text-amber-deep/90" : "text-white/55"
                       }`}
                     >
                       {p.unit} · {p.level}

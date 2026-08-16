@@ -59,6 +59,20 @@ Kalau fotonya diganti, cek lagi teks `alt`-nya di `src/lib/web-content.ts`
 (`rooms.types.<tipe>.alt`, dua bahasa) — teks itu menerangkan isi foto untuk
 pembaca yang tidak bisa melihatnya, jadi ikut basi kalau fotonya berubah.
 
+## `manta.jpg` — latar bagian selam
+
+Dipasang sebagai background seluruh bagian "Turtle Dive Center", dengan lapisan
+gelap kebiruan di atasnya (66%) supaya teksnya tetap terbaca. Kartu paketnya
+punya latar gelap sendiri, jadi lapisan itu tidak perlu setebal kalau kartunya
+transparan.
+
+Rasio melebar, bagian tengah yang paling aman. Bagiannya tinggi di HP, jadi
+fotonya terpotong banyak di kiri-kanan dan lebih terbaca sebagai tekstur air
+daripada sebagai foto manta. Itu wajar dan tidak perlu diperbaiki.
+
+Kalau berkasnya hilang, bagian itu kembali jadi blok gelap polos seperti
+sebelumnya, bukan gambar rusak.
+
 ## `logo.png` — lencana Turtle Dive Homestay
 
 Dipakai di footer website, dan disalin ke `src/app/turtle/icon.png` sebagai

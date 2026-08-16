@@ -46,13 +46,19 @@ const gridFor = (showMoney: boolean, canEdit: boolean) => {
   };
 };
 
+const EDIT_BUTTON =
+  "cursor-pointer rounded-[9px] border border-line-strong bg-surface px-[13px] py-[6px] text-[12.5px] font-medium text-ink-soft hover:border-teal hover:text-teal";
+
 export function PropertyScreen({
   cards,
+  compact,
   showMoney,
   canEdit,
   onSaveRoom,
 }: {
   cards: PropertyCard[];
+  /** Phone widths, where the room table becomes one card per room. */
+  compact: boolean;
   /** Staff see no rupiah anywhere, so the rate column collapses for them. */
   showMoney: boolean;
   /** Only an owner may change how a room is configured. */
@@ -79,14 +85,24 @@ export function PropertyScreen({
             key={p.key}
             className="overflow-hidden rounded-[20px] border border-line-soft bg-surface"
           >
-            <div className="flex flex-wrap items-center gap-[14px] border-b border-line-fine px-5 py-4">
+            <div
+              className={`border-b border-line-fine px-5 py-4 ${
+                compact
+                  ? "flex flex-col gap-3"
+                  : "flex flex-wrap items-center gap-[14px]"
+              }`}
+            >
               <div>
                 <div className="text-[16px] font-bold">{p.name}</div>
                 <div className="text-[12.5px] text-slate-soft">
                   {p.location}
                 </div>
               </div>
-              <div className="ml-auto flex flex-wrap gap-5">
+              <div
+                className={
+                  compact ? "grid grid-cols-3 gap-2" : "ml-auto flex flex-wrap gap-5"
+                }
+              >
                 <div>
                   <div className="text-[11.5px] text-slate-soft">Kamar</div>
                   <div className="text-[15px] font-bold">{p.rooms}</div>
@@ -104,6 +120,57 @@ export function PropertyScreen({
               </div>
             </div>
 
+            {/*
+             * The table is 704px wide with the rate and action columns on it,
+             * so a phone showed the first three and put Edit past the right
+             * edge — the very button the paragraph above tells the owner to
+             * press. One row per card here, nothing off-screen.
+             */}
+            {compact ? (
+              <div className="flex flex-col">
+                {p.roomList.map((r) => (
+                  <div
+                    key={r.id}
+                    className="flex items-start gap-3 border-t border-line-row px-4 py-3"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-[14px] font-medium">
+                          {r.name}
+                        </span>
+                        <Pill colors={roomStatusColors(r.active)}>
+                          {r.status}
+                        </Pill>
+                      </div>
+                      <div className="mt-[3px] text-[12.5px] text-slate">
+                        {r.cap}
+                        {showMoney && (
+                          <>
+                            {" · "}
+                            <span className="font-mono text-ink-soft">
+                              {r.price}
+                            </span>
+                          </>
+                        )}
+                      </div>
+                      <div className="mt-[2px] text-[12px] text-slate-soft">
+                        iCal {r.ical}
+                      </div>
+                    </div>
+                    {canEdit && (
+                      <button
+                        type="button"
+                        onClick={() => setEditing(r)}
+                        aria-label={`Ubah detail ${r.name}`}
+                        className={`${EDIT_BUTTON} mt-[2px] shrink-0`}
+                      >
+                        Edit
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
             <div className="overflow-x-auto">
               <div
                 className="grid bg-surface-mute px-5 py-[10px] font-mono text-[10.5px] tracking-[.07em] text-slate-mute uppercase"
@@ -139,7 +206,7 @@ export function PropertyScreen({
                         type="button"
                         onClick={() => setEditing(r)}
                         aria-label={`Ubah detail ${r.name}`}
-                        className="cursor-pointer rounded-[9px] border border-line-strong bg-surface px-[13px] py-[6px] text-[12.5px] font-medium text-ink-soft hover:border-teal hover:text-teal"
+                        className={EDIT_BUTTON}
                       >
                         Edit
                       </button>
@@ -148,6 +215,7 @@ export function PropertyScreen({
                 </div>
               ))}
             </div>
+            )}
           </div>
         ))}
       </div>

@@ -103,7 +103,7 @@ export function BookingDrawer({
         </div>
       )}
 
-      <div className="mb-[9px] font-mono text-[10.5px] tracking-[.09em] text-slate-faint uppercase">
+      <div className="mb-[9px] font-mono text-[10.5px] tracking-[.09em] text-slate-mute uppercase">
         Kontak &amp; catatan
       </div>
       <div className="mb-[18px] text-[13.5px] leading-[1.55] text-ink-soft">
@@ -131,7 +131,7 @@ export function BookingDrawer({
 
       {/* Real trail: stamped by patchBooking when the booking actually
           changes, rather than the fixed date the prototype printed. */}
-      <div className="mt-[18px] text-[11.5px] leading-[1.6] text-slate-ghost">
+      <div className="mt-[18px] text-[11.5px] leading-[1.6] text-slate-mute">
         {booking.updatedAt && (
           <>
             Terakhir diperbarui oleh {booking.updatedBy},{" "}

@@ -85,7 +85,7 @@ function Field({
         onBlur={() => setFocused(false)}
         placeholder={placeholder}
         autoComplete={autoComplete}
-        className="border-none bg-transparent p-0 text-[14.5px] font-medium text-ink outline-none placeholder:font-normal placeholder:text-slate-ghost"
+        className="border-none bg-transparent p-0 text-[14.5px] font-medium text-ink outline-none placeholder:font-normal placeholder:text-slate-mute"
       />
     </label>
   );
@@ -216,7 +216,7 @@ export function LoginScreen({
                 onClick={() => onRole(r.key)}
                 aria-pressed={role === r.key}
                 className={`cursor-pointer border-none bg-transparent p-0 text-[12.5px] font-bold hover:underline ${
-                  role === r.key ? "text-teal underline" : "text-slate-faint"
+                  role === r.key ? "text-teal underline" : "text-slate-mute"
                 }`}
               >
                 {r.name}

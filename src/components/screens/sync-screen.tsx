@@ -35,7 +35,7 @@ function Section({
 }) {
   return (
     <div>
-      <div className="mb-[6px] font-mono text-[10.5px] tracking-[.08em] text-slate-faint uppercase">
+      <div className="mb-[6px] font-mono text-[10.5px] tracking-[.08em] text-slate-mute uppercase">
         {title}
       </div>
       {children}
@@ -101,7 +101,7 @@ function ExportRow({
       >
         Reset token
       </button>
-      <span className="w-full font-mono text-[10.5px] text-slate-faint">
+      <span className="w-full font-mono text-[10.5px] text-slate-mute">
         dibuat {fmtDateTime(new Date(token.createdAt))}
       </span>
     </div>

@@ -32,6 +32,8 @@ export interface ReportScreenProps {
   monthLabel: string;
   prevLabel: string;
   kpis: Kpi[];
+  /** Phone widths, where four full-width KPI cards become one compact list. */
+  compact: boolean;
   channelRows: ChannelRow[];
   roomRows: RoomRow[];
   commissionLabel: string;
@@ -71,6 +73,7 @@ export function ReportScreen({
   monthLabel,
   prevLabel,
   kpis,
+  compact,
   channelRows,
   roomRows,
   commissionLabel,
@@ -117,21 +120,53 @@ export function ReportScreen({
         estimasi komisi.
       </div>
 
-      <div className="mb-[18px] grid grid-cols-[repeat(auto-fit,minmax(190px,1fr))] gap-[14px]">
-        {kpis.map((k) => (
-          <div
-            key={k.label}
-            className="rounded-[18px] border border-line-soft bg-surface px-[18px] py-4"
-          >
-            <div className="mb-2 text-[12px] text-slate-soft">{k.label}</div>
-            <div className="text-[26px] font-bold tracking-[-.01em]">
-              {k.value}
+      {/*
+       * Four cards at 190px minimum fall to a single column on a phone, which
+       * is 480px of scrolling before the first chart. The same four figures
+       * read as one list in a third of that, and a rupiah total gets the whole
+       * right-hand side rather than a column it does not fit in.
+       */}
+      {compact ? (
+        <div className="mb-[18px] overflow-hidden rounded-[18px] border border-line-soft bg-surface">
+          {kpis.map((k, i) => (
+            <div
+              key={k.label}
+              className={`flex items-start justify-between gap-3 px-4 py-[11px] ${
+                i > 0 ? "border-t border-line-row" : ""
+              }`}
+            >
+              <div className="min-w-0">
+                <div className="text-[13px] font-medium">{k.label}</div>
+                <div className="text-[11.5px] leading-[1.4] text-slate-mute">
+                  {k.sub}
+                </div>
+              </div>
+              <div className="shrink-0 text-right">
+                <div className="text-[17px] font-bold tracking-[-.01em]">
+                  {k.value}
+                </div>
+                {k.delta && <DeltaLine delta={k.delta} />}
+              </div>
             </div>
-            <div className="mt-[6px] text-[12px] text-slate-mute">{k.sub}</div>
-            {k.delta && <DeltaLine delta={k.delta} />}
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <div className="mb-[18px] grid grid-cols-[repeat(auto-fit,minmax(190px,1fr))] gap-[14px]">
+          {kpis.map((k) => (
+            <div
+              key={k.label}
+              className="rounded-[18px] border border-line-soft bg-surface px-[18px] py-4"
+            >
+              <div className="mb-2 text-[12px] text-slate-soft">{k.label}</div>
+              <div className="text-[26px] font-bold tracking-[-.01em]">
+                {k.value}
+              </div>
+              <div className="mt-[6px] text-[12px] text-slate-mute">{k.sub}</div>
+              {k.delta && <DeltaLine delta={k.delta} />}
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className="mb-4 flex flex-col gap-4">
         <TrendChart

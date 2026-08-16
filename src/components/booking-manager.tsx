@@ -80,6 +80,14 @@ import type {
 const NARROW_MAX = 900;
 const DRAWER_OVERLAY_MAX = 1160;
 
+/*
+ * Phone. Measured on the viewport alone and never on the drawer, unlike `nw`:
+ * opening a booking on a 1000px laptop must not turn the month grid into the
+ * phone one. Between this and NARROW_MAX the shell is already stacked, but a
+ * 700px calendar still fits, so the named chips stay.
+ */
+const PHONE_MAX = 640;
+
 /** How far ahead the rail's arrivals list looks, in days. */
 const UPCOMING_DAYS = 7;
 
@@ -288,6 +296,7 @@ export function BookingManager({
 
   const narrow = vw <= NARROW_MAX;
   const nw = narrow || (!!selected && vw <= DRAWER_OVERLAY_MAX);
+  const phone = vw <= PHONE_MAX;
 
   const y = month.getFullYear();
   const m = month.getMonth();
@@ -1046,6 +1055,7 @@ export function BookingManager({
           >
             <TopBar
               showBrand={nw}
+              compact={phone}
               query={query}
               onQuery={setQuery}
               onOpenForm={openForm}
@@ -1088,6 +1098,7 @@ export function BookingManager({
                 {screen === "kalender" && (
                   <CalendarScreen
                     narrow={nw}
+                    compact={phone}
                     showMoney={showMoney}
                     conflictCount={conflicts.length}
                     conflictText={conflictText}
@@ -1107,6 +1118,7 @@ export function BookingManager({
 
                 {screen === "laporan" && isOwner && (
                   <ReportScreen
+                    compact={phone}
                     monthLabel={monthLabel}
                     prevLabel={prevLabel}
                     kpis={kpis}
@@ -1136,6 +1148,7 @@ export function BookingManager({
 
                 {screen === "properti" && (
                   <PropertyScreen
+                    compact={phone}
                     cards={propertyCards}
                     showMoney={showMoney}
                     canEdit={isOwner}
@@ -1162,6 +1175,7 @@ export function BookingManager({
 
                 {screen === "pengguna" && isOwner && (
                   <UsersScreen
+                    compact={phone}
                     users={users}
                     onOpenInvite={() => setInviteOpen(true)}
                     onToggleUser={toggleUser}

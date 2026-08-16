@@ -317,7 +317,7 @@ export function TrendChart({
                   }`}
                 >
                   {MONTHS[p.monthIndex].slice(0, 3)}
-                  <span className="block font-mono text-[9.5px] text-slate-faint">
+                  <span className="block font-mono text-[9.5px] text-slate-mute">
                     &apos;{String(p.year).slice(2)}
                   </span>
                 </span>
@@ -460,7 +460,7 @@ export function DailyChart({
                       ? "font-bold text-teal-deep"
                       : d.isWeekend
                         ? "text-slate-mute"
-                        : "text-slate-faint"
+                        : "text-slate-mute"
                   }`}
                 >
                   {d.day === 1 || d.day % 5 === 0 || d.isToday ? d.day : ""}

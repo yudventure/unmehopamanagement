@@ -26,8 +26,16 @@
   --color-ink: #241f18;
   --color-ink-soft: #4a4238;
   --color-slate: #6b6357;
-  --color-slate-soft: #8b8274;
-  --color-slate-mute: #9d9486;
+  /* Darkened from #8b8274, which measured 3.79:1 on white — under AA for the
+     secondary labels it carries all over the app. This reads the same and
+     clears 4.5. */
+  --color-slate-soft: #7a7264;
+  /* Darkened from #9d9486 (2.99:1 on white). All 33 places this is used are
+     real text — captions, table headings, chart axes, hints — not decoration,
+     so a colour nobody can read at 10px was the wrong tool. The grey ladder is
+     tighter now than it was; every rung of it is legible, which the old one
+     was not. */
+  --color-slate-mute: #7d7466;
   --color-slate-faint: #aaa294;
   --color-slate-ghost: #b7afa1;
 
@@ -40,8 +48,10 @@
   --color-line-input: #e7dbc9;
   --color-line-search: #f0e6d8;
 
-  /* Brand — the shell green */
-  --color-teal: #2f8a63;
+  /* Brand — the shell green.
+     Darkened a shade from #2f8a63: white on it measured 4.25:1, which failed
+     AA for the 13px bold set on the active nav pill and on today's date. */
+  --color-teal: #2b7f5b;
   --color-teal-deep: #216b4b;
   --color-teal-tint: #f0f8f3;
   --color-teal-soft: #d9ede1;
@@ -59,7 +69,8 @@
   --color-gold-soft: #eeddbe;
 
   /* Status */
-  --color-danger: #dc2626;
+  /* Darkened from #dc2626 so "Tinjau" clears AA on its own tint. */
+  --color-danger: #cf2020;
   --color-danger-ink: #b04a3a;
   --color-danger-deep: #7f1d1d;
   --color-danger-tint: #fdf3f0;
@@ -138,6 +149,16 @@
     border-radius: 8px;
     border: 3px solid transparent;
     background-clip: content-box;
+  }
+}
+
+/* A row that scrolls by finger and says so with a fade at its edge, so the
+   10px bar above would only sit under the content taking up a line. */
+@utility scrollbar-none {
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
   }
 }
 

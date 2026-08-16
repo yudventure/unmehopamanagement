@@ -239,6 +239,63 @@ ada booking terpilih, jadi CSS saja tidak cukup. Logikanya di
 `booking-manager.tsx`. Ini perbaikan yang memang diminta di akhir sesi desain —
 jangan diganti jadi media query tanpa menguji kasus drawer terbuka di ~1000px.
 
+### Tampilan HP
+
+Ada **tiga** ambang, bukan dua. Yang ketiga, `PHONE_MAX = 640`, dibaca dari
+lebar viewport saja dan tidak pernah dari drawer — membuka satu booking di
+laptop 1000px tidak boleh mengubah kalender jadi versi HP.
+
+| Lebar | Yang berubah |
+|---|---|
+| > 900 | sidebar hijau, kalender berkartu nama |
+| 641–900 | sidebar jadi baris tab, kalender masih berkartu nama (700px, digeser) |
+| ≤ 640 | top bar dua baris, kalender jadi peta kepadatan, tabel jadi kartu |
+
+**Kalender di HP bukan kalender yang sama yang dikecilkan.** Kartu nama butuh
+sekitar 100px per kolom; tujuh kolom berarti 700px, dan di layar 360px itu
+artinya tiga setengah kolom terlihat dan sisanya di balik geseran samping yang
+tidak diberitahukan ke siapa pun — sebuah tampilan bulan yang tidak bisa
+menampilkan satu bulan. Versi HP menggantinya dengan satu bar kepadatan per
+hari (`OccupancyMeter` di `calendar-screen.tsx`): panjang bar = terisi/kapasitas,
+warna hanya membedakan dua hal yang layak menyela — penuh (emas) dan bentrok
+(merah). Nama tamunya satu ketukan di bawahnya, lewat daftar tanggal yang
+memang sudah ada.
+
+**Tabel jadi kartu di bawah 640px.** Tabel kamar (704px) dan tabel pengguna
+(640px) sama-sama menaruh kolom aksinya di luar layar, jadi di HP tombol Edit
+dan tombol Nonaktifkan **tidak terlihat sama sekali** padahal paragraf di
+atasnya menyuruh menekannya. Sekarang satu kartu per baris, tidak ada yang di
+luar bingkai.
+
+**`useViewportWidth` memakai ResizeObserver, dan itu bukan hiasan.** HP tidak
+punya layout viewport yang sudah pasti saat mount: browsernya menerapkan
+`initial-scale` dan melipat chrome-nya sendiri satu-dua frame kemudian, dan
+tidak selalu memicu event `resize` saat melakukannya. Terukur di layar 390px:
+bacaan pertamanya **670** dan tidak ada apa pun yang mengoreksinya, jadi aplikasi
+menghabiskan seluruh sesi dengan layout tablet di HP. Observer-nya melihat
+perubahan itu baik ada event-nya maupun tidak.
+
+### Warna teks: empat token digelapkan
+
+Empat token di `globals.css` digelapkan karena gagal AA (4.5:1) sebagai teks:
+
+| Token | Dari | Jadi | Rasio |
+|---|---|---|---|
+| `--color-slate-soft` | `#8b8274` | `#7a7264` | 3,79 → 4,75 |
+| `--color-slate-mute` | `#9d9486` | `#7d7466` | 2,99 → 4,55 |
+| `--color-teal` | `#2f8a63` | `#2b7f5b` | putih di atasnya 4,25 → 4,90 |
+| `--color-danger` | `#dc2626` | `#cf2020` | 4,43 → 4,96 |
+
+`slate-faint` dan `slate-ghost` tidak digelapkan; yang diubah adalah
+pemakaiannya — sembilan tempat yang memakainya untuk **teks** dialihkan ke
+`slate-mute`. Keduanya sekarang hanya untuk garis, cincin ikon, dan rule.
+
+Tangga abu-abunya jadi lebih rapat dari sebelumnya. Itu memang konsekuensinya:
+tiga tingkat yang dua di antaranya tidak terbaca bukan tangga, cuma kelihatan
+seperti tangga. Diukur di enam tab pada 390px: 0 kegagalan, kecuali label yang
+sedang berada di bawah gradien tepi baris tab — dan memang itu gunanya gradien
+itu.
+
 ### Penyimpangan yang disengaja dari prototype
 
 Enam belas hal berikut sengaja berbeda dari prototype. Masing-masing satu baris

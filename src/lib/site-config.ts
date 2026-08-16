@@ -25,6 +25,15 @@ export interface SiteConfig {
     /** Where a new enquiry is emailed. Not shown anywhere public. */
     ownerEmail: string;
   };
+  /**
+   * Profile links for the footer. Empty means the icon is not drawn at all,
+   * which is right: an icon linking to nothing is worse than no icon.
+   */
+  social: {
+    facebook: string;
+    instagram: string;
+    tiktok: string;
+  };
   /** Rupiah, per the unit named in the copy for that package. */
   divePrices: Record<string, number>;
   /**
@@ -44,10 +53,12 @@ export interface SiteConfig {
 /* `founded` was added after the first config was written, so a file saved by
    an earlier CMS will not have it. Defaulted rather than required, so an old
    file keeps working instead of failing the type guard on save. */
-const parsed = raw as Partial<SiteConfig> & Omit<SiteConfig, "founded">;
+const parsed = raw as Partial<SiteConfig> &
+  Omit<SiteConfig, "founded" | "social">;
 export const SITE_CONFIG: SiteConfig = {
   ...parsed,
   founded: parsed.founded ?? { homestay: null, diveCenter: null },
+  social: parsed.social ?? { facebook: "", instagram: "", tiktok: "" },
 };
 
 /** The shape the CMS edits and the API validates against. */
@@ -61,6 +72,12 @@ export function isSiteConfig(v: unknown): v is SiteConfig {
     typeof c.contact.ownerEmail === "string" &&
     !!c.divePrices &&
     Object.values(c.divePrices).every((n) => typeof n === "number" && n >= 0) &&
+    (c.social === undefined ||
+      (typeof c.social === "object" &&
+        c.social !== null &&
+        [c.social.facebook, c.social.instagram, c.social.tiktok].every(
+          (v) => typeof v === "string",
+        ))) &&
     (c.founded === undefined ||
       (typeof c.founded === "object" &&
         c.founded !== null &&

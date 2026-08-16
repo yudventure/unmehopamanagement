@@ -4,6 +4,11 @@
     "email": "halo@turtlehomestay.id",
     "ownerEmail": "halo@turtlehomestay.id"
   },
+  "social": {
+    "facebook": "",
+    "instagram": "",
+    "tiktok": ""
+  },
   "divePrices": {
     "fun2": 1400000,
     "fun3": 1850000,

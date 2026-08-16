@@ -186,13 +186,55 @@ export function WebsiteScreen({ editor }: WebsiteScreenProps) {
         </section>
 
         <section className="rounded-[20px] border border-line-soft bg-surface px-5 py-[18px]">
+          <div className="mb-1 text-[15px] font-bold">Media sosial</div>
+          <div className="mb-4 text-[12.5px] leading-[1.5] text-slate-soft">
+            Tempel URL lengkap profilnya. Yang dikosongkan tidak digambar
+            ikonnya sama sekali di footer — ikon yang mengarah ke mana-mana
+            lebih buruk daripada tidak ada ikon.
+          </div>
+          <div className="grid grid-cols-1 gap-[14px] sm:grid-cols-3">
+            {(
+              [
+                ["instagram", "Instagram", "https://instagram.com/…"],
+                ["facebook", "Facebook", "https://facebook.com/…"],
+                ["tiktok", "TikTok", "https://tiktok.com/@…"],
+              ] as const
+            ).map(([key, label, ph]) => (
+              <label key={key} className={LABEL}>
+                {label}
+                <input
+                  value={config.social?.[key] ?? ""}
+                  onChange={(e) =>
+                    patch({
+                      social: {
+                        ...(config.social ?? {
+                          facebook: "",
+                          instagram: "",
+                          tiktok: "",
+                        }),
+                        [key]: e.target.value.trim(),
+                      },
+                    })
+                  }
+                  placeholder={ph}
+                  className={FIELD}
+                />
+              </label>
+            ))}
+          </div>
+        </section>
+
+        <section className="rounded-[20px] border border-line-soft bg-surface px-5 py-[18px]">
           <div className="mb-1 text-[15px] font-bold">Tahun berdiri</div>
           <div className="mb-4 text-[12.5px] leading-[1.5] text-slate-soft">
             Dipakai di halaman profil <code className="font-mono">/turtle/about</code>,
             untuk kalimat &ldquo;dive center berdiri sekian tahun setelah
-            homestay&rdquo;. Selama masih kosong, halamannya cuma menyebut dive
-            center-nya berdiri belakangan tanpa menyebut tahun — itu disengaja.
-            Tahun yang dikarang akan bertahan bertahun-tahun di sana.
+            homestay&rdquo;, dan tahun homestay juga dipakai di footer
+            (&ldquo;Raja Ampat · sejak …&rdquo;). Selama masih kosong,
+            halamannya cuma menyebut dive center-nya berdiri belakangan tanpa
+            menyebut tahun, dan footernya cuma menulis &ldquo;Raja
+            Ampat&rdquo; — itu disengaja. Tahun yang dikarang akan bertahan
+            bertahun-tahun di sana.
           </div>
           <div className="grid grid-cols-1 gap-[14px] sm:grid-cols-2">
             {(

@@ -127,6 +127,20 @@ Grid-nya pas untuk **6 foto** (satu memimpin 2 kolom × 2 baris, lima sisanya
 mengisi tepat). Jumlah lain tetap jalan, cuma barisan terakhirnya bisa
 menyisakan lubang.
 
+## `piaynemo.jpg` — latar footer
+
+Foto puncak Piaynemo, dipasang sebagai background seluruh footer dengan lapisan
+gelap kehijauan 82% di atasnya. Rata, bukan gradien: foto ini terang hampir di
+semua bagiannya — air toska, langit pucat, daun kena matahari — jadi gradien
+akan menyisakan satu sudut terbaca dan sudut lain tidak. Diukur: seluruh 18
+potongan teks di footer lolos, yang paling lemah 4,8:1.
+
+`bg-teal` tetap ada di bawahnya sebagai lantai, jadi kalau berkasnya hilang
+footernya kembali hijau polos seperti sebelumnya, bukan gambar rusak.
+
+Nama aslinya `PIAYNEMO.jpg` (huruf besar) dan sudah diganti jadi huruf kecil
+supaya konsisten dengan yang lain dan aman di server yang peka huruf.
+
 ## `logo.png` — lencana Turtle Dive Homestay
 
 Dipakai di footer website, dan disalin ke `src/app/turtle/icon.png` sebagai

@@ -23,6 +23,8 @@ import { SITE_CONFIG } from "@/lib/site-config";
 export const runtime = "nodejs";
 
 interface Payload {
+  /** "feedback" comes from the footer's suggestion box, not the enquiry form. */
+  kind?: string;
   name?: string;
   phone?: string;
   email?: string;
@@ -67,9 +69,19 @@ export async function POST(req: Request) {
   const email = clean(body.email);
   const notes = clean(body.notes);
 
-  /* One way to reach them is the whole point of the form. Without it the
-     owner gets a message they cannot answer. */
-  if (!phone && !email) {
+  const feedback = clean(body.kind) === "feedback";
+
+  /* One way to reach them is the whole point of the enquiry form. Without it
+     the owner gets a message they cannot answer.
+
+     Feedback is exempt: requiring a reply address on a suggestion box turns it
+     into a support ticket, and the honest ones are often the anonymous ones.
+     It needs to actually say something instead. */
+  if (feedback) {
+    if (!notes) {
+      return NextResponse.json({ error: "empty" }, { status: 422 });
+    }
+  } else if (!phone && !email) {
     return NextResponse.json({ error: "no-contact" }, { status: 422 });
   }
 
@@ -80,19 +92,24 @@ export async function POST(req: Request) {
   }
 
   const to = SITE_CONFIG.contact.ownerEmail;
-  const rows: [string, string][] = [
-    ["Nama", name || "—"],
-    ["WhatsApp", phone || "—"],
-    ["Email", email || "—"],
-    ["Mau apa", clean(body.activity) || "—"],
-    ["Rencana", clean(body.when) || "—"],
-    ["Jumlah orang", clean(body.people) || "—"],
-    ["Lama menginap", clean(body.nights) || "—"],
-    ["Catatan", notes || "—"],
-  ];
+  const rows: [string, string][] = feedback
+    ? [
+        ["Email", email || "(tidak diisi)"],
+        ["Masukan", notes],
+      ]
+    : [
+        ["Nama", name || "—"],
+        ["WhatsApp", phone || "—"],
+        ["Email", email || "—"],
+        ["Mau apa", clean(body.activity) || "—"],
+        ["Rencana", clean(body.when) || "—"],
+        ["Jumlah orang", clean(body.people) || "—"],
+        ["Lama menginap", clean(body.nights) || "—"],
+        ["Catatan", notes || "—"],
+      ];
 
   const html = `<div style="font-family:system-ui,sans-serif;font-size:15px;line-height:1.6;color:#241f18">
-  <p style="margin:0 0 16px">Pesan baru dari website.</p>
+  <p style="margin:0 0 16px">${feedback ? "Masukan baru dari footer website." : "Pesan baru dari website."}</p>
   <table cellpadding="0" cellspacing="0" style="border-collapse:collapse">
     ${rows
       .map(
@@ -125,9 +142,11 @@ export async function POST(req: Request) {
          in the inbox does the obvious thing. */
       reply_to: email || undefined,
       subject: oneLine(
-        `Pesan website${name ? ` · ${name}` : ""}${
-          body.when ? ` · ${clean(body.when)}` : ""
-        }`,
+        feedback
+          ? `Masukan website${email ? ` · ${email}` : ""}`
+          : `Pesan website${name ? ` · ${name}` : ""}${
+              body.when ? ` · ${clean(body.when)}` : ""
+            }`,
       ),
       html,
       text,

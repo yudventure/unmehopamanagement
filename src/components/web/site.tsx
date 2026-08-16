@@ -14,11 +14,20 @@ import {
   JettyScene,
   SnorkelScene,
 } from "@/components/web/scenes";
+import { FeedbackForm } from "@/components/web/feedback-form";
+import {
+  FacebookIcon,
+  InstagramIcon,
+  MailIcon,
+  TikTokIcon,
+  WhatsAppIcon,
+} from "@/components/web/icons";
 import { CurrencySwitch, Price } from "@/components/web/price";
 import { JourneyMap } from "@/components/web/journey-map";
 import { JourneyScene, STEP_SCENES } from "@/components/web/journey-scenes";
 import { SeasonScene, type SeasonKey } from "@/components/web/season-scenes";
 import { useCurrency, useLang, useRates } from "@/hooks/use-site-prefs";
+import { SITE_CONFIG } from "@/lib/site-config";
 import {
   ACTIVITY_KEYS,
   COPY,
@@ -98,6 +107,17 @@ const DIVE_PHOTO = "/manta.jpg";
  * weather in May does not change with the reader's language.
  */
 const SEASON_SCENES: SeasonKey[] = ["calm", "mixed", "windy"];
+
+/** Footer profile links. An empty URL in the CMS means the icon is not drawn. */
+const SOCIALS = [
+  {
+    name: "Instagram",
+    href: SITE_CONFIG.social.instagram,
+    icon: <InstagramIcon />,
+  },
+  { name: "Facebook", href: SITE_CONFIG.social.facebook, icon: <FacebookIcon /> },
+  { name: "TikTok", href: SITE_CONFIG.social.tiktok, icon: <TikTokIcon /> },
+];
 
 /**
  * The homestay's own badge, used across the site in place of the Unmehopa
@@ -1041,78 +1061,124 @@ export function TurtleSite() {
       </Section>
 
       {/* ----------------------------------------------------------- footer */}
-      <footer className="mt-20 bg-teal py-14 md:mt-28">
-        <Section>
-          <div className="grid grid-cols-1 gap-10 md:grid-cols-[1.3fr_1fr_1fr]">
+      {/* The Piaynemo viewpoint behind it, under a scrim heavy enough that
+          every line here clears AA. Measured: this photograph is bright almost
+          everywhere — turquoise water, pale sky, sunlit leaves — so the scrim
+          is a flat 82% rather than a gradient, which would leave one corner
+          readable and another not. `bg-teal` stays underneath as the floor, so
+          a missing file gives back the green footer it replaced. */}
+      <footer className="relative mt-20 overflow-hidden bg-teal py-14 md:mt-28">
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: 'url("/piaynemo.jpg")' }}
+        />
+        <div aria-hidden="true" className="absolute inset-0 bg-[#0d3b2a]/82" />
+
+        <Section className="relative">
+          <div className="grid grid-cols-1 gap-10 md:grid-cols-[1.25fr_1fr] lg:grid-cols-[1.25fr_.9fr_1.1fr]">
+            {/* ------------------------------------------------- identity */}
             <div>
-              <div className="flex items-center gap-[12px]">
-                <SiteLogo size={52} />
-                <div className="leading-[1.2]">
-                  <div className="text-[16px] font-bold text-white">
+              <div className="flex items-center gap-[14px]">
+                <SiteLogo size={72} />
+                <div className="leading-[1.25]">
+                  <div className="text-[19px] font-bold text-white">
                     {PROPERTY.name}
                   </div>
-                  <div className="text-[12.5px] text-white/70">
-                    {t.footer.tagline}
+                  <div className="text-[13px] text-white/80">
+                    {t.footer.tagline(SITE_CONFIG.founded.homestay)}
                   </div>
                 </div>
               </div>
-              <p className="mt-5 mb-0 max-w-[320px] text-[13.5px] leading-[1.65] text-white/70">
+
+              <p className="mt-5 mb-0 max-w-[320px] text-[13.5px] leading-[1.65] text-white/80">
                 {PROPERTY.village}, {PROPERTY.island}
                 <br />
                 Raja Ampat, Papua Barat Daya
               </p>
+
+              {/* Only the accounts that have a link. An icon that goes nowhere
+                  is worse than no icon, so an empty field draws nothing. */}
+              {SOCIALS.some((x) => x.href) && (
+                <div className="mt-6">
+                  <div className="font-mono text-[10.5px] tracking-[.08em] text-white/60 uppercase">
+                    {t.footer.social}
+                  </div>
+                  <div className="mt-3 flex items-center gap-[10px]">
+                    {SOCIALS.filter((x) => x.href).map((x) => (
+                      <a
+                        key={x.name}
+                        href={x.href}
+                        target="_blank"
+                        rel="noreferrer"
+                        aria-label={x.name}
+                        className="flex h-[38px] w-[38px] items-center justify-center rounded-full border border-white/25 bg-white/10 p-[9px] text-white no-underline transition-colors hover:bg-white/25 hover:no-underline"
+                      >
+                        {x.icon}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
+            {/* -------------------------------------------------- contact */}
             <div>
-              <div className="font-mono text-[10.5px] tracking-[.08em] text-white/50 uppercase">
+              <div className="font-mono text-[10.5px] tracking-[.08em] text-white/60 uppercase">
                 {t.footer.contact}
               </div>
-              <div className="mt-4 flex flex-col gap-[10px] text-[13.5px]">
+              <div className="mt-4 flex flex-col gap-[14px] text-[13.5px]">
                 <a
                   href={waLink(
                     `Halo ${PROPERTY.name}, saya ingin bertanya soal ketersediaan.`,
                   )}
                   target="_blank"
                   rel="noreferrer"
-                  className="text-white/80 no-underline hover:text-white hover:no-underline"
+                  className="flex items-center gap-[11px] text-white no-underline hover:no-underline"
                 >
-                  WhatsApp +{WHATSAPP}
+                  <span className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-full bg-white/15 p-[8px]">
+                    <WhatsAppIcon />
+                  </span>
+                  +{WHATSAPP}
                 </a>
                 <a
                   href={`mailto:${EMAIL}`}
-                  className="text-white/80 no-underline hover:text-white hover:no-underline"
+                  className="flex items-center gap-[11px] break-all text-white no-underline hover:no-underline"
                 >
+                  <span className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-full bg-white/15 p-[8px]">
+                    <MailIcon />
+                  </span>
                   {EMAIL}
                 </a>
               </div>
             </div>
 
+            {/* ------------------------------------------------- feedback */}
+            {/* This replaced the Pages column. The nav is three scrolls away at
+                the top of the same page and duplicated it; what there was
+                nowhere else to put is a guest who has already stayed and has
+                something to say. */}
             <div>
-              <div className="font-mono text-[10.5px] tracking-[.08em] text-white/50 uppercase">
-                {t.footer.pages}
+              <div className="font-mono text-[10.5px] tracking-[.08em] text-white/60 uppercase">
+                {t.footer.feedback.heading}
               </div>
-              <div className="mt-4 flex flex-col gap-[10px] text-[13.5px]">
-                {nav.map((n) => (
-                  <a
-                    key={n.href}
-                    href={n.href}
-                    className="text-white/80 no-underline hover:text-white hover:no-underline"
-                  >
-                    {n.label}
-                  </a>
-                ))}
-                <a
-                  href="/"
-                  className="text-white/55 no-underline hover:text-white hover:no-underline"
-                >
-                  {t.footer.manager}
-                </a>
-              </div>
+              <p className="mt-3 mb-4 max-w-[360px] text-[13px] leading-[1.6] text-white/80">
+                {t.footer.feedback.intro}
+              </p>
+              <FeedbackForm t={t} />
             </div>
           </div>
 
-          <div className="mt-12 border-t border-white/15 pt-6 text-[12.5px] text-white/55">
-            {t.footer.colophon}
+          <div className="mt-12 flex flex-col gap-3 border-t border-white/20 pt-6 text-[12.5px] text-white/75 sm:flex-row sm:items-center sm:justify-between">
+            <span>{t.footer.colophon}</span>
+            {/* Kept, moved. Losing the Pages column would otherwise have taken
+                the owner's only way back to the dashboard with it. */}
+            <a
+              href="/"
+              className="text-white/75 no-underline whitespace-nowrap hover:text-white hover:no-underline"
+            >
+              {t.footer.manager}
+            </a>
           </div>
         </Section>
       </footer>

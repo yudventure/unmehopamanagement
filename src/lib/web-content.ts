@@ -340,7 +340,27 @@ export interface SiteCopy {
     closeCta: string;
   };
   faq: { eyebrow: string; title: string; items: { q: string; a: string }[] };
-  footer: { contact: string; pages: string; manager: string; colophon: string; tagline: string };
+  footer: {
+    contact: string;
+    manager: string;
+    colophon: string;
+    /** Takes the founding year when there is one, and drops it when there is not. */
+    tagline: (year: number | null) => string;
+    social: string;
+    feedback: {
+      heading: string;
+      intro: string;
+      message: string;
+      messagePlaceholder: string;
+      email: string;
+      emailPlaceholder: string;
+      submit: string;
+      sending: string;
+      sent: string;
+      empty: string;
+      failed: string;
+    };
+  };
   activities: Record<ActivityKey, string>;
   months: string[];
   /** The WhatsApp text, assembled from whatever the visitor filled in. */
@@ -882,10 +902,24 @@ const EN: SiteCopy = {
   },
   footer: {
     contact: "Contact",
-    pages: "Pages",
     manager: "Manager sign-in",
     colophon: `© ${PROPERTY.name}, ${PROPERTY.village}. Run together with Eddo Homestay in Sawinggrai, Pulau Gam.`,
-    tagline: "Raja Ampat · est. 2018",
+    tagline: (year) => (year ? `Raja Ampat · est. ${year}` : "Raja Ampat"),
+    social: "Follow us",
+    feedback: {
+      heading: "Tell us how we did",
+      intro:
+        "Anything that could be better, or anything that went wrong. It reaches the family directly.",
+      message: "Your message",
+      messagePlaceholder: "What would you change?",
+      email: "Email, if you would like a reply",
+      emailPlaceholder: "Email, only if you want an answer",
+      submit: "Send",
+      sending: "Sending…",
+      sent: "Thank you. We read every one of these.",
+      empty: "Write something first, then send.",
+      failed: "That did not go through. Please try again later.",
+    },
   },
   activities: {
     stay: "Staying",
@@ -1450,10 +1484,24 @@ const ID: SiteCopy = {
   },
   footer: {
     contact: "Kontak",
-    pages: "Halaman",
     manager: "Masuk pengelola",
     colophon: `© ${PROPERTY.name}, ${PROPERTY.village}. Dikelola bersama Eddo Homestay di Sawinggrai, Pulau Gam.`,
-    tagline: "Raja Ampat · est. 2018",
+    tagline: (year) => (year ? `Raja Ampat · sejak ${year}` : "Raja Ampat"),
+    social: "Ikuti kami",
+    feedback: {
+      heading: "Ceritakan pengalamanmu",
+      intro:
+        "Apa pun yang bisa lebih baik, atau apa pun yang kurang berkenan. Sampai langsung ke keluarganya.",
+      message: "Pesanmu",
+      messagePlaceholder: "Apa yang menurutmu perlu diperbaiki?",
+      email: "Email, kalau mau dibalas",
+      emailPlaceholder: "Email, isi kalau mau dibalas",
+      submit: "Kirim",
+      sending: "Mengirim…",
+      sent: "Terima kasih. Semuanya kami baca.",
+      empty: "Tulis dulu pesannya, baru kirim.",
+      failed: "Gagal terkirim. Coba lagi nanti.",
+    },
   },
   activities: {
     stay: "Menginap",

@@ -108,7 +108,11 @@ const DIVE_PHOTO = "/manta.jpg";
  */
 const SEASON_SCENES: SeasonKey[] = ["calm", "mixed", "windy"];
 
-/** Footer profile links. An empty URL in the CMS means the icon is not drawn. */
+/**
+ * Footer profile links. The icon is always drawn; an empty URL in the CMS just
+ * means it is not yet a link. The accounts exist, the addresses are not typed
+ * in yet.
+ */
 const SOCIALS = [
   {
     name: "Instagram",
@@ -1079,13 +1083,13 @@ export function TurtleSite() {
           <div className="grid grid-cols-1 gap-10 md:grid-cols-[1.25fr_1fr] lg:grid-cols-[1.25fr_.9fr_1.1fr]">
             {/* ------------------------------------------------- identity */}
             <div>
-              <div className="flex items-center gap-[14px]">
-                <SiteLogo size={72} />
+              <div className="flex items-center gap-[16px]">
+                <SiteLogo size={88} />
                 <div className="leading-[1.25]">
-                  <div className="text-[19px] font-bold text-white">
+                  <div className="text-[22px] font-bold tracking-[-.01em] text-white">
                     {PROPERTY.name}
                   </div>
-                  <div className="text-[13px] text-white/80">
+                  <div className="mt-[3px] text-[13.5px] text-white/80">
                     {t.footer.tagline(SITE_CONFIG.founded.homestay)}
                   </div>
                 </div>
@@ -1097,34 +1101,11 @@ export function TurtleSite() {
                 Raja Ampat, Papua Barat Daya
               </p>
 
-              {/* Only the accounts that have a link. An icon that goes nowhere
-                  is worse than no icon, so an empty field draws nothing. */}
-              {SOCIALS.some((x) => x.href) && (
-                <div className="mt-6">
-                  <div className="font-mono text-[10.5px] tracking-[.08em] text-white/60 uppercase">
-                    {t.footer.social}
-                  </div>
-                  <div className="mt-3 flex items-center gap-[10px]">
-                    {SOCIALS.filter((x) => x.href).map((x) => (
-                      <a
-                        key={x.name}
-                        href={x.href}
-                        target="_blank"
-                        rel="noreferrer"
-                        aria-label={x.name}
-                        className="flex h-[38px] w-[38px] items-center justify-center rounded-full border border-white/25 bg-white/10 p-[9px] text-white no-underline transition-colors hover:bg-white/25 hover:no-underline"
-                      >
-                        {x.icon}
-                      </a>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
 
             {/* -------------------------------------------------- contact */}
             <div>
-              <div className="font-mono text-[10.5px] tracking-[.08em] text-white/60 uppercase">
+              <div className="font-mono text-[10.5px] tracking-[.08em] text-white/75 uppercase">
                 {t.footer.contact}
               </div>
               <div className="mt-4 flex flex-col gap-[14px] text-[13.5px]">
@@ -1151,6 +1132,44 @@ export function TurtleSite() {
                   {EMAIL}
                 </a>
               </div>
+
+              {/* Under the email, with the rest of the ways to reach us.
+                  Drawn whether or not the URLs are filled in: the accounts
+                  exist, the links just are not typed yet. Until one is, its
+                  icon is a dimmed span rather than an anchor — a link that
+                  goes nowhere is a worse thing to ship than a placeholder that
+                  is visibly not a link, and a screen reader is not told about
+                  something it cannot follow. */}
+              <div className="mt-7">
+                <div className="font-mono text-[10.5px] tracking-[.08em] text-white/75 uppercase">
+                  {t.footer.social}
+                </div>
+                <div className="mt-3 flex items-center gap-[10px]">
+                  {SOCIALS.map((x) =>
+                    x.href ? (
+                      <a
+                        key={x.name}
+                        href={x.href}
+                        target="_blank"
+                        rel="noreferrer"
+                        aria-label={x.name}
+                        className="flex h-[40px] w-[40px] items-center justify-center rounded-full border border-white/30 bg-white/12 p-[10px] text-white no-underline transition-colors hover:bg-white/28 hover:no-underline"
+                      >
+                        {x.icon}
+                      </a>
+                    ) : (
+                      <span
+                        key={x.name}
+                        aria-hidden="true"
+                        title={x.name}
+                        className="flex h-[40px] w-[40px] items-center justify-center rounded-full border border-white/20 bg-white/8 p-[10px] text-white/55"
+                      >
+                        {x.icon}
+                      </span>
+                    ),
+                  )}
+                </div>
+              </div>
             </div>
 
             {/* ------------------------------------------------- feedback */}
@@ -1159,7 +1178,7 @@ export function TurtleSite() {
                 nowhere else to put is a guest who has already stayed and has
                 something to say. */}
             <div>
-              <div className="font-mono text-[10.5px] tracking-[.08em] text-white/60 uppercase">
+              <div className="font-mono text-[10.5px] tracking-[.08em] text-white/75 uppercase">
                 {t.footer.feedback.heading}
               </div>
               <p className="mt-3 mb-4 max-w-[360px] text-[13px] leading-[1.6] text-white/80">

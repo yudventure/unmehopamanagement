@@ -141,6 +141,16 @@ footernya kembali hijau polos seperti sebelumnya, bukan gambar rusak.
 Nama aslinya `PIAYNEMO.jpg` (huruf besar) dan sudah diganti jadi huruf kecil
 supaya konsisten dengan yang lain dan aman di server yang peka huruf.
 
+## Ikon media sosial di footer
+
+Digambar sebagai SVG (`src/components/web/icons.tsx`), bukan berkas gambar.
+Ikonnya **selalu tampil**; yang menentukan cuma apakah dia jadi tautan atau
+belum. Selama URL-nya kosong di tab Website, ikonnya berupa lingkaran redup
+yang tidak bisa diklik — tautan yang mengarah ke mana-mana lebih buruk
+daripada penanda yang jelas-jelas belum jadi tautan, dan pembaca layar tidak
+diberi tahu soal sesuatu yang tidak bisa diikuti. Begitu URL-nya diisi,
+ikonnya jadi tautan sungguhan yang membuka tab baru.
+
 ## `logo.png` — lencana Turtle Dive Homestay
 
 Dipakai di footer website, dan disalin ke `src/app/turtle/icon.png` sebagai

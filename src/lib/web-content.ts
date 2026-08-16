@@ -856,7 +856,7 @@ const EN: SiteCopy = {
   },
   faq: {
     eyebrow: "Asked often",
-    title: "Before you ask",
+    title: "Before you go",
     items: [
       {
         q: "Is there electricity and internet?",
@@ -1424,7 +1424,7 @@ const ID: SiteCopy = {
   },
   faq: {
     eyebrow: "Yang sering ditanya",
-    title: "Sebelum kamu tanya",
+    title: "Sebelum berangkat",
     items: [
       {
         q: "Apakah ada listrik dan internet?",

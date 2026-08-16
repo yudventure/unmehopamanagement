@@ -73,6 +73,23 @@ daripada sebagai foto manta. Itu wajar dan tidak perlu diperbaiki.
 Kalau berkasnya hilang, bagian itu kembali jadi blok gelap polos seperti
 sebelumnya, bukan gambar rusak.
 
+Foto ini juga dipakai sebagai kepala halaman detail paket Fun Dive dan
+Snorkelling, dengan lapisan gelap yang sama.
+
+## Foto kepala halaman detail paket selam
+
+Diatur di `src/lib/dive-detail.ts`, satu baris `photo` per paket:
+
+| Paket | Foto | Alasan |
+|---|---|---|
+| Fun Dive 2 & 3 tank, Snorkelling | `manta.jpg` | isinya memang menyelam |
+| Discover Scuba | `hero.jpg` | air dangkal toska depan homestay, persis tempat paket ini dimulai |
+| Open Water Course, Sewa Alat | `3.jpg` | jalur papan dan air tenang di depannya |
+
+`1.jpg` **sengaja tidak dipakai** di sini: itu potret dekat seorang tamu, dan
+wajah yang bisa dikenali sebaiknya tidak jadi kepala halaman produk berbayar
+tanpa kita tahu orangnya setuju.
+
 ## `logo.png` — lencana Turtle Dive Homestay
 
 Dipakai di footer website, dan disalin ke `src/app/turtle/icon.png` sebagai

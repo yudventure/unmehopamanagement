@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import {
@@ -13,6 +14,8 @@ import {
   JettyScene,
   SnorkelScene,
 } from "@/components/web/scenes";
+import { CurrencySwitch, Price } from "@/components/web/price";
+import { useCurrency, useLang, useRates } from "@/hooks/use-site-prefs";
 import {
   ACTIVITY_KEYS,
   COPY,
@@ -226,23 +229,15 @@ export function TurtleSite() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   /*
-   * English is the default because most people reaching this page are not
-   * Indonesian, and the choice is remembered so a returning guest does not
-   * have to make it twice.
-   *
-   * The state starts at the default rather than reading storage during
-   * render: the page is prerendered, and a value read at render time would
-   * not match what the browser hydrates with.
+   * Language and currency both live in shared hooks, because the package pages
+   * are separate routes that have to remember the same two choices. Both start
+   * at their default and settle in an effect rather than reading storage during
+   * render: this page is prerendered, and a value read at render time would not
+   * match what the browser hydrates with.
    */
-  const [lang, setLang] = useState<Lang>(DEFAULT_LANG);
-  useEffect(() => {
-    const saved = window.localStorage.getItem(LANG_KEY);
-    if (saved === "en" || saved === "id") setLang(saved);
-  }, []);
-  const pickLang = (next: Lang) => {
-    setLang(next);
-    window.localStorage.setItem(LANG_KEY, next);
-  };
+  const { lang, pickLang } = useLang();
+  const { currency, pickCurrency } = useCurrency();
+  const rates = useRates();
 
   const t = COPY[lang];
   const nav = NAV_KEYS.map((n) => ({ href: n.href, label: t.nav[n.key] }));
@@ -552,9 +547,22 @@ export function TurtleSite() {
           <h2 className="m-0 max-w-[620px] text-[clamp(34px,5.2vw,58px)] leading-[1.05] font-bold tracking-[-.03em]">
             {t.rooms.title}
           </h2>
-          <p className="max-w-[380px] text-[14px] leading-[1.6] text-slate">
-            {t.rooms.intro}
-          </p>
+          <div className="max-w-[380px]">
+            <p className="m-0 text-[14px] leading-[1.6] text-slate">
+              {t.rooms.intro}
+            </p>
+            {/* The picker sits with the prices rather than in the header. It
+                is a thing you reach for once, while looking at a number, not
+                a thing you navigate by. */}
+            <div className="mt-3">
+              <CurrencySwitch
+                currency={currency}
+                onPick={pickCurrency}
+                srLabel={t.currencyLabel}
+                tone="dark"
+              />
+            </div>
+          </div>
         </div>
 
         <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -586,9 +594,13 @@ export function TurtleSite() {
                     {rc.name}
                   </h3>
                   <div className="text-right">
-                    <div className="text-[19px] font-bold">
-                      {money(r.rate, lang)}
-                    </div>
+                    <Price
+                      rupiah={r.rate}
+                      lang={lang}
+                      currency={currency}
+                      rates={rates}
+                      size="sm"
+                    />
                     <div className="text-[11.5px] text-slate-soft">
                       {t.rooms.perNight}
                     </div>
@@ -681,6 +693,13 @@ export function TurtleSite() {
             <p className="mt-4 max-w-[560px] text-[14.5px] leading-[1.65] text-white/80">
               {t.dive.body}
             </p>
+            <div className="mt-5">
+              <CurrencySwitch
+                currency={currency}
+                onPick={pickCurrency}
+                srLabel={t.currencyLabel}
+              />
+            </div>
           </div>
 
           {/* The booking bar the hero used to carry, rebuilt for diving.
@@ -773,10 +792,14 @@ export function TurtleSite() {
                    blurring makes each card carry its own backdrop, which is
                    also what lets the scrim stay light enough to see the
                    photograph through. */
-                className={`flex flex-col rounded-[20px] px-6 py-6 ${
+                /* The featured card carries a transparent border rather than
+                   none. Without it its content box starts 1px higher than its
+                   neighbours', and that 1px is visible once the footers are
+                   pinned and the prices are meant to sit on one line. */
+                className={`flex flex-col rounded-[20px] border px-6 py-6 ${
                   featured
-                    ? "bg-amber text-amber-deep"
-                    : "border border-white/10 bg-[#06141a]/62 text-white backdrop-blur-md"
+                    ? "border-transparent bg-amber text-amber-deep"
+                    : "border-white/10 bg-[#06141a]/62 text-white backdrop-blur-md"
                 }`}
               >
                 <div className="flex items-start justify-between gap-3">
@@ -815,15 +838,25 @@ export function TurtleSite() {
                   ))}
                 </ul>
 
+                {/* mt-auto is what lines the prices up. The cards already
+                    stretch to the tallest in their row, but a blurb that runs
+                    to two lines instead of three used to leave the footer
+                    floating halfway up. Pushed to the bottom instead, every
+                    price and every button sits on the same line across the
+                    row, whatever the text above them does. */}
                 <div
-                  className={`mt-5 flex items-end justify-between gap-3 border-t pt-4 ${
+                  className={`mt-auto flex items-end justify-between gap-3 border-t pt-4 ${
                     featured ? "border-amber-deep/15" : "border-white/12"
                   }`}
                 >
                   <div>
-                    <div className="text-[20px] font-bold">
-                      {money(DIVE_PRICE[key], lang)}
-                    </div>
+                    <Price
+                      rupiah={DIVE_PRICE[key]}
+                      lang={lang}
+                      currency={currency}
+                      rates={rates}
+                      tone={featured ? "amber" : "light"}
+                    />
                     <div
                       className={`text-[11.5px] ${
                         /* 70% of amber-deep on amber measured 3.6:1, under
@@ -835,22 +868,18 @@ export function TurtleSite() {
                       {p.unit} · {p.level}
                     </div>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      ask(
-                        key === "snorkel" ? "snorkeling" : "diving",
-                        t.dive.orderNote(p.name),
-                      )
-                    }
-                    className={`cursor-pointer rounded-full border-none px-[16px] py-[9px] text-[13px] font-medium ${
+                  {/* A link, not a button: it goes to a page, so it should
+                      middle-click, open in a tab, and be crawlable like one. */}
+                  <Link
+                    href={`/turtle/dive/${key}`}
+                    className={`shrink-0 rounded-full px-[16px] py-[9px] text-[13px] font-medium no-underline hover:no-underline ${
                       featured
                         ? "bg-amber-deep text-amber"
                         : "bg-white text-ink hover:bg-surface-hover"
                     }`}
                   >
-                    {t.dive.order}
-                  </button>
+                    {t.dive.details}
+                  </Link>
                 </div>
               </article>
               );
@@ -859,6 +888,7 @@ export function TurtleSite() {
 
           <p className="mt-6 text-[13px] leading-[1.6] text-white/50">
             {t.dive.footnote}
+            {currency !== "IDR" && ` ${t.currencyNote}`}
           </p>
         </Section>
       </div>

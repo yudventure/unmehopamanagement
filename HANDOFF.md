@@ -160,6 +160,8 @@ src/
     turtle/page.tsx           render <TurtleSite />        ← website publik, di /turtle
     api/enquiry/route.ts      terima pesan dari website, kirim email ke owner
     api/content/route.ts      baca/tulis content/site.json lewat GitHub API
+    api/rates/route.ts        kurs mata uang, di-cache 6 jam
+    turtle/dive/[pack]/       halaman detail per paket selam (6, prerender)
   components/
     booking-manager.tsx       ★ SELURUH state aplikasi + view model ada di sini
     top-bar.tsx               logo, pencarian, tombol booking baru, menu profil
@@ -174,6 +176,9 @@ src/
     web/site.tsx              seluruh halaman website publik
     web/scenes.tsx            ilustrasi website (hero senja, reef, dermaga)
     web/enquiry-modal.tsx     popup pesan: nama, WA, email, rencana, catatan
+    web/dive-detail.tsx       isi halaman detail paket selam
+    web/dive-diagrams.tsx     diagram pembagian hari + meter kedalaman
+    web/price.tsx             harga rupiah + baris konversi, pemilih mata uang
     login-screen.tsx          login dua panel + panel foto
     screens/
       calendar-screen.tsx     grid kalender + chip booking
@@ -188,6 +193,7 @@ src/
       pill.tsx                badge status
   hooks/
     use-viewport-width.ts     lebar viewport terukur (bukan media query)
+    use-site-prefs.ts         bahasa, mata uang, dan kurs (dipakai dua rute)
   lib/
     data.ts                   ★ seed kamar/booking/pengguna (LCG deterministik)
     pricing.ts                satu-satunya tempat nilai booking dihitung
@@ -195,6 +201,8 @@ src/
     report-export.ts          penyusun CSV + penggambar PDF laporan
     web-content.ts            ★ seluruh teks website publik, dua bahasa
     site-config.ts            pembaca content/site.json + penjaga bentuknya
+    currency.ts               daftar mata uang, konversi, pembulatan
+    dive-detail.ts            bentuk hari & kedalaman tiap paket (lihat catatannya)
     format.ts                 tanggal & rupiah (id-ID)
     pills.ts                  warna badge per status
     types.ts                  tipe domain
@@ -562,6 +570,52 @@ Butuh dua variabel di Vercel:
 Selama keduanya belum ada, endpoint menjawab 503 dan tombol Kirim otomatis
 beralih membuka WhatsApp dengan pesan yang sama. Jadi kunci yang belum
 dipasang tidak menghilangkan satu pesan pun.
+
+### Halaman detail tiap paket selam
+
+Tombol di kartu paket bukan "Pesan" lagi, tapi **Detail**, dan mengarah ke
+`/turtle/dive/<paket>`. Keenamnya di-*prerender* jadi berkas statis, karena cuma
+ada enam dan tamu sering membukanya dengan sinyal pulau.
+
+Isi tiap halaman: pengantar, dua diagram, empat kartu (sudah termasuk, belum
+termasuk, yang perlu dibawa, cocok kalau), dan formulir pesan yang sama.
+
+Diagramnya digambar, bukan difoto, dan itu disengaja. Foto karang tidak
+memberitahu penyelam apa pun yang belum bisa ditebak; yang betul-betul ingin
+diketahui sebelum membayar adalah **berapa bagian harinya yang dihabiskan di
+dalam air** dan **sedalam apa boleh turun**. Dua-duanya bisa dijawab diagram
+dan tidak bisa dijawab foto.
+
+**Yang nyata dan yang direka.** Jumlah penyelaman tiap paket, total durasinya,
+perahu 20–45 menit, batas 12 meter untuk Discover Scuba, empat hari untuk Open
+Water, maksimal enam penyelam per pemandu: semuanya diambil dari daftar harga
+dan teks yang sudah ada. Yang **direka** adalah pembagian menit per tahap di
+`lib/dive-detail.ts`, yaitu satu pembagian yang masuk akal dari total yang
+disebutkan, bukan jadwal yang pernah dijalankan. Halamannya menyebut itu di
+bawah diagramnya, dan hanya proporsinya yang digambar, tidak pernah jam
+dinding. **Lima menit pemilik untuk mengoreksinya sangat berharga**; tidak ada
+bagian lain halaman itu yang bergantung padanya.
+
+### Harga dalam mata uang lain
+
+Delapan mata uang (IDR, USD, EUR, GBP, AUD, SGD, CNY, JPY) lewat pemilih kecil
+di bagian Kamar dan bagian Selam.
+
+**Rupiah tetap harga utamanya di mana pun.** Rupiah yang ditagih dan rupiah
+yang diatur di CMS, jadi rupiah yang besar dan tebal; hasil konversinya baris
+kecil di bawahnya dengan tanda ≈, dan hilang sama sekali kalau kursnya belum
+termuat. Menyebut "$88" ke tamu lalu meminta rupiah dengan kurs berbeda saat
+tiba adalah cara memulai pertengkaran di dermaga.
+
+`GET /api/rates` yang mengambil kursnya, di server bukan di browser: satu
+panggilan yang di-cache melayani semua pengunjung, penyedia kursnya tidak
+pernah tahu siapa yang membaca situs, dan kalau sumbernya berubah cukup satu
+berkas yang diubah. Cache enam jam, karena ini daftar harga homestay bukan
+layar trading. Sumbernya tanpa API key supaya pemilik tidak perlu mengurus
+akun; `RATES_URL` bisa dipakai kalau suatu saat perlu diganti.
+
+Kalau sumbernya mati, route-nya menjawab 503 dan baris konversinya tidak
+digambar sama sekali. Rupiahnya tetap tampil, yang memang harga sebenarnya.
 
 ### CMS: tab Website di dalam manager
 

@@ -138,6 +138,41 @@ interface DiveCopy {
   includes: string[];
 }
 
+/** The long form of a package, on its own page. */
+interface DivePackDetail {
+  lede: string;
+  forYou: string[];
+  notIncluded: string[];
+  bring: string[];
+}
+
+interface DiveDetailCopy {
+  back: string;
+  dayHeading: string;
+  daysHeading: string;
+  depthHeading: string;
+  includedHeading: string;
+  notIncludedHeading: string;
+  bringHeading: string;
+  forHeading: string;
+  /** Names each stage of the day; shared by every package. */
+  stages: Record<string, string>;
+  inWater: string;
+  onLand: string;
+  surface: string;
+  hourShort: string;
+  minShort: string;
+  limitLabel: (m: number) => string;
+  depthMarks: { depth: number; label: string }[];
+  noDepth: string;
+  /** Says out loud that the per-stage minutes are approximate. */
+  approxNote: string;
+  courseDays: { title: string; body: string }[];
+  cta: string;
+  priceUnit: string;
+  packs: Record<DiveKey, DivePackDetail>;
+}
+
 interface BandCopy {
   label: string;
   months: string;
@@ -149,6 +184,10 @@ export interface SiteCopy {
   nav: { home: string; rooms: string; diving: string; season: string; journey: string; faq: string };
   book: string;
   openMenu: string;
+  /** Names the currency picker for a screen reader. */
+  currencyLabel: string;
+  /** Says the second price line is a conversion, not the charge. */
+  currencyNote: string;
   meta: { title: string; description: string };
   hero: { sub: string };
   value: {
@@ -176,10 +215,12 @@ export interface SiteCopy {
     badge: string;
     title: string;
     body: string;
-    order: string;
+    /** The card's link through to the package's own page. */
+    details: string;
     orderNote: (name: string) => string;
     footnote: string;
     packages: Record<DiveKey, DiveCopy>;
+    detail: DiveDetailCopy;
     /** The booking bar above the packages. */
     bar: {
       pack: string;
@@ -245,6 +286,8 @@ const EN: SiteCopy = {
   },
   book: "Book",
   openMenu: "Open menu",
+  currencyLabel: "Show an approximate price in",
+  currencyNote: "Prices are charged in rupiah. The second line is an approximate conversion, refreshed a few times a day.",
   meta: {
     title: `${PROPERTY.name} · Homestay & Dive Center in Raja Ampat`,
     description:
@@ -326,7 +369,7 @@ const EN: SiteCopy = {
     badge: "Turtle Dive Center",
     title: "Dive in the morning,\nback before lunch",
     body: "We dive the Dampier Strait: Cape Kri, Mike's Point, Sardine Reef, Manta Point, all of them 20 to 45 minutes by boat from the jetty. The boat goes out twice a day, six divers per guide at most.",
-    order: "Book",
+    details: "Details",
     orderNote: (name) => `I am interested in the "${name}" package.`,
     footnote:
       "Certified divers, please bring your card and logbook. For the Open Water course, let us know at least a week ahead so the materials and the instructor's schedule can be arranged.",
@@ -338,6 +381,164 @@ const EN: SiteCopy = {
       submit: "Check availability",
       note: (pack, divers) =>
         `I am interested in the "${pack}" package, for ${divers === "1" ? "one diver" : `${divers} divers`}.`,
+    },
+    detail: {
+      back: "All dive packages",
+      dayHeading: "How the trip divides up",
+      daysHeading: "The four days",
+      depthHeading: "How deep you go",
+      includedHeading: "Included in the price",
+      notIncludedHeading: "Not included",
+      bringHeading: "Bring with you",
+      forHeading: "Right for you if",
+      stages: {
+        brief: "Briefing and kit check",
+        boat: "Boat out",
+        dive: "Dive",
+        interval: "Surface interval",
+        lunch: "Lunch on the boat",
+        back: "Boat back",
+        shallow: "Shallows in front of the homestay",
+        snorkel: "In the water",
+        rest: "Rest and rinse gear",
+      },
+      inWater: "In the water",
+      onLand: "On the boat or ashore",
+      surface: "Surface",
+      hourShort: "h",
+      minShort: "m",
+      limitLabel: (m) => `${m} m limit`,
+      depthMarks: [
+        { depth: 18, label: "18 m · Open Water" },
+        { depth: 30, label: "30 m · Advanced" },
+        { depth: 40, label: "40 m · recreational limit" },
+      ],
+      noDepth: "This one stays on the surface. No certificate, no depth limit to think about, and you can stop and float whenever you like.",
+      approxNote:
+        "The lengths above are the usual shape of the trip, not a timetable. Tide, weather and how far the site is move them around, and the guide will say what the day looks like at the briefing.",
+      courseDays: [
+        {
+          title: "Day 1",
+          body: "Theory and the first skills in shallow water in front of the homestay: mask, regulator, buoyancy. Nothing deep, nothing rushed.",
+        },
+        {
+          title: "Day 2",
+          body: "The rest of the confined water skills, then the first open water dive from the boat.",
+        },
+        {
+          title: "Day 3",
+          body: "Two more open water dives, with more of the diving and less of the drilling as the skills settle.",
+        },
+        {
+          title: "Day 4",
+          body: "The last dive, the written exam, and the certification paperwork. The card follows by post or in the app.",
+        },
+      ],
+      cta: "Ask about this package",
+      priceUnit: "per person",
+      packs: {
+        fun2: {
+          lede: "The standard morning out. One boat trip, two dives, back at the homestay in time for lunch. Sites are picked on the morning by tide and current rather than booked in advance, which is why the guide asks about your logbook before deciding where to take you.",
+          forYou: [
+            "You are certified Open Water or above",
+            "You have dived within the last two years, or are happy to take the first dive gently",
+            "You would rather keep the afternoon free",
+          ],
+          notIncluded: [
+            "Equipment beyond tank and weights. Full kit is a separate line at Rp 350.000 a day",
+            "Nitrox, and any speciality course",
+            "Insurance",
+          ],
+          bring: [
+            "Certification card and logbook",
+            "Swimwear, towel, and a hat for the boat",
+            "Reef-safe sunscreen",
+          ],
+        },
+        fun3: {
+          lede: "The whole day on the water, three sites instead of two, with lunch eaten on the boat between the second and the third. Most guests staying more than three nights take this at least once, because the third dive is usually the one that goes furthest out.",
+          forYou: [
+            "You are certified Open Water or above and diving comfortably",
+            "You want the sites further along the strait, not only the ones close to home",
+            "A full day on a boat sounds like a good day",
+          ],
+          notIncluded: [
+            "Equipment beyond tank and weights. Full kit is a separate line at Rp 350.000 a day",
+            "Nitrox, and any speciality course",
+            "Insurance",
+          ],
+          bring: [
+            "Certification card and logbook",
+            "Swimwear, towel, and a hat for the boat",
+            "Reef-safe sunscreen, and a dry layer for the ride back",
+          ],
+        },
+        dsd: {
+          lede: "A first breath underwater, with an instructor beside you the whole time. It starts standing up in the shallows in front of the homestay, where you can put your head above water any time you want, and only moves to a proper dive once that feels ordinary. It is not a certification and there is no exam.",
+          forYou: [
+            "You have never dived and want to find out whether you like it",
+            "You can swim and are comfortable putting your face in the water",
+            "You are travelling with divers and would rather not spend the week on the boat watching",
+          ],
+          notIncluded: [
+            "A certification. If you want the card, that is the Open Water course",
+            "Insurance",
+          ],
+          bring: [
+            "Swimwear and a towel",
+            "Nothing else. Every piece of equipment is included",
+          ],
+        },
+        ow: {
+          lede: "The certification that lets you dive anywhere in the world to eighteen metres, done over four days without leaving the island. Theory in the afternoons at the homestay, water each morning. The e-learning is sent before you arrive, so tell us at least a week ahead and you can have the reading done on the plane.",
+          forYou: [
+            "You want the licence, not only a taste of it",
+            "You can swim, and are staying at least four full days",
+            "You would rather learn in warm, calm water than in a quarry at home",
+          ],
+          notIncluded: [
+            "Insurance",
+            "Fun dives after the course. Those are the Fun Dive lines",
+          ],
+          bring: [
+            "Swimwear and a towel",
+            "A photo of yourself for the certification, or a phone to take one",
+            "Your reading, done. The e-learning arrives by email",
+          ],
+        },
+        snorkel: {
+          lede: "The same water, from the top. Manta Point when the season and the tide are right, Piaynemo for the view, or nothing further than the coral garden in front of the jetty if a short day suits you better. No certificate, no tank, and children come along.",
+          forYou: [
+            "You do not dive, or are on a day off from diving",
+            "You are travelling with children",
+            "You want to see mantas without doing a course first",
+          ],
+          notIncluded: [
+            "The Piaynemo viewpoint entry fee, if that is the day chosen",
+            "Wetsuit hire",
+          ],
+          bring: [
+            "Swimwear, towel, hat",
+            "Reef-safe sunscreen, or a rash guard, which works better",
+          ],
+        },
+        gear: {
+          lede: "Kit for the day, for divers arriving with their own certification and their own plan. Everything is checked and rinsed between uses. Tank refills are charged separately, per fill, and a guide is not included in this line.",
+          forYou: [
+            "You are certified and diving with us on a Fun Dive without your own kit",
+            "You have brought some of your own and need the rest",
+          ],
+          notIncluded: [
+            "Tank refills, charged per fill",
+            "A guide or a boat. Those come with a Fun Dive",
+            "Computer, torch, and camera gear",
+          ],
+          bring: [
+            "Certification card and logbook",
+            "Anything of your own you would rather dive in, especially a mask that fits",
+          ],
+        },
+      },
     },
     packages: {
       fun2: {
@@ -551,6 +752,8 @@ const ID: SiteCopy = {
   },
   book: "Pesan",
   openMenu: "Buka menu",
+  currencyLabel: "Tampilkan perkiraan harga dalam",
+  currencyNote: "Harga ditagih dalam rupiah. Baris keduanya perkiraan konversi, diperbarui beberapa kali sehari.",
   meta: {
     title: `${PROPERTY.name} · Homestay & Dive Center di Raja Ampat`,
     description:
@@ -632,7 +835,7 @@ const ID: SiteCopy = {
     badge: "Turtle Dive Center",
     title: "Selam pagi,\npulang sebelum makan siang",
     body: "Kami menyelam di Selat Dampier: Cape Kri, Mike's Point, Sardine Reef, Manta Point, semuanya dalam 20 sampai 45 menit perahu dari dermaga. Perahu berangkat dua kali sehari, maksimal enam penyelam per guide.",
-    order: "Pesan",
+    details: "Detail",
     orderNote: (name) => `Saya tertarik paket "${name}".`,
     footnote:
       "Penyelam bersertifikat harap membawa kartu dan buku log. Untuk kursus Open Water, kabari minimal satu minggu sebelumnya supaya materi dan jadwal instruktur bisa disiapkan.",
@@ -644,6 +847,164 @@ const ID: SiteCopy = {
       submit: "Cek ketersediaan",
       note: (pack, divers) =>
         `Saya tertarik paket "${pack}", untuk ${divers} orang.`,
+    },
+    detail: {
+      back: "Semua paket selam",
+      dayHeading: "Pembagian waktunya",
+      daysHeading: "Empat harinya",
+      depthHeading: "Sedalam apa",
+      includedHeading: "Sudah termasuk",
+      notIncludedHeading: "Belum termasuk",
+      bringHeading: "Yang perlu dibawa",
+      forHeading: "Cocok kalau",
+      stages: {
+        brief: "Briefing dan cek alat",
+        boat: "Perahu berangkat",
+        dive: "Menyelam",
+        interval: "Istirahat permukaan",
+        lunch: "Makan siang di perahu",
+        back: "Perahu pulang",
+        shallow: "Air dangkal depan homestay",
+        snorkel: "Di air",
+        rest: "Istirahat dan bilas alat",
+      },
+      inWater: "Di dalam air",
+      onLand: "Di perahu atau di darat",
+      surface: "Permukaan",
+      hourShort: "j",
+      minShort: "mnt",
+      limitLabel: (m) => `Batas ${m} m`,
+      depthMarks: [
+        { depth: 18, label: "18 m · Open Water" },
+        { depth: 30, label: "30 m · Advanced" },
+        { depth: 40, label: "40 m · batas rekreasi" },
+      ],
+      noDepth: "Yang ini di permukaan saja. Tidak perlu sertifikat, tidak ada batas kedalaman yang perlu dipikirkan, dan kamu bisa berhenti mengapung kapan saja.",
+      approxNote:
+        "Lama tiap bagian di atas adalah bentuk umum perjalanannya, bukan jadwal. Pasang surut, cuaca, dan jarak titik selamnya menggeser semuanya, dan pemandu akan menjelaskan rencana harinya saat briefing.",
+      courseDays: [
+        {
+          title: "Hari 1",
+          body: "Teori dan keterampilan pertama di air dangkal depan homestay: masker, regulator, daya apung. Tidak dalam, tidak buru-buru.",
+        },
+        {
+          title: "Hari 2",
+          body: "Sisa keterampilan air tenang, lalu penyelaman perairan terbuka pertama dari perahu.",
+        },
+        {
+          title: "Hari 3",
+          body: "Dua penyelaman terbuka lagi, dengan porsi menyelam yang makin banyak dan latihan yang makin sedikit begitu keterampilannya mapan.",
+        },
+        {
+          title: "Hari 4",
+          body: "Penyelaman terakhir, ujian tulis, dan pengurusan sertifikat. Kartunya menyusul lewat pos atau lewat aplikasi.",
+        },
+      ],
+      cta: "Tanya paket ini",
+      priceUnit: "per orang",
+      packs: {
+        fun2: {
+          lede: "Paket pagi yang paling umum. Satu kali jalan, dua penyelaman, sudah kembali di homestay sebelum makan siang. Titik selamnya dipilih pagi itu juga berdasarkan pasang dan arus, bukan dipesan jauh hari, dan itu sebabnya pemandu menanyakan buku log sebelum menentukan mau dibawa ke mana.",
+          forYou: [
+            "Kamu bersertifikat Open Water atau di atasnya",
+            "Kamu menyelam dalam dua tahun terakhir, atau tidak keberatan penyelaman pertama dibuat santai",
+            "Kamu ingin sorenya tetap kosong",
+          ],
+          notIncluded: [
+            "Peralatan selain tabung dan pemberat. Set lengkap ada di baris terpisah, Rp 350.000 per hari",
+            "Nitrox dan kursus spesialisasi apa pun",
+            "Asuransi",
+          ],
+          bring: [
+            "Kartu sertifikasi dan buku log",
+            "Baju renang, handuk, dan topi untuk di perahu",
+            "Tabir surya yang aman untuk karang",
+          ],
+        },
+        fun3: {
+          lede: "Sehari penuh di air, tiga titik bukan dua, dengan makan siang di perahu antara penyelaman kedua dan ketiga. Tamu yang menginap lebih dari tiga malam biasanya mengambil ini setidaknya sekali, karena penyelaman ketiga umumnya yang paling jauh ke tengah selat.",
+          forYou: [
+            "Kamu bersertifikat Open Water atau di atasnya dan sudah nyaman menyelam",
+            "Kamu ingin titik yang lebih jauh di selat, bukan cuma yang dekat rumah",
+            "Sehari penuh di perahu terdengar menyenangkan buatmu",
+          ],
+          notIncluded: [
+            "Peralatan selain tabung dan pemberat. Set lengkap ada di baris terpisah, Rp 350.000 per hari",
+            "Nitrox dan kursus spesialisasi apa pun",
+            "Asuransi",
+          ],
+          bring: [
+            "Kartu sertifikasi dan buku log",
+            "Baju renang, handuk, dan topi untuk di perahu",
+            "Tabir surya yang aman untuk karang, dan baju kering untuk perjalanan pulang",
+          ],
+        },
+        dsd: {
+          lede: "Tarikan napas pertama di bawah air, dengan instruktur di sebelahmu terus-menerus. Mulainya sambil berdiri di air dangkal depan homestay, tempat kepalamu bisa keluar kapan saja, dan baru pindah ke penyelaman sungguhan setelah itu terasa biasa. Ini bukan sertifikasi dan tidak ada ujian.",
+          forYou: [
+            "Kamu belum pernah menyelam dan ingin tahu apakah kamu suka",
+            "Kamu bisa berenang dan tidak masalah memasukkan wajah ke air",
+            "Kamu ikut rombongan penyelam dan tidak mau seminggu cuma menonton dari perahu",
+          ],
+          notIncluded: [
+            "Sertifikasi. Kalau mau kartunya, itu kursus Open Water",
+            "Asuransi",
+          ],
+          bring: [
+            "Baju renang dan handuk",
+            "Tidak ada lagi. Semua peralatan sudah termasuk",
+          ],
+        },
+        ow: {
+          lede: "Sertifikasi yang membuatmu bisa menyelam sampai delapan belas meter di mana pun di dunia, diselesaikan empat hari tanpa keluar dari pulau. Teori sore hari di homestay, praktik air setiap pagi. Materi e-learning dikirim sebelum kamu datang, jadi kabari minimal seminggu sebelumnya dan bacaannya bisa kelar di pesawat.",
+          forYou: [
+            "Kamu mau lisensinya, bukan cuma mencicipi",
+            "Kamu bisa berenang dan menginap minimal empat hari penuh",
+            "Kamu lebih suka belajar di air hangat dan tenang daripada di kolam bekas galian",
+          ],
+          notIncluded: [
+            "Asuransi",
+            "Fun dive setelah kursus selesai. Itu masuk paket Fun Dive",
+          ],
+          bring: [
+            "Baju renang dan handuk",
+            "Foto diri untuk sertifikat, atau ponsel untuk memotretnya di tempat",
+            "Bacaanmu, sudah selesai. E-learning-nya dikirim lewat email",
+          ],
+        },
+        snorkel: {
+          lede: "Air yang sama, dilihat dari atas. Manta Point kalau musim dan pasangnya pas, Piaynemo untuk pemandangannya, atau tidak jauh-jauh dari taman karang depan dermaga kalau kamu ingin hari yang lebih singkat. Tanpa sertifikat, tanpa tabung, dan anak-anak boleh ikut.",
+          forYou: [
+            "Kamu tidak menyelam, atau sedang libur dari menyelam",
+            "Kamu bepergian bersama anak-anak",
+            "Kamu ingin melihat manta tanpa harus kursus dulu",
+          ],
+          notIncluded: [
+            "Tiket masuk puncak Piaynemo, kalau hari itu ke sana",
+            "Sewa wetsuit",
+          ],
+          bring: [
+            "Baju renang, handuk, topi",
+            "Tabir surya yang aman untuk karang, atau rash guard yang sebetulnya lebih efektif",
+          ],
+        },
+        gear: {
+          lede: "Peralatan untuk satu hari, untuk penyelam yang datang dengan sertifikat dan rencananya sendiri. Semuanya dicek dan dibilas setiap selesai dipakai. Isi ulang tabung dihitung terpisah per tabung, dan pemandu tidak termasuk di baris ini.",
+          forYou: [
+            "Kamu bersertifikat dan ikut Fun Dive bersama kami tanpa membawa alat sendiri",
+            "Kamu membawa sebagian alat sendiri dan butuh sisanya",
+          ],
+          notIncluded: [
+            "Isi ulang tabung, dihitung per tabung",
+            "Pemandu dan perahu. Keduanya ikut di paket Fun Dive",
+            "Komputer selam, senter, dan alat foto",
+          ],
+          bring: [
+            "Kartu sertifikasi dan buku log",
+            "Alat pribadi yang lebih nyaman kamu pakai, terutama masker yang pas di wajah",
+          ],
+        },
+      },
     },
     packages: {
       fun2: {

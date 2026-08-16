@@ -145,11 +145,17 @@ supaya konsisten dengan yang lain dan aman di server yang peka huruf.
 
 Digambar sebagai SVG (`src/components/web/icons.tsx`), bukan berkas gambar.
 Ikonnya **selalu tampil**; yang menentukan cuma apakah dia jadi tautan atau
-belum. Selama URL-nya kosong di tab Website, ikonnya berupa lingkaran redup
-yang tidak bisa diklik — tautan yang mengarah ke mana-mana lebih buruk
-daripada penanda yang jelas-jelas belum jadi tautan, dan pembaca layar tidak
-diberi tahu soal sesuatu yang tidak bisa diikuti. Begitu URL-nya diisi,
-ikonnya jadi tautan sungguhan yang membuka tab baru.
+belum. Kalau URL-nya dikosongkan di tab Website, ikonnya jadi lingkaran redup
+yang tidak bisa diklik, dan pembaca layar tidak diberi tahu soal sesuatu yang
+tidak bisa diikuti.
+
+**Yang terisi sekarang cuma halaman depan platformnya** —
+`https://www.facebook.com`, `https://www.instagram.com`,
+`https://www.tiktok.com`. Itu sengaja: ikonnya jadi terlihat memang bisa
+diklik, jadi tata letaknya bisa dinilai apa adanya. Tapi ini **belum akun
+Turtle Dive Homestay**, dan pengunjung yang mengklik akan mendarat di beranda
+Facebook, bukan di halaman homestay. Ganti ketiganya di tab Website sebelum
+situsnya diumumkan.
 
 ## `logo.png` — lencana Turtle Dive Homestay
 

@@ -188,9 +188,13 @@ export function WebsiteScreen({ editor }: WebsiteScreenProps) {
         <section className="rounded-[20px] border border-line-soft bg-surface px-5 py-[18px]">
           <div className="mb-1 text-[15px] font-bold">Media sosial</div>
           <div className="mb-4 text-[12.5px] leading-[1.5] text-slate-soft">
-            Tempel URL lengkap profilnya. Yang dikosongkan tidak digambar
-            ikonnya sama sekali di footer — ikon yang mengarah ke mana-mana
-            lebih buruk daripada tidak ada ikon.
+            Tempel URL lengkap profilnya, mis.{" "}
+            <code className="font-mono">https://instagram.com/namaakun</code>.
+            Sekarang ketiganya masih mengarah ke halaman depan platformnya,
+            supaya ikonnya sudah bisa diklik dan terlihat berfungsi — ganti
+            dengan alamat akun yang sebenarnya sebelum situsnya dilivekan.
+            Dikosongkan pun tidak apa-apa: ikonnya tetap tampil, cuma jadi
+            penanda redup yang tidak bisa diklik.
           </div>
           <div className="grid grid-cols-1 gap-[14px] sm:grid-cols-3">
             {(

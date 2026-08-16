@@ -683,6 +683,8 @@ pekerjaan penerjemah di dalam formulir.
 | Isi | Status |
 |---|---|
 | `contact.whatsapp`, `contact.email`, `contact.ownerEmail` | **placeholder**, ganti lewat tab Website |
+| `social.facebook`, `social.instagram`, `social.tiktok` | **placeholder**, sekarang mengarah ke beranda platformnya, bukan ke akun homestay. Ganti lewat tab Website |
+| `founded.homestay`, `founded.diveCenter` | **kosong**, tahun berdirinya belum diketahui. Selama kosong, tidak ada tahun yang ditampilkan di mana pun |
 | `divePrices` (enam angka) | **placeholder**, ganti lewat tab Website |
 | Nama, durasi, dan level paket selam | **placeholder**, ada di `web-content.ts` |
 | Tarif kamar | **nyata**, dibaca dari `seedRooms()`, sumber yang sama dengan manager |

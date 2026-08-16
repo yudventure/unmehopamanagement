@@ -63,15 +63,24 @@ export function Karst({
   const shoulder = base - h * 0.52;
 
   /* Scalloped crown: jungle canopy breaking the silhouette. Tufts ride the
-     same ellipse the path's crown curve approximates, so they hug the edge. */
+     same ellipse the path's crown curve approximates, so they hug the edge.
+
+     Rounded to 2dp, and that matters: sin and cos are not required to be
+     correctly rounded, so Node and the browser disagree in the last couple of
+     digits and React reports a hydration mismatch on the raw value. Two
+     decimals is far finer than a pixel at these sizes. */
   const tufts: { cx: number; cy: number }[] = [];
   if (canopy) {
     const rx = w * 0.44;
     const ry = h * 0.48;
     const n = Math.max(5, Math.round(w / 20));
+    const px = (v: number) => Math.round(v * 100) / 100;
     for (let i = 0; i <= n; i += 1) {
       const t = Math.PI - (Math.PI * i) / n;
-      tufts.push({ cx: x + rx * Math.cos(t), cy: shoulder - ry * Math.sin(t) });
+      tufts.push({
+        cx: px(x + rx * Math.cos(t)),
+        cy: px(shoulder - ry * Math.sin(t)),
+      });
     }
   }
 

@@ -46,23 +46,28 @@ halaman dari build produksi lewat Chromium, waktu dan memori build dari
 `npm run build` di mesin ini. Kalau aplikasinya berubah banyak, ukur ulang
 sebelum menyebarkan dokumennya lagi.
 
-Harga di halaman 8 **disalin apa adanya dari keranjang belanja Hostinger**,
-termasuk pajaknya, dan totalnya (Rp 3.806.856) cocok dengan total di keranjang.
-Tidak ada konversi mata uang di mana pun: semuanya sudah rupiah dari sumbernya.
-Harga promo tidak dipakai sebagai dasar anggaran tahunan; yang ditampilkan
-sebagai coretan cuma harga daftarnya, supaya potongannya terlihat.
+Harga di halaman 8 **disalin apa adanya dari dua keranjang belanja Hostinger**,
+termasuk pajaknya. Pesanan pertama servernya (Rp 3.806.856), pesanan kedua nama
+domain situs publik berikut email profesionalnya (Rp 704.226); dua-duanya cocok
+dengan total di keranjangnya masing-masing. Tidak ada konversi mata uang di mana
+pun: semuanya sudah rupiah dari sumbernya. Harga promo tidak dipakai sebagai
+dasar anggaran tahunan; yang ditampilkan sebagai coretan cuma harga daftarnya,
+supaya potongannya terlihat.
 
-Halaman 9 memisahkan dengan tegas mana yang pasti dan mana yang perkiraan.
-Perpanjangan KVM 2 **Rp 271.900 per bulan** itu tertulis di keranjangnya
-sendiri. Perpanjangan backup harian dan nama domain tidak ditampilkan di sana,
-jadi dihitung memakai harga yang berlaku sekarang dan ditandai dengan `±`.
+Halaman 9 memisahkan dengan tegas mana yang pasti dan mana yang perkiraan. Dua
+harga perpanjangan tertulis di keranjangnya sendiri dan diberi tanda "harga
+pasti": KVM 2 **Rp 271.900 per bulan** dan email **Rp 19.900 per bulan**.
+Perpanjangan backup harian dan nama domain dashboard tidak ditampilkan di sana,
+jadi dihitung memakai harga yang berlaku sekarang dan ditandai `±`.
+turtlehomestay.com sudah dibayar tiga tahun di muka, jadi barisnya Rp 0 sampai
+tahun keempat.
 
 **Kalau nanti diperbarui, ambil dari keranjang atau halaman checkout Hostinger,
 jangan dari artikel pihak ketiga.** Versi sebelumnya memakai perkiraan
 Rp 436 rb per bulan dari sumber pihak ketiga yang saling bertentangan, dan
-angka itu meleset jauh. Keranjang aslinya juga yang mengoreksi dua hal lain:
-lokasi servernya Malaysia, bukan Singapura, dan satu nama domain gratis untuk
-tahun pertama.
+angka itu meleset jauh. Keranjang aslinya juga yang mengoreksi lokasi server
+(Malaysia, bukan Singapura) dan nama domainnya (`turtlehomestay.com`, bukan
+`turtledivehomestay.com`).
 
 ## `render.mjs` menolak diam-diam
 

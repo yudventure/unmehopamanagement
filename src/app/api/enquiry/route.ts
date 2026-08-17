@@ -10,11 +10,14 @@ import { SITE_CONFIG } from "@/lib/site-config";
  * So this endpoint has one job and no storage. Nothing is written down here,
  * which also means there is nothing here to leak.
  *
- * Needs two environment variables on Vercel:
+ * Needs two environment variables on the server:
  *
  *   RESEND_API_KEY   from resend.com
  *   ENQUIRY_FROM     a sender on a domain verified with Resend, e.g.
- *                    "Turtle Dive Homestay <web@turtlehomestay.id>"
+ *                    "Turtle Dive Homestay <web@turtlehomestay.com>"
+ *
+ * That is the address enquiries are sent *from*. Where they land is the owner
+ * address in the site config, which is the mailbox on the same domain.
  *
  * Without them it answers 503 and says so, and the site falls back to opening
  * WhatsApp — so a missing key costs an enquiry nothing.

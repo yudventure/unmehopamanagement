@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 
+import { Maintenance } from "@/components/web/maintenance";
 import { TurtleSite } from "@/components/web/site";
+import { SITE_CONFIG } from "@/lib/site-config";
 import { COPY, DEFAULT_LANG, EMAIL, PROPERTY } from "@/lib/web-content";
 
 /**
@@ -27,8 +29,13 @@ export const metadata: Metadata = {
   },
   alternates: { canonical: "/turtle" },
   other: { "contact:email": EMAIL },
+  /* A crawler that reaches the holding page must not file it as what this
+     site says. The switch is read at build time, so this is decided once per
+     deploy alongside the page it describes. */
+  ...(SITE_CONFIG.maintenance ? { robots: { index: false, follow: false } } : {}),
 };
 
 export default function TurtlePage() {
+  if (SITE_CONFIG.maintenance) return <Maintenance />;
   return <TurtleSite />;
 }

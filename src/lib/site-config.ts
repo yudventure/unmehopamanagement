@@ -37,6 +37,16 @@ export interface SiteConfig {
   /** Rupiah, per the unit named in the copy for that package. */
   divePrices: Record<string, number>;
   /**
+   * Puts every public page behind a holding page. The manager at `/` is not
+   * touched — the owner has to keep working while the site is down.
+   *
+   * Read at build time like the rest of this file, so flipping it takes the
+   * same minute a price change takes. That is fine for planned work and the
+   * wrong tool for an emergency; the CMS says so rather than implying the
+   * switch is instant.
+   */
+  maintenance: boolean;
+  /**
    * The two years the profile page talks about. Null until an owner fills
    * them in, and the page simply does not state a year while they are —
    * which is right, because nobody here knows them. A guessed founding year
@@ -54,11 +64,14 @@ export interface SiteConfig {
    an earlier CMS will not have it. Defaulted rather than required, so an old
    file keeps working instead of failing the type guard on save. */
 const parsed = raw as Partial<SiteConfig> &
-  Omit<SiteConfig, "founded" | "social">;
+  Omit<SiteConfig, "founded" | "social" | "maintenance">;
 export const SITE_CONFIG: SiteConfig = {
   ...parsed,
   founded: parsed.founded ?? { homestay: null, diveCenter: null },
   social: parsed.social ?? { facebook: "", instagram: "", tiktok: "" },
+  /* Absent means live. A file written before this field existed must not
+     take the site down on the next deploy. */
+  maintenance: parsed.maintenance === true,
 };
 
 /** The shape the CMS edits and the API validates against. */
@@ -78,6 +91,7 @@ export function isSiteConfig(v: unknown): v is SiteConfig {
         [c.social.facebook, c.social.instagram, c.social.tiktok].every(
           (v) => typeof v === "string",
         ))) &&
+    (c.maintenance === undefined || typeof c.maintenance === "boolean") &&
     (c.founded === undefined ||
       (typeof c.founded === "object" &&
         c.founded !== null &&

@@ -216,6 +216,15 @@ export interface SiteCopy {
   /** Says the second price line is a conversion, not the charge. */
   currencyNote: string;
   meta: { title: string; description: string };
+  /** The holding page, shown on every public route while the switch is on. */
+  maintenance: {
+    eyebrow: string;
+    title: string;
+    body: string;
+    contactLead: string;
+    whatsapp: string;
+    email: string;
+  };
   hero: { sub: string };
   value: {
     heading: string;
@@ -397,6 +406,14 @@ const EN: SiteCopy = {
     title: `${PROPERTY.name} · Homestay & Dive Center in Raja Ampat`,
     description:
       "A family homestay and dive centre in Yenbuba, Pulau Mansuar. Rooms on stilts at the water's edge, three meals a day, and daily diving in the Dampier Strait.",
+  },
+  maintenance: {
+    eyebrow: "Back shortly",
+    title: "We are working on\nthis page",
+    body: "The site is having some work done and will be back on its own. Nothing about the homestay has changed: the rooms are there, the boat goes out, and we are answering messages as usual.",
+    contactLead: "Reach us in the meantime",
+    whatsapp: "Message on WhatsApp",
+    email: "Send an email",
   },
   hero: {
     sub: "A homestay in Yenbuba, on Pulau Mansuar, built by hand from local timber and standing at the edge of a reef we leave the way we found it. Kept by the family who has always lived in this bay, at the pace the tide sets.",
@@ -980,6 +997,14 @@ const ID: SiteCopy = {
     title: `${PROPERTY.name} · Homestay & Dive Center di Raja Ampat`,
     description:
       "Homestay keluarga dan dive center di Yenbuba, Pulau Mansuar. Kamar berpanggung di tepi air, tiga kali makan, dan penyelaman harian di Selat Dampier.",
+  },
+  maintenance: {
+    eyebrow: "Sebentar lagi kembali",
+    title: "Halamannya sedang\nkami perbaiki",
+    body: "Situsnya sedang dikerjakan dan akan kembali dengan sendirinya. Tidak ada yang berubah di homestay-nya: kamarnya ada, perahunya tetap berangkat, dan pesan tetap kami balas seperti biasa.",
+    contactLead: "Sementara itu, hubungi kami di",
+    whatsapp: "Chat lewat WhatsApp",
+    email: "Kirim email",
   },
   hero: {
     sub: "Homestay di Yenbuba, Pulau Mansuar, dibangun dengan tangan dari kayu setempat dan berdiri di tepi karang yang kami jaga apa adanya. Dirawat keluarga yang memang lahir dan besar di teluk ini, dengan irama yang diatur pasang surut.",

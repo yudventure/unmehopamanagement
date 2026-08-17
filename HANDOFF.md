@@ -725,13 +725,66 @@ kecil yang bertahan bertahun-tahun, jadi kosong lebih baik daripada tebakan.
 
 ### CMS: tab Website di dalam manager
 
-Owner mengubah nomor WhatsApp, email publik, email penerima, dan enam harga
-paket selam dari tab **Website** di manager, bukan dari repo. Isinya duduk di
-`content/site.json`; `PUT /api/content` menuliskannya kembali lewat GitHub
-Contents API, Vercel melihat commit itu dan membangun ulang. Sekitar satu
-menit sampai tayang, dan setiap perubahan tercatat di riwayat repo lengkap
-dengan nama yang menyimpannya. Untuk harga yang bergerak dua kali setahun itu
-tukaran yang lebih baik daripada server yang tidak ada yang menjaga.
+Owner mengubah nomor WhatsApp, email publik, email penerima, tautan media
+sosial, tahun berdiri, enam harga paket selam, dan **mode perbaikan** dari tab
+**Website** di manager, bukan dari repo. Isinya duduk di `content/site.json`;
+`PUT /api/content` menuliskannya kembali lewat GitHub Contents API, Vercel
+melihat commit itu dan membangun ulang. Sekitar satu menit sampai tayang, dan
+setiap perubahan tercatat di riwayat repo lengkap dengan nama yang
+menyimpannya. Untuk harga yang bergerak dua kali setahun itu tukaran yang lebih
+baik daripada server yang tidak ada yang menjaga.
+
+#### Sub-tab
+
+Lima bagian dipisah jadi sub-tab di dalam tab Website: Kontak, Media sosial,
+Profil, Harga selam, Status situs. Sebelumnya semuanya satu gulungan panjang,
+jadi mengubah satu harga berarti mencari-cari dengan mata tiap kali.
+
+Memisahnya jadi tab menimbulkan satu risiko baru, dan dua hal di layar itu
+jawabannya:
+
+1. **Tombol Simpan berada di luar tab** dan menerbitkan seluruh berkas, bukan
+   tab yang sedang terbuka. Pindah tab tidak menghilangkan apa pun; semuanya
+   satu objek `config` di memori.
+2. **Tab yang isinya sudah diubah tapi belum disimpan diberi titik**, dan di
+   dekat tombol Simpan disebutkan namanya. Dengan lima bagian, empat di
+   antaranya selalu tidak terlihat waktu tombol Simpan ditekan. Perbandingannya
+   `JSON.stringify` per bagian terhadap salinan terakhir dari server, jadi
+   kolom baru yang ditambahkan nanti ikut terpantau tanpa perlu didaftarkan.
+
+Setelah simpan berhasil, yang dipakai adalah **salinan dari server**, bukan
+salinan di browser: itu yang membawa stempel waktu dan nama penyimpannya, dan
+menyamakan keduanya itulah yang menghapus titik-titiknya.
+
+#### Mode perbaikan
+
+Saklar di sub-tab **Status situs**. Menyala berarti `/turtle`, `/turtle/about`,
+dan keenam halaman paket selam diganti satu halaman tunggu berisi lencana
+homestay, judul dua bahasa, nomor WhatsApp, dan email. Dashboard `/` **tidak**
+ikut mati, jadi pemiliknya tetap bisa bekerja selagi situsnya ditutup.
+
+Halaman tunggunya membawa nomor dan email, dan itu inti dari halamannya.
+Halaman tunggu yang cuma bilang "sebentar lagi kembali" mengubah tamu yang
+sudah siap memesan jadi tamu yang pergi, padahal homestay-nya jelas tetap
+buka walaupun situsnya tidak.
+
+**Butuh sekitar satu menit, tidak seketika.** Saklarnya dibaca saat build,
+sama seperti harga dan kontak. Jadi ini alat untuk perbaikan yang
+direncanakan, bukan untuk mematikan situs buru-buru, dan layarnya
+mengatakannya begitu daripada menyiratkan saklarnya langsung berlaku. Kalau
+suatu saat perlu yang seketika, tempatnya di middleware yang membaca env
+var, bukan di berkas ini.
+
+Selama menyala, ketiga rute itu juga menambahkan `robots: noindex, nofollow`
+supaya mesin pencari tidak mencatat "sedang diperbaiki" sebagai isi situs ini.
+
+Tulisannya ada di `web-content.ts` kunci `maintenance`, dua bahasa dan
+bertipe, jadi tidak mungkin ada versi yang cuma terisi satu bahasa. Sengaja
+tidak ada kolom teks bebas di CMS untuk ini: satu kotak teks berarti satu
+bahasa, dan situs ini dua bahasa.
+
+`maintenance` yang tidak ada di berkas dianggap **mati**. Berkas yang ditulis
+sebelum kolom ini ada tidak boleh mematikan situs pada deploy berikutnya.
 
 Butuh empat variabel di Vercel:
 

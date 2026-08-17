@@ -1,0 +1,736 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Spesifikasi &amp; Penawaran Deploy — Unmehopa Management</title>
+<style>
+@font-face { font-family: "DM Sans"; font-style: normal; font-weight: 100 1000; src: url(data:font/woff2;base64,__DMSANS__) format("woff2"); }
+@font-face { font-family: "JetBrains Mono"; font-style: normal; font-weight: 100 800; src: url(data:font/woff2;base64,__MONO__) format("woff2"); }
+__CSS__
+</style>
+</head>
+<body>
+
+<!-- ============================================================ 1 sampul -->
+<section class="slide cover">
+  <div style="display:flex;align-items:center;gap:12px">
+    <div class="logo"><img src="data:image/png;base64,__LOGO__" alt=""></div>
+    <div>
+      <div style="font-size:10.5pt;font-weight:700">Unmehopa Management</div>
+      <div style="font-size:8.5pt;color:rgba(255,255,255,.7)">Turtle Dive Homestay &middot; Raja Ampat</div>
+    </div>
+    <div style="margin-left:auto;text-align:right">
+      <div class="eyebrow">Spesifikasi &amp; penawaran</div>
+      <div class="mono" style="font-size:8pt;color:rgba(255,255,255,.6);margin-top:3px">No. UM/DEP/2026-01 &middot; 17 Agustus 2026</div>
+    </div>
+  </div>
+
+  <div>
+    <div class="eyebrow">Untuk pengerjaan</div>
+    <h1 style="margin-top:10px">Deploy website dan dashboard<br>ke server dan dua domain sendiri</h1>
+    <p style="margin-top:14px;font-size:11pt;line-height:1.6;max-width:150mm">
+      Dokumen ini satu paket: apa yang sudah dibangun, di mana ia akan
+      dijalankan, kenapa server itu yang dipilih, dan berapa biayanya. Semua
+      angka performanya diukur dari aplikasi yang sudah berjalan, dan semua
+      angka biayanya diambil dari keranjang Hostinger yang sebenarnya.
+    </p>
+
+    <div class="grid g2" style="margin-top:12mm">
+      <div class="chip">
+        <div class="t mono" style="font-size:9pt">turtledivehomestay.com</div>
+        <div class="s">Situs publik homestay dan dive center, dua bahasa, sembilan halaman</div>
+      </div>
+      <div class="chip">
+        <div class="t mono" style="font-size:9pt">unmehopamanagement.com</div>
+        <div class="s">Dashboard pengelolaan booking, hanya untuk pemilik dan staf</div>
+      </div>
+    </div>
+
+    <div class="price" style="margin-top:5mm">
+      <div>
+        <div style="font-size:10.5pt;font-weight:700">Total penawaran</div>
+        <div class="k">Jasa pengerjaan + server dan layanan tahun pertama, sudah termasuk pajak</div>
+      </div>
+      <div class="v">Rp 6.806.856</div>
+    </div>
+  </div>
+
+  <div class="foot"><span>Unmehopa Management</span><span>1 / 12</span></div>
+</section>
+
+<!-- ========================================================== 2 ringkasan -->
+<section class="slide">
+  <div class="head">
+    <div class="eyebrow">Bagian 1 &middot; Ringkasan</div>
+    <h2 style="margin-top:5px">Di mana posisinya sekarang</h2>
+  </div>
+  <div class="body">
+    <p class="lede" style="margin-top:5mm">
+      Antarmuka kedua produk sudah selesai dan berjalan. Yang belum ada adalah
+      lapisan datanya: aplikasi masih memakai data contoh di dalam browser, jadi
+      menyegarkan halaman mengembalikan semuanya ke awal. Itu bukan pekerjaan
+      yang terlewat, itu batas lingkup yang disepakati sejak awal, dan itulah
+      tahap berikutnya.
+    </p>
+
+    <div class="grid g3" style="margin-top:6mm">
+      <div class="card"><div class="stat"><span class="n">9</span><span class="k">halaman siap tayang, delapan di antaranya sudah jadi HTML statis saat build</span></div></div>
+      <div class="card"><div class="stat"><span class="n">4</span><span class="k">paket npm yang ikut terpasang di server: next, react, react-dom, jspdf</span></div></div>
+      <div class="card"><div class="stat"><span class="n">2</span><span class="k">bahasa penuh di situs publik, Indonesia dan Inggris, bertipe di kode</span></div></div>
+    </div>
+
+    <div class="grid g2" style="margin-top:5mm">
+      <div class="card green">
+        <h3>Sudah berfungsi</h3>
+        <ul>
+          <li>Kalender bulanan, deteksi bentrok kamar, daftar per tanggal, detail booking</li>
+          <li>Laporan: KPI, dua grafik okupansi, ekspor CSV dan PDF, banding bulan lalu</li>
+          <li>Properti dan kamar, pengguna dan peran, pemisahan hak Owner dan Staf</li>
+          <li>Situs publik: kamar, enam paket selam dengan halaman sendiri, musim, cara sampai, FAQ, galeri, peta</li>
+          <li>CMS di dalam dashboard, lengkap dengan saklar mode perbaikan</li>
+        </ul>
+      </div>
+      <div class="card warn">
+        <h3>Belum ada</h3>
+        <ul>
+          <li><strong>Database.</strong> Semua booking masih data contoh di memori browser</li>
+          <li><strong>Autentikasi asli.</strong> Sekarang kata sandi apa pun diterima</li>
+          <li><strong>Sinkronisasi iCal</strong> ke Booking.com, Agoda, Traveloka</li>
+          <li><strong>Isi asli.</strong> Nomor WhatsApp, email, enam harga selam, tahun berdiri, dan tautan media sosial masih contoh</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="note" style="margin-top:5mm">
+      <strong>Yang ditawarkan di dokumen ini adalah deploy-nya, bukan database
+      dan autentikasinya.</strong> Setelah pekerjaan ini selesai, situs
+      publiknya tayang penuh dan dashboard-nya bisa dibuka dan didemokan, tapi
+      booking-nya belum tersimpan permanen. Servernya sudah dipasangi PostgreSQL
+      supaya tahap berikutnya tinggal menyambung, bukan menyiapkan server lagi.
+    </div>
+  </div>
+  <div class="foot"><span>Ringkasan</span><span>2 / 12</span></div>
+</section>
+
+<!-- ======================================================== 3 arsitektur -->
+<section class="slide">
+  <div class="head">
+    <div class="eyebrow">Bagian 2 &middot; Arsitektur</div>
+    <h2 style="margin-top:5px">Dua domain, satu kode, satu server</h2>
+  </div>
+  <div class="body">
+    <p class="lede" style="margin-top:5mm">
+      Kedua produk tinggal serumah di satu repo dan berbagi satu set warna dan
+      komponen. Memisahnya jadi dua alamat tidak perlu memecah kodenya: cukup
+      satu lapisan yang membaca nama domain lalu mengarahkan ke bagian yang
+      benar.
+    </p>
+
+    <div style="display:grid;grid-template-columns:1fr 10mm 1fr;align-items:center;margin-top:6mm">
+      <div style="display:flex;flex-direction:column;gap:3mm">
+        <div class="box"><div class="t mono" style="font-size:8.5pt">turtledivehomestay.com</div><div class="s">Tamu, calon tamu, mesin pencari</div></div>
+        <div class="box"><div class="t mono" style="font-size:8.5pt">unmehopamanagement.com</div><div class="s">Pemilik dan staf saja</div></div>
+      </div>
+      <div class="arrow">&rarr;</div>
+      <div class="box" style="background:var(--teal-tint);border-color:var(--teal-line)">
+        <div class="t">Satu server, satu aplikasi</div>
+        <div class="s">Membaca nama domain yang diminta, lalu menyajikan situs publik atau dashboard. Satu build, satu proses, tanpa menggandakan kode.</div>
+      </div>
+    </div>
+
+    <div class="grid g3" style="margin-top:6mm">
+      <div class="card">
+        <h3>Kenapa dua domain</h3>
+        <p>Cookie sesi dashboard tidak pernah ikut terkirim ke situs publik, karena beda domain. Itu pemisahan keamanan yang didapat gratis, bukan sekadar soal alamat yang lebih rapi.</p>
+      </div>
+      <div class="card">
+        <h3>Kenapa satu kode</h3>
+        <p>Tarif kamar dibaca dari sumber yang sama, jadi situs dan dashboard tidak mungkin menyebut angka berbeda. Dua aplikasi berarti dua salinan yang harus dijaga tetap sama.</p>
+      </div>
+      <div class="card mute">
+        <h3>Kapan dipisah</h3>
+        <p>Kalau nanti situs publik ramai sampai mengganggu dashboard. Sebelum itu, memisahnya menambah pekerjaan tanpa menambah apa pun.</p>
+      </div>
+    </div>
+
+    <div class="rule"></div>
+
+    <h3 style="font-size:11pt">Tumpukan teknologi</h3>
+    <table style="margin-top:3mm">
+      <tbody>
+        <tr><td style="width:34mm"><strong>Framework</strong></td><td class="mono" style="width:44mm">Next.js 16.3</td><td>Satu kode untuk halaman statis, halaman dinamis, dan endpoint API</td></tr>
+        <tr><td><strong>Bahasa</strong></td><td class="mono">TypeScript 5.9</td><td>Mode ketat: terjemahan yang lupa diisi menggagalkan build, bukan menayangkan versi setengah jadi</td></tr>
+        <tr><td><strong>Database</strong></td><td class="mono">PostgreSQL 16</td><td>Dipasang sekarang, dipakai penuh di tahap berikutnya</td></tr>
+        <tr><td><strong>Web server</strong></td><td class="mono">Caddy</td><td>Sertifikat TLS otomatis dan memperpanjang dirinya sendiri</td></tr>
+        <tr><td><strong>Ketergantungan</strong></td><td class="mono">4 paket</td><td>Cuma next, react, react-dom, jspdf. Grafik, ikon, dan ilustrasinya digambar sendiri sebagai SVG, jadi lebih sedikit yang bisa rusak saat pembaruan keamanan</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="foot"><span>Arsitektur</span><span>3 / 12</span></div>
+</section>
+
+<!-- ============================================================ 4 angka -->
+<section class="slide">
+  <div class="head">
+    <div class="eyebrow">Bagian 3 &middot; Angka yang diukur</div>
+    <h2 style="margin-top:5px">Berat halaman, diukur di browser</h2>
+  </div>
+  <div class="body">
+    <p class="lede" style="margin-top:5mm">
+      Diukur terhadap build produksi, satu kunjungan pertama tanpa cache, semua
+      permintaan dihitung. Ini angka yang menentukan bagaimana rasanya membuka
+      situs ini dari sinyal pulau.
+    </p>
+
+    <div class="grid g3" style="margin-top:5mm">
+      <div class="card">
+        <div class="eyebrow" style="font-size:7.2pt">Situs publik &middot; beranda</div>
+        <div class="stat" style="margin-top:5px"><span class="n">4,3 MB</span><span class="k">27 permintaan &middot; selesai 1,36 detik</span></div>
+      </div>
+      <div class="card">
+        <div class="eyebrow" style="font-size:7.2pt">Situs publik &middot; profil</div>
+        <div class="stat" style="margin-top:5px"><span class="n">2,5 MB</span><span class="k">24 permintaan &middot; selesai 1,01 detik</span></div>
+      </div>
+      <div class="card">
+        <div class="eyebrow" style="font-size:7.2pt">Dashboard</div>
+        <div class="stat" style="margin-top:5px"><span class="n">988 kB</span><span class="k">13 permintaan &middot; tanpa foto sama sekali</span></div>
+      </div>
+    </div>
+
+    <div style="margin-top:6mm">
+      <h3>Beranda dipecah menurut isinya</h3>
+      <div style="margin-top:3mm">
+        <div class="meter"><span class="lbl">Foto</span><span class="track"><span class="fill tight" style="width:78%"></span></span><span class="val">3.353 kB</span></div>
+        <div class="meter"><span class="lbl">JavaScript</span><span class="track"><span class="fill" style="width:14%"></span></span><span class="val">588 kB</span></div>
+        <div class="meter"><span class="lbl">HTML + CSS + font</span><span class="track"><span class="fill" style="width:6%"></span></span><span class="val">263 kB</span></div>
+      </div>
+    </div>
+
+    <div class="card warn" style="margin-top:5mm">
+      <h3>Foto itu 78% berat halaman</h3>
+      <p>Tiga foto kartu berukuran 755 kB, 1,1 MB, dan 840 kB. Disimpan ulang di
+      lebar 1080px dengan kualitas 80 biasanya turun ke 150 sampai 250 kB per
+      foto, dan beranda turun dari 4,3 MB ke sekitar 1,2 MB. Sekali kerja, tidak
+      butuh server baru maupun kode baru, dan dampaknya paling terasa justru di
+      tempat sinyalnya paling lemah.</p>
+    </div>
+
+    <div class="rule"></div>
+
+    <h3>Waktu build, diukur dari nol</h3>
+    <div style="margin-top:3mm">
+      <div class="meter"><span class="lbl">Kompilasi</span><span class="track"><span class="fill" style="width:59%"></span></span><span class="val">7,3 detik</span></div>
+      <div class="meter"><span class="lbl">Cek TypeScript</span><span class="track"><span class="fill" style="width:34%"></span></span><span class="val">4,2 detik</span></div>
+      <div class="meter"><span class="lbl">15 halaman statis</span><span class="track"><span class="fill" style="width:4%"></span></span><span class="val">0,46 detik</span></div>
+    </div>
+    <p class="small" style="margin-top:4mm">
+      Puncak pemakaian memori saat build sekitar <strong>2,0 GB</strong>. Angka
+      ini yang menentukan ukuran server minimum, bukan lalu lintasnya. Melayani
+      halaman jauh lebih ringan daripada membuatnya.
+    </p>
+  </div>
+  <div class="foot"><span>Angka yang diukur</span><span>4 / 12</span></div>
+</section>
+
+<!-- =========================================================== 5 server -->
+<section class="slide">
+  <div class="head">
+    <div class="eyebrow">Bagian 4 &middot; Server</div>
+    <h2 style="margin-top:5px">Semuanya di dalam satu KVM 2</h2>
+  </div>
+  <div class="body">
+    <div class="grid g2" style="margin-top:5mm">
+      <div class="box dash" style="padding:11px 13px">
+        <div class="eyebrow" style="font-size:7.2pt;margin-bottom:8px">Hostinger VPS KVM 2 &middot; lokasi Malaysia</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div class="box" style="border-color:var(--teal-line);background:var(--teal-tint)">
+            <div class="t">Caddy</div>
+            <div class="s">Dua domain, TLS otomatis, menyajikan delapan halaman statis langsung dari disk</div>
+          </div>
+          <div class="arrow" style="font-size:10pt">&darr;</div>
+          <div class="box"><div class="t">Next.js (Node 22)</div><div class="s">Dashboard, tiga endpoint API, halaman yang perlu dirender saat diminta</div></div>
+          <div class="arrow" style="font-size:10pt">&darr;</div>
+          <div class="box"><div class="t">PostgreSQL 16</div><div class="s">Di mesin yang sama, lewat socket lokal. Tidak keluar jaringan sama sekali</div></div>
+        </div>
+      </div>
+
+      <div>
+        <h3>Spesifikasi</h3>
+        <table style="margin-top:3mm">
+          <tbody>
+            <tr><td>vCPU</td><td class="num">2</td></tr>
+            <tr><td>RAM</td><td class="num">8 GB</td></tr>
+            <tr><td>Disk NVMe</td><td class="num">100 GB</td></tr>
+            <tr><td>Bandwidth</td><td class="num">8 TB / bulan</td></tr>
+            <tr><td>Lokasi</td><td class="num">Malaysia</td></tr>
+            <tr><td>Latensi terukur</td><td class="num">71 ms</td></tr>
+            <tr><td>Backup harian</td><td class="num">aktif</td></tr>
+          </tbody>
+        </table>
+        <p class="small" style="margin-top:3mm">
+          Latensi 71 ms itu hasil ukur Hostinger sendiri dari lokasi pemilik, dan
+          Malaysia keluar sebagai yang terdekat. <strong>Lokasi VPS tidak bisa
+          diubah setelah dipesan</strong>, jadi ini dipilih di awal.
+        </p>
+      </div>
+    </div>
+
+    <div class="rule"></div>
+
+    <h3>Yang dipakai dibanding yang tersedia</h3>
+    <div style="margin-top:3mm">
+      <div class="meter"><span class="lbl">RAM saat melayani</span><span class="track"><span class="fill" style="width:11%"></span></span><span class="val">0,9 / 8 GB</span></div>
+      <div class="meter"><span class="lbl">RAM saat build</span><span class="track"><span class="fill tight" style="width:25%"></span></span><span class="val">2,0 / 8 GB</span></div>
+      <div class="meter"><span class="lbl">Disk</span><span class="track"><span class="fill" style="width:12%"></span></span><span class="val">± 12 / 100 GB</span></div>
+      <div class="meter"><span class="lbl">Bandwidth per bulan</span><span class="track"><span class="fill" style="width:3%"></span></span><span class="val">&lt; 0,3 / 8 TB</span></div>
+      <div class="meter"><span class="lbl">CPU saat melayani</span><span class="track"><span class="fill" style="width:2%"></span></span><span class="val">&lt; 2 / 200 %</span></div>
+      <div class="meter"><span class="lbl">CPU saat build</span><span class="track"><span class="fill tight" style="width:100%"></span></span><span class="val">200 / 200 %</span></div>
+    </div>
+    <div class="legend">
+      <span><i class="swatch" style="background:var(--teal)"></i> Longgar</span>
+      <span><i class="swatch" style="background:var(--gold)"></i> Puncak sesaat, hanya saat build</span>
+      <span><i class="swatch" style="background:var(--line-strong)"></i> Sisa kapasitas</span>
+    </div>
+
+    <div class="note" style="margin-top:5mm">
+      <strong>Yang mengikat bukan lalu lintasnya, tapi build-nya.</strong>
+      Melayani tamu hampir tidak memakai apa pun: 8 TB dibagi 4,3 MB per
+      kunjungan penuh sama dengan sekitar 1,8 juta kunjungan per bulan, dan
+      homestay dua belas kamar tidak akan mendekati angka itu. Yang menghabiskan
+      CPU dan memori adalah lima belas detik saat aplikasi dibangun ulang, dan
+      itulah alasan memilih 8 GB dan bukan 4 GB.
+    </div>
+  </div>
+  <div class="foot"><span>Server</span><span>5 / 12</span></div>
+</section>
+
+<!-- ====================================================== 6 kenapa kvm 2 -->
+<section class="slide">
+  <div class="head">
+    <div class="eyebrow">Bagian 5 &middot; Pilihan</div>
+    <h2 style="margin-top:5px">Kenapa KVM 2, bukan yang lain</h2>
+  </div>
+  <div class="body">
+    <table style="margin-top:5mm">
+      <thead><tr><th style="width:42mm">Pilihan</th><th style="width:24mm" class="num">Setahun</th><th>Penilaian</th></tr></thead>
+      <tbody>
+        <tr style="background:var(--teal-tint)">
+          <td style="border-left:3px solid var(--teal)"><strong>Hostinger KVM 2</strong><br><span class="small">2 vCPU, 8 GB, 100 GB</span></td>
+          <td class="num">Rp 3,81 jt</td>
+          <td><strong>Yang dipilih.</strong> Satu tagihan, database menempel di aplikasi tanpa lewat jaringan, dan cukup lapang untuk membangun aplikasi di mesin yang sama tanpa mengganggu yang sedang dilayani. Masih ada ruang untuk staging atau alat lain nanti.</td>
+        </tr>
+        <tr>
+          <td><strong>Hostinger KVM 1</strong><br><span class="small">1 vCPU, 4 GB, 50 GB</span></td>
+          <td class="num">lebih murah</td>
+          <td>4 GB cukup untuk melayani, tapi sempit untuk membangun di mesin yang sama. Hemat di awal, lalu setiap deploy jadi bergantung pada pipeline di luar.</td>
+        </tr>
+        <tr>
+          <td><strong>Vercel Pro + database terkelola</strong></td>
+          <td class="num">± Rp 8,3 jt</td>
+          <td>Tidak ada server yang perlu diurus sama sekali, dan itu nilai yang nyata. Tapi dua tagihan, biaya lebih dari dua kali lipat, dan databasenya di mesin lain. Paket gratisnya untuk proyek pribadi, bukan usaha, jadi bukan pembanding yang jujur.</td>
+        </tr>
+        <tr>
+          <td><strong>Shared hosting</strong></td>
+          <td class="num">termurah</td>
+          <td><span style="color:var(--amber-ink);font-weight:700">Tidak bisa dipakai.</span> Aplikasi ini butuh proses Node yang hidup terus; shared hosting hanya menjalankan PHP di balik web server bersama.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="grid g2" style="margin-top:6mm">
+      <div class="card green">
+        <h3>Kepemilikan ada di pemilik</h3>
+        <p>Server, kedua nama domain, dan seluruh kata sandinya <strong>atas nama
+        pemilik</strong>, bukan atas nama pengerja. Tidak ada bagian dari susunan
+        ini yang mengunci pemilik ke satu orang: siapa pun yang paham server bisa
+        melanjutkannya, dan itu memang tujuannya.</p>
+      </div>
+      <div class="card">
+        <h3>Bisa naik tingkat belakangan</h3>
+        <p>Kalau kelak di mesin yang sama mau ditaruh staging, otomasi, atau alat
+        laporan, paket Hostinger bisa dinaikkan tanpa memindahkan server dan
+        tanpa memasang ulang apa pun.</p>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>Pilihan server</span><span>6 / 12</span></div>
+</section>
+
+<!-- =========================================================== 7 lingkup -->
+<section class="slide">
+  <div class="head">
+    <div class="eyebrow">Bagian 6 &middot; Pekerjaan</div>
+    <h2 style="margin-top:5px">Lingkup pekerjaan deploy</h2>
+  </div>
+  <div class="body">
+    <p class="lede" style="margin-top:5mm">
+      Enam bagian, dan tiap bagian punya hasil yang bisa dicek sendiri, bukan
+      cuma laporan bahwa sudah dikerjakan.
+    </p>
+
+    <table style="margin-top:5mm">
+      <thead><tr><th style="width:7mm">&nbsp;</th><th style="width:42mm">Bagian</th><th>Isinya, dan apa yang bisa dicek sendiri</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="num">1</td>
+          <td><strong>Penyiapan &amp; pengamanan server</strong></td>
+          <td>Pasang sistemnya, matikan masuk lewat kata sandi dan ganti dengan kunci, nyalakan firewall dan pembaruan keamanan otomatis.
+          <br><span class="small">Cek: percobaan masuk pakai kata sandi ditolak.</span></td>
+        </tr>
+        <tr>
+          <td class="num">2</td>
+          <td><strong>Panel deploy</strong></td>
+          <td>Pasang Coolify supaya pembaruan berikutnya cukup dengan mengirim kode, tanpa menyentuh server lagi.
+          <br><span class="small">Cek: satu perubahan kecil dikirim, situsnya berubah sendiri dalam beberapa menit.</span></td>
+        </tr>
+        <tr>
+          <td class="num">3</td>
+          <td><strong>Dua domain, DNS, dan TLS</strong></td>
+          <td>Arahkan kedua nama domain ke server, pasang sertifikat yang memperpanjang dirinya sendiri.
+          <br><span class="small">Cek: kedua alamat terbuka dengan gembok, tanpa peringatan.</span></td>
+        </tr>
+        <tr>
+          <td class="num">4</td>
+          <td><strong>Deploy dan pemisahan dua domain</strong></td>
+          <td>Pasang aplikasinya, isi variabel lingkungan, atur supaya alamat publik membuka situs dan alamat manajemen membuka dashboard.
+          <br><span class="small">Cek: dua alamat, dua tampilan berbeda, dari satu server yang sama.</span></td>
+        </tr>
+        <tr>
+          <td class="num">5</td>
+          <td><strong>PostgreSQL dan cadangan</strong></td>
+          <td>Pasang database di mesin yang sama. Backup harian Hostinger sudah menyalin seluruh mesin; di atas itu dipasang salinan database ke penyimpanan <strong>di luar Hostinger</strong>, lalu keduanya <strong>diuji pulihkan sekali di depan pemilik</strong>.
+          <br><span class="small">Cadangan yang belum pernah dicoba dipulihkan itu belum bisa disebut cadangan.</span></td>
+        </tr>
+        <tr>
+          <td class="num">6</td>
+          <td><strong>Pemantauan dan serah terima</strong></td>
+          <td>Pasang pemantau yang mengirim pesan kalau situsnya tidak menjawab. Serah terima: semua kata sandi diserahkan, plus satu sesi penjelasan cara memperbarui dan cara memulihkan.
+          <br><span class="small">Termasuk catatan tertulis, supaya tidak bergantung pada ingatan siapa pun.</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="grid g2" style="margin-top:6mm">
+      <div class="card">
+        <h3>Jadwal</h3>
+        <p><strong>Empat hari kerja</strong> sejak uang muka masuk dan kedua nama
+        domain sudah siap. Bagian 1 sampai 4 selesai di dua hari pertama, jadi
+        alamatnya sudah bisa dibuka di hari kedua; sisanya cadangan, pemantauan,
+        dan serah terima.</p>
+      </div>
+      <div class="card mute">
+        <h3>Garansi 14 hari</h3>
+        <p>Kerusakan <em>yang datang dari pekerjaan ini</em> diperbaiki tanpa
+        biaya selama 14 hari setelah serah terima. Tidak termasuk: permintaan
+        yang mengubah lingkup, pengaturan yang diubah pihak lain, dan gangguan
+        dari sisi Hostinger.</p>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>Lingkup pekerjaan</span><span>7 / 12</span></div>
+</section>
+
+<!-- ============================================================ 8 biaya -->
+<section class="slide">
+  <div class="head">
+    <div class="eyebrow">Bagian 7 &middot; Biaya</div>
+    <h2 style="margin-top:5px">Rincian biaya tahun pertama</h2>
+  </div>
+  <div class="body">
+    <p class="lede" style="margin-top:5mm">
+      Angka Hostinger di bawah ini disalin apa adanya dari keranjang belanjanya,
+      bukan perkiraan. Kuitansinya diserahkan saat serah terima, dan tidak ada
+      tambahan apa pun di atas harga aslinya.
+    </p>
+
+    <h3 style="margin-top:6mm;font-size:11pt">Dibayarkan ke Hostinger</h3>
+    <table style="margin-top:3mm">
+      <thead><tr><th>Pos</th><th class="num" style="width:28mm">Harga daftar</th><th class="num" style="width:30mm">Dibayar</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>Paket KVM 2, 12 bulan</strong><br><span class="small">Rp 180.900 per bulan</span></td>
+          <td class="num" style="color:var(--slate-mute);text-decoration:line-through">Rp 4.894.800</td>
+          <td class="num">Rp 2.170.800</td>
+        </tr>
+        <tr>
+          <td><strong>Backup harian otomatis, 12 bulan</strong><br><span class="small">Rp 104.900 per bulan. Menyalin seluruh mesin setiap hari</span></td>
+          <td class="num" style="color:var(--slate-mute)">&mdash;</td>
+          <td class="num">Rp 1.258.800</td>
+        </tr>
+        <tr>
+          <td><strong>Nama domain pertama, 1 tahun</strong> <span class="pill">gratis di paket ini</span></td>
+          <td class="num" style="color:var(--slate-mute);text-decoration:line-through">Rp 1.113.900</td>
+          <td class="num">Rp 0</td>
+        </tr>
+        <tr>
+          <td><strong>Proteksi privasi WHOIS</strong><br><span class="small">Data pemilik domain tidak terpampang di catatan publik</span></td>
+          <td class="num" style="color:var(--slate-mute)">&mdash;</td>
+          <td class="num">Rp 0</td>
+        </tr>
+        <tr><td><strong>Pajak</strong> <span class="small">11%</span></td><td class="num" style="color:var(--slate-mute)">&mdash;</td><td class="num">Rp 377.256</td></tr>
+        <tr class="total"><td colspan="2">Jumlah ke Hostinger</td><td class="num">Rp 3.806.856</td></tr>
+      </tbody>
+    </table>
+
+    <h3 style="margin-top:7mm;font-size:11pt">Jasa pengerjaan</h3>
+    <table style="margin-top:3mm">
+      <tbody>
+        <tr><td>Enam bagian pekerjaan di halaman 7</td><td class="num" style="width:30mm">Rp 3.000.000</td></tr>
+      </tbody>
+    </table>
+
+    <div class="price-badge" style="margin-top:6mm">
+      <div>
+        <div style="font-size:11pt;font-weight:700;color:var(--ink)">Total penawaran</div>
+        <div class="k">Sudah termasuk pajak. Belum termasuk nama domain kedua.</div>
+      </div>
+      <div class="v">Rp 6.806.856</div>
+    </div>
+
+    <div class="grid g2" style="margin-top:5mm">
+      <div class="card">
+        <h3>Pembayaran</h3>
+        <p><strong>Uang muka Rp 5.306.856</strong>, yaitu seluruh biaya Hostinger
+        ditambah separuh jasa, karena Hostinger memang menagih di depan.
+        <strong>Sisa Rp 1.500.000</strong> saat serah terima.</p>
+      </div>
+      <div class="card mute">
+        <h3>Nama domain kedua</h3>
+        <p>Satu domain sudah gratis di paket ini. Yang kedua dibeli terpisah atas
+        nama pemilik; harganya tergantung akhiran yang dipilih, dan sebagai
+        gambaran harga daftar yang tertera di keranjang adalah Rp 1.113.900 per
+        tahun.</p>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>Biaya tahun pertama</span><span>8 / 12</span></div>
+</section>
+
+<!-- ====================================================== 9 tahun kedua -->
+<section class="slide">
+  <div class="head">
+    <div class="eyebrow">Bagian 8 &middot; Setelah tahun pertama</div>
+    <h2 style="margin-top:5px">Biaya yang berjalan terus</h2>
+  </div>
+  <div class="body">
+    <p class="lede" style="margin-top:5mm">
+      Ini biaya pemilik ke Hostinger, bukan ke pengerja, dan tidak ada biaya
+      jasa yang berulang. Ditulis di sini supaya tidak ada yang mengejutkan
+      dua belas bulan lagi.
+    </p>
+
+    <table style="margin-top:6mm">
+      <thead><tr><th>Pos</th><th class="num" style="width:30mm">Per bulan</th><th class="num" style="width:32mm">Per tahun</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>Paket KVM 2, perpanjangan</strong><br><span class="small">Tertulis di keranjang: diperpanjang setelah 12 bulan dengan harga ini</span></td>
+          <td class="num">Rp 271.900</td>
+          <td class="num">Rp 3.262.800</td>
+        </tr>
+        <tr>
+          <td><strong>Backup harian otomatis</strong><br><span class="small">Harga perpanjangannya tidak tertera di keranjang; dihitung memakai harga sekarang</span></td>
+          <td class="num">± Rp 104.900</td>
+          <td class="num">± Rp 1.258.800</td>
+        </tr>
+        <tr>
+          <td><strong>Nama domain pertama</strong><br><span class="small">Gratisnya cuma tahun pertama</span></td>
+          <td class="num" style="color:var(--slate-mute)">&mdash;</td>
+          <td class="num">± Rp 1.113.900</td>
+        </tr>
+        <tr><td><strong>Pajak</strong> <span class="small">11%</span></td><td class="num" style="color:var(--slate-mute)">&mdash;</td><td class="num">± Rp 619.905</td></tr>
+        <tr class="total"><td colspan="2">Perkiraan setahun, mulai tahun kedua</td><td class="num">± Rp 6.255.405</td></tr>
+      </tbody>
+    </table>
+
+    <div class="note" style="margin-top:6mm">
+      <strong>Harga perpanjangan servernya angka pasti, sisanya perkiraan.</strong>
+      Rp 271.900 per bulan itu tertulis hitam di atas putih di keranjang
+      belanjanya. Harga perpanjangan backup dan domain tidak ditampilkan di sana,
+      jadi dihitung memakai harga yang berlaku sekarang. Perlakukan totalnya
+      sebagai pagar anggaran, bukan sebagai kuitansi.
+    </div>
+
+    <div class="card green" style="margin-top:5mm">
+      <h3>Cara menekannya, kalau nanti perlu</h3>
+      <p>Keranjangnya menawarkan langganan 24 bulan dengan harga per bulan yang
+      lebih rendah daripada 12 bulan. Kalau di tahun kedua sudah yakin dengan
+      susunan ini, memperpanjang untuk dua tahun sekaligus menurunkan biaya per
+      bulannya. Backup harian juga bisa dimatikan kalau salinan database ke luar
+      Hostinger dinilai sudah cukup, dan itu menghemat sekitar Rp 1,26 juta per
+      tahun.</p>
+    </div>
+  </div>
+  <div class="foot"><span>Biaya berjalan</span><span>9 / 12</span></div>
+</section>
+
+<!-- ==================================================== 10 tidak termasuk -->
+<section class="slide">
+  <div class="head">
+    <div class="eyebrow">Bagian 9 &middot; Batasan</div>
+    <h2 style="margin-top:5px">Yang tidak termasuk</h2>
+  </div>
+  <div class="body">
+    <p class="lede" style="margin-top:5mm">
+      Bagian ini ditulis supaya batas pekerjaannya jelas dari awal, bukan
+      ditemukan di tengah jalan.
+    </p>
+
+    <table style="margin-top:6mm">
+      <tbody>
+        <tr>
+          <td style="width:52mm"><strong>Database dan sistem masuk</strong><br><span class="pill later">tahap berikutnya</span></td>
+          <td>Supaya booking tersimpan permanen dan dashboard aman dibuka dari internet. Ini pekerjaan terbesar yang tersisa dan dihitung terpisah. Servernya sudah disiapkan lengkap dengan PostgreSQL, jadi tahap itu tidak perlu menyiapkan server lagi.</td>
+        </tr>
+        <tr>
+          <td><strong>Sinkronisasi iCal</strong><br><span class="pill later">tahap berikutnya</span></td>
+          <td>Tarik dan kirim kalender ke Booking.com, Agoda, dan Traveloka. Ini yang menghentikan double booking, dan ini masalah nomor satu yang disebut di dokumen kebutuhan aslinya.</td>
+        </tr>
+        <tr>
+          <td><strong>Nama domain kedua</strong></td>
+          <td>Dibeli terpisah atas nama pemilik. Yang pertama sudah gratis di paket ini.</td>
+        </tr>
+        <tr>
+          <td><strong>Pengisian konten</strong></td>
+          <td>Nomor WhatsApp, email penerima pesan, enam harga paket selam, dua tahun berdiri, dan tiga tautan media sosial. Semuanya bisa diisi sendiri dari tab Website di dashboard tanpa menyentuh kode, dan tidak butuh pengerja.</td>
+        </tr>
+        <tr>
+          <td><strong>Optimasi foto</strong></td>
+          <td>Bisa dikerjakan sendiri dengan menyimpan ulang fotonya di lebar 1080px, atau dimasukkan ke penawaran terpisah.</td>
+        </tr>
+        <tr>
+          <td><strong>Perawatan bulanan</strong></td>
+          <td>Pemantauan dan cadangan berjalan sendiri setelah dipasang. Kalau ingin ada yang berjaga dan menangani kalau terjadi apa-apa, itu kesepakatan terpisah.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="card warn" style="margin-top:6mm">
+      <h3>Satu hal yang perlu diulang</h3>
+      <p>Setelah pekerjaan ini selesai, <strong>situs publiknya tayang penuh dan
+      siap dilihat tamu</strong>. Dashboard-nya bisa dibuka dan didemokan, tapi
+      <strong>booking yang diinput belum tersimpan permanen</strong> sampai tahap
+      database selesai. Jangan mulai memakainya untuk mencatat booking
+      sungguhan sebelum tahap itu jalan.</p>
+    </div>
+  </div>
+  <div class="foot"><span>Batasan</span><span>10 / 12</span></div>
+</section>
+
+<!-- ======================================================== 11 rencana -->
+<section class="slide">
+  <div class="head">
+    <div class="eyebrow">Bagian 10 &middot; Setelah ini</div>
+    <h2 style="margin-top:5px">Urutan pekerjaan berikutnya</h2>
+  </div>
+  <div class="body">
+    <p class="lede" style="margin-top:5mm">
+      Bukan bagian dari penawaran ini, dan tidak ada angkanya di sini. Dicantumkan
+      supaya kelihatan deploy ini duduk di sebelah mana.
+    </p>
+
+    <table style="margin-top:6mm">
+      <thead><tr><th style="width:9mm">&nbsp;</th><th style="width:44mm">Tahap</th><th>Hasil yang kelihatan</th></tr></thead>
+      <tbody>
+        <tr style="background:var(--teal-tint)">
+          <td class="num" style="border-left:3px solid var(--teal)"><strong>0</strong></td>
+          <td><strong>Deploy</strong> <span class="pill">penawaran ini</span></td>
+          <td>Dua alamat sungguhan, bukan subdomain sementara. Situs publik tayang penuh, server dan database siap dipakai tahap berikutnya.</td>
+        </tr>
+        <tr>
+          <td class="num">1</td>
+          <td><strong>Fondasi data</strong></td>
+          <td>Booking bertahan setelah halaman disegarkan. Aturan anti bentrok dipasang di tingkat database, bukan cuma di layar.</td>
+        </tr>
+        <tr>
+          <td class="num">2</td>
+          <td><strong>Autentikasi asli</strong></td>
+          <td>Dashboard aman dibuka dari internet. Hak Owner dan Staf ditegakkan di server, bukan cuma disembunyikan di tampilan.</td>
+        </tr>
+        <tr>
+          <td class="num">3</td>
+          <td><strong>Isi asli dan foto</strong></td>
+          <td>Beranda turun dari 4,3 MB ke sekitar 1,2 MB. Bisa dikerjakan kapan saja, tidak bergantung pada tahap lain.</td>
+        </tr>
+        <tr>
+          <td class="num">4</td>
+          <td><strong>Sinkronisasi iCal</strong></td>
+          <td>Double booking berhenti terjadi.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="note" style="margin-top:6mm">
+      <strong>Kenapa deploy dikerjakan lebih dulu, bukan setelah databasenya
+      jadi.</strong> Situs publiknya sudah selesai dan sudah bisa mendatangkan
+      tamu hari ini; menahannya sampai dashboard-nya lengkap berarti menunda
+      satu-satunya bagian yang sudah siap menghasilkan. Servernya juga cuma
+      dipasang sekali: tahap 1 dan 2 nanti tinggal menyambung ke PostgreSQL yang
+      sudah berdiri.
+    </div>
+  </div>
+  <div class="foot"><span>Rencana</span><span>11 / 12</span></div>
+</section>
+
+<!-- ===================================================== 12 persetujuan -->
+<section class="slide">
+  <div class="head">
+    <div class="eyebrow">Bagian 11 &middot; Persetujuan</div>
+    <h2 style="margin-top:5px">Ringkasan dan tanda tangan</h2>
+  </div>
+  <div class="body">
+    <table style="margin-top:6mm">
+      <tbody>
+        <tr><td>Jasa pengerjaan deploy <span class="small">&middot; enam bagian, empat hari kerja</span></td><td class="num" style="width:32mm">Rp 3.000.000</td></tr>
+        <tr><td>Hostinger KVM 2 + backup harian + domain + pajak <span class="small">&middot; 12 bulan</span></td><td class="num">Rp 3.806.856</td></tr>
+        <tr class="total"><td>Total penawaran</td><td class="num">Rp 6.806.856</td></tr>
+      </tbody>
+    </table>
+
+    <div class="grid g2" style="margin-top:6mm">
+      <div class="card">
+        <h3>Uang muka</h3>
+        <p style="font-size:12pt;font-weight:700;margin-top:3px">Rp 5.306.856</p>
+        <p class="small" style="margin-top:3px">Seluruh biaya Hostinger ditambah separuh jasa</p>
+      </div>
+      <div class="card">
+        <h3>Saat serah terima</h3>
+        <p style="font-size:12pt;font-weight:700;margin-top:3px">Rp 1.500.000</p>
+        <p class="small" style="margin-top:3px">Sisa jasa, dibayar setelah semuanya dicek bersama</p>
+      </div>
+    </div>
+
+    <div class="card green" style="margin-top:5mm">
+      <h3>Yang diterima pemilik saat serah terima</h3>
+      <ul>
+        <li>Dua alamat yang sudah hidup dengan sertifikat keamanan aktif</li>
+        <li>Akses penuh ke server, domain, dan panel deploy, semuanya atas nama pemilik</li>
+        <li>Cadangan harian yang berjalan, dan sudah dibuktikan bisa dipulihkan</li>
+        <li>Pemantauan yang mengirim pesan kalau situsnya tidak menjawab</li>
+        <li>Catatan tertulis cara memperbarui dan cara memulihkan</li>
+      </ul>
+    </div>
+
+    <div class="rule"></div>
+
+    <div class="sign">
+      <div>
+        <div class="line"></div>
+        <div class="who">Pemilik &middot; nama, tanggal, tanda tangan</div>
+      </div>
+      <div>
+        <div class="line"></div>
+        <div class="who">Pengerja &middot; nama, tanggal, tanda tangan</div>
+      </div>
+    </div>
+
+    <p class="small" style="margin-top:6mm">
+      Penawaran ini berlaku 30 hari sejak tanggal di halaman pertama. Harga
+      Hostinger mengikuti keranjang belanja pada tanggal tersebut; harga promo
+      bisa berubah sewaktu-waktu dan dikonfirmasi ulang saat pemesanan.
+    </p>
+  </div>
+  <div class="foot"><span>Persetujuan</span><span>12 / 12</span></div>
+</section>
+
+</body>
+</html>

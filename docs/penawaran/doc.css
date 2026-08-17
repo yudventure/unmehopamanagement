@@ -156,3 +156,57 @@ li::marker { color: var(--slate-mute); }
 
 .logo { width: 42px; height: 42px; border-radius: 99px; background: #fff; overflow: hidden; }
 .logo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* --------------------------------------------------------------- meters */
+/* One measure on one track: length is the quantity, so hue does not repeat
+   it. Colour marks only the state worth interrupting for. Every meter carries
+   its number, which is what makes the gold legible where it would otherwise
+   sit under 3:1 against the paper. */
+.meter { display: grid; grid-template-columns: 40mm 1fr 26mm; align-items: center; gap: 8px; }
+.meter + .meter { margin-top: 7px; }
+.meter .lbl { font-size: 8.8pt; color: var(--ink-soft); }
+.meter .track {
+  position: relative; height: 8px; border-radius: 99px;
+  background: var(--line-strong); overflow: hidden;
+}
+.meter .fill { position: absolute; inset: 0 auto 0 0; border-radius: 99px; background: var(--teal); }
+.meter .fill.tight { background: var(--gold); }
+.meter .val {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 8pt; text-align: right; color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+.legend { display: flex; gap: 14px; margin-top: 9px; font-size: 8pt; color: var(--slate-mute); }
+.legend span { display: flex; align-items: center; gap: 5px; }
+.swatch { width: 10px; height: 6px; border-radius: 3px; display: inline-block; }
+
+/* -------------------------------------------------------------- diagrams */
+.box { border: 1px solid var(--line-strong); border-radius: 10px; background: var(--surface); padding: 9px 11px; }
+.box .t { font-size: 9pt; font-weight: 700; }
+.box .s { font-size: 8pt; color: var(--slate-mute); line-height: 1.4; margin-top: 2px; }
+.box.dash { border-style: dashed; background: var(--soft); }
+.arrow { display: flex; align-items: center; justify-content: center; color: var(--slate-mute); font-size: 12pt; }
+
+.stat .n { font-size: 19pt; font-weight: 700; letter-spacing: -.03em; line-height: 1; }
+.stat .k { font-size: 8pt; color: var(--slate-mute); line-height: 1.35; margin-top: 3px; display: block; }
+
+.cover {
+  background: linear-gradient(160deg, #174536 0%, #123a2d 46%, #0d2c23 100%);
+  color: #fff; justify-content: space-between; padding-bottom: 26mm;
+}
+.cover h1 { font-size: 30pt; }
+.cover p { color: rgba(255,255,255,.86); }
+.cover .eyebrow { color: rgba(255,255,255,.7); }
+.cover .foot { color: rgba(255,255,255,.6); border-top-color: rgba(255,255,255,.18); }
+.cover .chip {
+  border: 1px solid rgba(255,255,255,.3); background: rgba(255,255,255,.08);
+  border-radius: 10px; padding: 9px 12px;
+}
+.cover .chip .t { font-size: 9.5pt; font-weight: 700; color: #fff; }
+.cover .chip .s { font-size: 8pt; color: rgba(255,255,255,.72); margin-top: 2px; line-height: 1.4; }
+.cover .price {
+  border: 1px solid rgba(255,255,255,.35); background: rgba(255,255,255,.1);
+  border-radius: 14px; padding: 14px 18px; display: flex; align-items: center;
+}
+.cover .price .k { font-size: 9pt; color: rgba(255,255,255,.75); }
+.cover .price .v { margin-left: auto; font-size: 24pt; font-weight: 700; letter-spacing: -.03em; color: #fff; }

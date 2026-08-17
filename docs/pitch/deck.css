@@ -92,7 +92,14 @@ strong { font-weight: 700; color: var(--ink); }
 .head { flex-shrink: 0; }
 /* Content sits centred between the header and the footer rule rather than
    piling up at the top and leaving a hand's width of dead paper below it. */
-.body { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: center; padding-bottom: 0.22in; }
+.body {
+  flex: 1; min-height: 0;
+  display: flex; flex-direction: column; justify-content: center;
+  /* A floor on the gap under the heading. Centring alone lets a dense slide
+     creep up until the first table row is level with the title. */
+  margin-top: 0.24in;
+  padding-bottom: 0.22in;
+}
 
 .foot {
   position: absolute;

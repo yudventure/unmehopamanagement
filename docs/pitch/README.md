@@ -39,21 +39,32 @@ berat halaman dari build produksi lewat Chromium, waktu dan memori build dari
 `npm run build` di mesin ini. Kalau aplikasinya berubah banyak, ukur ulang
 sebelum menyebarkan deck-nya lagi.
 
-Harga di halaman 8 dan 9 semuanya **rupiah**. Angka Hostinger adalah daftar
-harganya sendiri untuk pasar Indonesia, jadi bukan hasil kurs; Vercel dan
-Cloudflare menagih dalam dolar dan dikonversi pada Rp 17.820 per USD, kurs
-17 Agustus 2026. Semuanya dari sumber pihak ketiga, karena halaman resmi
-Hostinger tidak bisa dibuka dari lingkungan kerja ini, dan deck-nya menyebutkan
-itu apa adanya.
+Harga di halaman 8 dan 9 semuanya **rupiah**, dan semuanya **harga
+perpanjangan, bukan harga promo**. Harga promo cuma berlaku satu periode
+pertama, jadi bukan angka yang dipakai menyusun anggaran tahunan, dan sengaja
+tidak ditampilkan sama sekali. Dikonversi pada Rp 17.820 per USD, kurs
+17 Agustus 2026.
 
-Satu hal yang gampang salah dibaca dan sudah ditulis terang-terangan di
-halaman 9: **harga bulanan Hostinger itu harga promo untuk komitmen 24 bulan.**
-KVM 2 yang sama Rp 151.900 untuk 24 bulan, Rp 180.900 untuk 12 bulan, dan
-Rp 252.900 kalau bayar bulanan. Perpanjangan setelah promo lebih tinggi lagi.
-Kalau angkanya diperbarui, perbarui juga kurs dan tanggalnya di halaman 8.
+**Seberapa jauh angka itu bisa dipercaya, dan ini penting kalau nanti
+diperbarui.** Halaman resmi Hostinger diblokir dari lingkungan kerja ini, jadi
+semuanya dari sumber pihak ketiga, dan sumber-sumber itu **saling bertentangan**
+soal perpanjangan: satu menyebut KVM 2 diperpanjang di $19,49, satu lagi
+$24,49, satu lagi bilang perpanjangan ada di kisaran $8,99 sampai $10,99. Yang
+dipakai di deck adalah angka yang disebut berpasangan dengan harga promonya
+sendiri, karena itu yang paling mungkin dibaca dari satu tabel yang sama.
+KVM 4 dikosongkan karena tidak ketemu angkanya sama sekali.
 
-`render.mjs` menolak diam-diam: kalau ada isi yang melewati batas halaman, dia
-menyebut nomor halamannya sebelum mencetak.
+Deck-nya menyebut ketidakpastian itu di halamannya, bukan menyembunyikannya di
+balik angka yang kelihatan pasti. Kalau nanti diperbarui, ambil dari halaman
+checkout Hostinger sendiri, dan perbarui kurs beserta tanggalnya di halaman 8.
+
+`render.mjs` menolak diam-diam. Yang diperiksa bukan cuma isi yang keluar batas
+halaman, tapi juga isi yang **naik menimpa judul** atau **turun menabrak
+footer**. Yang kedua itu yang paling gampang lolos: `.body` dipusatkan di ruang
+sisa, jadi slide yang isinya kepenuhan tidak tumpah keluar halaman, dia merangkak
+ke atas sampai baris pertama tabel sejajar dengan judulnya. Masih di dalam
+halaman, tetap tidak terbaca. Kalau ketemu, nomor halaman dan alasannya disebut
+dan PDF-nya tidak ditulis.
 
 ## `render.mjs`
 

@@ -46,6 +46,25 @@ const audit = await page.evaluate(() => {
       bottom = Math.max(bottom, r.bottom - box.top);
       right = Math.max(right, r.right - box.left);
     });
+
+    /* The box check alone is not enough. `.body` is centred in what the header
+       leaves, so content that outgrows that space does not spill off the page,
+       it rides up over the heading instead: still inside the slide, still
+       unreadable. Compare the body against the room it actually has, and
+       against the header and footer it must not touch. */
+    const body = s.querySelector(".body");
+    const head = s.querySelector(".head");
+    const foot = s.querySelector(".foot");
+    let overflowsBody = false;
+    let hitsHead = false;
+    let hitsFoot = false;
+    if (body) {
+      overflowsBody = body.scrollHeight > body.clientHeight + 2;
+      const b = body.getBoundingClientRect();
+      if (head) hitsHead = b.top < head.getBoundingClientRect().bottom - 2;
+      if (foot) hitsFoot = b.bottom > foot.getBoundingClientRect().top + 2;
+    }
+
     slides.push({
       n: i + 1,
       w: Math.round(box.width),
@@ -53,6 +72,9 @@ const audit = await page.evaluate(() => {
       bottom: Math.round(bottom),
       right: Math.round(right),
       scrollH: s.scrollHeight,
+      overflowsBody,
+      hitsHead,
+      hitsFoot,
     });
   });
   return {
@@ -64,12 +86,24 @@ const audit = await page.evaluate(() => {
 
 console.log(`DM Sans loaded: ${audit.sans} | JetBrains Mono loaded: ${audit.mono}`);
 const spilling = audit.slides.filter(
-  (s) => s.bottom > s.h + 2 || s.right > s.w + 2 || s.scrollH > s.h + 2,
+  (s) =>
+    s.bottom > s.h + 2 ||
+    s.right > s.w + 2 ||
+    s.scrollH > s.h + 2 ||
+    s.overflowsBody ||
+    s.hitsHead ||
+    s.hitsFoot,
 );
 for (const s of spilling) {
-  console.log(
-    `  slide ${s.n}: OVERFLOW  box ${s.w}x${s.h}, content reaches ${s.right}x${s.bottom}`,
-  );
+  const why = [
+    s.bottom > s.h + 2 || s.right > s.w + 2 || s.scrollH > s.h + 2
+      ? `past the page edge (${s.right}x${s.bottom} of ${s.w}x${s.h})`
+      : null,
+    s.overflowsBody ? "body taller than its space" : null,
+    s.hitsHead ? "riding over the heading" : null,
+    s.hitsFoot ? "running into the footer" : null,
+  ].filter(Boolean);
+  console.log(`  slide ${s.n}: ${why.join(", ")}`);
 }
 console.log(`slides: ${audit.slides.length}, overflowing: ${spilling.length}`);
 

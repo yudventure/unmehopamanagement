@@ -98,8 +98,21 @@ scope yang disepakati, bukan pekerjaan yang terlewat.
 - **Drawer detail booking** — transisi status (Tentative → Confirmed →
   Checked-in → Checked-out, atau Cancelled), total menginap, jejak audit.
 - **Form booking cepat** — pilih properti/kamar/tanggal dengan **cek
-  ketersediaan langsung** (banner merah kalau bentrok), simpan sebagai
-  Tentative atau Confirmed.
+  ketersediaan langsung**, simpan sebagai Tentative atau Confirmed.
+  - Panelnya tidak berhenti di "kamar ini sudah terisi". Di bawahnya
+    **kamar mana saja yang kosong sepanjang rentang itu**, masing-masing
+    berupa tombol yang langsung memindahkan booking-nya ke sana. Kalau cuma
+    disebutkan bentroknya, pemilik harus mencoba sembilan kamar lain satu per
+    satu lewat dropdown yang tidak mengatakan apa-apa soal mana yang kosong.
+  - Yang dicek adalah **seluruh rentang**, bukan satu malam: sebuah menginap
+    bertabrakan kalau mulainya sebelum check-out dan selesainya sesudah
+    check-in (`freeRooms()` di `derive.ts`).
+  - Kalau tidak ada satu pun yang kosong, panelnya bilang begitu dan menyuruh
+    ubah tanggal, bukan menampilkan daftar kosong.
+  - Kamar yang sedang **renovasi** disebut terpisah dan tidak masuk daftar
+    kosong. Masih bisa dipilih lewat dropdown, karena pemilik mungkin memang
+    mau memesan kamar yang sebentar lagi buka, tapi nama di daftar "kosong"
+    itu sifatnya saran jadi yang direnovasi tidak ditaruh di sana.
 - **Laporan** — KPI (okupansi, pendapatan kotor, ADR, lama menginap), bar
   pendapatan per saluran, okupansi per kamar, estimasi komisi OTA, plus
   navigasi bulan yang berbagi state dengan Kalender.

@@ -8,7 +8,7 @@ import {
   ModalHeader,
 } from "@/components/ui/modal";
 import { CHANNEL_LABELS, PROPERTIES } from "@/lib/data";
-import { fmt } from "@/lib/format";
+import { fmt, fmtShort } from "@/lib/format";
 import type { BookingForm, ChannelKey, PropertyKey, Room } from "@/lib/types";
 
 export interface BookingFormModalProps {
@@ -18,6 +18,11 @@ export interface BookingFormModalProps {
   rate: number;
   /** The requested range already collides with something on that room. */
   clash: boolean;
+  /**
+   * Rooms in this property with nothing booked across the whole range, and
+   * any that are only free because they are shut for renovation.
+   */
+  availability: { free: Room[]; renovating: Room[]; occupied: number };
   onChange: <K extends keyof BookingForm>(key: K, value: BookingForm[K]) => void;
   onProperty: (property: PropertyKey) => void;
   /** Properties this account may book into. */
@@ -40,6 +45,7 @@ export function BookingFormModal({
   nights,
   rate,
   clash,
+  availability,
   onChange,
   onProperty,
   allowedProps,
@@ -48,6 +54,10 @@ export function BookingFormModal({
   onSaveConfirmed,
 }: BookingFormModalProps) {
   const roomOptions = rooms.filter((r) => r.prop === form.property);
+
+  /* The room already chosen is not an alternative to itself. */
+  const others = availability.free.filter((r) => r.id !== form.room);
+  const range = `${fmtShort(form.checkIn)} – ${fmtShort(form.checkOut)}`;
 
   return (
     <Modal onClose={onClose} z={50} maxWidth={560} scroll labelledBy="form-title">
@@ -106,6 +116,13 @@ export function BookingFormModal({
         </label>
       </div>
 
+      {/*
+       * Naming the problem and stopping there left the owner to try the other
+       * nine rooms one at a time, from a dropdown that says nothing about which
+       * of them are free. The free ones are listed here, and each is a button
+       * that switches the booking to it — the answer and the action in one
+       * place, rather than a sentence telling somebody to go and look.
+       */}
       <div
         role="status"
         className={`mt-[14px] rounded-xl border px-[14px] py-[11px] text-[12.5px] ${
@@ -114,9 +131,55 @@ export function BookingFormModal({
             : "border-teal-line bg-teal-tint text-teal-deep"
         }`}
       >
-        {clash
-          ? "Kamar ini sudah terisi pada rentang tanggal tersebut. Pilih kamar atau tanggal lain."
-          : "Kamar tersedia untuk rentang tanggal ini."}
+        <div className="leading-[1.5] font-medium">
+          {clash
+            ? `Kamar ini sudah terisi pada ${range}.`
+            : `Kamar tersedia untuk ${range}.`}
+        </div>
+
+        {others.length > 0 ? (
+          <>
+            <div className="mt-[9px] leading-[1.5]">
+              {clash
+                ? "Yang masih kosong sepanjang rentang ini:"
+                : `${others.length} kamar lain juga kosong:`}
+            </div>
+            <div className="mt-2 flex flex-wrap gap-[6px]">
+              {others.map((r) => (
+                <button
+                  key={r.id}
+                  type="button"
+                  onClick={() => onChange("room", r.id)}
+                  title={`Pindahkan booking ini ke ${r.name}`}
+                  className="cursor-pointer rounded-[8px] border border-teal-line bg-surface px-[10px] py-[5px] text-[12px] font-medium text-teal-deep hover:border-teal hover:bg-teal-tint"
+                >
+                  {r.name}
+                </button>
+              ))}
+            </div>
+          </>
+        ) : (
+          <div className="mt-[9px] leading-[1.5]">
+            {clash
+              ? "Tidak ada kamar lain yang kosong sepanjang rentang ini. Coba ubah tanggalnya."
+              : "Ini satu-satunya kamar yang kosong sepanjang rentang ini."}
+          </div>
+        )}
+
+        {/* Free, but not sellable. Named so the count adds up rather than
+            leaving the owner wondering where a room went.
+
+            No opacity on it, though it is the quietest line here: at 80% it
+            measured 2.8:1 on its own tint. Being secondary is a matter of
+            where a line sits and how it is worded, not of fading it until it
+            cannot be read. */}
+        {availability.renovating.length > 0 && (
+          <div className="mt-[9px] leading-[1.45]">
+            {availability.renovating.map((r) => r.name).join(", ")} tidak ada
+            isinya juga, tapi sedang renovasi, jadi tidak masuk hitungan kamar
+            kosong. Masih bisa dipilih lewat kolom Kamar di atas.
+          </div>
+        )}
       </div>
 
       <div className="mt-[14px] grid grid-cols-2 gap-[14px]">

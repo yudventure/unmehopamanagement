@@ -216,8 +216,8 @@ export function DashboardRail({
         )}
         {dayRooms.renovating.length > 0 && (
           <div className="mt-[9px] text-[11.5px] leading-[1.45] text-slate-mute">
-            {dayRooms.renovating.join(", ")} sedang renovasi — tidak dihitung
-            sebagai kamar kosong.
+            {dayRooms.renovating.join(", ")} sedang renovasi, jadi tidak
+            dihitung sebagai kamar kosong.
           </div>
         )}
       </div>

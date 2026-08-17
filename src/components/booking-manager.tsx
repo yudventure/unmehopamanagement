@@ -45,6 +45,7 @@ import {
   conflictDates,
   dailyOccupancy,
   findConflicts,
+  freeRooms,
   hasClash,
   inMonth,
   monthStats,
@@ -1012,6 +1013,14 @@ export function BookingManager({
   const formRoom = roomById.get(form.room) ?? rooms[0];
   const formNights = Math.max(1, dayDiff(form.checkIn, form.checkOut));
 
+  /* What else the owner could put this stay in. Read off `bookings` and not
+     the filtered view: a sidebar filter must never be able to offer a room
+     that something else is already sitting in. */
+  const formAvailability = useMemo(
+    () => freeRooms(bookings, rooms, form.property, form.checkIn, form.checkOut),
+    [bookings, rooms, form.property, form.checkIn, form.checkOut],
+  );
+
   // ---------------------------------------------------------------- render
 
   return (
@@ -1253,6 +1262,7 @@ export function BookingManager({
           nights={formNights}
           rate={formRoom.rate}
           clash={hasClash(bookings, form.room, form.checkIn, form.checkOut)}
+          availability={formAvailability}
           onChange={setFormField}
           onProperty={setFormProperty}
           allowedProps={allowedProps}

@@ -298,6 +298,38 @@ export function hasClash(
   );
 }
 
+/**
+ * Which rooms in a property are free for a whole stay, not just one night.
+ *
+ * Telling somebody their room is taken and stopping there leaves them to try
+ * the other nine one at a time. This answers the question they actually have.
+ *
+ * `hasClash` per room rather than a set of occupied ids: a stay overlaps the
+ * range if it starts before the checkout and ends after the check-in, which is
+ * a comparison against the range and not against any single date in it.
+ *
+ * Rooms under renovation come back separately. They can still be booked from
+ * the form — an owner may well take one that is about to reopen — but they do
+ * not belong in a list headed "free", and a name in that list is a suggestion.
+ */
+export function freeRooms(
+  bookings: Booking[],
+  rooms: Room[],
+  property: string,
+  checkIn: string,
+  checkOut: string,
+): { free: Room[]; renovating: Room[]; occupied: number } {
+  const inProperty = rooms.filter((r) => r.prop === property);
+  const vacant = inProperty.filter(
+    (r) => !hasClash(bookings, r.id, checkIn, checkOut),
+  );
+  return {
+    free: vacant.filter((r) => r.active),
+    renovating: vacant.filter((r) => !r.active),
+    occupied: inProperty.length - vacant.length,
+  };
+}
+
 // ------------------------------------------------------------------- trends
 
 /** Nights of this stay that land inside the given month. */

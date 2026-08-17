@@ -6,7 +6,7 @@ import raw from "../../content/site.json";
  *
  * It lives in `content/site.json` rather than in a database, because there is
  * no database. The CMS tab writes the file back through the GitHub API, which
- * makes Vercel rebuild, which publishes the change. That is slower than a
+ * makes the host rebuild, which publishes the change. That is slower than a
  * database — a minute or so — but it is durable, versioned, and reviewable in
  * the repository's own history, which for prices that move twice a year is a
  * better trade than a server nobody is watching.

@@ -210,3 +210,54 @@ li::marker { color: var(--slate-mute); }
 }
 .cover .price .k { font-size: 9pt; color: rgba(255,255,255,.75); }
 .cover .price .v { margin-left: auto; font-size: 24pt; font-weight: 700; letter-spacing: -.03em; color: #fff; }
+
+/* ----------------------------------------------------------- screenshots */
+/*
+ * These are photographs of the running application, not drawings of it, so
+ * they are framed the way a screen is: a hairline, a soft corner, and a
+ * shadow shallow enough to survive being printed on paper that is not white.
+ *
+ * The frame carries the rounding and the clipping rather than the image,
+ * because a JPEG cannot round its own corners and a border drawn on the image
+ * itself lands a hair inside the pixels and shows a seam.
+ */
+.shot {
+  border: 1px solid var(--line-strong);
+  border-radius: 9px;
+  overflow: hidden;
+  background: var(--surface);
+  box-shadow: 0 2px 8px rgba(36, 31, 24, 0.07);
+  line-height: 0;
+}
+.shot img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* A phone is framed darker and rounder: at this size the pale hairline that
+   suits a browser window disappears against the page. */
+.shot.phone {
+  border-radius: 14px;
+  border-color: #cfc6b6;
+}
+
+/* Sits under a shot, not beside it. Small, quiet, and never wrapping past the
+   width of the thing it is naming. */
+.cap {
+  font-size: 8pt;
+  line-height: 1.4;
+  color: var(--slate-mute);
+  margin-top: 4px;
+}
+.cap strong {
+  color: var(--ink-soft);
+  font-weight: 700;
+}
+
+.shots-row {
+  display: grid;
+  gap: 7mm;
+}
+.shots-row.two { grid-template-columns: 1fr 1fr; }
+.shots-row.three { grid-template-columns: 1fr 1fr 1fr; }

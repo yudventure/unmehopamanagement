@@ -52,10 +52,12 @@ const audit = await page.evaluate(() => {
       right = Math.max(right, r.right - box.left);
     });
 
-    /* The box check alone is not enough. `.body` is centred in what the header
-       leaves, so content that outgrows that space does not spill off the page,
-       it rides up over the heading instead: still inside the slide, still
-       unreadable. Compare the body against the room it actually has, and
+    /* The box check alone is not enough, because the slide clips what it
+       cannot hold. Content that outgrows `.body` does not always spill off the
+       page edge where the box check would see it: it is cut off at the bottom,
+       or, where the body is centred in what the header leaves, it rides up
+       over the heading. Either way it is still inside the slide and still
+       unreadable. So compare the body against the room it actually has, and
        against the header and footer it must not touch. */
     const body = s.querySelector(".body");
     const head = s.querySelector(".head");

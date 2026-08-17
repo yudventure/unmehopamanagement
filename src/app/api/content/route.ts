@@ -7,12 +7,12 @@ import { SITE_CONFIG, isSiteConfig, type SiteConfig } from "@/lib/site-config";
  * details and dive prices come from.
  *
  * With no database, the repository is the store. A save commits the file
- * through the GitHub API, Vercel sees the commit and rebuilds, and a minute
+ * through the GitHub API, the host sees the commit and rebuilds, and a minute
  * later the site is serving the new figures. Slower than a database and
  * completely durable, with every change kept in the repository's own history
  * next to the name of whoever made it.
  *
- * Needs, on Vercel:
+ * Needs, on the server:
  *
  *   GITHUB_TOKEN   fine-grained token, Contents: read and write, this repo
  *   GITHUB_REPO    "owner/name"

@@ -18,7 +18,7 @@ import type { SiteConfig } from "@/lib/site-config";
  * form.
  *
  * Saving writes `content/site.json` back to the repository through the GitHub
- * API, which makes Vercel rebuild. That is a minute or so before the change is
+ * API, which makes the host rebuild. That is a minute or so before the change
  * live, which is why the screen says so rather than pretending the save was
  * instant.
  *
@@ -171,7 +171,7 @@ export function WebsiteScreen({ editor }: WebsiteScreenProps) {
       <div className="mb-1 text-[22px] font-bold">Website</div>
       <div className="mb-5 max-w-[760px] text-[13.5px] leading-[1.55] text-slate-soft">
         Pengaturan halaman publik di <code className="font-mono">/turtle</code>.
-        Menyimpan akan menulis ulang berkas isi website di GitHub, lalu Vercel
+        Menyimpan akan menulis ulang berkas isi website di GitHub, lalu server
         membangun ulang situsnya. Perubahan biasanya terlihat sekitar satu menit
         setelah disimpan, bukan seketika.
       </div>
@@ -181,7 +181,7 @@ export function WebsiteScreen({ editor }: WebsiteScreenProps) {
           <span className="mt-[5px] h-[9px] w-[9px] shrink-0 rounded-full bg-amber-shade" />
           <div className="text-[13px] leading-[1.55] text-amber-ink">
             <strong>Belum bisa menyimpan dari sini.</strong> Server butuh tiga
-            variabel di Vercel: <code className="font-mono">GITHUB_TOKEN</code>{" "}
+            variabel: <code className="font-mono">GITHUB_TOKEN</code>{" "}
             (fine-grained, izin Contents: read and write untuk repo ini),{" "}
             <code className="font-mono">GITHUB_REPO</code> berisi{" "}
             <code className="font-mono">yudventure/unmehopamanagement</code>,
@@ -315,7 +315,7 @@ export function WebsiteScreen({ editor }: WebsiteScreenProps) {
                 <br />
                 Pesannya tidak disimpan di aplikasi ini. Tidak ada database, dan
                 kotak masuk email sudah menjadi tempat yang tepat untuk sesuatu
-                yang perlu dibalas. Server butuh dua variabel di Vercel:{" "}
+                yang perlu dibalas. Server butuh dua variabel:{" "}
                 <code className="font-mono">RESEND_API_KEY</code> dari
                 resend.com dan <code className="font-mono">ENQUIRY_FROM</code>{" "}
                 berisi alamat pengirim di domain yang sudah diverifikasi di
@@ -542,8 +542,8 @@ export function WebsiteScreen({ editor }: WebsiteScreenProps) {
 
             {status.kind === "saved" && (
               <span className="text-[13px] text-teal-deep">
-                Tersimpan. Vercel sedang membangun ulang; cek situsnya sekitar
-                satu menit lagi.
+                Tersimpan. Servernya sedang membangun ulang; cek situsnya
+                sekitar satu menit lagi.
               </span>
             )}
             {status.kind === "error" && (

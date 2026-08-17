@@ -60,7 +60,48 @@ function fontFile(family) {
 
 const b64 = (p) => readFileSync(p).toString("base64");
 
-const html = readFileSync(one(".html", [".built.html"]), "utf8")
+/*
+ * Screenshots, if the folder has a `shots/` beside its HTML. `__SHOT_name__`
+ * in the markup becomes the bytes of `shots/name.jpg`, so a page can hold a
+ * real screen without the PDF depending on a file path that only exists on
+ * the machine that took it.
+ *
+ * Every shot has to be used and every placeholder has to resolve. A document
+ * whose evidence quietly went missing still prints, and prints wrong, so both
+ * directions are an error rather than a warning nobody reads.
+ */
+function shots(markup) {
+  const dirShots = join(dir, "shots");
+  let files;
+  try {
+    files = readdirSync(dirShots).filter((n) => n.endsWith(".jpg"));
+  } catch {
+    return markup;
+  }
+  const asked = new Set(
+    [...markup.matchAll(/__SHOT_([a-z0-9-]+)__/g)].map((m) => m[1]),
+  );
+  const have = new Set(files.map((n) => n.replace(/\.jpg$/, "")));
+  const missing = [...asked].filter((n) => !have.has(n));
+  if (missing.length) {
+    throw new Error(`shots referenced but not in ${dirShots}: ${missing.join(", ")}`);
+  }
+  const unused = [...have].filter((n) => !asked.has(n));
+  if (unused.length) {
+    throw new Error(`shots in ${dirShots} that no page uses: ${unused.join(", ")}`);
+  }
+  let out = markup;
+  let bytes = 0;
+  for (const name of asked) {
+    const data = b64(join(dirShots, `${name}.jpg`));
+    bytes += data.length;
+    out = out.replaceAll(`__SHOT_${name}__`, data);
+  }
+  console.log(`  ${asked.size} screenshots, ${Math.round(bytes / 1024)} kB encoded`);
+  return out;
+}
+
+const html = shots(readFileSync(one(".html", [".built.html"]), "utf8"))
   .replace("__DMSANS__", b64(fontFile("DM Sans")))
   .replace("__MONO__", b64(fontFile("JetBrains Mono")))
   .replace("__LOGO__", b64(join(root, "public", "logo.png")))

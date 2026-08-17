@@ -78,7 +78,7 @@ pemantauan, lalu serah terima berikut dokumennya. Dokumennya menjanjikan
 
 Itu sekitar **Rp 750 ribu per hari**. Untuk pekerjaan infrastruktur di
 Indonesia, itu wajar sampai agak murah. Kalau mau dinaikkan, naikkan **nilai
-per bagian di halaman 7**, jangan menambah pos baru: enam bagian yang
+per bagian di halaman 11**, jangan menambah pos baru: enam bagian yang
 masing-masing punya hasil yang bisa dicek jauh lebih mudah dipertahankan
 daripada satu angka gelondongan.
 
@@ -100,12 +100,12 @@ email profesional, jadi bagian 3 sekarang termasuk memasang catatan MX, SPF,
 dan DKIM. Itu tambahan sekitar setengah sampai satu jam, dan sengaja diserap
 karena DNS-nya memang sedang dipegang di bagian yang sama. Yang **tidak**
 diserap: memindahkan email lama, membuat kotak surat kedua, dan menyusun tanda
-tangan email. Ketiganya sudah ditulis di halaman 10 sebagai tidak termasuk.
+tangan email. Ketiganya sudah ditulis di halaman 14 sebagai tidak termasuk.
 
 ## Yang perlu dijaga supaya untungnya tidak tergerus
 
 - **Lingkupnya berhenti di deploy.** Database, sistem masuk, dan sinkronisasi
-  iCal ada di halaman 10 sebagai "tidak termasuk". Kalau itu ikut dikerjakan
+  iCal ada di halaman 14 sebagai "tidak termasuk". Kalau itu ikut dikerjakan
   tanpa penawaran baru, tiga juta itu habis di hari pertama tahap berikutnya.
 - **Garansi 14 hari sengaja sempit**: hanya kerusakan yang datang dari
   pekerjaan ini. Permintaan yang mengubah lingkup, pengaturan yang diubah pihak
@@ -118,8 +118,8 @@ tangan email. Ketiganya sudah ditulis di halaman 10 sebagai tidak termasuk.
   Website. Kalau diminta mengisikan, itu jam kerja yang tidak ada di penawaran.
 - **Harga perpanjangan domain dashboard belum diketahui.** Rp 1.113.900 itu
   harga daftar tahun pertama di keranjang pertama, dipakai sebagai perkiraan dan
-  ditandai ± di halaman 9. Jangan pernah menyebutnya sebagai harga yang kita
-  janjikan. Kalau nanti ternyata jauh lebih mahal, halaman 9 sudah menyiapkan
+  ditandai ± di halaman 13. Jangan pernah menyebutnya sebagai harga yang kita
+  janjikan. Kalau nanti ternyata jauh lebih mahal, halaman 13 sudah menyiapkan
   jalan keluarnya: alamat itu cuma dipakai pemilik dan staf, jadi boleh diganti.
 
 ## Kalau kliennya minta turun harga
@@ -160,12 +160,12 @@ ini, dan artikel pihak ketiga ternyata jauh meleset.
 
 Nama domainnya yang paling perlu diperhatikan: sebelumnya dokumen menulis
 `turtledivehomestay.com`, padahal yang benar-benar dibeli
-`turtlehomestay.com`. Sekarang sudah diseragamkan di halaman 1, 3, 8, 9, dan
-12. **Nama domain dashboard-nya masih `unmehopamanagement.com` dan itu belum
+`turtlehomestay.com`. Sekarang sudah diseragamkan di halaman 1, 7, 12, 13, dan
+16, dan ikut terlihat di tangkapan layar halaman 3 sampai 6. **Nama domain dashboard-nya masih `unmehopamanagement.com` dan itu belum
 diverifikasi ke keranjang mana pun** — cocokkan sebelum dokumennya dikirim.
 
 Dua harga perpanjangan sekarang tertulis pasti di keranjang, yaitu server
 Rp 271.900/bln dan email Rp 19.900/bln, dan keduanya diberi tanda "harga pasti"
-di halaman 9. Sisanya perkiraan dan ditandai ±. Kalau nanti dokumennya
+di halaman 13. Sisanya perkiraan dan ditandai ±. Kalau nanti dokumennya
 diperbarui lagi, **ambil dari keranjang atau halaman checkout Hostinger, jangan
 dari artikel pihak ketiga.**

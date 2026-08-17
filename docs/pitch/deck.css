@@ -1,0 +1,239 @@
+/* ---------------------------------------------------------------- tokens */
+:root {
+  --canvas: #fbefe0;
+  --surface: #ffffff;
+  --soft: #fdf9f4;
+  --mute: #fcf5ec;
+  --tint: #faf2e7;
+  --ink: #241f18;
+  --ink-soft: #4a4238;
+  --slate: #6b6357;
+  --slate-soft: #7a7264;
+  --slate-mute: #7d7466;
+  --line: #f2e8da;
+  --line-strong: #ebe0d0;
+  --teal: #2b7f5b;
+  --teal-deep: #216b4b;
+  --teal-tint: #f0f8f3;
+  --teal-line: #c5e1d1;
+  --gold: #d9a94e;
+  --gold-soft: #eeddbe;
+  --amber-ink: #8a6524;
+  --amber-soft: #faefd9;
+  --danger: #b04a3a;
+  --danger-tint: #fdf3f0;
+  --danger-line: #f3cfc4;
+}
+
+* { box-sizing: border-box; }
+
+html, body { margin: 0; padding: 0; }
+
+body {
+  font-family: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  background: #ded2c0;
+}
+
+/* 16:9, the size a projector and a laptop both expect. */
+@page { size: 13.333in 7.5in; margin: 0; }
+
+.slide {
+  position: relative;
+  width: 13.333in;
+  height: 7.5in;
+  padding: 0.62in 0.78in 0.52in;
+  background: var(--soft);
+  overflow: hidden;
+  page-break-after: always;
+  break-after: page;
+  display: flex;
+  flex-direction: column;
+}
+.slide:last-child { page-break-after: auto; break-after: auto; }
+
+/* ------------------------------------------------------------ furniture */
+.eyebrow {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 8.5pt;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--slate-soft);
+}
+h1 {
+  margin: 0;
+  font-size: 34pt;
+  line-height: 1.03;
+  letter-spacing: -.025em;
+  font-weight: 700;
+}
+h2 {
+  margin: 6px 0 0;
+  font-size: 21pt;
+  line-height: 1.08;
+  letter-spacing: -.02em;
+  font-weight: 700;
+}
+h3 {
+  margin: 0;
+  font-size: 11.5pt;
+  font-weight: 700;
+  letter-spacing: -.005em;
+}
+p { margin: 0; font-size: 10pt; line-height: 1.55; color: var(--ink-soft); }
+.lede { font-size: 11pt; line-height: 1.5; color: var(--slate); max-width: 8.6in; }
+.small { font-size: 8.6pt; line-height: 1.5; color: var(--slate-mute); }
+.mono { font-family: "JetBrains Mono", ui-monospace, monospace; }
+strong { font-weight: 700; color: var(--ink); }
+
+/* No bottom margin: the body is centred in what is left, so the space above
+   it is already there. Adding a margin on top of that reads as a mistake. */
+.head { flex-shrink: 0; }
+/* Content sits centred between the header and the footer rule rather than
+   piling up at the top and leaving a hand's width of dead paper below it. */
+.body { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: center; padding-bottom: 0.22in; }
+
+.foot {
+  position: absolute;
+  left: 0.78in; right: 0.78in; bottom: 0.3in;
+  display: flex; justify-content: space-between; align-items: center;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 7.5pt; letter-spacing: .06em;
+  color: var(--slate-mute);
+  border-top: 1px solid var(--line);
+  padding-top: 7px;
+}
+
+/* ---------------------------------------------------------------- cards */
+.grid { display: grid; gap: 14px; }
+.g2 { grid-template-columns: 1fr 1fr; }
+.g3 { grid-template-columns: 1fr 1fr 1fr; }
+.g4 { grid-template-columns: repeat(4, 1fr); }
+.g23 { grid-template-columns: 1.35fr 1fr; }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 14px 16px;
+}
+.card.tint { background: var(--mute); border-color: var(--line-strong); }
+.card.green { background: var(--teal-tint); border-color: var(--teal-line); }
+.card.warn { background: var(--amber-soft); border-color: var(--gold-soft); }
+.card.bad { background: var(--danger-tint); border-color: var(--danger-line); }
+.card h3 { margin-bottom: 5px; }
+.card p { font-size: 9.2pt; line-height: 1.5; }
+
+.stat { display: flex; flex-direction: column; gap: 2px; }
+.stat .n { font-size: 25pt; font-weight: 700; letter-spacing: -.03em; line-height: 1; }
+.stat .k { font-size: 8.4pt; color: var(--slate-mute); line-height: 1.35; }
+
+/* ---------------------------------------------------------------- table */
+table { width: 100%; border-collapse: collapse; font-size: 8.8pt; }
+th {
+  text-align: left;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 7.4pt; letter-spacing: .07em; text-transform: uppercase;
+  color: var(--slate-mute); font-weight: 400;
+  padding: 0 9px 7px; border-bottom: 1px solid var(--line-strong);
+}
+td { padding: 7px 9px; border-bottom: 1px solid var(--line); vertical-align: top; line-height: 1.4; }
+tr:last-child td { border-bottom: none; }
+td.num { font-family: "JetBrains Mono", ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+.tick { color: var(--teal-deep); font-weight: 700; }
+.cross { color: var(--danger); font-weight: 700; }
+.rec td { background: var(--teal-tint); }
+.rec td:first-child { border-left: 3px solid var(--teal); }
+
+/* --------------------------------------------------------------- meters */
+/* One measure on one track: length is the quantity, so hue does not repeat
+   it. Colour marks only the two states worth interrupting for. Every meter
+   carries its number, which is also the relief the palette check asks for
+   where the gold sits under 3:1 against the surface. */
+.meter { display: grid; grid-template-columns: 1.5in 1fr 1.15in; align-items: center; gap: 11px; }
+.meter + .meter { margin-top: 9px; }
+.meter .lbl { font-size: 9pt; color: var(--ink-soft); }
+.meter .track {
+  position: relative; height: 9px; border-radius: 99px;
+  background: var(--line-strong); overflow: hidden;
+}
+.meter .fill { position: absolute; inset: 0 auto 0 0; border-radius: 99px; background: var(--teal); }
+.meter .fill.tight { background: var(--gold); }
+.meter .fill.over { background: var(--danger); }
+.meter .val {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 8.4pt; text-align: right; color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+.legend { display: flex; gap: 16px; margin-top: 11px; font-size: 8.2pt; color: var(--slate-mute); }
+.legend span { display: flex; align-items: center; gap: 6px; }
+.swatch { width: 11px; height: 7px; border-radius: 3px; display: inline-block; }
+
+/* ------------------------------------------------------------- diagrams */
+.box {
+  border: 1px solid var(--line-strong); border-radius: 11px;
+  background: var(--surface); padding: 10px 12px;
+}
+.box .t { font-size: 9.4pt; font-weight: 700; }
+.box .s { font-size: 8.2pt; color: var(--slate-mute); line-height: 1.4; margin-top: 2px; }
+.box.dash { border-style: dashed; background: var(--soft); }
+
+.arrow { display: flex; align-items: center; justify-content: center; color: var(--slate-mute); font-size: 13pt; }
+
+.pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  border-radius: 99px; padding: 3px 10px;
+  font-size: 8pt; font-weight: 500;
+}
+.pill.ok { background: var(--teal-tint); color: var(--teal-deep); border: 1px solid var(--teal-line); }
+.pill.todo { background: var(--amber-soft); color: var(--amber-ink); border: 1px solid var(--gold-soft); }
+.pill.no { background: var(--danger-tint); color: var(--danger); border: 1px solid var(--danger-line); }
+
+ul { margin: 6px 0 0; padding-left: 15px; }
+li { font-size: 9.2pt; line-height: 1.5; color: var(--ink-soft); margin-bottom: 3px; }
+li::marker { color: var(--slate-mute); }
+
+/* ---------------------------------------------------------------- cover */
+.cover {
+  background: linear-gradient(160deg, #174536 0%, #123a2d 46%, #0d2c23 100%);
+  color: #fff;
+  justify-content: space-between;
+  padding-bottom: 0.95in;
+}
+.cover h1 { font-size: 46pt; max-width: 9in; }
+.cover .eyebrow { color: rgba(255,255,255,.7); }
+.cover p { color: rgba(255,255,255,.85); }
+.cover .foot { color: rgba(255,255,255,.6); border-top-color: rgba(255,255,255,.18); }
+.cover .chip {
+  border: 1px solid rgba(255,255,255,.3); background: rgba(255,255,255,.08);
+  border-radius: 10px; padding: 9px 13px;
+}
+.cover .chip .t { font-size: 9.6pt; font-weight: 700; color: #fff; }
+.cover .chip .s { font-size: 8.2pt; color: rgba(255,255,255,.72); margin-top: 2px; }
+
+.section {
+  background: linear-gradient(160deg, #174536 0%, #0f3328 100%);
+  color: #fff; justify-content: center;
+  padding-bottom: 0.95in;
+}
+.section h1 { font-size: 40pt; }
+.section .eyebrow { color: rgba(255,255,255,.65); }
+.section p { color: rgba(255,255,255,.8); max-width: 7.5in; }
+.section .foot { color: rgba(255,255,255,.55); border-top-color: rgba(255,255,255,.18); }
+
+.logo { width: 52px; height: 52px; border-radius: 99px; background: #fff; overflow: hidden; }
+.logo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.note {
+  border-left: 3px solid var(--gold);
+  background: var(--amber-soft);
+  padding: 9px 13px; border-radius: 0 10px 10px 0;
+  font-size: 8.8pt; line-height: 1.5; color: var(--amber-ink);
+}
+.note strong { color: var(--amber-ink); }
+
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 9pt; }
+.kv dt { color: var(--slate-mute); }
+.kv dd { margin: 0; color: var(--ink-soft); }

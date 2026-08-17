@@ -724,22 +724,50 @@ export function TurtleSite() {
               was standing in for a photograph, and the photograph is now the
               section itself; a flat illustration in a rounded box on top of a
               real manta only read as the cheaper of the two. */}
-          <div className="max-w-[720px]">
-            <span className="inline-flex items-center gap-[7px] rounded-full border border-white/20 px-[13px] py-[6px] text-[12px] text-white/75">
-              <span className="h-[6px] w-[6px] rounded-full bg-amber" />
-              {t.dive.badge}
-            </span>
-            <h2 className="mt-5 mb-0 text-[clamp(34px,5.2vw,58px)] leading-[1.05] font-bold tracking-[-.03em] whitespace-pre-line text-white">
-              {t.dive.title}
-            </h2>
-            <p className="mt-4 max-w-[560px] text-[14.5px] leading-[1.65] text-white/80">
-              {t.dive.body}
-            </p>
-            <div className="mt-5">
-              <CurrencySwitch
-                currency={currency}
-                onPick={pickCurrency}
-                srLabel={t.currencyLabel}
+          <div className="flex flex-col gap-9 md:flex-row md:items-start md:justify-between md:gap-12">
+            <div className="max-w-[720px]">
+              <span className="inline-flex items-center gap-[7px] rounded-full border border-white/20 px-[13px] py-[6px] text-[12px] text-white/75">
+                <span className="h-[6px] w-[6px] rounded-full bg-amber" />
+                {t.dive.badge}
+              </span>
+              <h2 className="mt-5 mb-0 text-[clamp(34px,5.2vw,58px)] leading-[1.05] font-bold tracking-[-.03em] whitespace-pre-line text-white">
+                {t.dive.title}
+              </h2>
+              <p className="mt-4 max-w-[560px] text-[14.5px] leading-[1.65] text-white/80">
+                {t.dive.body}
+              </p>
+              <div className="mt-5">
+                <CurrencySwitch
+                  currency={currency}
+                  onPick={pickCurrency}
+                  srLabel={t.currencyLabel}
+                />
+              </div>
+            </div>
+
+            {/*
+             * The agency mark, level with the "Turtle Dive Center" badge on a
+             * wide screen — a peer of it, which is what it is: this is who the
+             * centre trains under. It fills the right of a header that was
+             * empty there, so it costs the section no height at all until the
+             * column stacks.
+             *
+             * White, from `ssi-white.png`. The supplied file is the red mark on
+             * transparency, which on this near-black water is the one colour it
+             * cannot be; the alpha channel came across untouched so the curves
+             * keep their soft edges rather than being cut out by a threshold.
+             */}
+            <div className="shrink-0 md:pt-[3px]">
+              <div className="font-mono text-[10.5px] tracking-[.09em] text-white/70 uppercase">
+                {t.dive.partner}
+              </div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/ssi-white.png"
+                alt="Scuba Schools International"
+                width={373}
+                height={200}
+                className="mt-[14px] h-[34px] w-auto md:h-[42px]"
               />
             </div>
           </div>

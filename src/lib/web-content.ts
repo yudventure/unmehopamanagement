@@ -244,6 +244,8 @@ export interface SiteCopy {
     body: string;
     /** The card's link through to the package's own page. */
     details: string;
+    /** Sits over the SSI mark. Names the relationship, nothing more. */
+    partner: string;
     orderNote: (name: string) => string;
     footnote: string;
     packages: Record<DiveKey, DiveCopy>;
@@ -473,6 +475,7 @@ const EN: SiteCopy = {
     title: "Dive in the morning,\nback before lunch",
     body: "We dive the Dampier Strait: Cape Kri, Mike's Point, Sardine Reef, Manta Point, all of them 20 to 45 minutes by boat from the jetty. The boat goes out twice a day, six divers per guide at most.",
     details: "Details",
+    partner: "Training partner",
     orderNote: (name) => `I am interested in the "${name}" package.`,
     footnote:
       "Certified divers, please bring your card and logbook. For the Open Water course, let us know at least a week ahead so the materials and the instructor's schedule can be arranged.",
@@ -1055,6 +1058,7 @@ const ID: SiteCopy = {
     title: "Selam pagi,\npulang sebelum makan siang",
     body: "Kami menyelam di Selat Dampier: Cape Kri, Mike's Point, Sardine Reef, Manta Point, semuanya dalam 20 sampai 45 menit perahu dari dermaga. Perahu berangkat dua kali sehari, maksimal enam penyelam per guide.",
     details: "Detail",
+    partner: "Mitra pelatihan",
     orderNote: (name) => `Saya tertarik paket "${name}".`,
     footnote:
       "Penyelam bersertifikat harap membawa kartu dan buku log. Untuk kursus Open Water, kabari minimal satu minggu sebelumnya supaya materi dan jadwal instruktur bisa disiapkan.",

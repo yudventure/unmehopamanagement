@@ -165,6 +165,39 @@ Turtle Dive Homestay**, dan pengunjung yang mengklik akan mendarat di beranda
 Facebook, bukan di halaman homestay. Ganti ketiganya di tab Website sebelum
 situsnya diumumkan.
 
+## `ssi-white.png` dan `ssi-red.png` — logo SSI di bagian selam
+
+Dua berkas, satu dipakai:
+
+| Berkas | Isi | Dipakai di |
+|---|---|---|
+| `ssi-red.png` | aslinya, merah `#E32117`, 1920×1080, latar transparan | **tidak dipakai**, disimpan sebagai master |
+| `ssi-white.png` | mark yang sama, putih, dipotong pas, 373×200 | bagian selam di `/turtle` |
+
+Yang putih **dibuat dari** yang merah, bukan digambar ulang: kanal alpha-nya
+disalin apa adanya lalu tintanya dicat putih, jadi lengkungannya masih punya
+tepi halus dan bentuknya persis sama dengan yang dikirim SSI. Yang asli juga
+sudah dipotong dari 1920×1080 (sebagian besar isinya ruang kosong) jadi
+1436×770, lalu dikecilkan ke tinggi 200px. Dari 90 KB jadi 18 KB.
+
+Ditaruh di kanan atas bagian selam, sejajar dengan lencana "Turtle Dive
+Center" — dua hal yang setara: yang satu nama dive center-nya, yang satu
+lembaga tempatnya berlatih. Di HP dia turun ke bawah kolomnya.
+
+**Kalau logonya diganti**, timpa `ssi-red.png` lalu buat ulang yang putih.
+Skripnya tidak disimpan di repo karena sekali pakai; intinya: ambil kanal
+alpha berkas aslinya, cat RGB-nya jadi putih, potong sesuai isi.
+
+Diukur di 11 bentuk layar dari 360×640 sampai 2560×1200: yang paling lemah
+6,49:1 terhadap piksel paling terang di belakangnya. Aman di semua bentuk,
+jadi tidak diberi bayangan.
+
+**Tulisan di atasnya "Mitra pelatihan" / "Training partner".** Itu istilah
+umum yang aman. Kalau SSI memberi status resmi tertentu ke Turtle Dive Center
+(misalnya "SSI Dive Center" atau tingkat lain), ganti tulisannya supaya sesuai
+— lembaga sertifikasi biasanya cukup ketat soal istilah ini. Ada di
+`src/lib/web-content.ts`, kunci `dive.partner`, dua bahasa.
+
 ## `logo.png` — lencana Turtle Dive Homestay
 
 Dipakai di footer website, dan disalin ke `src/app/turtle/icon.png` sebagai

@@ -388,7 +388,7 @@ __CSS__
       <thead>
         <tr>
           <th style="width:2.15in">Pilihan</th>
-          <th style="width:0.95in">Biaya / bulan</th>
+          <th style="width:1.15in">Biaya / bulan</th>
           <th style="width:1.15in">Beban pengelolaan</th>
           <th style="width:1.05in">Jarak ke tamu</th>
           <th style="width:1.05in">Database</th>
@@ -398,7 +398,7 @@ __CSS__
       <tbody>
         <tr class="rec">
           <td><strong>KVM 2 + Coolify</strong><br><span class="small">Panel deploy di atas VPS sendiri</span></td>
-          <td class="num">± $9</td>
+          <td class="num">Rp 152 rb</td>
           <td>Sedang</td>
           <td>Singapura</td>
           <td>Satu mesin</td>
@@ -406,7 +406,7 @@ __CSS__
         </tr>
         <tr>
           <td><strong>KVM 1 + Coolify</strong></td>
-          <td class="num">± $5</td>
+          <td class="num">Rp 136 rb</td>
           <td>Sedang</td>
           <td>Singapura</td>
           <td>Satu mesin</td>
@@ -414,7 +414,7 @@ __CSS__
         </tr>
         <tr>
           <td><strong>KVM 2 tanpa panel</strong><br><span class="small">systemd + Caddy diatur sendiri</span></td>
-          <td class="num">± $9</td>
+          <td class="num">Rp 152 rb</td>
           <td>Tinggi</td>
           <td>Singapura</td>
           <td>Satu mesin</td>
@@ -422,7 +422,7 @@ __CSS__
         </tr>
         <tr>
           <td><strong>Vercel + Neon / Supabase</strong><br><span class="small">Yang dipakai sekarang</span></td>
-          <td class="num">$0 &ndash; 20+</td>
+          <td class="num" style="white-space:nowrap">Rp 0 &ndash; 360 rb</td>
           <td>Hampir nol</td>
           <td>CDN global</td>
           <td>Terpisah</td>
@@ -430,7 +430,7 @@ __CSS__
         </tr>
         <tr>
           <td><strong>Cloudflare Workers + D1</strong></td>
-          <td class="num">± $5</td>
+          <td class="num">± Rp 90 rb</td>
           <td>Rendah</td>
           <td>Paling dekat</td>
           <td>Terpisah</td>
@@ -438,7 +438,7 @@ __CSS__
         </tr>
         <tr>
           <td><strong>Shared hosting Hostinger</strong></td>
-          <td class="num">± $3</td>
+          <td class="num">termurah</td>
           <td>Rendah</td>
           <td>&mdash;</td>
           <td>MySQL</td>
@@ -456,11 +456,12 @@ __CSS__
         setelah dipesan, jadi pilih di awal.
       </div>
       <div class="note">
-        <strong>Harga di tabel ini indikatif.</strong> Diambil dari ulasan pihak
-        ketiga per Agustus 2026, bukan dari halaman resmi Hostinger yang tidak
-        bisa dibuka dari lingkungan kerja ini. Harga promo tahun pertama
-        biasanya jauh lebih murah daripada harga perpanjangan. Cek langsung
-        sebelum membeli.
+        <strong>Harga rupiah, dan indikatif.</strong> Angka Hostinger adalah
+        harga rupiahnya sendiri untuk pasar Indonesia, jadi bukan hasil kurs.
+        Vercel dan Cloudflare menagih dalam dolar; angkanya dikonversi pada
+        Rp 17.820 per USD, kurs 17 Agustus 2026. Semuanya dikumpulkan dari
+        sumber pihak ketiga, karena halaman resmi Hostinger tidak bisa dibuka
+        dari lingkungan kerja ini. Cek langsung sebelum membeli.
       </div>
     </div>
   </div>
@@ -474,32 +475,41 @@ __CSS__
     <h2>Kalau tetap di Hostinger, tingkat mana</h2>
   </div>
   <div class="body">
-    <table style="margin-bottom:16px">
-      <thead><tr><th style="width:1.35in">Paket</th><th>vCPU</th><th>RAM</th><th>NVMe</th><th>Bandwidth</th><th style="width:0.95in">Harga / bulan</th><th style="width:4.2in">Untuk kasus ini</th></tr></thead>
+    <table style="margin-bottom:14px">
+      <thead><tr><th style="width:1.2in">Paket</th><th>vCPU</th><th>RAM</th><th>NVMe</th><th>Bandwidth</th><th style="width:1.1in">Harga / bulan</th><th style="width:1.05in">Setahun</th><th style="width:3.6in">Untuk kasus ini</th></tr></thead>
       <tbody>
         <tr>
-          <td class="num"><strong>KVM 1</strong></td><td class="num">1</td><td class="num">4 GB</td><td class="num">50 GB</td><td class="num">4 TB</td><td class="num">dari $4,99</td>
+          <td class="num"><strong>KVM 1</strong></td><td class="num">1</td><td class="num">4 GB</td><td class="num">50 GB</td><td class="num">4 TB</td><td class="num">Rp 135.900</td><td class="num">Rp 1,63 jt</td>
           <td>Cukup untuk melayani, sempit untuk membangun. Layak <em>hanya</em> kalau build dipindah ke GitHub Actions.</td>
         </tr>
         <tr class="rec">
-          <td class="num"><strong>KVM 2</strong></td><td class="num">2</td><td class="num">8 GB</td><td class="num">100 GB</td><td class="num">8 TB</td><td class="num">± $8,99</td>
+          <td class="num"><strong>KVM 2</strong></td><td class="num">2</td><td class="num">8 GB</td><td class="num">100 GB</td><td class="num">8 TB</td><td class="num">Rp 151.900</td><td class="num">Rp 1,82 jt</td>
           <td><strong>Titik yang pas.</strong> Bisa membangun di mesin itu juga tanpa mengganggu yang sedang dilayani, dan masih menyisakan ruang untuk staging dan cadangan.</td>
         </tr>
         <tr>
-          <td class="num"><strong>KVM 4</strong></td><td class="num">4</td><td class="num">16 GB</td><td class="num">200 GB</td><td class="num">16 TB</td><td class="num">± $14,99</td>
+          <td class="num"><strong>KVM 4</strong></td><td class="num">4</td><td class="num">16 GB</td><td class="num">200 GB</td><td class="num">16 TB</td><td class="num">Rp 244.900</td><td class="num">Rp 2,94 jt</td>
           <td>Belum perlu. Baru masuk akal kalau nanti ada beberapa aplikasi lain menumpang di mesin yang sama.</td>
         </tr>
         <tr>
-          <td class="num"><strong>KVM 8</strong></td><td class="num">8</td><td class="num">32 GB</td><td class="num">400 GB</td><td class="num">32 TB</td><td class="num">± $25,99</td>
+          <td class="num"><strong>KVM 8</strong></td><td class="num">8</td><td class="num">32 GB</td><td class="num">400 GB</td><td class="num">32 TB</td><td class="num">Rp 488.900</td><td class="num">Rp 5,87 jt</td>
           <td>Jauh di atas kebutuhan. Membeli ini untuk dua belas kamar berarti membayar kapasitas yang tidak akan pernah terpakai.</td>
         </tr>
       </tbody>
     </table>
 
+    <div class="note" style="margin-bottom:14px">
+      <strong>Harga di atas adalah harga promo untuk komitmen 24 bulan, bukan
+      harga bulanan sesungguhnya.</strong> KVM 2 yang sama dijual
+      Rp 151.900 per bulan untuk 24 bulan, <strong>Rp 180.900</strong> untuk 12
+      bulan, dan <strong>Rp 252.900</strong> kalau mau bayar bulanan. Harga
+      perpanjangan setelah masa promo juga lebih tinggi. Jadi angka setahun di
+      kolom sebelah adalah yang termurah, bukan yang pasti.
+    </div>
+
     <div class="grid g3">
       <div class="card green">
         <h3>Kenapa KVM 2, bukan yang lebih murah</h3>
-        <p>Selisihnya sekitar $4 per bulan, dan yang dibeli dengan selisih itu adalah kemampuan membangun aplikasi di mesin yang sama tanpa mengganggu yang sedang dilayani. Tanpa itu, setiap deploy jadi bergantung pada pipeline di luar.</p>
+        <p>Selisihnya Rp 16 ribu sebulan, sekitar Rp 192 ribu setahun. Yang dibeli dengan selisih itu adalah kemampuan membangun aplikasi di mesin yang sama tanpa mengganggu yang sedang dilayani. Tanpa itu, setiap deploy jadi bergantung pada pipeline di luar.</p>
       </div>
       <div class="card">
         <h3>Kenapa bukan yang lebih besar</h3>

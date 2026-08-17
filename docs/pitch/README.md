@@ -39,9 +39,18 @@ berat halaman dari build produksi lewat Chromium, waktu dan memori build dari
 `npm run build` di mesin ini. Kalau aplikasinya berubah banyak, ukur ulang
 sebelum menyebarkan deck-nya lagi.
 
-Harga dan spesifikasi Hostinger di halaman 8 dan 9 berasal dari ulasan pihak
-ketiga per Agustus 2026, bukan dari halaman resmi Hostinger, dan deck-nya
-menyebutkan itu apa adanya. Cek langsung sebelum membeli.
+Harga di halaman 8 dan 9 semuanya **rupiah**. Angka Hostinger adalah daftar
+harganya sendiri untuk pasar Indonesia, jadi bukan hasil kurs; Vercel dan
+Cloudflare menagih dalam dolar dan dikonversi pada Rp 17.820 per USD, kurs
+17 Agustus 2026. Semuanya dari sumber pihak ketiga, karena halaman resmi
+Hostinger tidak bisa dibuka dari lingkungan kerja ini, dan deck-nya menyebutkan
+itu apa adanya.
+
+Satu hal yang gampang salah dibaca dan sudah ditulis terang-terangan di
+halaman 9: **harga bulanan Hostinger itu harga promo untuk komitmen 24 bulan.**
+KVM 2 yang sama Rp 151.900 untuk 24 bulan, Rp 180.900 untuk 12 bulan, dan
+Rp 252.900 kalau bayar bulanan. Perpanjangan setelah promo lebih tinggi lagi.
+Kalau angkanya diperbarui, perbarui juga kurs dan tanggalnya di halaman 8.
 
 `render.mjs` menolak diam-diam: kalau ada isi yang melewati batas halaman, dia
 menyebut nomor halamannya sebelum mencetak.

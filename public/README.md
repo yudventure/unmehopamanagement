@@ -180,17 +180,28 @@ tepi halus dan bentuknya persis sama dengan yang dikirim SSI. Yang asli juga
 sudah dipotong dari 1920×1080 (sebagian besar isinya ruang kosong) jadi
 1436×770, lalu dikecilkan ke tinggi 200px. Dari 90 KB jadi 18 KB.
 
-Ditaruh di kanan atas bagian selam, sejajar dengan lencana "Turtle Dive
-Center" — dua hal yang setara: yang satu nama dive center-nya, yang satu
-lembaga tempatnya berlatih. Di HP dia turun ke bawah kolomnya.
+Ditaruh **di samping judul** bagian selam, rata tengah terhadap dua barisnya.
+Sebelumnya di pojok kanan seksi, dan dari sana dia kelihatan seperti nyasar:
+ada setengah lebar judul air kosong di antaranya. Di HP dia turun ke bawah
+judul, di atas paragrafnya.
+
+**Ukurannya ikut judulnya**, bukan angka tetap: tingginya
+`clamp(31px, 4.7vw, 52px)` sementara judulnya `clamp(34px, 5.2vw, 58px)`, jadi
+logonya selalu sekitar 0,9× ukuran hurufnya di lebar berapa pun. Sengaja
+sedikit lebih kecil — mark ini blok padat sementara hurufnya punya rongga,
+kalau tingginya disamakan persis logonya terbaca lebih berat daripada judul
+yang didampinginya. Diukur dari 320px sampai 2560px: rasionya tetap di
+0,89–0,92× dan judulnya tetap patah di baris yang sama.
 
 **Kalau logonya diganti**, timpa `ssi-red.png` lalu buat ulang yang putih.
 Skripnya tidak disimpan di repo karena sekali pakai; intinya: ambil kanal
 alpha berkas aslinya, cat RGB-nya jadi putih, potong sesuai isi.
 
 Diukur di 11 bentuk layar dari 360×640 sampai 2560×1200: yang paling lemah
-6,49:1 terhadap piksel paling terang di belakangnya. Aman di semua bentuk,
-jadi tidak diberi bayangan.
+7,67:1 terhadap piksel paling terang di belakangnya. Perlu diukur karena foto
+mantanya `cover` dan bergeser mengikuti bentuk layar, jadi perut mantanya yang
+hampir putih bisa saja mendarat di belakang logo putih. Ternyata tidak pernah,
+jadi logonya tidak diberi bayangan.
 
 **Tulisan di atasnya "Mitra pelatihan" / "Training partner".** Itu istilah
 umum yang aman. Kalau SSI memberi status resmi tertentu ke Turtle Dive Center

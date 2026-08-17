@@ -1,0 +1,158 @@
+/* ---------------------------------------------------------------- tokens */
+/* Same palette as the product and the specification deck, so the three read
+   as one set of documents rather than three unrelated files. */
+:root {
+  --surface: #ffffff;
+  --soft: #fdfbf8;
+  --mute: #fcf5ec;
+  --ink: #241f18;
+  --ink-soft: #4a4238;
+  --slate: #6b6357;
+  --slate-soft: #7a7264;
+  --slate-mute: #7d7466;
+  --line: #f2e8da;
+  --line-strong: #ebe0d0;
+  --teal: #2b7f5b;
+  --teal-deep: #216b4b;
+  --teal-tint: #f0f8f3;
+  --teal-line: #c5e1d1;
+  --gold: #d9a94e;
+  --gold-soft: #eeddbe;
+  --amber-ink: #8a6524;
+  --amber-soft: #faefd9;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+
+body {
+  font-family: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  background: #ded2c0;
+}
+
+/* A4 upright. A proposal is a document somebody signs and files, not a deck
+   they project, so it takes the shape of a document. */
+@page { size: 210mm 297mm; margin: 0; }
+
+.slide {
+  position: relative;
+  width: 210mm;
+  height: 297mm;
+  padding: 18mm 17mm 16mm;
+  background: var(--soft);
+  overflow: hidden;
+  page-break-after: always;
+  break-after: page;
+  display: flex;
+  flex-direction: column;
+}
+.slide:last-child { page-break-after: auto; break-after: auto; }
+
+.head { flex-shrink: 0; }
+.body { flex: 1; min-height: 0; padding-bottom: 6mm; }
+
+.foot {
+  position: absolute;
+  left: 17mm; right: 17mm; bottom: 9mm;
+  display: flex; justify-content: space-between; align-items: center;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 7pt; letter-spacing: .05em;
+  color: var(--slate-mute);
+  border-top: 1px solid var(--line);
+  padding-top: 6px;
+}
+
+/* ------------------------------------------------------------ typography */
+.eyebrow {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 8pt; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--slate-soft);
+}
+h1 { margin: 0; font-size: 26pt; line-height: 1.06; letter-spacing: -.025em; font-weight: 700; }
+h2 { margin: 0; font-size: 15pt; line-height: 1.1; letter-spacing: -.02em; font-weight: 700; }
+h3 { margin: 0 0 4px; font-size: 10.5pt; font-weight: 700; }
+p { margin: 0; font-size: 9.6pt; line-height: 1.6; color: var(--ink-soft); }
+p + p { margin-top: 7px; }
+.lede { font-size: 10.5pt; line-height: 1.6; color: var(--slate); }
+.small { font-size: 8.4pt; line-height: 1.55; color: var(--slate-mute); }
+.mono { font-family: "JetBrains Mono", ui-monospace, monospace; }
+strong { font-weight: 700; color: var(--ink); }
+
+.rule { height: 1px; background: var(--line-strong); margin: 7mm 0; }
+
+/* ---------------------------------------------------------------- blocks */
+.card {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: 12px; padding: 11px 14px;
+}
+.card.green { background: var(--teal-tint); border-color: var(--teal-line); }
+.card.warn  { background: var(--amber-soft); border-color: var(--gold-soft); }
+.card.mute  { background: var(--mute); border-color: var(--line-strong); }
+.card p { font-size: 9pt; }
+
+.grid { display: grid; gap: 4mm; }
+.g2 { grid-template-columns: 1fr 1fr; }
+.g3 { grid-template-columns: 1fr 1fr 1fr; }
+
+.note {
+  border-left: 3px solid var(--gold);
+  background: var(--amber-soft);
+  padding: 9px 13px; border-radius: 0 10px 10px 0;
+  font-size: 8.8pt; line-height: 1.55; color: var(--amber-ink);
+}
+.note strong { color: var(--amber-ink); }
+
+/* ---------------------------------------------------------------- tables */
+table { width: 100%; border-collapse: collapse; font-size: 9pt; }
+th {
+  text-align: left;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 7.2pt; letter-spacing: .07em; text-transform: uppercase;
+  color: var(--slate-mute); font-weight: 400;
+  padding: 0 8px 6px; border-bottom: 1px solid var(--line-strong);
+}
+td { padding: 7px 8px; border-bottom: 1px solid var(--line); vertical-align: top; line-height: 1.45; }
+tr:last-child td { border-bottom: none; }
+td.num, th.num {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap;
+}
+tr.total td {
+  border-top: 2px solid var(--line-strong); border-bottom: none;
+  padding-top: 9px; font-weight: 700; font-size: 10pt;
+}
+
+/* --------------------------------------------------------------- pricing */
+.price-badge {
+  display: flex; align-items: baseline; gap: 10px;
+  border: 1px solid var(--teal-line); background: var(--teal-tint);
+  border-radius: 14px; padding: 13px 17px;
+}
+.price-badge .k { font-size: 9pt; color: var(--teal-deep); }
+.price-badge .v {
+  margin-left: auto;
+  font-size: 21pt; font-weight: 700; letter-spacing: -.03em; color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.tick { color: var(--teal-deep); font-weight: 700; }
+.pill {
+  display: inline-block; border-radius: 99px; padding: 2px 9px;
+  font-size: 7.6pt; font-weight: 500;
+  background: var(--teal-tint); color: var(--teal-deep); border: 1px solid var(--teal-line);
+}
+.pill.later { background: var(--amber-soft); color: var(--amber-ink); border-color: var(--gold-soft); }
+
+ul { margin: 5px 0 0; padding-left: 15px; }
+li { font-size: 9.2pt; line-height: 1.55; color: var(--ink-soft); margin-bottom: 3px; }
+li::marker { color: var(--slate-mute); }
+
+/* ------------------------------------------------------------- signature */
+.sign { display: grid; grid-template-columns: 1fr 1fr; gap: 12mm; margin-top: 6mm; }
+.sign .line { border-bottom: 1px solid var(--line-strong); height: 22mm; }
+.sign .who { margin-top: 5px; font-size: 8.6pt; color: var(--slate-mute); }
+
+.logo { width: 42px; height: 42px; border-radius: 99px; background: #fff; overflow: hidden; }
+.logo img { width: 100%; height: 100%; object-fit: cover; display: block; }

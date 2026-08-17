@@ -2,22 +2,27 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 /**
- * Prints `deck.built.html` to PDF, and refuses quietly to ship a broken page.
+ * Prints a built document to PDF, and refuses quietly to ship a broken page.
  *
- * A slide is a fixed 16:9 box, so anything reaching past that box is content
+ * A page here is a fixed box, so anything reaching past that box is content
  * that will be cut off in print. Chromium will not complain about it and a
  * glance at page 1 will not catch it on page 9, so the check happens here and
  * names the page before the file is written.
  *
- *   node docs/pitch/build.mjs
- *   node docs/pitch/render.mjs docs/spesifikasi-website.pdf
+ *   node docs/build.mjs pitch
+ *   node docs/render.mjs pitch docs/spesifikasi-website.pdf
  *
  * Needs Playwright's Chromium. Set PLAYWRIGHT to point at another install if
  * the default path is not where yours lives.
  */
 
 const here = dirname(fileURLToPath(import.meta.url));
-const out = resolve(process.argv[2] ?? join(here, "spesifikasi-website.pdf"));
+const folder = process.argv[2];
+const out = resolve(process.argv[3] ?? join(here, `${folder ?? "doc"}.pdf`));
+if (!folder) {
+  console.error("usage: node docs/render.mjs <folder> <out.pdf>");
+  process.exit(1);
+}
 const modulePath =
   process.env.PLAYWRIGHT ?? "/opt/node22/lib/node_modules/playwright/index.js";
 
@@ -30,7 +35,7 @@ const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
 const errors = [];
 page.on("pageerror", (e) => errors.push(String(e).slice(0, 160)));
 
-await page.goto(`file://${join(here, "deck.built.html")}`, { waitUntil: "networkidle" });
+await page.goto(`file://${join(here, folder, "doc.built.html")}`, { waitUntil: "networkidle" });
 await page.evaluate(() => document.fonts.ready);
 await page.waitForTimeout(600);
 
@@ -103,12 +108,12 @@ for (const s of spilling) {
     s.hitsHead ? "riding over the heading" : null,
     s.hitsFoot ? "running into the footer" : null,
   ].filter(Boolean);
-  console.log(`  slide ${s.n}: ${why.join(", ")}`);
+  console.log(`  page ${s.n}: ${why.join(", ")}`);
 }
-console.log(`slides: ${audit.slides.length}, overflowing: ${spilling.length}`);
+console.log(`pages: ${audit.slides.length}, overflowing: ${spilling.length}`);
 
 if (!audit.sans || !audit.mono) {
-  console.error("fonts did not load; run node docs/pitch/build.mjs first");
+  console.error(`fonts did not load; run node docs/build.mjs ${folder} first`);
   await browser.close();
   process.exit(1);
 }

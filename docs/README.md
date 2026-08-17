@@ -1,4 +1,7 @@
-# docs/pitch — sumber deck spesifikasi
+# docs — sumber dokumen PDF
+
+> Dokumen kedua, **proposal harga**, sumbernya ada di `docs/proposal/`. Cara
+> membangunnya sama persis, cuma ganti nama foldernya.
 
 Menghasilkan `docs/spesifikasi-website.pdf`: 13 halaman 16:9, dua bahasa
 teknis, untuk menjelaskan apa yang sudah dibangun dan di mana sebaiknya
@@ -6,17 +9,29 @@ dijalankan.
 
 | Berkas | Isi |
 |---|---|
-| `deck.html` | Isi dan susunan tiap halaman. Empat penanda (`__DMSANS__`, `__MONO__`, `__LOGO__`, `__CSS__`) diisi saat build |
-| `deck.css` | Token warna, tipografi, kartu, tabel, dan meteran |
-| `build.mjs` | Menyatukan font, logo, dan CSS jadi satu berkas HTML mandiri |
-| `render.mjs` | Mencetaknya jadi PDF lewat Chromium, sekaligus memeriksa tidak ada isi yang keluar halaman |
+| `pitch/deck.html` | Isi dan susunan tiap halaman. Empat penanda (`__DMSANS__`, `__MONO__`, `__LOGO__`, `__CSS__`) diisi saat build |
+| `pitch/deck.css` | Token warna, tipografi, kartu, tabel, dan meteran. 16:9 |
+| `proposal/doc.html`, `proposal/doc.css` | Proposal harga, A4 tegak, palet yang sama |
+| `proposal/RINCIAN-INTERNAL.md` | Perhitungan margin. **Tidak ikut ke PDF dan tidak untuk klien** |
+| `../build.mjs` | Menyatukan font, logo, dan CSS jadi satu berkas HTML mandiri. Satu argumen: nama foldernya |
+| `../render.mjs` | Mencetaknya jadi PDF lewat Chromium, sekaligus memeriksa tidak ada isi yang keluar halaman |
+
+Tiap folder dokumen isinya persis satu `.html` dan satu `.css`; skripnya
+mencarinya sendiri, jadi menambah dokumen baru cukup menambah folder.
 
 ## Cara membangun ulang
 
 ```bash
 npm run build            # sekali, supaya berkas fontnya ada di .next
-node docs/pitch/build.mjs
-node docs/pitch/render.mjs docs/spesifikasi-website.pdf
+node docs/build.mjs pitch
+node docs/render.mjs pitch docs/spesifikasi-website.pdf
+```
+
+Proposal harganya:
+
+```bash
+node docs/build.mjs proposal
+node docs/render.mjs proposal docs/proposal-harga-deploy.pdf
 ```
 
 `render.mjs` butuh Chromium-nya Playwright. Itu **bukan** dependensi aplikasi

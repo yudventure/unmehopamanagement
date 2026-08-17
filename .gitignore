@@ -14,4 +14,4 @@ yarn-error.log*
 *.pem
 .vercel
 *.tsbuildinfo
-docs/pitch/deck.built.html
+docs/*/doc.built.html

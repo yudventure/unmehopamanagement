@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Proposal Harga — Deploy Website &amp; Dashboard</title>
+<style>
+@font-face { font-family: "DM Sans"; font-style: normal; font-weight: 100 1000; src: url(data:font/woff2;base64,__DMSANS__) format("woff2"); }
+@font-face { font-family: "JetBrains Mono"; font-style: normal; font-weight: 100 800; src: url(data:font/woff2;base64,__MONO__) format("woff2"); }
+__CSS__
+</style>
+</head>
+<body>
+
+<!-- =========================================================== halaman 1 -->
+<section class="slide">
+  <div class="head">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:12mm">
+      <div class="logo"><img src="data:image/png;base64,__LOGO__" alt=""></div>
+      <div>
+        <div style="font-size:10.5pt;font-weight:700">Unmehopa Management</div>
+        <div class="small">Turtle Dive Homestay &middot; Raja Ampat</div>
+      </div>
+      <div style="margin-left:auto;text-align:right">
+        <div class="eyebrow">Proposal harga</div>
+        <div class="small mono" style="margin-top:3px">No. UM/DEP/2026-01 &middot; 17 Agustus 2026</div>
+      </div>
+    </div>
+
+    <div class="eyebrow">Untuk pengerjaan</div>
+    <h1 style="margin-top:8px">Deploy website dan dashboard<br>ke server dan dua domain sendiri</h1>
+  </div>
+
+  <div class="body">
+    <p class="lede" style="margin-top:7mm">
+      Aplikasinya sudah jadi dan sudah berjalan. Yang belum, ia masih menumpang
+      di alamat sementara milik penyedia lain. Pekerjaan yang ditawarkan di sini
+      adalah memindahkannya ke server dan dua nama domain milik sendiri,
+      lengkap dengan sertifikat keamanan, cadangan otomatis, dan alur
+      pembaruan yang bisa dijalankan berulang tanpa bantuan siapa pun.
+    </p>
+
+    <div class="rule"></div>
+
+    <h2>Yang akan berdiri setelah pekerjaan ini selesai</h2>
+    <div class="grid g2" style="margin-top:4mm">
+      <div class="card">
+        <h3><span class="mono" style="font-size:9pt">turtledivehomestay.com</span></h3>
+        <p>Situs publik homestay dan dive center, dua bahasa, sembilan halaman.
+        <strong>Sudah lengkap dan siap tayang hari ini.</strong></p>
+      </div>
+      <div class="card">
+        <h3><span class="mono" style="font-size:9pt">unmehopamanagement.com</span></h3>
+        <p>Dashboard pengelolaan booking, hanya untuk pemilik dan staf. Terbuka
+        di alamat sendiri, terpisah dari situs publik.</p>
+      </div>
+    </div>
+
+    <div class="note" style="margin-top:5mm">
+      <strong>Satu hal yang perlu jelas sejak awal.</strong> Dashboard-nya sudah
+      bisa dibuka dan dipakai, tapi datanya <strong>belum tersimpan permanen</strong>:
+      menyegarkan halaman mengembalikan booking ke data contoh. Menyimpan
+      permanen butuh database dan sistem masuk yang sebenarnya, dan itu
+      pekerjaan terpisah yang <strong>tidak termasuk</strong> di proposal ini.
+      Server yang dipasang sudah lengkap dengan PostgreSQL, jadi waktu tahap itu
+      dikerjakan tidak perlu menyiapkan server lagi.
+    </div>
+
+    <div class="rule"></div>
+
+    <h2>Ringkasan biaya</h2>
+    <div style="margin-top:4mm;display:flex;flex-direction:column;gap:3mm">
+      <div class="price-badge">
+        <div>
+          <div style="font-size:10pt;font-weight:700;color:var(--ink)">Paket A &middot; siap pakai</div>
+          <div class="k">Jasa pengerjaan + server tahun pertama, tinggal terima kunci</div>
+        </div>
+        <div class="v">Rp 5.170.800</div>
+      </div>
+      <div class="price-badge" style="background:var(--surface);border-color:var(--line-strong)">
+        <div>
+          <div style="font-size:10pt;font-weight:700;color:var(--ink)">Paket B &middot; jasa saja</div>
+          <div class="k" style="color:var(--slate-mute)">Server dibeli sendiri atas nama sendiri, kami yang menyiapkan</div>
+        </div>
+        <div class="v">Rp 3.000.000</div>
+      </div>
+    </div>
+    <p class="small" style="margin-top:4mm">
+      Belum termasuk pembelian dua nama domain, yang dibayar langsung ke
+      registrar atas nama pemilik. Rincian tiap angka ada di halaman 3.
+    </p>
+  </div>
+
+  <div class="foot"><span>Proposal harga &middot; deploy</span><span>1 / 4</span></div>
+</section>
+
+<!-- =========================================================== halaman 2 -->
+<section class="slide">
+  <div class="head">
+    <div class="eyebrow">Halaman 2</div>
+    <h2 style="margin-top:5px">Lingkup pekerjaan</h2>
+  </div>
+
+  <div class="body">
+    <p class="lede" style="margin-top:5mm">
+      Enam bagian, dan tiap bagian punya hasil yang bisa dilihat sendiri, bukan
+      cuma laporan bahwa sudah dikerjakan.
+    </p>
+
+    <table style="margin-top:5mm">
+      <thead><tr><th style="width:8mm">&nbsp;</th><th style="width:48mm">Bagian</th><th>Isinya, dan apa yang bisa dicek sendiri</th><th class="num" style="width:26mm">Nilai</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="num">1</td>
+          <td><strong>Penyiapan &amp; pengamanan server</strong></td>
+          <td>Pesan VPS di Singapura, pasang sistemnya, matikan masuk lewat kata sandi dan ganti dengan kunci, nyalakan firewall dan pembaruan keamanan otomatis.
+          <br><span class="small">Bisa dicek: server bisa diakses, dan percobaan masuk pakai kata sandi ditolak.</span></td>
+          <td class="num">Rp 600.000</td>
+        </tr>
+        <tr>
+          <td class="num">2</td>
+          <td><strong>Panel deploy</strong></td>
+          <td>Pasang Coolify supaya pembaruan berikutnya cukup dengan mengirim kode, tanpa menyentuh server lagi.
+          <br><span class="small">Bisa dicek: satu perubahan kecil dikirim, dan situsnya berubah sendiri dalam beberapa menit.</span></td>
+          <td class="num">Rp 500.000</td>
+        </tr>
+        <tr>
+          <td class="num">3</td>
+          <td><strong>Dua domain, DNS, dan TLS</strong></td>
+          <td>Arahkan kedua nama domain ke server, pasang sertifikat Let&rsquo;s Encrypt yang memperpanjang dirinya sendiri.
+          <br><span class="small">Bisa dicek: kedua alamat terbuka dengan gembok hijau, tanpa peringatan.</span></td>
+          <td class="num">Rp 450.000</td>
+        </tr>
+        <tr>
+          <td class="num">4</td>
+          <td><strong>Deploy dan pemisahan dua domain</strong></td>
+          <td>Pasang aplikasinya, isi variabel lingkungan, dan atur supaya alamat publik membuka situs sementara alamat manajemen membuka dashboard.
+          <br><span class="small">Bisa dicek: dua alamat, dua tampilan berbeda, dari satu server yang sama.</span></td>
+          <td class="num">Rp 500.000</td>
+        </tr>
+        <tr>
+          <td class="num">5</td>
+          <td><strong>PostgreSQL dan cadangan</strong></td>
+          <td>Pasang database di mesin yang sama, jadwalkan cadangan harian ke penyimpanan <strong>di luar server</strong>, lalu <strong>uji pulihkan sekali di depan pemilik</strong>.
+          <br><span class="small">Cadangan yang belum pernah dicoba dipulihkan itu belum bisa disebut cadangan.</span></td>
+          <td class="num">Rp 550.000</td>
+        </tr>
+        <tr>
+          <td class="num">6</td>
+          <td><strong>Pemantauan dan serah terima</strong></td>
+          <td>Pasang pemantau yang mengirim pesan kalau situsnya tidak menjawab, lalu serah terima: semua kata sandi diserahkan, dan satu sesi penjelasan cara memperbarui dan cara memulihkan.
+          <br><span class="small">Termasuk catatan tertulis, supaya tidak bergantung pada ingatan siapa pun.</span></td>
+          <td class="num">Rp 400.000</td>
+        </tr>
+        <tr class="total">
+          <td colspan="3">Jumlah jasa pengerjaan</td>
+          <td class="num">Rp 3.000.000</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="card green" style="margin-top:6mm">
+      <h3>Kepemilikan</h3>
+      <p>Server, kedua nama domain, dan seluruh kata sandinya <strong>atas nama
+      pemilik</strong>, bukan atas nama pengerja. Tidak ada satu pun bagian dari
+      susunan ini yang mengunci pemilik ke satu orang: siapa pun yang paham
+      server bisa melanjutkannya, dan itu memang tujuannya.</p>
+    </div>
+  </div>
+
+  <div class="foot"><span>Lingkup pekerjaan</span><span>2 / 4</span></div>
+</section>
+
+<!-- =========================================================== halaman 3 -->
+<section class="slide">
+  <div class="head">
+    <div class="eyebrow">Halaman 3</div>
+    <h2 style="margin-top:5px">Rincian biaya, jadwal, dan pembayaran</h2>
+  </div>
+
+  <div class="body">
+    <h3 style="margin-top:5mm;font-size:11pt">Paket A &middot; siap pakai</h3>
+    <p class="small" style="margin-bottom:3mm">Server tahun pertama dibelikan sekalian, jadi pemilik tinggal menerima dua alamat yang sudah hidup.</p>
+    <table>
+      <tbody>
+        <tr>
+          <td>Jasa pengerjaan <span class="small">(enam bagian di halaman 2)</span></td>
+          <td class="num">Rp 3.000.000</td>
+        </tr>
+        <tr>
+          <td>Server Hostinger VPS KVM 2, 12 bulan <span class="pill">sesuai harga asli</span>
+          <br><span class="small">Rp 180.900 per bulan &times; 12. Kuitansi dari Hostinger diserahkan; tidak ada tambahan apa pun di atasnya.</span></td>
+          <td class="num">Rp 2.170.800</td>
+        </tr>
+        <tr class="total">
+          <td>Total Paket A</td>
+          <td class="num">Rp 5.170.800</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="rule" style="margin:6mm 0"></div>
+
+    <h3 style="font-size:11pt">Paket B &middot; jasa saja</h3>
+    <p class="small" style="margin-bottom:3mm">Pemilik membeli sendiri servernya atas nama sendiri; kami yang menyiapkan dan memasang semuanya.</p>
+    <table>
+      <tbody>
+        <tr><td>Jasa pengerjaan</td><td class="num">Rp 3.000.000</td></tr>
+        <tr><td>Server<span class="small"> &middot; dibeli dan dibayar langsung oleh pemilik</span></td><td class="num" style="color:var(--slate-mute)">&mdash;</td></tr>
+        <tr class="total"><td>Total Paket B</td><td class="num">Rp 3.000.000</td></tr>
+      </tbody>
+    </table>
+
+    <div class="rule" style="margin:6mm 0"></div>
+
+    <div class="grid g2">
+      <div>
+        <h3>Jadwal</h3>
+        <p><strong>Empat hari kerja</strong> sejak uang muka masuk dan kedua nama
+        domain sudah dibeli. Bagian 1 sampai 4 selesai di dua hari pertama, jadi
+        alamatnya sudah bisa dibuka di hari kedua; sisanya cadangan, pemantauan,
+        dan serah terima.</p>
+      </div>
+      <div>
+        <h3>Pembayaran</h3>
+        <p><strong>50% di muka, 50% saat serah terima.</strong> Untuk Paket A,
+        biaya servernya dibayar penuh di muka karena Hostinger memang menagih di
+        depan, jadi di muka Rp 3.670.800 dan sisanya Rp 1.500.000 saat selesai.</p>
+      </div>
+    </div>
+
+    <div class="card mute" style="margin-top:6mm">
+      <h3>Garansi 14 hari</h3>
+      <p>Kalau ada yang rusak <em>karena pekerjaan ini</em> dalam 14 hari setelah
+      serah terima, diperbaiki tanpa biaya. Yang tidak termasuk garansi:
+      permintaan yang mengubah lingkup, kerusakan karena pengaturan yang diubah
+      pihak lain, dan gangguan dari sisi Hostinger sendiri.</p>
+    </div>
+  </div>
+
+  <div class="foot"><span>Biaya dan syarat</span><span>3 / 4</span></div>
+</section>
+
+<!-- =========================================================== halaman 4 -->
+<section class="slide">
+  <div class="head">
+    <div class="eyebrow">Halaman 4</div>
+    <h2 style="margin-top:5px">Yang tidak termasuk, dan biaya tahun berikutnya</h2>
+  </div>
+
+  <div class="body">
+    <p class="lede" style="margin-top:5mm">
+      Bagian ini ditulis supaya tidak ada yang mengejutkan belakangan.
+    </p>
+
+    <h3 style="margin-top:6mm;font-size:11pt">Tidak termasuk di proposal ini</h3>
+    <table style="margin-top:2mm">
+      <tbody>
+        <tr>
+          <td style="width:58mm"><strong>Database dan sistem masuk</strong> <span class="pill later">tahap berikutnya</span></td>
+          <td>Supaya booking tersimpan permanen dan dashboard aman dibuka dari internet. Ini pekerjaan terbesar yang tersisa, dan dihitung terpisah.</td>
+        </tr>
+        <tr>
+          <td><strong>Sinkronisasi iCal</strong> <span class="pill later">tahap berikutnya</span></td>
+          <td>Tarik dan kirim kalender ke Booking.com, Agoda, dan Traveloka. Ini yang menghentikan double booking.</td>
+        </tr>
+        <tr>
+          <td><strong>Pembelian nama domain</strong></td>
+          <td>Dibayar langsung ke registrar atas nama pemilik. Harganya berbeda-beda per registrar, jadi tidak dipatok di sini.</td>
+        </tr>
+        <tr>
+          <td><strong>Pengisian konten</strong></td>
+          <td>Nomor WhatsApp, email, enam harga paket selam, tahun berdiri, dan tautan media sosial. Semuanya bisa diisi sendiri dari tab Website di dashboard tanpa menyentuh kode.</td>
+        </tr>
+        <tr>
+          <td><strong>Perawatan bulanan</strong></td>
+          <td>Pemantauan berjalan dan cadangan berjalan sendiri setelah dipasang. Kalau ingin ada yang berjaga dan menangani, itu kesepakatan terpisah.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="rule"></div>
+
+    <h3 style="font-size:11pt">Biaya yang berjalan terus, setelah tahun pertama</h3>
+    <p style="margin-top:2mm">Ini biaya pemilik ke Hostinger, bukan ke kami.</p>
+    <table style="margin-top:3mm">
+      <thead><tr><th>Pos</th><th class="num" style="width:30mm">Per bulan</th><th class="num" style="width:30mm">Per tahun</th></tr></thead>
+      <tbody>
+        <tr><td>Server VPS KVM 2, harga perpanjangan</td><td class="num">± Rp 436.000</td><td class="num">± Rp 5.232.000</td></tr>
+        <tr><td>Dua nama domain <span class="small">&middot; tergantung registrar</span></td><td class="num" style="color:var(--slate-mute)">&mdash;</td><td class="num" style="color:var(--slate-mute)">&mdash;</td></tr>
+      </tbody>
+    </table>
+
+    <div class="note" style="margin-top:4mm">
+      <strong>Angka perpanjangan itu perkiraan, dan perlu dicek sendiri di
+      halaman checkout Hostinger.</strong> Harga promo tahun pertama jauh lebih
+      murah daripada harga perpanjangan, dan sumber-sumber di luar Hostinger
+      tidak seragam menyebut angkanya. Yang tertulis di sini dipakai sebagai
+      pagar anggaran, bukan sebagai janji.
+    </div>
+
+    <div class="rule"></div>
+
+    <h3 style="font-size:11pt">Persetujuan</h3>
+    <p style="margin-top:2mm">Paket yang dipilih:
+      <span class="mono">&nbsp;&nbsp;[ &nbsp; ] Paket A &middot; Rp 5.170.800&nbsp;&nbsp;&nbsp;&nbsp;[ &nbsp; ] Paket B &middot; Rp 3.000.000</span>
+    </p>
+
+    <div class="sign">
+      <div>
+        <div class="line"></div>
+        <div class="who">Pemilik &middot; nama, tanggal, tanda tangan</div>
+      </div>
+      <div>
+        <div class="line"></div>
+        <div class="who">Pengerja &middot; nama, tanggal, tanda tangan</div>
+      </div>
+    </div>
+
+    <p class="small" style="margin-top:6mm">
+      Penawaran ini berlaku 30 hari sejak tanggal di halaman pertama. Rincian
+      teknis lengkap, termasuk alasan pemilihan server dan perbandingannya
+      dengan pilihan lain, ada di dokumen <em>Spesifikasi &amp; Rencana
+      Infrastruktur</em> yang menyertai proposal ini.
+    </p>
+  </div>
+
+  <div class="foot"><span>Batasan dan persetujuan</span><span>4 / 4</span></div>
+</section>
+
+</body>
+</html>

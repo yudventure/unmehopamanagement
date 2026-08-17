@@ -681,10 +681,20 @@ digambar sama sekali. Rupiahnya tetap tampil, yang memang harga sebenarnya.
 
 ### Halaman profil `/turtle/about`
 
-Tombol di bagian nilai bukan lagi ajakan memesan, tapi **Kenali kami**, dan
-mengarah ke sini. Isinya versi panjang: keluarganya, kesepuluh kamarnya dengan
-foto dan fasilitas per tipe, apa saja yang sudah termasuk harga, cerita dive
-center-nya, dan peta lokasinya.
+Pintunya adalah tombol **Kenali kami** di hero, satu-satunya yang bisa diklik
+di sana. Isinya versi panjang: keluarganya, kesepuluh kamarnya dengan foto dan
+fasilitas per tipe, apa saja yang sudah termasuk harga, cerita dive center-nya,
+dan peta lokasinya.
+
+Tombolnya bergaya kaca — garis tepi putih transparan, bukan pil putih pekat —
+justru supaya **tidak** menyerupai tombol "Pesan" di header. Dua pil putih di
+satu layar terbaca sebagai dua ajakan setara dan memaksa pembaca memilih;
+tombol ini yang kedua, bukan yang utama. Diukur: tulisannya 8:1 terhadap piksel
+paling terang di dalam pilnya.
+
+Cuma ada **satu** tautan ke halaman ini di seluruh beranda. Sebelumnya tombol
+ini menutup bagian nilai, di tengah halaman; kalau ditaruh di dua tempat,
+keduanya jadi lebih lemah.
 
 Jumlah kamarnya dihitung dari `roomFacts()`, tabel yang sama dengan yang
 dipakai manager, jadi halaman ini tidak bisa menyebut angka yang berbeda dari

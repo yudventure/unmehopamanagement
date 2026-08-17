@@ -483,21 +483,32 @@ export function TurtleSite() {
            */}
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(9,26,24,0)_0%,rgba(9,26,24,0)_36%,rgba(9,26,24,.26)_56%,rgba(9,26,24,.68)_78%,rgba(9,26,24,.94)_100%)]" />
 
-          {/* Nothing to click in the hero: no picker bar, no buttons. It
-              carried the same three questions the enquiry form asks, and
-              buttons in its place were the same call twice on one screen —
-              the header's "Pesan" is already there and stays there while the
-              page scrolls. */}
+          {/* One thing to click, and only one. The picker bar that used to sit
+              here asked the same three questions as the enquiry form, and a
+              "Pesan" button in its place was the same call twice on a screen
+              that already has the header's — which stays put as the page
+              scrolls. This is the other question a first-time reader has, and
+              it goes somewhere rather than opening something. */}
           {/* The shadow is the second line of defence behind the scrim: a
               photograph can put a bright cloud or a strip of sand anywhere,
               and the gradient alone cannot know where. */}
-          <div className="absolute inset-x-0 bottom-0 mx-auto flex w-full max-w-[1180px] flex-col items-center px-5 pb-[64px] text-center md:px-8 md:pb-[84px] [text-shadow:0_2px_28px_rgba(6,20,18,.62)]">
+          <div className="absolute inset-x-0 bottom-0 mx-auto flex w-full max-w-[1180px] flex-col items-center px-5 pb-[56px] text-center md:px-8 md:pb-[76px] [text-shadow:0_2px_28px_rgba(6,20,18,.62)]">
             <h1 className="m-0 max-w-[15ch] text-[clamp(38px,7vw,92px)] leading-[1.02] font-bold tracking-[-.03em] text-balance text-white">
               Turtle Dive Homestay
             </h1>
             <p className="mt-4 max-w-[560px] text-[15px] leading-[1.6] text-white/90">
               {t.hero.sub}
             </p>
+            {/* Glass, not a white pill. The header's "Pesan" is a solid white
+                pill and is the page's primary call; two of those on one screen
+                would read as a pair of equals and make the reader choose. An
+                outline says "the other thing you can do" without arguing. */}
+            <Link
+              href="/turtle/about"
+              className="mt-7 inline-flex items-center justify-center rounded-full border border-white/45 bg-white/12 px-[26px] py-[12px] text-[14px] font-medium text-white no-underline transition-colors hover:border-white/70 hover:bg-white/22 hover:text-white hover:no-underline md:px-[30px] md:py-[13px] md:text-[15px]"
+            >
+              {t.about.cta}
+            </Link>
           </div>
         </div>
       </div>
@@ -520,14 +531,10 @@ export function TurtleSite() {
           <p className="mt-3 text-[14.5px] leading-[1.65] text-slate">
             {t.value.body}
           </p>
-          {/* Was an enquiry button. The header already carries one and the
-              dialog is two scrolls away in either direction; what this spot
-              is actually good for is the reader who wants to know more before
-              they ask anything, and that is a page, not a form. A link, so it
-              middle-clicks and opens in a tab like a page should. */}
-          <Link href="/turtle/about" className={`${PILL_DARK} mt-6 no-underline hover:no-underline`}>
-            {t.about.cta}
-          </Link>
+          {/* No button follows. "Kenali kami" used to close this block and has
+              moved up into the hero: the same invitation reads better before
+              the reader has scrolled than after, and keeping a copy here would
+              only ask them to choose between two of the same thing. */}
         </div>
       </Section>
 

@@ -162,6 +162,16 @@
   }
 }
 
+/* The search field is `type="search"` for the keyboard it summons on a phone:
+   the return key comes up labelled as a search key instead of a newline. What
+   comes with it is a native clear cross that WebKit draws in its own style
+   inside our pill, so that part is turned off and the pill stays as drawn. */
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
 /* --------------------------------------------------- season card motion */
 
 /*

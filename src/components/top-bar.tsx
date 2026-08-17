@@ -28,6 +28,64 @@ export interface TopBarProps {
 const SEARCH_SHELL =
   "flex items-center gap-[10px] rounded-full border border-line-search bg-surface-tint";
 
+/**
+ * The search field, on a phone as well as on a desk.
+ *
+ * A `<form>` around one field is not ceremony here, it is the whole point: it
+ * is what turns the phone keyboard's return key into a "cari" key and gives
+ * the press somewhere to land. The list has already filtered on every letter
+ * typed, so there is nothing left to submit — what the press is actually for
+ * is putting the keyboard away, which on a small screen is half the results
+ * back. Hence the blur and nothing else.
+ *
+ * It stays a form rather than a lone key handler so the same press works for
+ * a keyboard, a screen reader, and the on-screen key, all without three
+ * separate paths.
+ */
+function SearchField({
+  query,
+  onQuery,
+  placeholder,
+  shellClass,
+  dotClass,
+  inputClass,
+}: {
+  query: string;
+  onQuery: (value: string) => void;
+  placeholder: string;
+  shellClass: string;
+  dotClass: string;
+  inputClass: string;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  return (
+    <form
+      role="search"
+      onSubmit={(e) => {
+        e.preventDefault();
+        inputRef.current?.blur();
+      }}
+      className={`${SEARCH_SHELL} ${shellClass}`}
+    >
+      <div className={`shrink-0 rounded-full border-2 border-slate-ghost ${dotClass}`} />
+      <input
+        ref={inputRef}
+        type="search"
+        value={query}
+        onChange={(e) => onQuery(e.target.value)}
+        placeholder={placeholder}
+        aria-label="Cari booking"
+        enterKeyHint="search"
+        autoComplete="off"
+        autoCorrect="off"
+        spellCheck={false}
+        className={`w-full min-w-0 border-none bg-transparent outline-none ${inputClass}`}
+      />
+    </form>
+  );
+}
+
 export function TopBar({
   showBrand,
   compact,
@@ -116,17 +174,14 @@ export function TopBar({
         </div>
 
         <div className="mt-[11px] flex items-center gap-2">
-          <div className={`${SEARCH_SHELL} min-w-0 flex-1 px-[13px]`}>
-            <div className="h-[13px] w-[13px] shrink-0 rounded-full border-2 border-slate-ghost" />
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => onQuery(e.target.value)}
-              placeholder="Cari tamu, kamar, kode"
-              aria-label="Cari booking"
-              className="w-full min-w-0 border-none bg-transparent py-[10px] text-[13px] outline-none"
-            />
-          </div>
+          <SearchField
+            query={query}
+            onQuery={onQuery}
+            placeholder="Cari tamu, kamar, kode"
+            shellClass="min-w-0 flex-1 px-[13px]"
+            dotClass="h-[13px] w-[13px]"
+            inputClass="py-[10px] text-[13px]"
+          />
           <button
             type="button"
             onClick={onOpenForm}
@@ -157,17 +212,14 @@ export function TopBar({
           inside it, so the search sits mid-bar rather than tucked against the
           wordmark. */}
       <div className="flex min-w-[200px] flex-1 justify-center">
-        <div className={`${SEARCH_SHELL} w-full max-w-[460px] px-[16px]`}>
-          <div className="h-[14px] w-[14px] shrink-0 rounded-full border-2 border-slate-ghost" />
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => onQuery(e.target.value)}
-            placeholder="Cari nama tamu, kamar, atau kode booking"
-            aria-label="Cari booking"
-            className="w-full min-w-0 border-none bg-transparent py-[11px] text-[13.5px] outline-none"
-          />
-        </div>
+        <SearchField
+          query={query}
+          onQuery={onQuery}
+          placeholder="Cari nama tamu, kamar, atau kode booking"
+          shellClass="w-full max-w-[460px] px-[16px]"
+          dotClass="h-[14px] w-[14px]"
+          inputClass="py-[11px] text-[13.5px]"
+        />
       </div>
 
       <div className="flex shrink-0 items-center gap-[10px]">

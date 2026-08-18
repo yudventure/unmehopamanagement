@@ -11,6 +11,7 @@ import {
 import { Gallery } from "@/components/web/gallery";
 import { JourneyMap } from "@/components/web/journey-map";
 import { CurrencySwitch, Price } from "@/components/web/price";
+import { useReveal } from "@/hooks/use-reveal";
 import { useCurrency, useLang, useRates } from "@/hooks/use-site-prefs";
 import { DIVE_GALLERY, STAY_GALLERY } from "@/lib/gallery";
 import { SITE_CONFIG } from "@/lib/site-config";
@@ -48,6 +49,7 @@ const ROOM_PHOTO: Record<RoomKey, string> = {
 };
 
 export function AboutPage() {
+  useReveal();
   const { lang, pickLang } = useLang();
   const { currency, pickCurrency } = useCurrency();
   const rates = useRates();
@@ -150,12 +152,12 @@ export function AboutPage() {
       <div className="mx-auto w-full max-w-[1180px] px-5 py-16 md:px-8 md:py-24">
         {/* ------------------------------------------------------- story */}
         <section className="grid grid-cols-1 gap-10 md:grid-cols-[minmax(220px,300px)_1fr]">
-          <h2 className="m-0 text-[clamp(26px,3.4vw,38px)] leading-[1.1] font-bold tracking-[-.025em]">
+          <h2 data-reveal className="m-0 text-[clamp(26px,3.4vw,38px)] leading-[1.1] font-bold tracking-[-.025em]">
             {a.storyHeading}
           </h2>
-          <div className="flex max-w-[720px] flex-col gap-4">
-            {a.story.map((p) => (
-              <p key={p} className="m-0 text-[15px] leading-[1.75] text-ink-soft">
+          <div data-reveal className="flex max-w-[720px] flex-col gap-4">
+            {a.story.map((p, i) => (
+              <p key={i} className="m-0 text-[15px] leading-[1.75] text-ink-soft">
                 {p}
               </p>
             ))}
@@ -164,7 +166,7 @@ export function AboutPage() {
 
         {/* ------------------------------------------------------- rooms */}
         <section className="mt-20 md:mt-28">
-          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div data-reveal className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <h2 className="m-0 max-w-[520px] text-[clamp(26px,3.4vw,38px)] leading-[1.1] font-bold tracking-[-.025em]">
               {a.roomsHeading}
             </h2>
@@ -174,11 +176,13 @@ export function AboutPage() {
           </div>
 
           <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2">
-            {rooms.map((r) => {
+            {rooms.map((r, i) => {
               const rc = t.rooms.types[r.key];
               return (
                 <article
                   key={r.key}
+                  data-reveal
+                  style={{ "--i": i } as React.CSSProperties}
                   className="overflow-hidden rounded-[24px] border border-line-soft bg-surface"
                 >
                   <div className="relative aspect-[16/10] overflow-hidden bg-surface-tint">
@@ -242,7 +246,7 @@ export function AboutPage() {
 
         {/* ----------------------------------------------------- service */}
         <section className="mt-20 md:mt-28">
-          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div data-reveal className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <h2 className="m-0 max-w-[520px] text-[clamp(26px,3.4vw,38px)] leading-[1.1] font-bold tracking-[-.025em]">
               {a.serviceHeading}
             </h2>
@@ -252,9 +256,11 @@ export function AboutPage() {
           </div>
 
           <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {a.services.map((s) => (
+            {a.services.map((s, i) => (
               <div
-                key={s.title}
+                key={i}
+                data-reveal
+                style={{ "--i": i } as React.CSSProperties}
                 className="rounded-[20px] border border-line-soft bg-surface px-6 py-6"
               >
                 <h3 className="m-0 text-[15.5px] font-bold tracking-[-.01em]">
@@ -270,7 +276,7 @@ export function AboutPage() {
 
         {/* ----------------------------------------------------- gallery */}
         <section className="mt-20 md:mt-28">
-          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div data-reveal className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <h2 className="m-0 max-w-[520px] text-[clamp(26px,3.4vw,38px)] leading-[1.1] font-bold tracking-[-.025em]">
               {a.gallery.stayHeading}
             </h2>
@@ -278,7 +284,7 @@ export function AboutPage() {
               {a.gallery.stayIntro}
             </p>
           </div>
-          <div className="mt-10">
+          <div data-reveal className="mt-10">
             <Gallery items={STAY_GALLERY} t={t} />
           </div>
         </section>
@@ -309,8 +315,8 @@ export function AboutPage() {
             </h2>
 
             <div className="mt-5 flex flex-col gap-4">
-              {a.diveStory.map((p) => (
-                <p key={p} className="m-0 text-[15px] leading-[1.75] text-white/80">
+              {a.diveStory.map((p, i) => (
+                <p key={i} className="m-0 text-[15px] leading-[1.75] text-white/80">
                   {p}
                 </p>
               ))}

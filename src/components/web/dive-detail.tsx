@@ -10,6 +10,7 @@ import {
   type Enquiry,
 } from "@/components/web/enquiry-modal";
 import { CurrencySwitch, Price } from "@/components/web/price";
+import { useReveal } from "@/hooks/use-reveal";
 import { useCurrency, useLang, useRates } from "@/hooks/use-site-prefs";
 import { DIVE_DETAIL } from "@/lib/dive-detail";
 import {
@@ -43,7 +44,7 @@ const Card = ({
   title: string;
   items: string[];
 }) => (
-  <section className="rounded-[20px] border border-line-soft bg-surface px-6 py-5">
+  <section data-reveal className="rounded-[20px] border border-line-soft bg-surface px-6 py-5">
     <h2 className="m-0 text-[15px] font-bold tracking-[-.01em]">{title}</h2>
     <ul className="mt-3 mb-0 flex list-none flex-col gap-[9px] p-0">
       {items.map((s) => (
@@ -57,6 +58,7 @@ const Card = ({
 );
 
 export function DiveDetail({ pack }: { pack: DiveKey }) {
+  useReveal();
   const { lang, pickLang } = useLang();
   const { currency, pickCurrency } = useCurrency();
   const rates = useRates();
@@ -195,7 +197,7 @@ export function DiveDetail({ pack }: { pack: DiveKey }) {
             the price list cannot answer. */}
         {(stages.length > 0 || facts.days) && (
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.35fr_1fr]">
-            <section className="rounded-[20px] border border-line-soft bg-surface px-6 py-6">
+            <section data-reveal className="rounded-[20px] border border-line-soft bg-surface px-6 py-6">
               <h2 className="m-0 mb-5 text-[17px] font-bold tracking-[-.015em]">
                 {facts.days ? d.daysHeading : d.dayHeading}
               </h2>
@@ -228,7 +230,7 @@ export function DiveDetail({ pack }: { pack: DiveKey }) {
               )}
             </section>
 
-            <section className="rounded-[20px] border border-line-soft bg-surface px-6 py-6">
+            <section data-reveal className="rounded-[20px] border border-line-soft bg-surface px-6 py-6">
               <h2 className="m-0 mb-5 text-[17px] font-bold tracking-[-.015em]">
                 {d.depthHeading}
               </h2>

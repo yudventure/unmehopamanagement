@@ -422,3 +422,96 @@ input[type="search"]::-webkit-search-decoration {
     opacity: 0;
   }
 }
+
+/* ============================================================ scroll motion */
+
+/*
+ * Things arrive as they reach the viewport.
+ *
+ * The hiding rule is behind `html[data-anim]`, which the root layout's inline
+ * script sets before the first paint and drops again if the reveal hook never
+ * takes charge. That gate is the whole safety story: with no JavaScript, with
+ * a bundle that failed, or under `prefers-reduced-motion`, the attribute is
+ * absent, none of this applies, and the page is simply the page.
+ *
+ * Only opacity and transform move. Neither reflows, so a marked section cannot
+ * shift what is under it, and an anchor still lands where it said it would.
+ */
+[data-anim] [data-reveal] {
+  opacity: 0;
+  transform: translate3d(0, 22px, 0);
+  transition:
+    opacity 720ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 720ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-anim] [data-reveal][data-shown] {
+  opacity: 1;
+  transform: none;
+}
+
+/*
+ * A row of cards comes in as a row, not all at once. `--i` is the card's place
+ * in its row; anything without one is simply first.
+ *
+ * Capped at six steps deliberately. The delay is what makes the row read as a
+ * row, but past about half a second the last card is arriving well after the
+ * reader has already looked at it, and a card that appears under a gaze that
+ * is already resting on it reads as a fault rather than as a flourish.
+ */
+[data-anim] [data-reveal] {
+  transition-delay: calc(min(var(--i, 0), 6) * 65ms);
+}
+
+/*
+ * The hero, driven by `--p`: 0 at rest, 1 once it has scrolled away.
+ *
+ * The photograph grows from its own centre rather than sliding, so the crop at
+ * rest is untouched and no empty edge can ever come into view. Eight percent
+ * across a whole screen of scrolling is small on purpose; the effect wanted
+ * here is depth, not a zoom.
+ */
+[data-anim] [data-hero-photo] {
+  transform: scale(calc(1 + var(--p, 0) * 0.08));
+  transform-origin: center;
+  will-change: transform;
+}
+
+/* The scrim deepens as the picture goes, which is what keeps the white type
+   readable while it is on its way out. */
+[data-anim] [data-hero-scrim] {
+  opacity: calc(1 + var(--p, 0) * 0.35);
+}
+
+/* The words leave a little slower than the picture they sit on, and are gone
+   before the section is, so they never collide with the nav on the way up. */
+[data-anim] [data-hero-copy] {
+  transform: translate3d(0, calc(var(--p, 0) * 46px), 0);
+  opacity: calc(1 - var(--p, 0) * 1.35);
+  will-change: transform, opacity;
+}
+
+/*
+ * The belt to the inline script's braces. If the attribute is somehow set on a
+ * machine that has since been told to reduce motion — the media query can
+ * change inside a session, the script only reads it once — everything lands in
+ * place at once instead of moving there.
+ */
+@media (prefers-reduced-motion: reduce) {
+  [data-anim] [data-reveal],
+  [data-anim] [data-reveal][data-shown] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  [data-anim] [data-hero-photo],
+  [data-anim] [data-hero-copy] {
+    transform: none;
+  }
+
+  [data-anim] [data-hero-copy],
+  [data-anim] [data-hero-scrim] {
+    opacity: 1;
+  }
+}

@@ -47,9 +47,32 @@ export const viewport: Viewport = {
  * router's business, which is what keeps the package pages' "kembali ke
  * diving" links landing on the diving section rather than at the top.
  */
+/*
+ * The second half arms the scroll animations, and it is here rather than in a
+ * component for the same reason: it has to be decided before the first paint.
+ *
+ * Things that animate in start invisible, and the rule that hides them is
+ * behind `html[data-anim]`. Setting the flag here means the page is drawn with
+ * them already hidden, so nothing appears and then jumps back out. Leaving the
+ * flag unset means a browser with no JavaScript, or a reader who has asked for
+ * less motion, gets the whole page at rest and fully readable.
+ *
+ * The timer is the part worth keeping. `useReveal` upgrades the flag to "on"
+ * when it takes charge; if it never does — the bundle failed, hydration threw,
+ * an extension ate it — the flag is dropped and everything becomes visible.
+ * Without that, one failed request turns the site into a blank page, which is
+ * a far worse bargain than losing an animation.
+ */
 const START_AT_TOP = `
 if ("scrollRestoration" in history) history.scrollRestoration = "manual";
 if (location.hash) history.replaceState(null, "", location.pathname + location.search);
+try {
+  if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    var r = document.documentElement;
+    r.dataset.anim = "";
+    setTimeout(function () { if (r.dataset.anim !== "on") delete r.dataset.anim; }, 3000);
+  }
+} catch (e) {}
 `;
 
 export default function RootLayout({

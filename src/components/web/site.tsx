@@ -26,6 +26,8 @@ import { CurrencySwitch, Price } from "@/components/web/price";
 import { JourneyMap } from "@/components/web/journey-map";
 import { JourneyScene, STEP_SCENES } from "@/components/web/journey-scenes";
 import { SeasonScene, type SeasonKey } from "@/components/web/season-scenes";
+import { useHeroScroll } from "@/hooks/use-hero-scroll";
+import { useReveal } from "@/hooks/use-reveal";
 import { useCurrency, useLang, useRates } from "@/hooks/use-site-prefs";
 import { SITE_CONFIG } from "@/lib/site-config";
 import {
@@ -191,9 +193,18 @@ const PILL_DARK =
 const PILL_LIGHT =
   "inline-flex items-center justify-center rounded-full border border-line-strong bg-surface px-6 py-[13px] text-[14px] font-medium text-ink transition-colors hover:bg-surface-hover";
 
-function Eyebrow({ children }: { children: React.ReactNode }) {
+function Eyebrow({
+  children,
+  reveal,
+}: {
+  children: React.ReactNode;
+  /* Set where the badge sits directly above a heading that also arrives:
+     without it the badge is already there while the heading is still on its
+     way, which reads as the heading being late rather than as an entrance. */
+  reveal?: boolean;
+}) {
   return (
-    <span className="inline-flex items-center gap-[7px] rounded-full border border-line-strong bg-surface px-[13px] py-[6px] text-[12px] text-slate">
+    <span data-reveal={reveal ? "" : undefined} className="inline-flex items-center gap-[7px] rounded-full border border-line-strong bg-surface px-[13px] py-[6px] text-[12px] text-slate">
       <span className="h-[6px] w-[6px] rounded-full bg-teal" />
       {children}
     </span>
@@ -218,6 +229,13 @@ function Section({
     </section>
   );
 }
+
+/**
+ * A card's place in its row, which the stylesheet turns into a delay so the
+ * row arrives as a row. Cast because a custom property is not part of React's
+ * style type, and typing around that costs more than it explains.
+ */
+const step = (i: number) => ({ "--i": i }) as React.CSSProperties;
 
 /** Fixed aspect box so an illustration can later be swapped for a photograph. */
 function Frame({
@@ -299,6 +317,12 @@ export function TurtleSite() {
   /* An open drawer needs the bar under it whether or not the page has moved,
      or the links hang over the photograph with nothing behind them. */
   const barSolid = scrolled || menuOpen;
+
+  /* Sections arrive as they are reached, and the hero reacts to being scrolled
+     past. Both are off under `prefers-reduced-motion` and both fail towards
+     the page simply being at rest; see the hooks for how that is guaranteed. */
+  useReveal();
+  const heroRef = useHeroScroll<HTMLDivElement>();
 
   /* The hero picker and every "Pesan" button write into the same enquiry, so
      whichever one the visitor touched, the message that opens is already
@@ -450,7 +474,11 @@ export function TurtleSite() {
         {/* Tall enough that the hut and the ridge sit clear above the
               headline instead of behind it. The crop is centred; the height
               is what separates them. */}
-          <div className="relative h-[620px] w-full overflow-hidden sm:h-[720px] md:h-[820px]">
+          <div ref={heroRef} className="relative h-[620px] w-full overflow-hidden sm:h-[720px] md:h-[820px]">
+          {/* One box around both, so the scale on scroll takes the photograph
+              and the illustration underneath it together and there is never a
+              frame where the two are at different sizes. */}
+          <div data-hero-photo className="absolute inset-0">
           {/* The illustration is the floor, not the picture: it only shows if
               the photograph is missing, so a deploy without `public/hero.jpg`
               degrades to something drawn instead of to a broken image. */}
@@ -472,6 +500,7 @@ export function TurtleSite() {
             className="absolute inset-0 bg-cover bg-no-repeat bg-center"
             style={{ backgroundImage: `url("${HERO_PHOTO}")` }}
           />
+          </div>
 
           {/*
            * Nothing over the top third: the sky and the ridge keep their own
@@ -481,7 +510,7 @@ export function TurtleSite() {
            * darkens itself rather than borrowing from this gradient, so the
            * green stays green right up to the nav.
            */}
-          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(9,26,24,0)_0%,rgba(9,26,24,0)_36%,rgba(9,26,24,.26)_56%,rgba(9,26,24,.68)_78%,rgba(9,26,24,.94)_100%)]" />
+          <div data-hero-scrim className="absolute inset-0 bg-[linear-gradient(180deg,rgba(9,26,24,0)_0%,rgba(9,26,24,0)_36%,rgba(9,26,24,.26)_56%,rgba(9,26,24,.68)_78%,rgba(9,26,24,.94)_100%)]" />
 
           {/* One thing to click, and only one. The picker bar that used to sit
               here asked the same three questions as the enquiry form, and a
@@ -492,7 +521,7 @@ export function TurtleSite() {
           {/* The shadow is the second line of defence behind the scrim: a
               photograph can put a bright cloud or a strip of sand anywhere,
               and the gradient alone cannot know where. */}
-          <div className="absolute inset-x-0 bottom-0 mx-auto flex w-full max-w-[1180px] flex-col items-center px-5 pb-[56px] text-center md:px-8 md:pb-[76px] [text-shadow:0_2px_28px_rgba(6,20,18,.62)]">
+          <div data-hero-copy className="absolute inset-x-0 bottom-0 mx-auto flex w-full max-w-[1180px] flex-col items-center px-5 pb-[56px] text-center md:px-8 md:pb-[76px] [text-shadow:0_2px_28px_rgba(6,20,18,.62)]">
             <h1 className="m-0 max-w-[15ch] text-[clamp(38px,7vw,92px)] leading-[1.02] font-bold tracking-[-.03em] text-balance text-white">
               Turtle Dive Homestay
             </h1>
@@ -515,7 +544,7 @@ export function TurtleSite() {
 
       {/* --------------------------------------------------------- values */}
       <Section className="pt-16 md:pt-24">
-        <h2 className="mx-auto max-w-[860px] text-center text-[clamp(34px,5.4vw,62px)] leading-[1.04] font-bold tracking-[-.03em]">
+        <h2 data-reveal className="mx-auto max-w-[860px] text-center text-[clamp(34px,5.4vw,62px)] leading-[1.04] font-bold tracking-[-.03em]">
           {t.value.heading}
           <br className="hidden md:block" /> {t.value.headingBreak}
         </h2>
@@ -523,7 +552,7 @@ export function TurtleSite() {
         {/* The text no longer sits beside the pictures. Three cards next to
             a 340px column can only ever be a third of what is left, and the
             photographs are the argument this section is making. */}
-        <div className="mx-auto mt-12 max-w-[640px] text-center">
+        <div data-reveal className="mx-auto mt-12 max-w-[640px] text-center">
           <Eyebrow>{t.value.eyebrow}</Eyebrow>
           <h3 className="mt-5 text-[26px] leading-[1.15] font-bold tracking-[-.02em] whitespace-pre-line">
             {t.value.title}
@@ -555,7 +584,9 @@ export function TurtleSite() {
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:gap-5">
           {t.cards.map((c, i) => (
             <div
-              key={c.title}
+              key={i}
+              data-reveal
+              style={step(i)}
               className={
                 i === 1 ? "sm:mt-12" : i === 2 ? "hidden sm:mt-5 sm:block" : ""
               }
@@ -584,8 +615,8 @@ export function TurtleSite() {
 
       {/* ---------------------------------------------------------- rooms */}
       <Section id="kamar" className="pt-20 md:pt-28">
-        <Eyebrow>{t.rooms.eyebrow}</Eyebrow>
-        <div className="mt-5 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+        <Eyebrow reveal>{t.rooms.eyebrow}</Eyebrow>
+        <div data-reveal className="mt-5 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
           <h2 className="m-0 max-w-[620px] text-[clamp(34px,5.2vw,58px)] leading-[1.05] font-bold tracking-[-.03em]">
             {t.rooms.title}
           </h2>
@@ -613,6 +644,8 @@ export function TurtleSite() {
             return (
             <article
               key={r.key}
+              data-reveal
+              style={step(i)}
               className="overflow-hidden rounded-[24px] border border-line-soft bg-surface"
             >
               <Frame ratio="16 / 10" className="rounded-none">
@@ -725,7 +758,7 @@ export function TurtleSite() {
               section itself; a flat illustration in a rounded box on top of a
               real manta only read as the cheaper of the two. */}
           <div>
-            <span className="inline-flex items-center gap-[7px] rounded-full border border-white/20 px-[13px] py-[6px] text-[12px] text-white/75">
+            <span data-reveal className="inline-flex items-center gap-[7px] rounded-full border border-white/20 px-[13px] py-[6px] text-[12px] text-white/75">
               <span className="h-[6px] w-[6px] rounded-full bg-amber" />
               {t.dive.badge}
             </span>
@@ -741,7 +774,7 @@ export function TurtleSite() {
              * cannot be; the alpha channel came across untouched so the curves
              * keep their soft edges rather than being cut out by a threshold.
              */}
-            <div className="mt-5 flex flex-col gap-6 md:flex-row md:items-center md:gap-11">
+            <div data-reveal className="mt-5 flex flex-col gap-6 md:flex-row md:items-center md:gap-11">
               <h2 className="m-0 text-[clamp(34px,5.2vw,58px)] leading-[1.05] font-bold tracking-[-.03em] whitespace-pre-line text-white">
                 {t.dive.title}
               </h2>
@@ -854,12 +887,14 @@ export function TurtleSite() {
           </div>
 
           <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {DIVE_KEYS.map((key) => {
+            {DIVE_KEYS.map((key, i) => {
               const p = t.dive.packages[key];
               const featured = key === DIVE_FEATURED;
               return (
               <article
                 key={key}
+                data-reveal
+                style={step(i)}
                 /* The plain cards are dark glass rather than the white tint
                    they were. A tint that pale over a photograph is barely a
                    card at all: whatever the manta happens to be doing behind
@@ -970,8 +1005,8 @@ export function TurtleSite() {
 
       {/* --------------------------------------------------------- season */}
       <Section id="musim" className="pt-20 md:pt-28">
-        <Eyebrow>{t.season.eyebrow}</Eyebrow>
-        <div className="mt-5 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+        <Eyebrow reveal>{t.season.eyebrow}</Eyebrow>
+        <div data-reveal className="mt-5 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
           <h2 className="m-0 max-w-[560px] text-[clamp(34px,5.2vw,58px)] leading-[1.05] font-bold tracking-[-.03em]">
             {t.season.title}
           </h2>
@@ -983,7 +1018,9 @@ export function TurtleSite() {
         <div className="mt-10 grid grid-cols-1 gap-4 md:grid-cols-3">
           {t.season.bands.map((b, i) => (
             <article
-              key={b.label}
+              key={i}
+              data-reveal
+              style={step(i)}
               /* relative + overflow-hidden so the sea behind it is clipped to
                  the card's own corners. */
               /* A deep foot rather than the usual py-6: it leaves a band of
@@ -1025,7 +1062,7 @@ export function TurtleSite() {
       {/* ------------------------------------------------------- getting here */}
       <Section id="perjalanan" className="overflow-x-clip pt-20 md:pt-28">
         <div className="grid grid-cols-1 gap-10 md:grid-cols-[minmax(240px,380px)_1fr]">
-          <div>
+          <div data-reveal>
             <Eyebrow>{t.journey.eyebrow}</Eyebrow>
             <h2 className="mt-5 mb-0 text-[clamp(30px,4.4vw,46px)] leading-[1.08] font-bold tracking-[-.025em]">
               {t.journey.title}
@@ -1045,7 +1082,9 @@ export function TurtleSite() {
           <ol className="m-0 grid list-none grid-cols-1 gap-x-8 gap-y-10 p-0 sm:grid-cols-2">
             {t.journey.steps.map((j, i) => (
               <li
-                key={j.title}
+                key={i}
+                data-reveal
+                style={step(i)}
                 /* isolate + z-10 on hover is not enough on its own: without a
                    stacking context per card, whichever card comes later in the
                    document draws over the one before it, and the plane on 01
@@ -1076,7 +1115,7 @@ export function TurtleSite() {
       {/* -------------------------------------------------------------- faq */}
       <Section id="tanya" className="pt-20 md:pt-28">
         <div className="grid grid-cols-1 gap-10 md:grid-cols-[minmax(220px,320px)_1fr]">
-          <div>
+          <div data-reveal>
             <Eyebrow>{t.faq.eyebrow}</Eyebrow>
             <h2 className="mt-5 mb-0 text-[clamp(30px,4.4vw,46px)] leading-[1.08] font-bold tracking-[-.025em]">
               {t.faq.title}
@@ -1084,9 +1123,11 @@ export function TurtleSite() {
           </div>
 
           <div className="border-t border-line-soft">
-            {t.faq.items.map((f) => (
+            {t.faq.items.map((f, i) => (
               <details
-                key={f.q}
+                key={i}
+                data-reveal
+                style={step(i)}
                 className="group border-b border-line-soft py-[18px]"
               >
                 <summary className="flex cursor-pointer list-none items-center gap-4 text-[16px] font-medium">

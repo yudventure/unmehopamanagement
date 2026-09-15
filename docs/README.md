@@ -47,28 +47,28 @@ halaman dari build produksi lewat Chromium, waktu dan memori build dari
 `npm run build` di mesin ini. Kalau aplikasinya berubah banyak, ukur ulang
 sebelum menyebarkan dokumennya lagi.
 
-Harga di halaman 12 **disalin apa adanya dari dua keranjang belanja Hostinger**,
-termasuk pajaknya. Pesanan pertama servernya (Rp 3.806.856), pesanan kedua nama
-domain situs publik berikut email profesionalnya (Rp 704.226); dua-duanya cocok
-dengan total di keranjangnya masing-masing. Tidak ada konversi mata uang di mana
-pun: semuanya sudah rupiah dari sumbernya. Harga promo tidak dipakai sebagai
-dasar anggaran tahunan; yang ditampilkan sebagai coretan cuma harga daftarnya,
-supaya potongannya terlihat.
+Harga di halaman 12 dan 13 adalah **harga normal Hostinger, bukan harga
+promo**, atas permintaan pemilik. Angkanya diambil dari harga coret di layar
+Hostinger sendiri: KVM 2 Rp 407.900 per bulan, email Rp 28.900 per bulan, nama
+domain Rp 209.900 per tahun. Semuanya diambil 24 bulan, jadi kedua halaman itu
+menyebut angka yang sama, dan itu memang gunanya: anggaran yang tidak berubah
+saat promonya habis.
 
-Halaman 13 memisahkan dengan tegas mana yang pasti dan mana yang perkiraan. Dua
-harga perpanjangan tertulis di keranjangnya sendiri dan diberi tanda "harga
-pasti": KVM 2 **Rp 271.900 per bulan** dan email **Rp 19.900 per bulan**.
-Perpanjangan backup harian dan nama domain dashboard tidak ditampilkan di sana,
-jadi dihitung memakai harga yang berlaku sekarang dan ditandai `±`.
-turtlehomestay.com sudah dibayar tiga tahun di muka, jadi barisnya Rp 0 sampai
-tahun keempat.
+Harga promo yang sedang berlaku jauh lebih murah, dan selisihnya besar. Halaman
+12 menyelesaikan itu dengan menyatakan selisihnya jadi milik pemilik dan
+kuitansi Hostinger diserahkan apa adanya. Kalau kalimat itu diubah, janji
+kuitansi di halaman 11 dan 16 harus ikut diubah, atau dokumennya jadi
+menjanjikan dua hal yang bertentangan. Rinciannya ada di
+`penawaran/RINCIAN-INTERNAL.md`.
+
+Tiga nama domain, bukan dua: `turtlehomestay.com` untuk situs publik,
+`unmehoppa.com` untuk dashboard, dan satu lagi untuk Eddo Homestay yang
+didaftarkan sekarang tapi situsnya belum dibangun.
 
 **Kalau nanti diperbarui, ambil dari keranjang atau halaman checkout Hostinger,
-jangan dari artikel pihak ketiga.** Versi sebelumnya memakai perkiraan
-Rp 436 rb per bulan dari sumber pihak ketiga yang saling bertentangan, dan
-angka itu meleset jauh. Keranjang aslinya juga yang mengoreksi lokasi server
-(Malaysia, bukan Singapura) dan nama domainnya (`turtlehomestay.com`, bukan
-`turtledivehomestay.com`).
+dan catat mana yang harga coret dan mana yang harga bayar.** Jangan dari
+artikel pihak ketiga: versi lama dokumen ini memakai perkiraan Rp 436 rb per
+bulan dari sumber yang saling bertentangan, dan angka itu meleset jauh.
 
 ## Tangkapan layarnya asli
 

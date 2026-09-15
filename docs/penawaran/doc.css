@@ -135,6 +135,10 @@ tr.total td {
   margin-left: auto;
   font-size: 21pt; font-weight: 700; letter-spacing: -.03em; color: var(--ink);
   font-variant-numeric: tabular-nums;
+  /* The figure the whole page exists for does not get to break across two
+     lines because the sentence beside it grew. */
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .tick { color: var(--teal-deep); font-weight: 700; }
@@ -209,7 +213,10 @@ li::marker { color: var(--slate-mute); }
   border-radius: 14px; padding: 14px 18px; display: flex; align-items: center;
 }
 .cover .price .k { font-size: 9pt; color: rgba(255,255,255,.75); }
-.cover .price .v { margin-left: auto; font-size: 24pt; font-weight: 700; letter-spacing: -.03em; color: #fff; }
+.cover .price .v {
+  margin-left: auto; font-size: 24pt; font-weight: 700; letter-spacing: -.03em;
+  color: #fff; white-space: nowrap; flex-shrink: 0; padding-left: 8mm;
+}
 
 /* ----------------------------------------------------------- screenshots */
 /*

@@ -4,168 +4,148 @@ Perhitungan di balik `docs/spesifikasi-dan-penawaran.pdf`. **Berkas ini tidak
 ikut ke dalam PDF-nya dan tidak boleh ikut dikirim.** Penawaran yang
 memperlihatkan marginnya sendiri mengundang tawar-menawar di angka yang salah.
 
-## Dari mana Rp 3.000.000 itu datang
+## Yang berubah di versi ini, dan kenapa
 
-| Pos | Masuk | Keluar |
+Dua perintah: pakai **harga normal, bukan harga promo**, dan **tiga nama
+domain**, bukan dua. Keduanya mengubah hampir semua angka di halaman 12 dan 13.
+
+## Angka yang ditawarkan
+
+| Pos | Harga normal | 24 bulan |
 |---|---:|---:|
-| Jasa pengerjaan | Rp 3.000.000 | — |
-| Hostinger, diteruskan apa adanya | Rp 4.511.082 | Rp 4.511.082 |
-| **Total ke klien** | **Rp 7.511.082** | |
-| **Untung bersih** | | **Rp 3.000.000** |
+| KVM 2 | Rp 407.900 / bln | Rp 9.789.600 |
+| Email profesional, 1 kotak surat | Rp 28.900 / bln | Rp 693.600 |
+| turtlehomestay.com | Rp 209.900 / thn | Rp 419.800 |
+| unmehoppa.com | Rp 209.900 / thn | Rp 419.800 |
+| Domain Eddo Homestay | Rp 209.900 / thn | Rp 419.800 |
+| Biaya ICANN, tiga domain | Rp 9.938 | Rp 29.814 |
+| Pajak 11% | | Rp 1.294.966 |
+| **Ke Hostinger** | | **Rp 13.067.380** |
+| Jasa pengerjaan | | Rp 3.000.000 |
+| **Total ke klien** | | **Rp 16.067.380** |
 
-Rincian sisi Hostinger-nya, semuanya disalin dari dua keranjang belanja.
+Uang muka Rp 14.567.380 (seluruh Hostinger + separuh jasa), sisa Rp 1.500.000
+saat serah terima.
 
-Pesanan pertama, server:
+Semua harga normal di atas diambil dari coretan di layar Hostinger sendiri:
+KVM 2 Rp 407.900/bln tertulis sebagai harga coret di ketiga pilihan durasi,
+email Rp 693.600 per 24 bulan, dan domain Rp 419.800 per 2 tahun yang cocok
+dengan Rp 209.900/thn yang disebut sebagai harga perpanjangan.
 
-| Pos | Per bulan | Dibayar |
-|---|---:|---:|
-| KVM 2, 12 bulan | Rp 180.900 | Rp 2.170.800 |
-| Backup harian otomatis, 12 bulan | Rp 104.900 | Rp 1.258.800 |
-| Nama domain dashboard, 1 tahun | gratis | Rp 0 |
-| Pajak 11% | | Rp 377.256 |
-| **Jumlah** | | **Rp 3.806.856** |
+## Ini yang paling penting dan harus dibaca sampai habis
 
-Pesanan kedua, domain situs publik dan email:
+Harga promo yang sedang berlaku jauh lebih murah daripada harga normal:
 
-| Pos | Catatan | Dibayar |
-|---|---|---:|
-| turtlehomestay.com, 3 tahun | daftar Rp 629.700 | Rp 529.700 |
-| Biaya ICANN | pungutan wajib | Rp 9.938 |
-| Email profesional, 12 bulan, 1 kotak surat | Rp 7.900/bln, daftar Rp 28.900/bln | Rp 94.800 |
-| Proteksi privasi WHOIS | gratis | Rp 0 |
-| Pajak 11% | | Rp 69.788 |
-| **Jumlah** | | **Rp 704.226** |
+| Pos | Normal | Promo sekarang | Selisih |
+|---|---:|---:|---:|
+| KVM 2, 24 bln | Rp 9.789.600 | Rp 3.741.600 | Rp 6.048.000 |
+| Email, 24 bln | Rp 693.600 | Rp 165.600 | Rp 528.000 |
+| Domain, 3 × 2 thn | Rp 1.259.400 | Rp 1.019.400 | Rp 240.000 |
+| Pajak 11% atas selisih | | | Rp 749.760 |
+| **Total selisih** | | | **Rp 7.565.760** |
 
-Kedua angka jumlah itu sama persis dengan total di keranjangnya masing-masing,
-jadi kalau nanti keranjangnya berubah, yang perlu dicocokkan cuma dua angka ini.
+Artinya: klien ditagih **Rp 13.067.380** untuk sisi Hostinger, sedangkan kalau
+dipesan hari ini yang benar-benar keluar cuma **Rp 5.501.620**.
 
-Servernya **diteruskan apa adanya**, tidak di-markup, dan dokumennya bilang
-begitu terang-terangan lengkap dengan janji menyerahkan kuitansi Hostinger.
-Itu keputusan yang disengaja, bukan kelupaan:
+**Dokumennya menyelesaikan itu dengan menyerahkan selisihnya ke klien.**
+Halaman 12 punya kartu berjudul "Kalau promonya masih berlaku saat dipesan"
+yang berbunyi: selisihnya jadi milik pemilik, dan kuitansi Hostinger diserahkan
+apa adanya. Jadi untung tetap **Rp 3.000.000**, yaitu jasanya saja.
 
-1. Harga Hostinger bisa dicek siapa pun dalam sepuluh detik. Markup di pos yang
-   segampang itu diperiksa cuma merusak kepercayaan pada angka yang lain.
-2. Harga perpanjangan tahun kedua bergerak naik cukup jauh (lihat di bawah).
-   Menaruh margin di pos yang harganya bisa bergerak berarti margin yang bisa
-   ikut bergerak. Margin duduk di jasa, yang harganya kita sendiri yang tentukan.
-3. Kalau nanti kliennya minta beli servernya sendiri, untungnya **tetap
-   Rp 3.000.000**, tidak berubah sepeser pun. Tidak ada yang perlu dihitung ulang.
+Itu keputusan yang disengaja, dan alasannya praktis, bukan moral saja:
 
-## Pembayarannya sudah aman dari sisi arus kas
+1. Kuitansi Hostinger tetap dijanjikan di halaman 11 dan 16. Menagih
+   Rp 13 juta lalu menyerahkan kuitansi Rp 5,5 juta bukan margin, itu ketahuan
+   di menit pertama serah terima.
+2. Harga Hostinger bisa dicek siapa pun dalam sepuluh detik. Selisih 2,4 kali
+   lipat di pos yang segampang itu diperiksa merusak kepercayaan pada setiap
+   angka lain di dokumen, termasuk yang jujur.
+3. Harga normal tetap jadi dasar anggaran yang benar. Itu yang dibayar di
+   September 2028 kalau promonya sudah tidak ada, dan itu memang gunanya.
 
-Uang muka Rp 6.011.082 = seluruh biaya Hostinger (Rp 4.511.082) + separuh jasa
-(Rp 1.500.000). Artinya **tidak ada uang sendiri yang ditalangi**: Hostinger
-menagih penuh di depan, dan uang mukanya sudah menutup itu sebelum ada tagihan
-yang jatuh. Sisa Rp 1.500.000 masuk saat serah terima.
-
-Perhatikan domainnya diambil **tiga tahun sekaligus**. Itu menaikkan uang muka
-sekarang, tapi menghilangkan satu tagihan perpanjangan di tahun kedua dan
-ketiga. Kalau kliennya keberatan dengan uang muka yang besar, durasi domain
-boleh diturunkan ke satu tahun; itu tidak menyentuh untung sama sekali, cuma
-memindahkan biaya klien ke tahun depan dengan harga per tahun yang lebih mahal.
-
-Kalau uang mukanya ditawar turun, yang boleh turun cuma bagian jasanya. Bagian
-Hostinger-nya jangan pernah dipotong dari uang muka, karena itu berarti
-menalangi server orang lain dari kantong sendiri.
+**Kalau memang mau selisihnya ditahan sebagai margin**, jangan cuma diamkan
+dokumennya: kartu di halaman 12 harus diganti dan janji kuitansi di halaman 11
+dan 16 harus dicabut. Bilang saja, nanti diubah. Yang tidak boleh adalah
+membiarkan dokumennya menjanjikan satu hal sementara tagihannya berkata lain.
 
 ## Apakah Rp 3.000.000 itu wajar
 
-Lingkupnya kira-kira **tiga sampai empat hari kerja** untuk orang yang sudah
-paham: pesan dan amankan VPS, Coolify, dua domain plus TLS, deploy dan
-pemisahan domain, PostgreSQL, cadangan ke luar server berikut uji pulih,
-pemantauan, lalu serah terima berikut dokumennya. Dokumennya menjanjikan
-**empat hari kerja**, jadi hitung empat, bukan tiga.
+Lingkupnya kira-kira **empat hari kerja** untuk orang yang sudah paham: pesan
+dan amankan VPS, Coolify, tiga domain plus TLS, deploy dan pemisahan domain,
+PostgreSQL, cadangan ke luar server berikut uji pulih, pemantauan, lalu serah
+terima berikut dokumennya. Sekitar **Rp 750 ribu per hari**, yang untuk
+pekerjaan infrastruktur di Indonesia wajar sampai agak murah.
 
-Itu sekitar **Rp 750 ribu per hari**. Untuk pekerjaan infrastruktur di
-Indonesia, itu wajar sampai agak murah. Kalau mau dinaikkan, naikkan **nilai
-per bagian di halaman 11**, jangan menambah pos baru: enam bagian yang
-masing-masing punya hasil yang bisa dicek jauh lebih mudah dipertahankan
-daripada satu angka gelondongan.
+Kalau mau dinaikkan, naikkan **nilai per bagian di halaman 11**, jangan
+menambah pos baru: enam bagian yang masing-masing punya hasil yang bisa dicek
+jauh lebih mudah dipertahankan daripada satu angka gelondongan.
 
-Ruang naik yang masih aman, kalau memang diperlukan:
+| Kalau dinaikkan ke | Per hari | Total ke klien |
+|---|---:|---:|
+| Rp 3.000.000 | Rp 750 rb | Rp 16.067.380 |
+| Rp 4.000.000 | Rp 1 jt | Rp 17.067.380 |
+| Rp 5.000.000 | Rp 1,25 jt | Rp 18.067.380 |
 
-| Kalau dinaikkan ke | Per hari | Total ke klien | Kesannya |
-|---|---:|---:|---|
-| Rp 3.000.000 | Rp 750 rb | Rp 7.511.082 | sekarang, aman |
-| Rp 4.000.000 | Rp 1 jt | Rp 8.511.082 | masih wajar, perlu lingkupnya dibaca |
-| Rp 5.000.000 | Rp 1,25 jt | Rp 9.511.082 | mulai perlu portofolio atau SLA |
-
-Perhatikan bahwa angka yang dilihat klien sudah Rp 7,5 juta karena biaya
-Hostinger-nya ikut di dalam satu total. Menaikkan jasa ke Rp 5 juta membuat
-totalnya menembus Rp 9,5 juta, dan di angka segitu wajar kalau klien mulai
-minta perbandingan. Naiknya pelan-pelan saja.
-
-**Satu pekerjaan baru masuk tanpa menaikkan harga.** Pesanan kedua membawa
-email profesional, jadi bagian 3 sekarang termasuk memasang catatan MX, SPF,
-dan DKIM. Itu tambahan sekitar setengah sampai satu jam, dan sengaja diserap
-karena DNS-nya memang sedang dipegang di bagian yang sama. Yang **tidak**
-diserap: memindahkan email lama, membuat kotak surat kedua, dan menyusun tanda
-tangan email. Ketiganya sudah ditulis di halaman 14 sebagai tidak termasuk.
+Hati-hati: angka yang dilihat klien sudah Rp 16 juta karena dua tahun biaya
+Hostinger ikut di dalam satu total. Menaikkan jasa di atas angka itu kurang
+terasa efeknya buat kita tapi sangat terasa buat kesan totalnya.
 
 ## Yang perlu dijaga supaya untungnya tidak tergerus
 
-- **Lingkupnya berhenti di deploy.** Database, sistem masuk, dan sinkronisasi
-  iCal ada di halaman 14 sebagai "tidak termasuk". Kalau itu ikut dikerjakan
-  tanpa penawaran baru, tiga juta itu habis di hari pertama tahap berikutnya.
+- **Lingkupnya berhenti di deploy.** Database, sistem masuk, sinkronisasi iCal,
+  dan situs Eddo Homestay ada di halaman 14 sebagai "tidak termasuk". Kalau itu
+  ikut dikerjakan tanpa penawaran baru, tiga juta habis di hari pertama tahap
+  berikutnya.
+- **Situs Eddo Homestay khususnya.** Domainnya sudah dibayar di penawaran ini,
+  dan itu gampang disalahartikan sebagai situsnya ikut dibangun. Halaman 14
+  menyebutnya terpisah, tapi sebutkan juga lisan saat presentasi.
 - **Garansi 14 hari sengaja sempit**: hanya kerusakan yang datang dari
-  pekerjaan ini. Permintaan yang mengubah lingkup, pengaturan yang diubah pihak
-  lain, dan gangguan dari sisi Hostinger dikecualikan secara tertulis.
-- **Perawatan bulanan tidak dijanjikan apa pun.** Pemantauan dan cadangan
-  dipasang lalu berjalan sendiri. Kalau kliennya mau ada yang berjaga, itu
-  kesepakatan baru dengan angka baru.
-- **Pengisian konten bukan pekerjaan kita.** Nomor WhatsApp, email, enam harga
-  selam, dua tahun berdiri, dan tiga tautan sosial diisi sendiri lewat tab
-  Website. Kalau diminta mengisikan, itu jam kerja yang tidak ada di penawaran.
-- **Harga perpanjangan domain dashboard belum diketahui.** Rp 1.113.900 itu
-  harga daftar tahun pertama di keranjang pertama, dipakai sebagai perkiraan dan
-  ditandai ± di halaman 13. Jangan pernah menyebutnya sebagai harga yang kita
-  janjikan. Kalau nanti ternyata jauh lebih mahal, halaman 13 sudah menyiapkan
-  jalan keluarnya: alamat itu cuma dipakai pemilik dan staf, jadi boleh diganti.
+  pekerjaan ini.
+- **Backup harian Hostinger tidak diambil** di versi ini, mengikuti keranjang
+  terbarunya. Salinan database ke luar server tetap termasuk. Kalau klien mau
+  backup penuh dari sisi Hostinger, itu pos baru sekitar Rp 104.900 per bulan,
+  dan angka itu satu-satunya yang belum pernah terlihat harga normalnya.
+- **Perawatan bulanan tidak dijanjikan apa pun.**
 
 ## Kalau kliennya minta turun harga
 
-Jangan potong nilai jasanya. Yang bisa ditawarkan tanpa mengurangi untung:
-
-1. **Klien beli servernya sendiri.** Angka yang dilihat turun dari Rp 7.511.082
-   ke Rp 3.000.000, terlihat seperti turun 60%, dan untungnya utuh. Konsekuensinya
-   kuitansi dan akun Hostinger jadi urusan klien, dan itu memang lebih rapi.
-2. **Backup harian dimatikan.** Menghemat Rp 1.258.800 setahun plus pajaknya.
-   Cadangan database ke luar Hostinger tetap dipasang, jadi bukan berarti tidak
-   ada cadangan sama sekali. Ini pengurangan yang jujur, bukan pemotongan mutu.
-3. **Domainnya diambil satu tahun, bukan tiga.** Memangkas uang muka sekitar
-   Rp 390 ribu. Harga per tahunnya jadi lebih mahal, jadi ini menunda biaya,
-   bukan menghematnya, dan itu harus dibilang terus terang.
-4. **Email profesionalnya dilepas.** Menghemat Rp 94.800 setahun. Kecil, dan
-   ini yang paling terakhir ditawarkan: alamat email berakhiran nama domain
-   sendiri jauh lebih meyakinkan buat tamu daripada alamat Gmail, dan itu
-   justru salah satu hal yang bikin situsnya kelihatan serius.
+1. **Klien beli servernya sendiri.** Angka yang dilihat turun dari
+   Rp 16.067.380 ke Rp 3.000.000, dan untungnya utuh.
+2. **Durasi dipendekkan ke 12 bulan.** Memotong sekitar separuh biaya
+   Hostinger, tapi harga per bulannya naik dan tagihan berikutnya datang
+   setahun lebih cepat. Ini menunda biaya, bukan menghematnya, dan harus
+   dibilang begitu.
+3. **Domain Eddo Homestay dilepas.** Rp 419.800 berikut pajaknya. Paling kecil
+   efeknya, dan paling mudah disesali kalau namanya keburu diambil orang.
 
 Yang **jangan** ditawarkan: memangkas bagian 5 (cadangan berikut uji pulih)
-atau bagian 6 (pemantauan dan serah terima). Dua bagian itu yang membedakan
-deploy yang selesai dari deploy yang cuma jalan hari itu.
+atau bagian 6 (pemantauan dan serah terima).
+
+## Dua hal yang harus dicek sebelum dokumennya dikirim
+
+1. **`unmehoppa.com`, dengan dua huruf p.** Itu yang tertulis di keranjang, dan
+   itu yang dipakai di dokumen. Perusahaannya bernama **Unmehopa**, satu p.
+   Kalau yang di keranjang itu salah ketik, perbaiki **sebelum** dibayar; nama
+   domain tidak bisa ditukar setelah terdaftar, cuma bisa dibeli lagi.
+2. **Nama domain Eddo Homestay belum ada.** Dokumen menyebutnya sebagai "Nama
+   domain Eddo Homestay" tanpa alamat pastinya, karena memang belum dipilih dan
+   belum dicek ketersediaannya. Isi nama aslinya sebelum ditandatangani.
 
 ## Catatan koreksi
 
-Semua koreksi di bawah datang dari keranjang belanja Hostinger yang
-sebenarnya. Halaman resmi Hostinger tidak bisa dibuka dari lingkungan kerja
-ini, dan artikel pihak ketiga ternyata jauh meleset.
+Semua koreksi di bawah datang dari layar Hostinger yang sebenarnya, bukan dari
+artikel pihak ketiga.
 
-| Yang ditulis sebelumnya | Yang benar | Dari mana |
+| Yang ditulis sebelumnya | Yang benar sekarang | Dari mana |
 |---|---|---|
-| Perpanjangan KVM 2 ± Rp 436 rb/bln | **Rp 271.900/bln** | keranjang pertama |
-| Lokasi server Singapura | **Malaysia** | keranjang pertama |
-| Domain kedua dibeli terpisah, di luar penawaran | **satu gratis, satu dibayar dan sudah masuk penawaran** | kedua keranjang |
-| `turtledivehomestay.com` | **`turtlehomestay.com`** | keranjang kedua |
-| Tidak ada email profesional | **ada, 1 kotak surat, 12 bulan** | keranjang kedua |
+| Harga promo sebagai dasar anggaran | Harga normal | perintah klien, angka dari layar checkout |
+| KVM 2 12 bulan | 24 bulan | layar checkout KVM 2 |
+| Backup harian ikut dibeli | tidak ada di keranjang terbaru | layar checkout KVM 2 |
+| Satu domain gratis dari paket | tidak ada yang gratis | layar checkout KVM 2 |
+| Dua nama domain | tiga | perintah klien |
+| `unmehopamanagement.com` | `unmehoppa.com` | keranjang domain |
+| Email 12 bulan | 24 bulan | keranjang domain |
+| Perpanjangan KVM 2 Rp 271.900/bln | tidak dipakai lagi; anggaran memakai harga normal Rp 407.900/bln | — |
 
-Nama domainnya yang paling perlu diperhatikan: sebelumnya dokumen menulis
-`turtledivehomestay.com`, padahal yang benar-benar dibeli
-`turtlehomestay.com`. Sekarang sudah diseragamkan di halaman 1, 7, 12, 13, dan
-16, dan ikut terlihat di tangkapan layar halaman 3 sampai 6. **Nama domain dashboard-nya masih `unmehopamanagement.com` dan itu belum
-diverifikasi ke keranjang mana pun** — cocokkan sebelum dokumennya dikirim.
-
-Dua harga perpanjangan sekarang tertulis pasti di keranjang, yaitu server
-Rp 271.900/bln dan email Rp 19.900/bln, dan keduanya diberi tanda "harga pasti"
-di halaman 13. Sisanya perkiraan dan ditandai ±. Kalau nanti dokumennya
-diperbarui lagi, **ambil dari keranjang atau halaman checkout Hostinger, jangan
-dari artikel pihak ketiga.**
+Kalau nanti diperbarui lagi, **ambil dari keranjang atau halaman checkout
+Hostinger, dan catat mana yang harga coret dan mana yang harga bayar.**

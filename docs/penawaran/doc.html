@@ -27,7 +27,7 @@ __CSS__
 
   <div>
     <div class="eyebrow">Untuk pengerjaan</div>
-    <h1 style="margin-top:10px">Deploy website dan dashboard<br>ke server dan dua domain sendiri</h1>
+    <h1 style="margin-top:10px">Deploy website dan dashboard<br>ke server dan tiga domain sendiri</h1>
     <p style="margin-top:14px;font-size:11pt;line-height:1.6;max-width:150mm">
       Dokumen ini satu paket: apa yang sudah dibangun, di mana ia akan
       dijalankan, kenapa server itu yang dipilih, dan berapa biayanya. Semua
@@ -35,23 +35,27 @@ __CSS__
       angka biayanya diambil dari keranjang Hostinger yang sebenarnya.
     </p>
 
-    <div class="grid g2" style="margin-top:12mm">
+    <div class="grid g3" style="margin-top:10mm">
       <div class="chip">
-        <div class="t mono" style="font-size:9pt">turtlehomestay.com</div>
+        <div class="t mono" style="font-size:8.5pt">turtlehomestay.com</div>
         <div class="s">Situs publik homestay dan dive center, dua bahasa, sembilan halaman</div>
       </div>
       <div class="chip">
-        <div class="t mono" style="font-size:9pt">unmehopamanagement.com</div>
+        <div class="t mono" style="font-size:8.5pt">unmehoppa.com</div>
         <div class="s">Dashboard pengelolaan booking, hanya untuk pemilik dan staf</div>
+      </div>
+      <div class="chip">
+        <div class="t mono" style="font-size:8.5pt">Eddo Homestay</div>
+        <div class="s">Diamankan sekarang untuk situs kedua, belum dipakai</div>
       </div>
     </div>
 
     <div class="price" style="margin-top:5mm">
       <div>
         <div style="font-size:10.5pt;font-weight:700">Total penawaran</div>
-        <div class="k">Jasa pengerjaan + server, dua nama domain, dan email tahun pertama, sudah termasuk pajak</div>
+        <div class="k">Jasa pengerjaan + server, tiga nama domain, dan email untuk dua tahun. Harga normal, sudah termasuk pajak</div>
       </div>
-      <div class="v">Rp 7.511.082</div>
+      <div class="v">Rp 16.067.380</div>
     </div>
   </div>
 
@@ -251,20 +255,22 @@ __CSS__
 <section class="slide">
   <div class="head">
     <div class="eyebrow">Bagian 3 &middot; Arsitektur</div>
-    <h2 style="margin-top:5px">Dua domain, satu kode, satu server</h2>
+    <h2 style="margin-top:5px">Tiga domain, satu kode, satu server</h2>
   </div>
   <div class="body">
     <p class="lede" style="margin-top:5mm">
       Kedua produk tinggal serumah di satu repo dan berbagi satu set warna dan
-      komponen. Memisahnya jadi dua alamat tidak perlu memecah kodenya: cukup
-      satu lapisan yang membaca nama domain lalu mengarahkan ke bagian yang
-      benar.
+      komponen. Memisahnya jadi beberapa alamat tidak perlu memecah kodenya:
+      cukup satu lapisan yang membaca nama domain lalu mengarahkan ke bagian
+      yang benar. Alamat ketiga didaftarkan sekarang dan belum menunjuk ke
+      mana-mana.
     </p>
 
     <div style="display:grid;grid-template-columns:1fr 10mm 1fr;align-items:center;margin-top:6mm">
       <div style="display:flex;flex-direction:column;gap:3mm">
         <div class="box"><div class="t mono" style="font-size:8.5pt">turtlehomestay.com</div><div class="s">Tamu, calon tamu, mesin pencari</div></div>
-        <div class="box"><div class="t mono" style="font-size:8.5pt">unmehopamanagement.com</div><div class="s">Pemilik dan staf saja</div></div>
+        <div class="box"><div class="t mono" style="font-size:8.5pt">unmehoppa.com</div><div class="s">Pemilik dan staf saja</div></div>
+        <div class="box dash"><div class="t mono" style="font-size:8.5pt">Eddo Homestay</div><div class="s">Didaftarkan, diparkir. Situsnya tahap berikutnya</div></div>
       </div>
       <div class="arrow">&rarr;</div>
       <div class="box" style="background:var(--teal-tint);border-color:var(--teal-line)">
@@ -275,7 +281,7 @@ __CSS__
 
     <div class="grid g3" style="margin-top:6mm">
       <div class="card">
-        <h3>Kenapa dua domain</h3>
+        <h3>Kenapa dipisah</h3>
         <p>Cookie sesi dashboard tidak pernah ikut terkirim ke situs publik, karena beda domain. Itu pemisahan keamanan yang didapat gratis, bukan sekadar soal alamat yang lebih rapi.</p>
       </div>
       <div class="card">
@@ -283,8 +289,8 @@ __CSS__
         <p>Tarif kamar dibaca dari sumber yang sama, jadi situs dan dashboard tidak mungkin menyebut angka berbeda. Dua aplikasi berarti dua salinan yang harus dijaga tetap sama.</p>
       </div>
       <div class="card mute">
-        <h3>Kapan dipisah</h3>
-        <p>Kalau nanti situs publik ramai sampai mengganggu dashboard. Sebelum itu, memisahnya menambah pekerjaan tanpa menambah apa pun.</p>
+        <h3>Kenapa yang ketiga dibeli sekarang</h3>
+        <p>Nama domain tidak bisa dipesan untuk nanti. Mendaftarkannya hari ini, meski situsnya belum ada, harganya sama dengan mendaftarkannya dua tahun lagi, dan sampai saat itu tidak ada yang bisa mengambilnya lebih dulu.</p>
       </div>
     </div>
 
@@ -380,7 +386,7 @@ __CSS__
         <div style="display:flex;flex-direction:column;gap:6px">
           <div class="box" style="border-color:var(--teal-line);background:var(--teal-tint)">
             <div class="t">Caddy</div>
-            <div class="s">Dua domain, TLS otomatis, menyajikan delapan halaman statis langsung dari disk</div>
+            <div class="s">Tiga domain, TLS otomatis, menyajikan delapan halaman statis langsung dari disk</div>
           </div>
           <div class="arrow" style="font-size:10pt">&darr;</div>
           <div class="box"><div class="t">Next.js (Node 22)</div><div class="s">Dashboard, tiga endpoint API, halaman yang perlu dirender saat diminta</div></div>
@@ -399,7 +405,7 @@ __CSS__
             <tr><td>Bandwidth</td><td class="num">8 TB / bulan</td></tr>
             <tr><td>Lokasi</td><td class="num">Malaysia</td></tr>
             <tr><td>Latensi terukur</td><td class="num">71 ms</td></tr>
-            <tr><td>Backup harian</td><td class="num">aktif</td></tr>
+            <tr><td>Masa paket</td><td class="num">24 bulan</td></tr>
           </tbody>
         </table>
         <p class="small" style="margin-top:3mm">
@@ -475,7 +481,7 @@ __CSS__
     <div class="grid g2" style="margin-top:6mm">
       <div class="card green">
         <h3>Kepemilikan ada di pemilik</h3>
-        <p>Server, kedua nama domain, dan seluruh kata sandinya <strong>atas nama
+        <p>Server, ketiga nama domain, dan seluruh kata sandinya <strong>atas nama
         pemilik</strong>, bukan atas nama pengerja. Tidak ada bagian dari susunan
         ini yang mengunci pemilik ke satu orang: siapa pun yang paham server bisa
         melanjutkannya, dan itu memang tujuannya.</p>
@@ -520,8 +526,8 @@ __CSS__
         </tr>
         <tr>
           <td class="num">3</td>
-          <td><strong>Dua domain, DNS, TLS, dan email</strong></td>
-          <td>Arahkan kedua nama domain ke server, pasang sertifikat yang memperpanjang dirinya sendiri. Termasuk catatan DNS untuk email profesionalnya, yaitu MX, SPF, dan DKIM, supaya email keluar tidak masuk folder spam orang.
+          <td><strong>Tiga domain, DNS, TLS, dan email</strong></td>
+          <td>Arahkan dua nama domain yang dipakai ke server dan pasang sertifikat yang memperpanjang dirinya sendiri; yang ketiga didaftarkan dan diparkir. Termasuk catatan DNS untuk email profesionalnya, yaitu MX, SPF, dan DKIM, supaya email keluar tidak masuk folder spam orang.
           <br><span class="small">Cek: kedua alamat terbuka dengan gembok tanpa peringatan, dan satu email percobaan sampai ke Gmail di kotak masuk, bukan di spam.</span></td>
         </tr>
         <tr>
@@ -533,7 +539,7 @@ __CSS__
         <tr>
           <td class="num">5</td>
           <td><strong>PostgreSQL dan cadangan</strong></td>
-          <td>Pasang database di mesin yang sama. Backup harian Hostinger sudah menyalin seluruh mesin; di atas itu dipasang salinan database ke penyimpanan <strong>di luar Hostinger</strong>, lalu keduanya <strong>diuji pulihkan sekali di depan pemilik</strong>.
+          <td>Pasang database di mesin yang sama, lalu pasang salinan otomatis ke penyimpanan <strong>di luar Hostinger</strong>, dan <strong>diuji pulihkan sekali di depan pemilik</strong>.
           <br><span class="small">Cadangan yang belum pernah dicoba dipulihkan itu belum bisa disebut cadangan.</span></td>
         </tr>
         <tr>
@@ -569,161 +575,136 @@ __CSS__
 <section class="slide">
   <div class="head">
     <div class="eyebrow">Bagian 8 &middot; Biaya</div>
-    <h2 style="margin-top:5px">Rincian biaya tahun pertama</h2>
+    <h2 style="margin-top:5px">Rincian biaya, 24 bulan pertama</h2>
   </div>
   <div class="body">
-    <p class="lede" style="margin-top:5mm">
-      Pesanannya dua: satu untuk servernya, satu untuk nama domain situs publik
-      berikut emailnya. Semua angka Hostinger di bawah disalin apa adanya dari
-      kedua keranjang belanjanya, bukan perkiraan. Kuitansinya diserahkan saat
-      serah terima, dan tidak ada tambahan apa pun di atas harga aslinya.
+    <p class="lede" style="margin-top:4mm">
+      Semua angka di bawah adalah <strong>harga normal</strong> Hostinger, bukan
+      harga promo. Harga promo cuma berlaku sekali dan bisa habis kapan saja,
+      jadi bukan dasar yang aman untuk anggaran dua tahun. Yang dianggarkan di
+      sini adalah harga yang pasti bisa dibayar, sekarang maupun nanti.
     </p>
 
-    <h3 style="margin-top:5mm;font-size:11pt">Pesanan pertama &middot; server</h3>
+    <h3 style="margin-top:5mm;font-size:11pt">Dibayarkan ke Hostinger &middot; 24 bulan</h3>
     <table style="margin-top:2mm">
-      <thead><tr><th>Pos</th><th class="num" style="width:28mm">Harga daftar</th><th class="num" style="width:30mm">Dibayar</th></tr></thead>
+      <thead><tr><th>Pos</th><th class="num" style="width:30mm">Harga normal</th><th class="num" style="width:30mm">24 bulan</th></tr></thead>
       <tbody>
         <tr>
-          <td><strong>Paket KVM 2, 12 bulan</strong><br><span class="small">Rp 180.900 per bulan</span></td>
-          <td class="num" style="color:var(--slate-mute);text-decoration:line-through">Rp 4.894.800</td>
-          <td class="num">Rp 2.170.800</td>
+          <td><strong>Paket KVM 2</strong><br><span class="small">2 vCPU, 8 GB RAM, 100 GB NVMe, lokasi Malaysia</span></td>
+          <td class="num">Rp 407.900 / bln</td>
+          <td class="num">Rp 9.789.600</td>
         </tr>
         <tr>
-          <td><strong>Backup harian otomatis, 12 bulan</strong><br><span class="small">Rp 104.900 per bulan. Menyalin seluruh mesin setiap hari</span></td>
-          <td class="num" style="color:var(--slate-mute)">&mdash;</td>
-          <td class="num">Rp 1.258.800</td>
+          <td><strong>Email profesional, 1 kotak surat</strong><br><span class="small">Alamat berakhiran nama domain sendiri</span></td>
+          <td class="num">Rp 28.900 / bln</td>
+          <td class="num">Rp 693.600</td>
         </tr>
         <tr>
-          <td><strong>Nama domain dashboard, 1 tahun</strong> <span class="pill">gratis di paket ini</span></td>
-          <td class="num" style="color:var(--slate-mute);text-decoration:line-through">Rp 1.113.900</td>
-          <td class="num">Rp 0</td>
+          <td><strong>turtlehomestay.com</strong><br><span class="small">Situs publik homestay dan dive center</span></td>
+          <td class="num">Rp 209.900 / thn</td>
+          <td class="num">Rp 419.800</td>
         </tr>
-        <tr><td><strong>Pajak</strong> <span class="small">11%</span></td><td class="num" style="color:var(--slate-mute)">&mdash;</td><td class="num">Rp 377.256</td></tr>
-        <tr class="total"><td colspan="2">Jumlah pesanan pertama</td><td class="num">Rp 3.806.856</td></tr>
-      </tbody>
-    </table>
-
-    <h3 style="margin-top:5mm;font-size:11pt">Pesanan kedua &middot; domain situs publik dan email</h3>
-    <table style="margin-top:2mm">
-      <thead><tr><th>Pos</th><th class="num" style="width:28mm">Harga daftar</th><th class="num" style="width:30mm">Dibayar</th></tr></thead>
-      <tbody>
         <tr>
-          <td><strong>turtlehomestay.com, 3 tahun</strong><br><span class="small">Dibayar sekaligus tiga tahun. Termasuk proteksi privasi WHOIS, gratis, supaya data pemilik tidak terpampang di catatan publik</span></td>
-          <td class="num" style="color:var(--slate-mute);text-decoration:line-through">Rp 629.700</td>
-          <td class="num">Rp 529.700</td>
+          <td><strong>unmehoppa.com</strong><br><span class="small">Dashboard pengelolaan booking</span></td>
+          <td class="num">Rp 209.900 / thn</td>
+          <td class="num">Rp 419.800</td>
+        </tr>
+        <tr>
+          <td><strong>Nama domain Eddo Homestay</strong> <span class="pill later">diparkir</span><br><span class="small">Didaftarkan sekarang, situsnya tahap berikutnya</span></td>
+          <td class="num">Rp 209.900 / thn</td>
+          <td class="num">Rp 419.800</td>
         </tr>
         <tr>
           <td><strong>Biaya ICANN</strong> <span class="small">pungutan wajib tiap nama domain, bukan biaya Hostinger</span></td>
-          <td class="num" style="color:var(--slate-mute)">&mdash;</td>
-          <td class="num">Rp 9.938</td>
+          <td class="num" style="color:var(--slate-mute)">Rp 9.938 &times; 3</td>
+          <td class="num">Rp 29.814</td>
         </tr>
         <tr>
-          <td><strong>Email profesional, 12 bulan, 1 kotak surat</strong><br><span class="small">Rp 7.900 per bulan. Alamat berakhiran nama domain sendiri</span></td>
-          <td class="num" style="color:var(--slate-mute);text-decoration:line-through">Rp 346.800</td>
-          <td class="num">Rp 94.800</td>
+          <td><strong>Proteksi privasi WHOIS</strong>, tiga domain <span class="small">gratis</span></td>
+          <td class="num" style="color:var(--slate-mute)">&mdash;</td>
+          <td class="num">Rp 0</td>
         </tr>
-        <tr><td><strong>Pajak</strong> <span class="small">11%</span></td><td class="num" style="color:var(--slate-mute)">&mdash;</td><td class="num">Rp 69.788</td></tr>
-        <tr class="total"><td colspan="2">Jumlah pesanan kedua</td><td class="num">Rp 704.226</td></tr>
+        <tr><td><strong>Pajak</strong> <span class="small">11%</span></td><td class="num" style="color:var(--slate-mute)">&mdash;</td><td class="num">Rp 1.294.966</td></tr>
+        <tr class="total"><td colspan="2">Jumlah ke Hostinger, 24 bulan</td><td class="num">Rp 13.067.380</td></tr>
       </tbody>
     </table>
 
-    <table style="margin-top:5mm">
+    <table style="margin-top:4mm">
       <tbody>
-        <tr><td>Jumlah dibayarkan ke Hostinger <span class="small">&middot; dua pesanan</span></td><td class="num" style="width:32mm">Rp 4.511.082</td></tr>
-        <tr><td>Jasa pengerjaan <span class="small">&middot; enam bagian di halaman 11</span></td><td class="num">Rp 3.000.000</td></tr>
+        <tr><td>Jasa pengerjaan <span class="small">&middot; enam bagian di halaman 11, sekali bayar</span></td><td class="num" style="width:32mm">Rp 3.000.000</td></tr>
       </tbody>
     </table>
 
     <div class="price-badge" style="margin-top:4mm">
       <div>
         <div style="font-size:11pt;font-weight:700;color:var(--ink)">Total penawaran</div>
-        <div class="k">Sudah termasuk pajak dan kedua nama domain</div>
+        <div class="k">Dua tahun penuh, tiga nama domain, sudah termasuk pajak</div>
       </div>
-      <div class="v">Rp 7.511.082</div>
+      <div class="v">Rp 16.067.380</div>
     </div>
 
     <div class="grid g2" style="margin-top:4mm">
       <div class="card">
         <h3>Pembayaran</h3>
-        <p><strong>Uang muka Rp 6.011.082</strong>, yaitu seluruh biaya Hostinger
-        ditambah separuh jasa, karena Hostinger menagih penuh di depan.
-        <strong>Sisa Rp 1.500.000</strong> saat serah terima.</p>
+        <p><strong>Uang muka Rp 14.567.380</strong>, yaitu seluruh biaya
+        Hostinger ditambah separuh jasa, karena Hostinger menagih penuh di
+        depan. <strong>Sisa Rp 1.500.000</strong> saat serah terima.</p>
       </div>
-      <div class="card mute">
-        <h3>Kenapa domainnya diambil tiga tahun</h3>
-        <p>Per tahunnya lebih murah, dan nama domain adalah satu-satunya barang
-        di sini yang kalau telat diperpanjang bisa diambil orang lain.</p>
+      <div class="card green">
+        <h3>Kalau promonya masih berlaku saat dipesan</h3>
+        <p>Selisihnya menjadi milik pemilik, bukan tambahan buat pengerja.
+        Kuitansi Hostinger diserahkan apa adanya saat serah terima, jadi
+        angkanya bisa dicocokkan sendiri baris per baris.</p>
       </div>
     </div>
   </div>
-  <div class="foot"><span>Biaya tahun pertama</span><span>12 / 16</span></div>
+  <div class="foot"><span>Biaya 24 bulan pertama</span><span>12 / 16</span></div>
 </section>
 
 <!-- ====================================================== 9 tahun kedua -->
 <section class="slide">
   <div class="head">
-    <div class="eyebrow">Bagian 9 &middot; Setelah tahun pertama</div>
+    <div class="eyebrow">Bagian 9 &middot; Setelah 24 bulan</div>
     <h2 style="margin-top:5px">Biaya yang berjalan terus</h2>
   </div>
   <div class="body">
-    <p class="lede" style="margin-top:5mm">
+    <p class="lede" style="margin-top:4mm">
       Ini biaya pemilik ke Hostinger, bukan ke pengerja, dan tidak ada biaya
-      jasa yang berulang. Ditulis di sini supaya tidak ada yang mengejutkan
-      dua belas bulan lagi.
+      jasa yang berulang. Karena halaman sebelumnya sudah memakai harga normal,
+      angka di bawah <strong>sama persis</strong> dengan yang dibayar sekarang:
+      itu memang gunanya tidak memakai harga promo.
     </p>
 
     <table style="margin-top:5mm">
-      <thead><tr><th>Pos</th><th class="num" style="width:26mm">Per bulan</th><th class="num" style="width:30mm">Per tahun</th></tr></thead>
+      <thead><tr><th>Pos</th><th class="num" style="width:30mm">Harga normal</th><th class="num" style="width:30mm">Per 24 bulan</th></tr></thead>
       <tbody>
-        <tr>
-          <td><strong>Paket KVM 2, perpanjangan</strong> <span class="pill">harga pasti</span><br><span class="small">Tertulis di keranjang: diperpanjang setelah 12 bulan dengan harga ini</span></td>
-          <td class="num">Rp 271.900</td>
-          <td class="num">Rp 3.262.800</td>
-        </tr>
-        <tr>
-          <td><strong>Email profesional, perpanjangan</strong> <span class="pill">harga pasti</span><br><span class="small">Tertulis di keranjang: Rp 19.900 per bulan setelah 12 bulan pertama</span></td>
-          <td class="num">Rp 19.900</td>
-          <td class="num">Rp 238.800</td>
-        </tr>
-        <tr>
-          <td><strong>Backup harian otomatis</strong><br><span class="small">Harga perpanjangannya tidak tertera di keranjang; dihitung memakai harga sekarang</span></td>
-          <td class="num">± Rp 104.900</td>
-          <td class="num">± Rp 1.258.800</td>
-        </tr>
-        <tr>
-          <td><strong>Nama domain dashboard</strong><br><span class="small">Gratisnya cuma tahun pertama; harga perpanjangannya belum tertera</span></td>
-          <td class="num" style="color:var(--slate-mute)">&mdash;</td>
-          <td class="num">± Rp 1.113.900</td>
-        </tr>
-        <tr>
-          <td><strong>turtlehomestay.com</strong><br><span class="small">Sudah dibayar sampai tahun ketiga. Mulai tahun keempat Rp 209.900 per tahun</span></td>
-          <td class="num" style="color:var(--slate-mute)">&mdash;</td>
-          <td class="num">Rp 0</td>
-        </tr>
-        <tr><td><strong>Pajak</strong> <span class="small">11%</span></td><td class="num" style="color:var(--slate-mute)">&mdash;</td><td class="num">± Rp 646.173</td></tr>
-        <tr class="total"><td colspan="2">Perkiraan setahun, mulai tahun kedua</td><td class="num">± Rp 6.520.473</td></tr>
+        <tr><td><strong>Paket KVM 2</strong></td><td class="num">Rp 407.900 / bln</td><td class="num">Rp 9.789.600</td></tr>
+        <tr><td><strong>Email profesional</strong><br><span class="small">Keranjang menyebut perpanjangan Rp 15.900 per bulan, jadi pos ini kemungkinan besar lebih murah dari yang dianggarkan</span></td><td class="num">Rp 28.900 / bln</td><td class="num">Rp 693.600</td></tr>
+        <tr><td><strong>Tiga nama domain</strong></td><td class="num">Rp 209.900 / thn</td><td class="num">Rp 1.259.400</td></tr>
+        <tr><td><strong>Biaya ICANN</strong></td><td class="num" style="color:var(--slate-mute)">Rp 9.938 &times; 3</td><td class="num">Rp 29.814</td></tr>
+        <tr><td><strong>Pajak</strong> <span class="small">11%</span></td><td class="num" style="color:var(--slate-mute)">&mdash;</td><td class="num">Rp 1.294.966</td></tr>
+        <tr class="total"><td colspan="2">Jumlah tiap perpanjangan, jatuh tempo September 2028</td><td class="num">Rp 13.067.380</td></tr>
       </tbody>
     </table>
 
     <div class="note" style="margin-top:5mm">
-      <strong>Yang bertanda "harga pasti" tertulis di keranjangnya sendiri,
-      sisanya perkiraan.</strong> Harga perpanjangan backup harian dan nama
-      domain dashboard tidak ditampilkan di keranjang, jadi dihitung memakai
-      harga yang berlaku sekarang dan ditandai dengan ±. Perlakukan totalnya
-      sebagai pagar anggaran, bukan sebagai kuitansi.
+      <strong>Tanggal jatuh temponya satu, dan itu disengaja.</strong> Server,
+      email, dan ketiga nama domain semuanya diambil untuk dua tahun, jadi
+      semuanya jatuh tempo bersamaan pada September 2028. Satu tagihan setahun
+      sekali jauh lebih sulit terlewat daripada lima tagihan yang berpencar,
+      dan nama domain yang terlewat bisa diambil orang lain.
     </div>
 
     <div class="card green" style="margin-top:5mm">
       <h3>Cara menekannya, kalau nanti perlu</h3>
-      <p>Keranjangnya menawarkan langganan 24 bulan dengan harga per bulan yang
-      lebih rendah daripada 12 bulan; kalau di tahun kedua sudah yakin dengan
-      susunan ini, memperpanjang dua tahun sekaligus menurunkan biaya per
-      bulannya. Backup harian bisa dimatikan kalau salinan database ke luar
-      Hostinger dinilai sudah cukup, dan itu menghemat sekitar Rp 1,26 juta per
-      tahun. Nama domain dashboard juga tidak wajib diperpanjang di Hostinger:
-      kalau harga perpanjangannya nanti terasa mahal, ia bisa dipindahkan ke
-      registrar lain, atau diganti nama domain baru yang lebih murah karena
-      alamat itu cuma dipakai pemilik dan staf, bukan tamu.</p>
+      <p>Tiga hal, semuanya tanpa mengurangi apa pun yang sudah berjalan.
+      Pertama, harga perpanjangan email tertulis Rp 15.900 per bulan di
+      keranjang, lebih murah daripada harga normalnya, dan selisihnya sekitar
+      Rp 312 ribu per dua tahun. Kedua, Hostinger hampir selalu menawarkan
+      potongan untuk perpanjangan; anggaran ini sengaja tidak mengandalkannya,
+      jadi potongan apa pun langsung jadi kelebihan. Ketiga, nama domain Eddo
+      Homestay boleh dilepas kalau situsnya diputuskan tidak jadi dibuat, dan
+      itu memotong Rp 419.800 berikut pajaknya.</p>
     </div>
   </div>
   <div class="foot"><span>Biaya berjalan</span><span>13 / 16</span></div>
@@ -752,6 +733,10 @@ __CSS__
           <td>Tarik dan kirim kalender ke Booking.com, Agoda, dan Traveloka. Ini yang menghentikan double booking, dan ini masalah nomor satu yang disebut di dokumen kebutuhan aslinya.</td>
         </tr>
         <tr>
+          <td><strong>Situs Eddo Homestay</strong><br><span class="pill later">tahap berikutnya</span></td>
+          <td>Nama domainnya didaftarkan dan dibayar di penawaran ini, tapi situsnya belum dibangun. Yang sudah ada tinggal dipakai ulang: warna, komponen, dan struktur halamannya sama, jadi tahap itu jauh lebih pendek daripada membangun situs pertama.</td>
+        </tr>
+        <tr>
           <td><strong>Isi kotak surat email</strong></td>
           <td>Kotak suratnya dipasang dan dibuktikan bisa kirim dan terima, tapi memindahkan email lama dari alamat sebelumnya, menyusun tanda tangan email, dan membuat alamat tambahan tidak termasuk. Paket ini isinya satu kotak surat.</td>
         </tr>
@@ -765,7 +750,7 @@ __CSS__
         </tr>
         <tr>
           <td><strong>Perawatan bulanan</strong></td>
-          <td>Pemantauan dan cadangan berjalan sendiri setelah dipasang. Kalau ingin ada yang berjaga dan menangani kalau terjadi apa-apa, itu kesepakatan terpisah.</td>
+          <td>Pemantauan dan cadangan berjalan sendiri setelah dipasang. Kalau ingin ada yang berjaga dan menangani kalau terjadi apa-apa, itu kesepakatan terpisah. Backup harian penuh dari sisi Hostinger juga tidak diambil di penawaran ini; salinan database ke luar server sudah termasuk.</td>
         </tr>
       </tbody>
     </table>
@@ -846,17 +831,16 @@ __CSS__
   <div class="body">
     <table style="margin-top:6mm">
       <tbody>
-        <tr><td>Jasa pengerjaan deploy <span class="small">&middot; enam bagian, empat hari kerja</span></td><td class="num" style="width:32mm">Rp 3.000.000</td></tr>
-        <tr><td>Hostinger pesanan pertama <span class="small">&middot; KVM 2 + backup harian + domain dashboard + pajak, 12 bulan</span></td><td class="num">Rp 3.806.856</td></tr>
-        <tr><td>Hostinger pesanan kedua <span class="small">&middot; turtlehomestay.com 3 tahun + email 12 bulan + pajak</span></td><td class="num">Rp 704.226</td></tr>
-        <tr class="total"><td>Total penawaran</td><td class="num">Rp 7.511.082</td></tr>
+        <tr><td>Jasa pengerjaan deploy <span class="small">&middot; enam bagian, empat hari kerja, sekali bayar</span></td><td class="num" style="width:32mm">Rp 3.000.000</td></tr>
+        <tr><td>Hostinger, 24 bulan <span class="small">&middot; KVM 2 + email + tiga nama domain + ICANN + pajak, harga normal</span></td><td class="num">Rp 13.067.380</td></tr>
+        <tr class="total"><td>Total penawaran</td><td class="num">Rp 16.067.380</td></tr>
       </tbody>
     </table>
 
     <div class="grid g2" style="margin-top:6mm">
       <div class="card">
         <h3>Uang muka</h3>
-        <p style="font-size:12pt;font-weight:700;margin-top:3px">Rp 6.011.082</p>
+        <p style="font-size:12pt;font-weight:700;margin-top:3px">Rp 14.567.380</p>
         <p class="small" style="margin-top:3px">Seluruh biaya Hostinger ditambah separuh jasa</p>
       </div>
       <div class="card">
@@ -869,10 +853,10 @@ __CSS__
     <div class="card green" style="margin-top:5mm">
       <h3>Yang diterima pemilik saat serah terima</h3>
       <ul>
-        <li>Dua alamat yang sudah hidup dengan sertifikat keamanan aktif</li>
+        <li>Dua alamat yang sudah hidup dengan sertifikat keamanan aktif, dan satu lagi terdaftar atas nama pemilik</li>
         <li>Satu alamat email berakhiran nama domain sendiri, sudah diuji kirim dan terima</li>
-        <li>Akses penuh ke server, domain, email, dan panel deploy, semuanya atas nama pemilik</li>
-        <li>Cadangan harian yang berjalan, dan sudah dibuktikan bisa dipulihkan</li>
+        <li>Akses penuh ke server, ketiga domain, email, dan panel deploy, semuanya atas nama pemilik</li>
+        <li>Salinan database otomatis ke penyimpanan di luar Hostinger, dan sudah dibuktikan bisa dipulihkan</li>
         <li>Pemantauan yang mengirim pesan kalau situsnya tidak menjawab</li>
         <li>Catatan tertulis cara memperbarui dan cara memulihkan</li>
       </ul>
@@ -892,9 +876,10 @@ __CSS__
     </div>
 
     <p class="small" style="margin-top:6mm">
-      Penawaran ini berlaku 30 hari sejak tanggal di halaman pertama. Harga
-      Hostinger mengikuti keranjang belanja pada tanggal tersebut; harga promo
-      bisa berubah sewaktu-waktu dan dikonfirmasi ulang saat pemesanan.
+      Penawaran ini berlaku 30 hari sejak tanggal di halaman pertama. Angka
+      Hostinger di dalamnya adalah harga normal, bukan harga promo, jadi tidak
+      ikut hangus kalau promonya berakhir. Nama domain Eddo Homestay
+      dikonfirmasi ketersediaannya saat pemesanan.
     </p>
   </div>
   <div class="foot"><span>Persetujuan</span><span>16 / 16</span></div>

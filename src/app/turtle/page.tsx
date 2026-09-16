@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { Maintenance } from "@/components/web/maintenance";
 import { TurtleSite } from "@/components/web/site";
+import { canonical } from "@/lib/site-domains";
 import { SITE_CONFIG } from "@/lib/site-config";
 import { COPY, DEFAULT_LANG, EMAIL, PROPERTY } from "@/lib/web-content";
 
@@ -27,7 +28,7 @@ export const metadata: Metadata = {
     locale: DEFAULT_LANG === "en" ? "en_US" : "id_ID",
     type: "website",
   },
-  alternates: { canonical: "/turtle" },
+  alternates: { canonical: canonical("turtle") },
   other: { "contact:email": EMAIL },
   /* A crawler that reaches the holding page must not file it as what this
      site says. The switch is read at build time, so this is decided once per

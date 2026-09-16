@@ -607,8 +607,14 @@ Sejak sekarang push biasa sudah bekerja — tidak perlu lagi lewat zip.
 Terpisah dari dashboard dan **tidak memindahkannya**: manager tetap di `/`,
 website di `/turtle`. Keduanya cuma berbagi tarif kamar, kit ilustrasi, dan
 `content/site.json`, jadi salah satunya bisa dipindah ke domain sendiri nanti
-tanpa yang lain ikut berubah (di Vercel itu setelan domain, bukan perubahan
-kode).
+tanpa yang lain ikut berubah.
+
+**Koreksi.** Paragraf ini dulu bilang memindahkannya ke domain sendiri cuma
+setelan domain di Vercel dan bukan perubahan kode. Itu keliru: domain yang
+ditambahkan ke sebuah proyek menyajikan `/`, dan `/` adalah dashboard, jadi
+tamu yang mengetik alamat homestay akan mendarat di halaman login. Pemetaan
+domain ke situs sekarang ada di `next.config.ts`, mati kalau tidak diisi, dan
+caranya ada di `DEPLOY.md`.
 
 Isinya: hero foto, bagian nilai, kamar, dive center, musim, cara sampai, FAQ,
 footer. Dua bahasa, default Inggris, tombol ID/EN di header.

@@ -237,7 +237,16 @@ function monthIndexFor(date: string): number | null {
   return Math.min(11, Math.max(0, ix));
 }
 
-export function EddoSite({ maintenance = false }: { maintenance?: boolean }) {
+export function EddoSite({
+  maintenance = false,
+  sisterHref = "/turtle",
+}: {
+  maintenance?: boolean;
+  /** Where Turtle lives. A path while the two share a domain, an absolute
+      address once Turtle has its own. Resolved by the page, which can read
+      the environment; this component cannot. */
+  sisterHref?: string;
+}) {
   const { lang, pickLang } = useLang();
   const { currency, pickCurrency } = useCurrency();
   const rates = useRates();
@@ -703,7 +712,7 @@ export function EddoSite({ maintenance = false }: { maintenance?: boolean }) {
           <div className="text-[12.5px] leading-[1.7] text-slate md:text-right">
             <div>
               {t.footer.sister}{" "}
-              <Link href="/turtle" className="font-medium text-eddo no-underline hover:underline">
+              <Link href={sisterHref} className="font-medium text-eddo no-underline hover:underline">
                 {t.footer.sisterLink}
               </Link>
             </div>

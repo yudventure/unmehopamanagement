@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { EddoSite } from "@/components/eddo/site";
 import { EDDO, EDDO_COPY } from "@/lib/eddo-content";
+import { canonical, siteDomain } from "@/lib/site-domains";
 import { SITE_CONFIG } from "@/lib/site-config";
 import { DEFAULT_LANG } from "@/lib/web-content";
 
@@ -22,10 +23,20 @@ export const metadata: Metadata = {
     locale: DEFAULT_LANG === "en" ? "en_US" : "id_ID",
     type: "website",
   },
-  alternates: { canonical: "/eddo" },
+  alternates: { canonical: canonical("eddo") },
   ...(SITE_CONFIG.maintenance ? { robots: { index: false, follow: false } } : {}),
 };
 
 export default function EddoPage() {
-  return <EddoSite maintenance={SITE_CONFIG.maintenance} />;
+  /* Resolved here rather than in the component: the component runs in the
+     browser, where a server-only variable is not readable. Once Turtle has a
+     domain of its own, the footer's "sister homestay" link has to leave this
+     domain rather than point at a copy of Turtle sitting under it. */
+  const turtle = siteDomain("turtle");
+  return (
+    <EddoSite
+      maintenance={SITE_CONFIG.maintenance}
+      sisterHref={turtle ? `https://${turtle}/` : "/turtle"}
+    />
+  );
 }

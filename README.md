@@ -20,6 +20,17 @@ npm run build && npm run start   # build produksi
 npm run typecheck                # tsc --noEmit
 ```
 
+Tiga situs, satu aplikasi:
+
+| Alamat | Isi |
+|---|---|
+| `http://localhost:3000/` | dashboard booking |
+| `http://localhost:3000/turtle` | situs publik Turtle Dive Homestay |
+| `http://localhost:3000/eddo` | situs publik Eddo Homestay |
+
+Di produksi ketiganya dipetakan ke domainnya masing-masing; caranya ada di
+[`DEPLOY.md`](DEPLOY.md).
+
 ### Demo login
 
 Halaman login muncul pertama kali. Pilih peran di **Masuk sebagai** — email

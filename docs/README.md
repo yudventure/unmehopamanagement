@@ -61,9 +61,9 @@ kuitansi di halaman 11 dan 16 harus ikut diubah, atau dokumennya jadi
 menjanjikan dua hal yang bertentangan. Rinciannya ada di
 `penawaran/RINCIAN-INTERNAL.md`.
 
-Tiga nama domain, bukan dua: `turtlehomestay.com` untuk situs publik,
-`unmehoppa.com` untuk dashboard, dan satu lagi untuk Eddo Homestay yang
-didaftarkan sekarang tapi situsnya belum dibangun.
+Tiga nama domain, bukan dua: `turtlehomestay.com` untuk situs publik Turtle,
+`unmehoppa.com` untuk dashboard, dan satu lagi untuk situs publik Eddo
+Homestay di `/eddo`, yang nama pastinya belum dipilih.
 
 **Kalau nanti diperbarui, ambil dari keranjang atau halaman checkout Hostinger,
 dan catat mana yang harga coret dan mana yang harga bayar.** Jangan dari

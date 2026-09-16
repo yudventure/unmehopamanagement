@@ -82,6 +82,18 @@
   --color-ok: #2f8a63;
   --color-dot-all: #d9cbb5;
 
+  /* Eddo Homestay. Its own palette because it is its own brand: the teal is
+     lifted from the tiki badge in its logo, and the pages are white rather
+     than cream, which is what keeps the two sites from looking like one
+     site with two names. */
+  --font-script: var(--font-script), "Kaushan Script", cursive;
+  --color-eddo: #17a9ae;
+  --color-eddo-deep: #0f8489;
+  --color-eddo-ink: #12343a;
+  --color-eddo-tint: #e6f6f7;
+  --color-eddo-wash: #f2fafb;
+  --color-eddo-line: #cdeaec;
+
   --animate-pop-in: popIn 0.18s ease-out;
   --animate-slide-in: slideIn 0.18s ease-out;
 

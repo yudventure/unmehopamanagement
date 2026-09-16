@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { DM_Sans, JetBrains_Mono } from "next/font/google";
+import { DM_Sans, JetBrains_Mono, Kaushan_Script } from "next/font/google";
 
 import "./globals.css";
 
@@ -13,6 +13,16 @@ const dmSans = DM_Sans({
 const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
   variable: "--font-jetbrains-mono",
+  display: "swap",
+});
+
+/* The Eddo site's one flourish: a brush script for a single line under each
+   heading. One weight, latin only, self-hosted at build like the other two,
+   so it costs a file and not a request to a font service. */
+const kaushan = Kaushan_Script({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-script",
   display: "swap",
 });
 
@@ -81,7 +91,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="id" className={`${dmSans.variable} ${jetbrainsMono.variable}`}>
+    <html lang="id" className={`${dmSans.variable} ${jetbrainsMono.variable} ${kaushan.variable}`}>
       <body>
         <script dangerouslySetInnerHTML={{ __html: START_AT_TOP }} />
         {children}

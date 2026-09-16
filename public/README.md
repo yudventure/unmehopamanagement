@@ -222,3 +222,33 @@ lencana bulat di tengah kanvas persegi. Logo mendatar akan terpotong.
 
 Logo ini hanya dipakai di website. Dashboard `/` memakai lencana Unmehopa
 (`src/components/brand-logo.tsx`) — dua merek berbeda, sengaja dipisah.
+
+## Situs Eddo Homestay (`/eddo`)
+
+Situs kedua, untuk properti kedua. Berkas-berkasnya **belum ada satu pun**;
+halamannya sudah lengkap tanpa itu karena setiap foto punya ilustrasi SVG di
+bawahnya yang tampil selama berkasnya belum ada. Begitu berkasnya ditaruh,
+fotonya yang tampil, tanpa mengubah kode.
+
+| Berkas | Dipakai di | Rasio |
+|---|---|---|
+| `eddo-logo.png` | kepala halaman dan footer | persegi, latar transparan. Lencana tiki toska yang dikirim pemilik |
+| `eddo-hero.jpg` | foto besar di samping judul | 5:4 (mendatar sedikit). Dermaga Sawinggrai paling pas |
+| `eddo-bawah.jpg` | kartu kamar Eddo Bawah | 16:10 |
+| `eddo-atas.jpg` | kartu kamar Eddo Atas | 16:10 |
+| `eddo-around-1.jpg` | kartu "Dermaga Sawinggrai" | 3:4 (tegak) |
+| `eddo-around-2.jpg` | kartu "Burung cendrawasih" | 3:4 |
+| `eddo-around-3.jpg` | kartu "Arborek" | 3:4 |
+| `eddo-around-4.jpg` | kartu "Piaynemo" | 3:4 |
+| `eddo-cta.jpg` | kartu ajakan di bagian "Kenapa Eddo" | mendatar, akan ditutup lapisan toska gelap |
+
+Aturannya sama seperti situs Turtle: huruf kecil semua, lebar 1080 sampai
+1920px, usahakan di bawah 300 KB per foto.
+
+**Logonya sebaiknya PNG transparan**, karena ditaruh di atas latar putih di
+kepala halaman dan di atas latar toska di footer. Kalau berkasnya belum ada,
+kepala halaman memakai nama dalam huruf, bukan gambar rusak.
+
+Kontak dan tautan media sosialnya **masih memakai isian yang sama dengan
+Turtle** (tab Website di dashboard). Kalau Eddo perlu nomor WhatsApp atau
+akun Instagram sendiri, itu perlu kolom baru di tab Website; belum ada.

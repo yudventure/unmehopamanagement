@@ -59,6 +59,8 @@ export function EnquiryModal({
   onChange,
   message,
   lang,
+  activities = ACTIVITY_KEYS,
+  site,
 }: {
   open: boolean;
   onClose: () => void;
@@ -68,6 +70,12 @@ export function EnquiryModal({
   onChange: (patch: Partial<Enquiry>) => void;
   message: string;
   lang: string;
+  /** Which of the activities to offer. A homestay without a dive centre has
+      no business offering diving, so a site can narrow the list. */
+  activities?: readonly ActivityKey[];
+  /** Which property the message is about, when the family runs more than
+      one. It goes into the email's subject so the inbox can tell them apart. */
+  site?: string;
 }) {
   const [status, setStatus] = useState<Status>("idle");
   /* Bots fill in every field they can see. This one is off-screen rather than
@@ -115,6 +123,7 @@ export function EnquiryModal({
           when: months[value.monthIx] ?? months[0],
           nights: stay ? value.nights : "",
           lang,
+          site,
           website: trap,
         }),
       });
@@ -220,7 +229,7 @@ export function EnquiryModal({
                   }
                   className={`${FIELD} cursor-pointer`}
                 >
-                  {ACTIVITY_KEYS.map((a) => (
+                  {activities.map((a) => (
                     <option key={a} value={a}>
                       {t.activities[a]}
                     </option>

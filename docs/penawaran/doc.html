@@ -46,7 +46,7 @@ __CSS__
       </div>
       <div class="chip">
         <div class="t mono" style="font-size:8.5pt">Eddo Homestay</div>
-        <div class="s">Diamankan sekarang untuk situs kedua, belum dipakai</div>
+        <div class="s">Situs publik kedua, dua kamar, dua bahasa. Fotonya menyusul</div>
       </div>
     </div>
 
@@ -78,7 +78,7 @@ __CSS__
     </p>
 
     <div class="grid g3" style="margin-top:6mm">
-      <div class="card"><div class="stat"><span class="n">9</span><span class="k">halaman siap tayang, delapan di antaranya sudah jadi HTML statis saat build</span></div></div>
+      <div class="card"><div class="stat"><span class="n">10</span><span class="k">halaman siap tayang di dua situs, sembilan di antaranya sudah jadi HTML statis saat build</span></div></div>
       <div class="card"><div class="stat"><span class="n">4</span><span class="k">paket npm yang ikut terpasang di server: next, react, react-dom, jspdf</span></div></div>
       <div class="card"><div class="stat"><span class="n">2</span><span class="k">bahasa penuh di situs publik, Indonesia dan Inggris, bertipe di kode</span></div></div>
     </div>
@@ -90,7 +90,8 @@ __CSS__
           <li>Kalender bulanan, deteksi bentrok kamar, daftar per tanggal, detail booking</li>
           <li>Laporan: KPI, dua grafik okupansi, ekspor CSV dan PDF, banding bulan lalu</li>
           <li>Properti dan kamar, pengguna dan peran, pemisahan hak Owner dan Staf</li>
-          <li>Situs publik: kamar, enam paket selam dengan halaman sendiri, musim, cara sampai, FAQ, galeri, peta</li>
+          <li>Situs publik Turtle: kamar, enam paket selam dengan halaman sendiri, musim, cara sampai, FAQ, galeri, peta</li>
+          <li>Situs publik Eddo Homestay: dua kamar dari tabel yang sama, bilah pencarian yang membuka formulir pesan, dua bahasa</li>
           <li>Bagian-bagiannya muncul saat digulir, dan berhenti sendiri kalau perangkatnya minta lebih sedikit gerak</li>
           <li>CMS di dalam dashboard, lengkap dengan saklar mode perbaikan</li>
         </ul>
@@ -262,15 +263,15 @@ __CSS__
       Kedua produk tinggal serumah di satu repo dan berbagi satu set warna dan
       komponen. Memisahnya jadi beberapa alamat tidak perlu memecah kodenya:
       cukup satu lapisan yang membaca nama domain lalu mengarahkan ke bagian
-      yang benar. Alamat ketiga didaftarkan sekarang dan belum menunjuk ke
-      mana-mana.
+      yang benar. Situs ketiga, untuk Eddo Homestay, menambah satu cabang di
+      lapisan itu dan tidak menambah apa pun di server.
     </p>
 
     <div style="display:grid;grid-template-columns:1fr 10mm 1fr;align-items:center;margin-top:6mm">
       <div style="display:flex;flex-direction:column;gap:3mm">
         <div class="box"><div class="t mono" style="font-size:8.5pt">turtlehomestay.com</div><div class="s">Tamu, calon tamu, mesin pencari</div></div>
         <div class="box"><div class="t mono" style="font-size:8.5pt">unmehoppa.com</div><div class="s">Pemilik dan staf saja</div></div>
-        <div class="box dash"><div class="t mono" style="font-size:8.5pt">Eddo Homestay</div><div class="s">Didaftarkan, diparkir. Situsnya tahap berikutnya</div></div>
+        <div class="box"><div class="t mono" style="font-size:8.5pt">Eddo Homestay</div><div class="s">Tamu properti kedua. Kamar dan tarifnya dari tabel yang sama</div></div>
       </div>
       <div class="arrow">&rarr;</div>
       <div class="box" style="background:var(--teal-tint);border-color:var(--teal-line)">
@@ -289,8 +290,8 @@ __CSS__
         <p>Tarif kamar dibaca dari sumber yang sama, jadi situs dan dashboard tidak mungkin menyebut angka berbeda. Dua aplikasi berarti dua salinan yang harus dijaga tetap sama.</p>
       </div>
       <div class="card mute">
-        <h3>Kenapa yang ketiga dibeli sekarang</h3>
-        <p>Nama domain tidak bisa dipesan untuk nanti. Mendaftarkannya hari ini, meski situsnya belum ada, harganya sama dengan mendaftarkannya dua tahun lagi, dan sampai saat itu tidak ada yang bisa mengambilnya lebih dulu.</p>
+        <h3>Kenapa tiga situs tetap satu server</h3>
+        <p>Ketiganya satu aplikasi yang sama, jadi satu pembaruan keamanan, satu cadangan, dan satu pemantauan menjaga ketiganya sekaligus. Tiga server berarti tiga kali pekerjaan itu untuk tamu yang jumlahnya sama.</p>
       </div>
     </div>
 
@@ -527,8 +528,8 @@ __CSS__
         <tr>
           <td class="num">3</td>
           <td><strong>Tiga domain, DNS, TLS, dan email</strong></td>
-          <td>Arahkan dua nama domain yang dipakai ke server dan pasang sertifikat yang memperpanjang dirinya sendiri; yang ketiga didaftarkan dan diparkir. Termasuk catatan DNS untuk email profesionalnya, yaitu MX, SPF, dan DKIM, supaya email keluar tidak masuk folder spam orang.
-          <br><span class="small">Cek: kedua alamat terbuka dengan gembok tanpa peringatan, dan satu email percobaan sampai ke Gmail di kotak masuk, bukan di spam.</span></td>
+          <td>Arahkan ketiga nama domain ke server dan pasang sertifikat yang memperpanjang dirinya sendiri, satu untuk tiap alamat. Termasuk catatan DNS untuk email profesionalnya, yaitu MX, SPF, dan DKIM, supaya email keluar tidak masuk folder spam orang.
+          <br><span class="small">Cek: ketiga alamat terbuka dengan gembok tanpa peringatan, dan satu email percobaan sampai ke Gmail di kotak masuk, bukan di spam.</span></td>
         </tr>
         <tr>
           <td class="num">4</td>
@@ -610,7 +611,7 @@ __CSS__
           <td class="num">Rp 419.800</td>
         </tr>
         <tr>
-          <td><strong>Nama domain Eddo Homestay</strong> <span class="pill later">diparkir</span><br><span class="small">Didaftarkan sekarang, situsnya tahap berikutnya</span></td>
+          <td><strong>Nama domain Eddo Homestay</strong><br><span class="small">Situs publik kedua. Nama pastinya dikonfirmasi saat pemesanan</span></td>
           <td class="num">Rp 209.900 / thn</td>
           <td class="num">Rp 419.800</td>
         </tr>
@@ -697,14 +698,12 @@ __CSS__
 
     <div class="card green" style="margin-top:5mm">
       <h3>Cara menekannya, kalau nanti perlu</h3>
-      <p>Tiga hal, semuanya tanpa mengurangi apa pun yang sudah berjalan.
+      <p>Dua hal, keduanya tanpa mengurangi apa pun yang sudah berjalan.
       Pertama, harga perpanjangan email tertulis Rp 15.900 per bulan di
       keranjang, lebih murah daripada harga normalnya, dan selisihnya sekitar
       Rp 312 ribu per dua tahun. Kedua, Hostinger hampir selalu menawarkan
       potongan untuk perpanjangan; anggaran ini sengaja tidak mengandalkannya,
-      jadi potongan apa pun langsung jadi kelebihan. Ketiga, nama domain Eddo
-      Homestay boleh dilepas kalau situsnya diputuskan tidak jadi dibuat, dan
-      itu memotong Rp 419.800 berikut pajaknya.</p>
+      jadi potongan apa pun langsung jadi kelebihan.</p>
     </div>
   </div>
   <div class="foot"><span>Biaya berjalan</span><span>13 / 16</span></div>
@@ -733,8 +732,8 @@ __CSS__
           <td>Tarik dan kirim kalender ke Booking.com, Agoda, dan Traveloka. Ini yang menghentikan double booking, dan ini masalah nomor satu yang disebut di dokumen kebutuhan aslinya.</td>
         </tr>
         <tr>
-          <td><strong>Situs Eddo Homestay</strong><br><span class="pill later">tahap berikutnya</span></td>
-          <td>Nama domainnya didaftarkan dan dibayar di penawaran ini, tapi situsnya belum dibangun. Yang sudah ada tinggal dipakai ulang: warna, komponen, dan struktur halamannya sama, jadi tahap itu jauh lebih pendek daripada membangun situs pertama.</td>
+          <td><strong>Foto dan isi Eddo Homestay</strong></td>
+          <td>Situsnya sudah ada dan ikut tayang, tapi semua fotonya masih ilustrasi sampai pemilik mengirim foto aslinya, dan teks kamarnya masih rancangan yang perlu dicek pemilik. Keduanya diisi dari sisi pemilik, bukan pekerjaan deploy.</td>
         </tr>
         <tr>
           <td><strong>Isi kotak surat email</strong></td>
@@ -853,7 +852,7 @@ __CSS__
     <div class="card green" style="margin-top:5mm">
       <h3>Yang diterima pemilik saat serah terima</h3>
       <ul>
-        <li>Dua alamat yang sudah hidup dengan sertifikat keamanan aktif, dan satu lagi terdaftar atas nama pemilik</li>
+        <li>Tiga alamat yang sudah hidup dengan sertifikat keamanan aktif</li>
         <li>Satu alamat email berakhiran nama domain sendiri, sudah diuji kirim dan terima</li>
         <li>Akses penuh ke server, ketiga domain, email, dan panel deploy, semuanya atas nama pemilik</li>
         <li>Salinan database otomatis ke penyimpanan di luar Hostinger, dan sudah dibuktikan bisa dipulihkan</li>

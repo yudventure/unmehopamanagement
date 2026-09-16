@@ -96,9 +96,9 @@ terasa efeknya buat kita tapi sangat terasa buat kesan totalnya.
   dan situs Eddo Homestay ada di halaman 14 sebagai "tidak termasuk". Kalau itu
   ikut dikerjakan tanpa penawaran baru, tiga juta habis di hari pertama tahap
   berikutnya.
-- **Situs Eddo Homestay khususnya.** Domainnya sudah dibayar di penawaran ini,
-  dan itu gampang disalahartikan sebagai situsnya ikut dibangun. Halaman 14
-  menyebutnya terpisah, tapi sebutkan juga lisan saat presentasi.
+- **Situs Eddo Homestay sudah ada, fotonya belum.** Halaman 14 menyebut foto
+  dan isi Eddo sebagai urusan pemilik. Kalau pemilik minta kita yang memotret
+  atau menulis ulang teks kamarnya, itu jam kerja di luar penawaran ini.
 - **Garansi 14 hari sengaja sempit**: hanya kerusakan yang datang dari
   pekerjaan ini.
 - **Backup harian Hostinger tidak diambil** di versi ini, mengikuti keranjang

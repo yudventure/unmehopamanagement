@@ -37,6 +37,9 @@ interface Payload {
   nights?: string;
   notes?: string;
   lang?: string;
+  /** Which property the message is about. The family runs two, and both
+      sites send to the same inbox. */
+  site?: string;
   /** Must stay empty. Anything in it came from a bot. */
   website?: string;
 }
@@ -101,6 +104,7 @@ export async function POST(req: Request) {
         ["Masukan", notes],
       ]
     : [
+        ...(clean(body.site) ? [["Properti", clean(body.site)] as [string, string]] : []),
         ["Nama", name || "—"],
         ["WhatsApp", phone || "—"],
         ["Email", email || "—"],
@@ -147,7 +151,7 @@ export async function POST(req: Request) {
       subject: oneLine(
         feedback
           ? `Masukan website${email ? ` · ${email}` : ""}`
-          : `Pesan website${name ? ` · ${name}` : ""}${
+          : `Pesan website${clean(body.site) ? ` ${clean(body.site)}` : ""}${name ? ` · ${name}` : ""}${
               body.when ? ` · ${clean(body.when)}` : ""
             }`,
       ),

@@ -31,7 +31,9 @@ import {
   EDDO_COPY,
   EMAIL,
   EDDO_ACTIVITIES,
+  INCLUDED_KEYS,
   type EddoActivity,
+  type IncludedKey,
   WHATSAPP,
   eddoRooms,
   waLink,
@@ -296,6 +298,32 @@ const TRUST_ICONS = [
   <svg key="internet" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M2.6 8.6a14 14 0 0 1 18.8 0" /><path d="M5.6 12.1a9.5 9.5 0 0 1 12.8 0" /><path d="M8.6 15.6a5 5 0 0 1 6.8 0" /><path d="M12 19.2h.01" /></svg>,
   <svg key="layanan" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M8.3 14.2a4.6 4.6 0 0 0 7.4 0" /><path d="M9.2 9.6h.01M14.8 9.6h.01" /></svg>,
 ];
+
+/**
+ * A glyph per line of what a night buys, keyed rather than ordered so the
+ * picture and the words cannot come apart. None of them is a tick and none of
+ * them is repeated: six identical ticks tell the reader only that there are
+ * six of something, which the eye already knew.
+ *
+ * Drawn rather than fetched, like every other icon on these two sites: an icon
+ * font is a network request and a flash of nothing for six shapes that between
+ * them come to less than a kilobyte.
+ */
+const INCLUDED_ICONS: Record<IncludedKey, React.ReactNode> = {
+  /* A house, not a bed: the point of the line is that the whole thing is
+     theirs. */
+  house: <><path d="M3.5 10.5L12 4l8.5 6.5" /><path d="M5.5 9.5V20h13V9.5" /><path d="M10 20v-5.5h4V20" /></>,
+  meals: <><path d="M7 3v8a2 2 0 0 0 2 2v7" /><path d="M5 3v4M9 3v4" /><path d="M17 3c-1.6 1.2-2.2 3-2.2 5.2 0 1.8.9 2.8 2.2 3V20" /></>,
+  /* A deck on posts with the water under it, which is what the line says. */
+  deck: <><path d="M3 10.5h18" /><path d="M6.5 10.5V16M17.5 10.5V16" /><path d="M3 19c1.6-1.2 3.2-1.2 4.8 0s3.2 1.2 4.8 0 3.2-1.2 4.8 0 2 .8 2.6.5" /></>,
+  /* Moving air rather than a fan's blades: three blades at this size close up
+     into a disc and read as a wheel. */
+  fan: <><path d="M3 8.5h10a2.5 2.5 0 1 0-2.5-2.5" /><path d="M3 12.5h14a2.5 2.5 0 1 1-2.5 2.5" /><path d="M3 16.5h6.5a2 2 0 1 1-2 2" /></>,
+  /* A globe, because the bar's own wifi arcs are already on this page and two
+     of the same shape in one view is the thing being avoided. */
+  internet: <><circle cx="12" cy="12" r="8.5" /><path d="M3.5 12h17" /><path d="M12 3.5c2.2 2.3 3.4 5.3 3.4 8.5S14.2 18.2 12 20.5c-2.2-2.3-3.4-5.3-3.4-8.5S9.8 5.8 12 3.5z" /></>,
+  nofee: <><path d="M20 12.5l-7.5 7.5-8.5-8.5V4h7.5l8.5 8.5z" /><path d="M8.2 8.2h.01" /></>,
+};
 
 const BTN =
   "inline-flex cursor-pointer items-center justify-center gap-2 rounded-full border-none bg-eddo-deep px-[22px] py-[12px] text-[14px] font-medium text-white no-underline transition-colors hover:bg-eddo-dark hover:text-white hover:no-underline";
@@ -728,6 +756,38 @@ export function EddoSite({
               next={t.rooms.next}
               counter={t.rooms.photoAlt}
             />
+
+            {/* Under the photographs rather than in a section of its own: the
+                question it answers, when to come, is asked while looking at
+                the place and deciding, not three screens later. */}
+            <div className="mt-5 rounded-[20px] border border-eddo-line bg-eddo-wash p-5">
+              <h4 className="m-0 text-[15px] font-bold tracking-[-.01em] text-eddo-ink">{t.season.title}</h4>
+              <p className="mt-1 mb-0 text-[12.5px] leading-[1.55] text-slate">{t.season.note}</p>
+              <ul className="mt-4 mb-0 flex list-none flex-col gap-[14px] p-0">
+                {t.season.bands.map((s, i) => (
+                  <li key={s.label} className="flex gap-[12px]">
+                    {/* Three bars, filling less as the sea gets worse: the
+                        ranking is the point, and a reader who skips the words
+                        still gets it. */}
+                    <span aria-hidden="true" className="mt-[5px] flex shrink-0 flex-col gap-[3px]">
+                      {[0, 1, 2].map((n) => (
+                        <span
+                          key={n}
+                          className={`block h-[3px] w-[16px] rounded-full ${n <= 2 - i ? "bg-eddo-deep" : "bg-eddo-line"}`}
+                        />
+                      ))}
+                    </span>
+                    <span>
+                      <span className="flex flex-wrap items-baseline gap-x-[8px]">
+                        <span className="text-[13.5px] font-bold text-eddo-ink">{s.label}</span>
+                        <span className="font-mono text-[11.5px] text-eddo-deep">{s.months}</span>
+                      </span>
+                      <span className="mt-[2px] block text-[12.5px] leading-[1.5] text-slate">{s.note}</span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
 
           <div data-reveal style={step(1)} className="rounded-[24px] border border-line bg-surface p-6 shadow-[0_18px_40px_-30px_rgba(18,52,58,.35)] md:p-7">
@@ -739,13 +799,24 @@ export function EddoSite({
             </h3>
             <p className="mt-2 mb-0 text-[14px] leading-[1.6] text-slate">{t.rooms.blurb}</p>
 
-            <ul className="mt-5 mb-0 grid list-none grid-cols-1 gap-x-4 gap-y-[9px] p-0 sm:grid-cols-2">
-              {t.rooms.included.map((f) => (
-                <li key={f} className="flex items-start gap-[9px] text-[13.5px] text-ink-soft">
-                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="mt-[3px] shrink-0 text-eddo-deep">
-                    <path d="M4 12.5l5.5 5.5L20 7" />
+            <ul className="mt-5 mb-0 grid list-none grid-cols-1 gap-x-4 gap-y-[11px] p-0 sm:grid-cols-2">
+              {INCLUDED_KEYS.map((k) => (
+                <li key={k} className="flex items-start gap-[10px] text-[13.5px] leading-[1.45] text-ink-soft">
+                  <svg
+                    viewBox="0 0 24 24"
+                    width="17"
+                    height="17"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.7"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                    className="mt-[2px] shrink-0 text-eddo-deep"
+                  >
+                    {INCLUDED_ICONS[k]}
                   </svg>
-                  {f}
+                  {t.rooms.included[k]}
                 </li>
               ))}
             </ul>

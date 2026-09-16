@@ -52,6 +52,17 @@ export function eddoRooms(): { rate: number; count: number } {
 export const EDDO_ACTIVITIES = ["stay", "diving", "motorbike", "camera", "package"] as const;
 export type EddoActivity = (typeof EDDO_ACTIVITIES)[number];
 
+/**
+ * What a night buys, in the order it is listed beside the price.
+ *
+ * Keys rather than a plain list, because each line has a glyph of its own and
+ * the two live in different files. Matched by position they would come apart
+ * the first time a line was reordered, and a fan beside "no booking fee" is
+ * the kind of wrong nobody reports.
+ */
+export const INCLUDED_KEYS = ["house", "meals", "deck", "fan", "internet", "nofee"] as const;
+export type IncludedKey = (typeof INCLUDED_KEYS)[number];
+
 export interface EddoCopy {
   htmlLang: string;
   meta: { title: string; description: string };
@@ -82,7 +93,7 @@ export interface EddoCopy {
     name: string;
     blurb: string;
     /** What a night buys, listed beside the price. */
-    included: string[];
+    included: Record<IncludedKey, string>;
     /** Alt text for a room photograph, numbered as the reader sees them. */
     photoAlt: (n: number, of: number) => string;
     prev: string;
@@ -104,6 +115,17 @@ export interface EddoCopy {
     /** Said under the button when it charges, and when it asks. */
     payNote: string;
     askNote: string;
+  };
+  /**
+   * When the water is worth the trip. The months are the ones the Turtle site
+   * already publishes, because it is the same archipelago seen from a jetty an
+   * island away, and two sites of one family disagreeing about the sea would
+   * be worse than either of them being vague.
+   */
+  season: {
+    title: string;
+    note: string;
+    bands: { label: string; months: string; note: string }[];
   };
   around: {
     eyebrow: string;
@@ -182,14 +204,14 @@ const EN: EddoCopy = {
     sleeps: (n) => `Sleeps ${n}`,
     name: "A house to yourselves",
     blurb: "Not a room in someone else's house. Five stand along the shore, each one yours for the nights you are here, with a deck facing the water and the family a short walk away.",
-    included: [
-      "The whole house to yourselves",
-      "Three meals a day, cooked here",
-      "A deck facing the water",
-      "Fan in every room",
-      "Internet 24/7",
-      "No agent and no booking fee",
-    ],
+    included: {
+      house: "The whole house to yourselves",
+      meals: "Three meals a day, cooked here",
+      deck: "A deck facing the water",
+      fan: "Fan in every room",
+      internet: "Internet 24/7",
+      nofee: "No agent and no booking fee",
+    },
     photoAlt: (n, of) => `Eddo Homestay, photograph ${n} of ${of}`,
     prev: "Previous photo",
     next: "Next photo",
@@ -206,6 +228,15 @@ const EN: EddoCopy = {
     ctaNote: (room) => `I would like to ask about ${room}.`,
     payNote: "Payment goes through Midtrans. We check the dates against the calendar and message you the same day.",
     askNote: "Your message reaches the family directly, on WhatsApp or email.",
+  },
+  season: {
+    title: "The best months to come",
+    note: "Raja Ampat is open all year. This is what the water does, seen from our own jetty.",
+    bands: [
+      { label: "Best", months: "October – February", note: "Calmest water, clearest visibility. Rooms fill early." },
+      { label: "Still good", months: "March – April, August – September", note: "Mixed weather, but most days are fine on the water." },
+      { label: "Quiet", months: "May – July", note: "Southeast wind, bigger swell. The emptiest months of the year." },
+    ],
   },
   around: {
     eyebrow: "Around us",
@@ -320,14 +351,14 @@ const ID: EddoCopy = {
     sleeps: (n) => `Muat ${n} orang`,
     name: "Satu rumah dipakai sendiri",
     blurb: "Bukan satu kamar di rumah orang lain. Ada lima berjajar di tepi pantai, satu untukmu selama menginap, dengan teras menghadap air dan rumah keluarganya tidak jauh dari situ.",
-    included: [
-      "Satu rumah dipakai sendiri",
-      "Makan 3x sehari, dimasak di rumah",
-      "Teras menghadap air",
-      "Kipas angin di tiap kamar",
-      "Internet 24/7",
-      "Tanpa agen dan tanpa biaya pemesanan",
-    ],
+    included: {
+      house: "Satu rumah dipakai sendiri",
+      meals: "Makan 3x sehari, dimasak di rumah",
+      deck: "Teras menghadap air",
+      fan: "Kipas angin di tiap kamar",
+      internet: "Internet 24/7",
+      nofee: "Tanpa agen dan tanpa biaya pemesanan",
+    },
     photoAlt: (n, of) => `Eddo Homestay, foto ke-${n} dari ${of}`,
     prev: "Foto sebelumnya",
     next: "Foto berikutnya",
@@ -344,6 +375,15 @@ const ID: EddoCopy = {
     ctaNote: (room) => `Saya mau tanya soal ${room}.`,
     payNote: "Pembayaran lewat Midtrans. Tanggalnya kami cek di kalender lalu kami kabari di hari yang sama.",
     askNote: "Pesanmu langsung sampai ke keluarganya, lewat WhatsApp atau email.",
+  },
+  season: {
+    title: "Bulan terbaik untuk datang",
+    note: "Raja Ampat buka sepanjang tahun. Ini yang dilakukan airnya, dilihat dari dermaga kami sendiri.",
+    bands: [
+      { label: "Terbaik", months: "Oktober – Februari", note: "Air paling tenang, jarak pandang paling jauh. Kamar cepat penuh." },
+      { label: "Masih bagus", months: "Maret – April, Agustus – September", note: "Cuaca campur, tapi sebagian besar hari aman di laut." },
+      { label: "Sepi", months: "Mei – Juli", note: "Angin tenggara, ombak lebih besar. Bulan paling sepi sepanjang tahun." },
+    ],
   },
   around: {
     eyebrow: "Sekitar kami",

@@ -497,6 +497,40 @@ input[type="search"]::-webkit-search-decoration {
  * across a whole screen of scrolling is small on purpose; the effect wanted
  * here is depth, not a zoom.
  */
+/*
+ * The photograph's left edge.
+ *
+ * It was a white gradient laid over the picture: readable, but milky across a
+ * third of the frame, and the picture never quite arrived. This does the
+ * opposite. The fade is a mask, so where the words are the photograph is
+ * simply absent, and everywhere past the feather it is untouched.
+ *
+ * The stops are `max()` of a length and a percentage because the text column
+ * is neither. Above 1280 it is a 1116px container centred in the window, so
+ * its right edge sits at 50% + 42px and the fade has to follow the middle of
+ * the window. At 1024 the container runs out of room and falls back to its
+ * padding, leaving the column ending at 632px while half the window is 512 —
+ * a percentage alone would cut through the last line of the paragraph. The
+ * pixel floor is what covers that.
+ *
+ * Measured: the longest run of type ends between 46% and 50% of the window
+ * from 1024 to 2560, and the fade starts at 660px or 50% + 72px, whichever is
+ * further right. The nearest the two ever come is 49px.
+ */
+[data-hero-fade] {
+  --fade-from: max(660px, calc(50% + 72px));
+  --fade-to: max(860px, calc(50% + 260px));
+  -webkit-mask-image: linear-gradient(90deg, transparent var(--fade-from), #000 var(--fade-to));
+  mask-image: linear-gradient(90deg, transparent var(--fade-from), #000 var(--fade-to));
+  /* Both stated: a mask defaults to repeating, and the picture inside this box
+     grows past it as the reader scrolls, which would tile the feather back
+     across the frame instead of clipping it. */
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+}
+
 [data-anim] [data-hero-photo] {
   transform: scale(calc(1 + var(--p, 0) * 0.08));
   transform-origin: center;

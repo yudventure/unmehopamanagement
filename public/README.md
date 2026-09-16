@@ -283,31 +283,43 @@ Dua berkas dari satu master, dan **keduanya perlu diganti bersamaan** kalau
 fotonya diganti. Masternya `Eddo_Homestay_1.png` (4,0 MB) disimpan apa adanya.
 
 **Bentuk hero ditentukan oleh ada-tidaknya `eddo-hero.jpg`**, dicek di disk
-sewaktu build (`src/app/eddo/page.tsx`), bukan di browser — kalau dicek di
+sewaktu build (`src/app/eddo/page.tsx`), bukan di browser. Kalau dicek di
 browser, pembacanya akan melihat halamannya berubah bentuk setelah tampil.
 Tanpa berkas itu, hero jadi blok warna pucat polos. Dengan berkas itu:
 
-- **≥1024px** fotonya memenuhi seluruh hero, tulisannya di atasnya.
-- **<1024px** fotonya keluar dari belakang tulisan dan turun jadi pita
-  sendiri di bawahnya, 240px (320px dari 640px ke atas).
+- **≥1024px** fotonya mengisi sisi kanan hero, dengan tepi kiri yang dilembutkan
+  (feather). Tulisannya ada di panel pucat di sebelah kirinya, tidak di atas
+  foto.
+- **<1024px** fotonya keluar dari hero dan turun jadi pita sendiri di bawah
+  tulisan, tinggi 240px (320px dari 640px ke atas).
 
-Pembagian itu bukan dua desain untuk gaya-gayaan. Supaya satu paragraf tetap
-terbaca di layar 390px, lapisan putih di atas fotonya harus menutup hampir
-seluruh bingkai — dan yang tersisa adalah foto yang tidak kelihatan, di HP,
-tempat sebagian besar tamu membukanya. Keluar dari balik tulisan, fotonya tidak
-perlu ditutup sama sekali.
+Pembagian itu bukan dua desain untuk gaya-gayaan. Di layar 390px tidak ada ruang
+untuk menaruh tulisan di samping foto, dan menutup fotonya sampai tulisannya
+terbaca menyisakan foto yang tidak kelihatan, di HP, tempat sebagian besar tamu
+membukanya. Turun ke bawah tulisan, fotonya tidak perlu ditutup sama sekali.
 
-**Tulisannya diukur, bukan dikira.** Latarnya foto di bawah dua gradien, dan
-tidak ada cara menghitungnya dari CSS: yang dilakukan adalah membuat tulisannya
-transparan, memotret halamannya, lalu membaca piksel yang tadinya tertutup
-huruf. Piksel terburuk yang menentukan, bukan rata-ratanya. Di lima lebar
-(1440, 1024, 768, 390, 360) semuanya lolos AA, yang paling lemah **4,75:1**
-dengan syarat 4,5. Kalau fotonya diganti dengan yang lebih terang di sisi kiri,
-**ukur ulang** — gradiennya dipatok untuk foto ini.
+**Tepi kiri fotonya bukan lapisan putih, tapi mask.** Artinya di tempat
+tulisannya berada fotonya memang tidak ada, dan lewat dari feather-nya fotonya
+utuh tanpa ditutup apa pun. Versi sebelumnya memakai gradien putih di atas
+foto: terbaca, tapi fotonya jadi seperti berkabut sepertiga bingkai.
 
-Lapisan putihnya dipatok dalam **piksel**, bukan persen, karena kolom teksnya
-selebar 600px di layar mana pun. Waktu masih persen, hasilnya 3,35:1 di 1440px
-tapi 1,03:1 di 768px: penutupnya habis di tengah paragraf.
+Titik fade-nya `max()` dari piksel dan persen, karena kolom teksnya bukan
+keduanya. Di atas 1280px kolomnya wadah 1116px yang ditengahkan, jadi tepi
+kanannya di 50% + 42px dan fade-nya harus ikut tengah jendela. Di 1024px
+wadahnya kehabisan ruang dan jatuh ke padding: kolomnya berakhir di 632px
+sementara setengah jendela baru 512px, jadi persen saja akan memotong baris
+terakhir paragrafnya. Angka pikselnya yang menutup celah itu.
+
+Diukur: fade-nya mulai di 660px atau 50% + 72px, mana yang lebih kanan.
+Jarak terdekatnya ke huruf **49px** (bahasa Inggris di 1024px); dalam bahasa
+Indonesia 148px.
+
+**Keterbacaannya juga diukur, bukan dikira.** Latarnya foto, dan tidak ada cara
+menghitungnya dari CSS: yang dilakukan adalah membuat tulisannya transparan,
+memotret halamannya, lalu membaca piksel yang tadinya tertutup huruf. Piksel
+terburuk yang menentukan, bukan rata-ratanya. Di lima lebar (1440, 1024, 768,
+390, 360) semuanya lolos AA, yang paling lemah **4,79:1** dengan syarat 4,5.
+Kalau susunan hero-nya diubah, **ukur ulang**.
 
 **Kenapa dua berkas.** `hidden` di Tailwind itu `display: none`, dan Chromium
 tetap mengunduh gambar di dalam elemen yang disembunyikan begitu. Diukur: HP
@@ -320,11 +332,16 @@ Sesudahnya: HP **0,43 MB**, desktop 0,58 MB satu halaman penuh.
 Jadi kalau suatu saat susunannya diubah, **jangan** cukup memasang `hidden` di
 gambar yang tidak dipakai — biayanya tetap dibayar pembacanya.
 
-**Kepala halaman ada di atas foto ini.** Tautannya gelap karena dulu latarnya
-nyaris putih, dan itu tidak diubah; yang ditambahkan adalah lapisan putih kedua
-setinggi 150px di puncak hero, yang padam sebelum sampai ke judul jadi terbaca
-sebagai cahaya yang meredup, bukan sebagai bar yang diam-diam muncul lagi.
-Kalau lapisan itu dilepas, warna tautannya harus ikut jadi putih.
+**Sisi kanan kepala halaman ada di atas foto ini** (nomor WhatsApp, tombol Book,
+pemilih bahasa). Tautannya gelap karena latarnya memang nyaris putih, dan itu
+tidak diubah; yang ditambahkan adalah lapisan putih tipis setinggi 132px di
+puncak hero, yang padam sebelum sampai ke judul jadi terbaca sebagai cahaya yang
+meredup, bukan sebagai bar yang diam-diam muncul lagi. Kalau lapisan itu
+dilepas, warna tulisan di kanan bar harus ikut jadi putih.
+
+Pemilih bahasa yang tidak terpilih ("ID" waktu situsnya sedang Inggris) tidak
+punya latar sendiri, jadi ia huruf langsung di atas foto: terukur 3,91:1 waktu
+masih `text-slate`. Yang diubah warnanya, bukan ditambah lapisan.
 
 Kontak dan tautan media sosialnya **masih memakai isian yang sama dengan
 Turtle** (tab Website di dashboard). Kalau Eddo perlu nomor WhatsApp atau

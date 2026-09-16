@@ -230,7 +230,10 @@ function LangSwitch({ lang, onPick, label }: { lang: Lang; onPick: (l: Lang) => 
           aria-label={l.label}
           aria-pressed={lang === l.key}
           className={`cursor-pointer rounded-full border-none px-[10px] py-[5px] text-[12px] font-medium transition-colors ${
-            lang === l.key ? "bg-eddo-deep text-white" : "bg-transparent text-slate hover:text-eddo-ink"
+            /* The unpicked language carries no background of its own, so at
+               1024 it is ink straight over the photograph: measured 3.91:1 in
+               `text-slate`. Darkened rather than given a wash to sit on. */
+            lang === l.key ? "bg-eddo-deep text-white" : "bg-transparent text-ink-soft hover:text-eddo-ink"
           }`}
         >
           {l.short}
@@ -491,69 +494,54 @@ export function EddoSite({
        * The top padding clears the fixed bar above, which measures 70px.
        */}
       <div ref={heroRef} className="relative overflow-hidden bg-eddo-wash">
+        {/* The pale ground: the whole hero without a photograph, the panel the
+            type sits on with one. It is painted first so the picture can lie
+            on top of it, which is the only order in which a feathered edge
+            means anything. */}
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 bg-[linear-gradient(135deg,var(--color-eddo-wash)_0%,var(--color-surface)_55%)]"
+        />
+
         {hasHeroPhoto && (
           <>
-            {/* Behind the words, but only where there is room to put words
-                beside the picture rather than on top of it.
+            {/* The picture, kept off the words by a feathered edge rather than
+                by a wash laid over it. The fade itself is in `globals.css`.
 
-                Below 1024 the picture moves out from behind the type and into
-                a band of its own, further down. It is not a second design for
-                its own sake: a wash strong enough to keep a paragraph legible
-                on a 390px screen covers the whole frame, and what was left was
-                a photograph nobody could see on the phones most guests will
-                arrive on. Out from under the type it needs no wash at all. */}
-            <div data-hero-photo className="absolute inset-0 hidden lg:block">
-              {/* Anchored right of centre: the boat and the houses live in the
-                  right half, and that is the half the words leave alone. */}
-              {/* `<picture>` is inline by default, and an inline box has no
-                  height for `h-full` to be a percentage of. */}
-              <picture className="block h-full w-full">
-                <source media="(min-width: 1024px)" srcSet="/eddo-hero.jpg" />
-                <img
-                  src={BLANK_PIXEL}
-                  alt={t.hero.alt}
-                  className="h-full w-full object-cover object-[68%_center]"
-                />
-              </picture>
+                Below 1024 it leaves the hero altogether and becomes a band of
+                its own, further down. It is not a second design for its own
+                sake: at 390px there is no room to put words beside a picture,
+                and covering one enough to read the other leaves a photograph
+                nobody can see, on the phones most guests arrive on. */}
+            <div data-hero-fade className="absolute inset-0 hidden lg:block">
+              {/* The scale lives inside the fade, not on it: a mask scales
+                  with the element it is on, so the two together would walk the
+                  feather across the paragraph as the reader scrolls. */}
+              <div data-hero-photo className="h-full w-full">
+                {/* `<picture>` is inline by default, and an inline box has no
+                    height for `h-full` to be a percentage of. */}
+                <picture className="block h-full w-full">
+                  <source media="(min-width: 1024px)" srcSet="/eddo-hero.jpg" />
+                  <img
+                    src={BLANK_PIXEL}
+                    alt={t.hero.alt}
+                    className="h-full w-full object-cover object-[68%_center]"
+                  />
+                </picture>
+              </div>
             </div>
 
-            {/* Wash one, for the words. Down the frame below 1024, where the
-                type stacks over it; across the frame above, where the type
-                keeps to the left and the photograph is left clean on the
-                right.
-
-                The stops are in pixels, not percentages. The text column is a
-                fixed 600px wherever it is read, so a wash measured in percent
-                covers all of it on a wide screen and runs out halfway through
-                the paragraph on a narrow one — which is exactly what it did:
-                measured 1.03:1 at 768px, against 3.35 at 1440. In pixels the
-                cover is the same everywhere and the photograph keeps whatever
-                is left over. */}
+            {/* For the bar. The header carries nothing of its own at rest, so
+                its links would otherwise be ink over whatever the photograph
+                happens to put behind them. It dies out well before the
+                headline, so it reads as light falling off rather than as a bar
+                that has quietly come back. */}
             <div
               aria-hidden="true"
-              className="absolute inset-0 hidden lg:block bg-[linear-gradient(97deg,rgba(255,255,255,.96)_0px,rgba(255,255,255,.94)_700px,rgba(255,255,255,.4)_880px,rgba(255,255,255,0)_1060px)]"
-            />
-
-            {/* Wash two, for the bar. The header carries nothing of its own at
-                rest, so its links would otherwise be ink over whatever the
-                photograph happens to put behind them. It dies out well before
-                the headline, so it reads as light falling off rather than as a
-                bar that has quietly come back. */}
-            <div
-              aria-hidden="true"
-              className="absolute inset-x-0 top-0 hidden h-[150px] lg:block bg-[linear-gradient(180deg,rgba(255,255,255,.92)_0%,rgba(255,255,255,.74)_46%,rgba(255,255,255,0)_100%)]"
+              className="absolute inset-x-0 top-0 hidden h-[132px] lg:block bg-[linear-gradient(180deg,rgba(255,255,255,.88)_0%,rgba(255,255,255,.62)_48%,rgba(255,255,255,0)_100%)]"
             />
           </>
         )}
-
-        {/* The pale ground: the whole hero without a photograph, and the part
-            the type sits on below 1024 with one. */}
-        <div
-          aria-hidden="true"
-          className={`absolute inset-0 bg-[linear-gradient(135deg,var(--color-eddo-wash)_0%,var(--color-surface)_55%)] ${
-            hasHeroPhoto ? "lg:hidden" : ""
-          }`}
-        />
 
         <Section className="relative grid grid-cols-1 items-center gap-10 pt-[112px] pb-12 md:pt-[128px] lg:pb-[104px]">
           <div data-reveal className="max-w-[600px]">

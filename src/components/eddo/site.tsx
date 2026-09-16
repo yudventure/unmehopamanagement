@@ -51,13 +51,15 @@ import {
 /**
  * Eddo Homestay's public site.
  *
- * Same family, same booking manager, a different place: two rooms in a
- * village on Pulau Gam, no dive centre, and a reason to come that is the
- * village itself. The page is built to the shape of a travel site rather than
- * the long photographic scroll `/turtle` uses: a headline beside a picture, a
- * search bar under it, a row of reasons, then the rooms and the places a day
- * can go. That shape is what was asked for, and it suits a small place that
- * has less to say and wants to say it quickly.
+ * Same family, same booking manager, a different house: five of them on the
+ * shore at Yenbuba, a few doors from Turtle in the same village, no dive
+ * centre of their own, and a reason to come that is the village itself.
+ *
+ * The page is built to the shape of a travel site rather than the long
+ * photographic scroll `/turtle` uses: a headline over a picture, a card of
+ * reasons under it, then the houses, then the places a day can go. That shape
+ * is what was asked for, and it suits a small place that has less to say and
+ * wants to say it quickly.
  *
  * What is shared with `/turtle` is shared on purpose and nothing more: the
  * enquiry dialog and endpoint, the price and currency controls, the drawn
@@ -649,7 +651,12 @@ export function EddoSite({
           >
             <div className="relative">
             <Eyebrow>{t.hero.eyebrow}</Eyebrow>
-            <h1 data-ink className="mt-5 mb-0 text-[clamp(38px,6vw,68px)] leading-[1.02] font-bold tracking-[-.035em] text-eddo-ink">
+            {/* `text-balance` evens the lines out rather than filling each one
+                to the edge, which is what stops a three-line headline ending
+                on a single orphaned word. The place name carries a
+                non-breaking space of its own: balancing decides where lines
+                may break, not that "Raja Ampat" is one thing. */}
+            <h1 data-ink className="mt-5 mb-0 text-[clamp(38px,6vw,68px)] leading-[1.02] font-bold tracking-[-.035em] text-balance text-eddo-ink">
               {t.hero.title}
               <br />
               {/* A step darker than the teal the rest of the page uses for

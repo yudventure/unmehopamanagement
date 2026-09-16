@@ -238,7 +238,7 @@ Begitu berkasnya ditaruh, fotonya yang tampil, tanpa mengubah kode.
 | `eddo-hero.jpg` | latar hero di layar ≥1024px | 2:1, 1760×880, 218 KB. Dibuat dari master di atas. **Berkas ini juga menentukan bentuk hero** — lihat di bawah |
 | `eddo-hero-900.jpg` | pita foto hero di layar <1024px | 2:1, 900×450, 65 KB. Isi yang sama, dikecilkan |
 | `eddo-kamar-1.jpg`, `-2`, `-3`, … | karosel foto di bagian kamar | 4:3 |
-| `eddo-around-1.jpg` | kartu "Dermaga Sawinggrai" | 3:4 (tegak) |
+| `eddo-around-1.jpg` | kartu "Dermaga Yenbuba" | 3:4 (tegak) |
 | `eddo-around-2.jpg` | kartu "Burung cendrawasih" | 3:4 |
 | `eddo-around-3.jpg` | kartu "Arborek" | 3:4 |
 | `eddo-around-4.jpg` | kartu "Piaynemo" | 3:4 |

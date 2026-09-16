@@ -15,8 +15,8 @@ import { SITE_CONFIG } from "@/lib/site-config";
  */
 export const EDDO = {
   name: "Eddo Homestay",
-  village: "Sawinggrai",
-  island: "Pulau Gam",
+  village: "Yenbuba",
+  island: "Pulau Mansuar",
   region: "Raja Ampat",
 };
 
@@ -46,8 +46,9 @@ export function eddoRooms(): { rate: number; count: number } {
  * is the list in the enquiry dialog, so the two can never drift apart.
  *
  * Diving is on it although Eddo has no dive centre of its own. The family runs
- * one at Turtle, on the next island, and a guest asking here is asking the same
- * family. Hire is the other way round: Turtle's list does not carry it.
+ * one at Turtle, a few doors along the same village, and a guest asking here is
+ * asking the same family. Hire is the other way round: Turtle's list does not
+ * carry it.
  */
 export const EDDO_ACTIVITIES = ["stay", "diving", "motorbike", "camera", "package"] as const;
 export type EddoActivity = (typeof EDDO_ACTIVITIES)[number];
@@ -172,21 +173,21 @@ export interface EddoCopy {
 const EN: EddoCopy = {
   htmlLang: "en",
   meta: {
-    title: `${EDDO.name} · Homestay in Sawinggrai, Raja Ampat`,
+    title: `${EDDO.name} · Homestay in Yenbuba, Raja Ampat`,
     description:
-      "A two-room family homestay in Sawinggrai on Pulau Gam, Raja Ampat. Rooms by the water, three meals a day, snorkelling off the jetty, and birds of paradise at dawn.",
+      "Five family houses on the shore at Yenbuba, Pulau Mansuar, Raja Ampat. A house to yourselves, three meals a day, and snorkelling straight off the jetty.",
   },
   nav: { home: "Home", rooms: "Rooms", around: "Around us", why: "Why Eddo", faq: "Questions" },
   openMenu: "Open menu",
   currencyLabel: "Show an approximate price in",
   langLabel: "Language",
   hero: {
-    eyebrow: "Sawinggrai · Pulau Gam · Raja Ampat",
-    title: "A small homestay",
-    script: "by the water",
-    sub: "Two rooms on the shore of Sawinggrai, kept by the family who lives here. Three meals a day, a jetty to snorkel from, and the forest behind the village where the birds of paradise call at dawn.",
+    eyebrow: "Yenbuba · Pulau Mansuar · Raja Ampat",
+    title: "A quiet corner of Raja\u00A0Ampat",
+    script: "yours alone",
+    sub: "Five houses on the shore at Yenbuba, kept by the family who lives here. Three meals a day, a jetty to snorkel from, and a deck you share with nobody.",
     cta: "See the rooms",
-    alt: "The jetty at Sawinggrai with clear water over the reef",
+    alt: "The shore at Yenbuba: palms, a wooden house, and a boat pulled up on the sand",
   },
   trust: [
     { title: "Easy payment", sub: "No agent, no booking fee. The price you see is the price." },
@@ -243,8 +244,8 @@ const EN: EddoCopy = {
     title: "Where a day can go",
     all: "Ask about a trip",
     places: [
-      { name: "Sawinggrai jetty", where: "Right here", tag: "Snorkelling", time: "From the door", alt: "Fish under the jetty at Sawinggrai" },
-      { name: "Birds of paradise", where: "Forest behind the village", tag: "Dawn walk", time: "Before sunrise", alt: "Forest path behind Sawinggrai at dawn" },
+      { name: "Yenbuba jetty", where: "Right here", tag: "Snorkelling", time: "From the door", alt: "Fish under the jetty at Yenbuba" },
+      { name: "Birds of paradise", where: "Sawinggrai, on Gam", tag: "Dawn trip", time: "By boat, before sunrise", alt: "Forest path behind Sawinggrai at dawn" },
       { name: "Arborek", where: "Neighbouring island", tag: "Village & jetty", time: "By boat", alt: "The jetty at Arborek village" },
       { name: "Piaynemo", where: "Karst islands", tag: "Viewpoint", time: "Half a day by boat", alt: "The karst islands of Piaynemo from the viewpoint" },
     ],
@@ -255,9 +256,9 @@ const EN: EddoCopy = {
     script: "Eddo?",
     items: [
       { title: "You stay with the family", sub: "The people cooking and paddling out with you are the people whose house this is." },
-      { title: "The village is the point", sub: "Sawinggrai is a real village, not a resort. You eat what the village eats." },
+      { title: "The village is the point", sub: "Yenbuba is a real village, not a resort. You eat what the village eats." },
       { title: "Easy to change", sub: "Arriving a day late or staying a day longer is a message, not a form." },
-      { title: "Same family as Turtle Dive", sub: "Want to dive? Our sister homestay on Mansuar runs the dive centre." },
+      { title: "Same family as Turtle Dive", sub: "Want to dive? Our sister homestay runs the dive centre, in this same village." },
     ],
     cta: {
       eyebrow: "Let's go",
@@ -271,7 +272,7 @@ const EN: EddoCopy = {
     eyebrow: "Questions",
     title: "Things people ask before they come",
     items: [
-      { q: "How do we get to Sawinggrai?", a: "Fly to Sorong, take the ferry to Waisai on Waigeo, and we pick you up there by boat. Tell us your ferry time and we will be at the harbour." },
+      { q: "How do we get to Yenbuba?", a: "Fly to Sorong, take the ferry to Waisai on Waigeo, and we pick you up there by boat. Tell us your ferry time and we will be at the harbour." },
       { q: "Is there electricity and signal?", a: "Electricity runs in the evening. Phone signal reaches the village, and there is Wi-Fi at the house when the connection holds." },
       { q: "Can we snorkel from the homestay?", a: "Yes, straight off the jetty. Fins and masks are at the house; bring your own if you prefer a good fit." },
       { q: "Do you take card?", a: "Cash in rupiah, or a bank transfer before you arrive. There is no card machine in the village." },
@@ -284,8 +285,8 @@ const EN: EddoCopy = {
     email: "Send an email",
   },
   footer: {
-    tagline: "A family homestay in Sawinggrai, Pulau Gam.",
-    sister: "Our sister homestay and dive centre on Pulau Mansuar:",
+    tagline: "A family homestay in Yenbuba, Pulau Mansuar.",
+    sister: "Our sister homestay and dive centre, in this same village:",
     sisterLink: "Turtle Dive Homestay",
     rights: "All rights reserved.",
   },
@@ -319,21 +320,21 @@ const EN: EddoCopy = {
 const ID: EddoCopy = {
   htmlLang: "id",
   meta: {
-    title: `${EDDO.name} · Homestay di Sawinggrai, Raja Ampat`,
+    title: `${EDDO.name} · Homestay di Yenbuba, Raja Ampat`,
     description:
-      "Homestay keluarga dua kamar di Sawinggrai, Pulau Gam, Raja Ampat. Kamar di tepi air, tiga kali makan, snorkeling dari dermaga, dan burung cendrawasih saat fajar.",
+      "Lima rumah keluarga di tepi air Yenbuba, Pulau Mansuar, Raja Ampat. Satu rumah dipakai sendiri, tiga kali makan, dan snorkeling langsung dari dermaga.",
   },
   nav: { home: "Beranda", rooms: "Kamar", around: "Sekitar kami", why: "Kenapa Eddo", faq: "Tanya" },
   openMenu: "Buka menu",
   currencyLabel: "Tampilkan perkiraan harga dalam",
   langLabel: "Bahasa",
   hero: {
-    eyebrow: "Sawinggrai · Pulau Gam · Raja Ampat",
-    title: "Homestay kecil",
-    script: "di tepi air",
-    sub: "Dua kamar di pesisir Sawinggrai, dijaga keluarga yang memang tinggal di sini. Tiga kali makan sehari, dermaga untuk snorkeling, dan hutan di belakang kampung tempat cendrawasih berbunyi saat fajar.",
+    eyebrow: "Yenbuba · Pulau Mansuar · Raja Ampat",
+    title: "Sudut tenang Raja\u00A0Ampat",
+    script: "cuma untukmu",
+    sub: "Lima rumah di tepi air Yenbuba, dijaga keluarga yang memang tinggal di sini. Tiga kali makan sehari, dermaga untuk snorkeling, dan teras yang tidak dibagi dengan siapa-siapa.",
     cta: "Lihat kamarnya",
-    alt: "Dermaga Sawinggrai dengan air jernih di atas karang",
+    alt: "Pantai Yenbuba: pohon kelapa, rumah kayu, dan perahu di atas pasir",
   },
   trust: [
     { title: "Kemudahan pembayaran", sub: "Tanpa agen, tanpa biaya pemesanan. Harga yang tertulis itu harganya." },
@@ -390,8 +391,8 @@ const ID: EddoCopy = {
     title: "Ke mana harinya bisa dibawa",
     all: "Tanya soal trip",
     places: [
-      { name: "Dermaga Sawinggrai", where: "Di depan rumah", tag: "Snorkeling", time: "Dari pintu", alt: "Ikan di bawah dermaga Sawinggrai" },
-      { name: "Burung cendrawasih", where: "Hutan belakang kampung", tag: "Jalan subuh", time: "Sebelum matahari terbit", alt: "Jalan setapak hutan di belakang Sawinggrai saat fajar" },
+      { name: "Dermaga Yenbuba", where: "Di depan rumah", tag: "Snorkeling", time: "Dari pintu", alt: "Ikan di bawah dermaga Yenbuba" },
+      { name: "Burung cendrawasih", where: "Sawinggrai, di Gam", tag: "Trip subuh", time: "Naik perahu, sebelum terbit", alt: "Jalan setapak hutan di belakang Sawinggrai saat fajar" },
       { name: "Arborek", where: "Pulau tetangga", tag: "Kampung & dermaga", time: "Naik perahu", alt: "Dermaga kampung Arborek" },
       { name: "Piaynemo", where: "Gugusan karst", tag: "Puncak pandang", time: "Setengah hari naik perahu", alt: "Gugusan karst Piaynemo dari puncak pandang" },
     ],
@@ -402,9 +403,9 @@ const ID: EddoCopy = {
     script: "Eddo?",
     items: [
       { title: "Tinggal bersama keluarganya", sub: "Yang memasak dan mendayung bersamamu adalah orang yang rumahnya ini." },
-      { title: "Kampungnya yang jadi alasan", sub: "Sawinggrai kampung sungguhan, bukan resor. Kamu makan apa yang kampung makan." },
+      { title: "Kampungnya yang jadi alasan", sub: "Yenbuba kampung sungguhan, bukan resor. Kamu makan apa yang kampung makan." },
       { title: "Gampang diubah", sub: "Datang telat sehari atau tinggal sehari lebih lama cukup satu pesan, bukan formulir." },
-      { title: "Sekeluarga dengan Turtle Dive", sub: "Mau menyelam? Homestay saudara kami di Mansuar yang menjalankan dive center-nya." },
+      { title: "Sekeluarga dengan Turtle Dive", sub: "Mau menyelam? Homestay saudara kami yang menjalankan dive center-nya, di kampung yang sama." },
     ],
     cta: {
       eyebrow: "Ayo",
@@ -418,7 +419,7 @@ const ID: EddoCopy = {
     eyebrow: "Tanya",
     title: "Yang sering ditanyakan sebelum datang",
     items: [
-      { q: "Bagaimana cara ke Sawinggrai?", a: "Terbang ke Sorong, naik kapal ke Waisai di Waigeo, lalu kami jemput di sana dengan perahu. Kabari jam kapalmu dan kami sudah di pelabuhan." },
+      { q: "Bagaimana cara ke Yenbuba?", a: "Terbang ke Sorong, naik kapal ke Waisai di Waigeo, lalu kami jemput di sana dengan perahu. Kabari jam kapalmu dan kami sudah di pelabuhan." },
       { q: "Ada listrik dan sinyal?", a: "Listrik menyala malam hari. Sinyal telepon sampai ke kampung, dan ada Wi-Fi di rumah selama koneksinya bertahan." },
       { q: "Bisa snorkeling dari homestay?", a: "Bisa, langsung dari dermaga. Fin dan masker ada di rumah; bawa sendiri kalau mau yang pas di wajah." },
       { q: "Terima kartu?", a: "Tunai dalam rupiah, atau transfer bank sebelum datang. Tidak ada mesin kartu di kampung." },
@@ -431,8 +432,8 @@ const ID: EddoCopy = {
     email: "Kirim email",
   },
   footer: {
-    tagline: "Homestay keluarga di Sawinggrai, Pulau Gam.",
-    sister: "Homestay saudara dan dive center kami di Pulau Mansuar:",
+    tagline: "Homestay keluarga di Yenbuba, Pulau Mansuar.",
+    sister: "Homestay saudara dan dive center kami, di kampung yang sama:",
     sisterLink: "Turtle Dive Homestay",
     rights: "Hak cipta dilindungi.",
   },

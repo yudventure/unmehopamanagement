@@ -44,7 +44,7 @@ export const PROPERTIES: {
     name: "Turtle Homestay",
     location: "Yenbuba, Pulau Mansuar",
   },
-  { key: "eddo", name: "Eddo Homestay", location: "Sawinggrai, Pulau Gam" },
+  { key: "eddo", name: "Eddo Homestay", location: "Yenbuba, Pulau Mansuar" },
 ];
 
 /**

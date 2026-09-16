@@ -287,9 +287,10 @@ sewaktu build (`src/app/eddo/page.tsx`), bukan di browser. Kalau dicek di
 browser, pembacanya akan melihat halamannya berubah bentuk setelah tampil.
 Tanpa berkas itu, hero jadi blok warna pucat polos. Dengan berkas itu:
 
-- **≥1024px** fotonya mengisi sisi kanan hero, dengan tepi kiri yang dilembutkan
-  (feather). Tulisannya ada di panel pucat di sebelah kirinya, tidak di atas
-  foto.
+- **≥1024px** fotonya satu blok di sisi kanan hero: **mulai 70px dari atas**
+  (tepat di bawah bar) sampai dasar hero, dengan tepi kiri yang dilembutkan
+  (feather). Tulisannya di panel pucat di sebelah kirinya, tidak di atas foto,
+  dan bar di atasnya juga tidak di atas foto.
 - **<1024px** fotonya keluar dari hero dan turun jadi pita sendiri di bawah
   tulisan, tinggi 240px (320px dari 640px ke atas).
 
@@ -298,11 +299,24 @@ untuk menaruh tulisan di samping foto, dan menutup fotonya sampai tulisannya
 terbaca menyisakan foto yang tidak kelihatan, di HP, tempat sebagian besar tamu
 membukanya. Turun ke bawah tulisan, fotonya tidak perlu ditutup sama sekali.
 
-**Tepi kiri fotonya bukan lapisan putih, tapi mask.** Artinya di tempat
-tulisannya berada fotonya memang tidak ada, dan satu piksel lewat dari
-feather-nya fotonya utuh tanpa ditutup apa pun. Versi sebelumnya memakai
-gradien putih di atas foto: terbaca, tapi fotonya jadi seperti berkabut
-sepertiga bingkai.
+**Fotonya blok, bukan latar.** Tidak ada bagiannya yang berada di bawah sesuatu,
+dan tidak ada apa pun yang ditumpuk di atasnya. Tiga percobaan sebelumnya
+menaruh foto di belakang seluruh hero lalu berjuang menjaga tulisannya tetap
+terbaca; gradien putih di atas foto terbaca sebagai kabut, dan kabut di atas
+foto makin buruk kalau makin banyak.
+
+Satu baris `top: 70px` itu yang menggantikan lapisan putih setinggi 132px di
+puncak bingkai. Begitu fotonya mulai di bawah bar, tautan di bar kembali berdiri
+di atas latar pucat yang memang jadi dasar warnanya, dan fotonya menyimpan
+cahayanya sendiri.
+
+**Tepi kirinya mask, bukan lapisan putih.** Artinya di tempat tulisannya berada
+fotonya memang tidak ada, dan satu piksel lewat dari feather-nya fotonya utuh
+tanpa ditutup apa pun.
+
+**Crop-nya `object-position: 30%`, bukan tengah atau kanan.** Laut, pantai, dan
+perahunya ada di tengah foto sementara kanopinya di sisi kanan; waktu masih
+dipatok ke kanan, jendela sesempit ini cuma menampilkan pohon.
 
 **Feather-nya pendek dan menempel di ujung tulisan**, bukan campuran lebar yang
 membuat separuh bingkai jadi bukan foto dan bukan panel. Lebarnya satu angka,
@@ -335,16 +349,16 @@ Sesudahnya: HP **0,43 MB**, desktop 0,58 MB satu halaman penuh.
 Jadi kalau suatu saat susunannya diubah, **jangan** cukup memasang `hidden` di
 gambar yang tidak dipakai — biayanya tetap dibayar pembacanya.
 
-**Sisi kanan kepala halaman ada di atas foto ini** (nomor WhatsApp, tombol Book,
-pemilih bahasa). Tautannya gelap karena latarnya memang nyaris putih, dan itu
-tidak diubah; yang ditambahkan adalah lapisan putih tipis setinggi 132px di
-puncak hero, yang padam sebelum sampai ke judul jadi terbaca sebagai cahaya yang
-meredup, bukan sebagai bar yang diam-diam muncul lagi. Kalau lapisan itu
-dilepas, warna tulisan di kanan bar harus ikut jadi putih.
+**Kepala halaman tidak lagi berdiri di atas foto**, karena fotonya mulai di
+bawahnya. Tautannya gelap karena latarnya memang nyaris putih, dan sekarang itu
+benar di seluruh lebar. Kalau suatu saat fotonya dinaikkan sampai menyentuh
+puncak hero lagi, warna tulisan di sisi kanan bar harus ikut berubah, atau
+lapisan putihnya harus kembali.
 
-Pemilih bahasa yang tidak terpilih ("ID" waktu situsnya sedang Inggris) tidak
-punya latar sendiri, jadi ia huruf langsung di atas foto: terukur 3,91:1 waktu
-masih `text-slate`. Yang diubah warnanya, bukan ditambah lapisan.
+Waktu fotonya masih menerobos ke belakang bar, pemilih bahasa yang tidak
+terpilih ("ID" saat situsnya sedang Inggris) jatuh ke 3,91:1 karena ia huruf
+langsung di atas foto tanpa latar sendiri. Warnanya sudah digelapkan ke
+`ink-soft` dan dibiarkan begitu.
 
 Kontak dan tautan media sosialnya **masih memakai isian yang sama dengan
 Turtle** (tab Website di dashboard). Kalau Eddo perlu nomor WhatsApp atau

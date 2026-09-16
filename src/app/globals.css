@@ -504,22 +504,24 @@ input[type="search"]::-webkit-search-decoration {
 }
 
 /*
- * The photograph's left edge.
+ * Where the hero photograph sits, and how its left edge ends.
  *
- * A mask, not a wash: where the words are the photograph is absent, and one
- * pixel past the feather it is untouched. A white gradient laid over the
- * picture reads as fog, and fog over a photograph is worse the more of it
- * there is.
+ * It is a block, not a backdrop. It starts below the bar and to the right of
+ * the words, so no part of it is ever under anything, and nothing is ever
+ * laid over it. Three earlier tries put it behind the whole hero and then
+ * fought to keep the type readable: a white gradient over the picture reads
+ * as fog, and fog over a photograph is worse the more of it there is.
  *
- * So the feather is short and it sits just off the last word, rather than
- * being a wide blend that turns half the frame into neither one thing nor the
- * other. `--fade-span` is the whole of it.
+ * `top` clears the fixed bar, which measures 70px. That single line is what
+ * replaced a 132px white wash across the top of the frame: with the picture
+ * beginning under the bar, the bar's links are back on the pale ground they
+ * were coloured for, and the photograph keeps its own light.
  *
- * The start is `max()` of a length and a percentage because the type is
- * neither. Above 1280 the text sits in a 1116px container centred in the
- * window, so its edge follows the middle of the window; at 1024 the container
- * runs out of room and falls back to its padding, and the percentage alone
- * would land in the last line of the paragraph. The pixel floor covers that.
+ * `left` is `max()` of a length and a percentage because the type is neither.
+ * Above 1280 the text sits in a 1116px container centred in the window, so
+ * its edge follows the middle of the window; at 1024 the container runs out
+ * of room and falls back to its padding, and the percentage alone would land
+ * in the last line of the paragraph. The pixel floor covers that.
  *
  * Measured, both languages, 1024 to 2560: the longest run of type ends
  * between 46% and 50% of the window, and the nearest the feather ever comes
@@ -528,10 +530,15 @@ input[type="search"]::-webkit-search-decoration {
  */
 [data-hero-fade] {
   --fade-span: 72px;
-  --fade-from: max(560px, calc(50% + 16px));
-  --fade-to: calc(var(--fade-from) + var(--fade-span));
-  -webkit-mask-image: linear-gradient(90deg, transparent var(--fade-from), #000 var(--fade-to));
-  mask-image: linear-gradient(90deg, transparent var(--fade-from), #000 var(--fade-to));
+  position: absolute;
+  top: 70px;
+  right: 0;
+  bottom: 0;
+  left: max(560px, calc(50% + 16px));
+  /* Measured from this block's own left edge rather than from the window, now
+     that the block starts where the picture starts. */
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 var(--fade-span));
+  mask-image: linear-gradient(90deg, transparent 0, #000 var(--fade-span));
   /* Both stated: a mask defaults to repeating, and the picture inside this box
      grows past it as the reader scrolls, which would tile the feather back
      across the frame instead of clipping it. */

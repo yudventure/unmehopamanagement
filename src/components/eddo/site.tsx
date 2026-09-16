@@ -505,15 +505,16 @@ export function EddoSite({
 
         {hasHeroPhoto && (
           <>
-            {/* The picture, kept off the words by a feathered edge rather than
-                by a wash laid over it. The fade itself is in `globals.css`.
+            {/* The picture. Where it sits and how its left edge is feathered
+                are both in `globals.css`: it begins below the bar and to the
+                right of the words, so nothing is ever laid over it.
 
                 Below 1024 it leaves the hero altogether and becomes a band of
                 its own, further down. It is not a second design for its own
                 sake: at 390px there is no room to put words beside a picture,
                 and covering one enough to read the other leaves a photograph
                 nobody can see, on the phones most guests arrive on. */}
-            <div data-hero-fade className="absolute inset-0 hidden lg:block">
+            <div data-hero-fade className="hidden lg:block">
               {/* The scale lives inside the fade, not on it: a mask scales
                   with the element it is on, so the two together would walk the
                   feather across the paragraph as the reader scrolls. */}
@@ -522,24 +523,18 @@ export function EddoSite({
                     height for `h-full` to be a percentage of. */}
                 <picture className="block h-full w-full">
                   <source media="(min-width: 1024px)" srcSet="/eddo-hero.jpg" />
+                  {/* Left of centre, not right of it. The sea, the beach and
+                      the boat are in the middle of this photograph and the
+                      canopy is down its right side; anchored right, all this
+                      window ever showed was trees. */}
                   <img
                     src={BLANK_PIXEL}
                     alt={t.hero.alt}
-                    className="h-full w-full object-cover object-[68%_center]"
+                    className="h-full w-full object-cover object-[30%_center]"
                   />
                 </picture>
               </div>
             </div>
-
-            {/* For the bar. The header carries nothing of its own at rest, so
-                its links would otherwise be ink over whatever the photograph
-                happens to put behind them. It dies out well before the
-                headline, so it reads as light falling off rather than as a bar
-                that has quietly come back. */}
-            <div
-              aria-hidden="true"
-              className="absolute inset-x-0 top-0 hidden h-[132px] lg:block bg-[linear-gradient(180deg,rgba(255,255,255,.88)_0%,rgba(255,255,255,.62)_48%,rgba(255,255,255,0)_100%)]"
-            />
           </>
         )}
 

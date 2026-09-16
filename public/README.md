@@ -299,20 +299,23 @@ terbaca menyisakan foto yang tidak kelihatan, di HP, tempat sebagian besar tamu
 membukanya. Turun ke bawah tulisan, fotonya tidak perlu ditutup sama sekali.
 
 **Tepi kiri fotonya bukan lapisan putih, tapi mask.** Artinya di tempat
-tulisannya berada fotonya memang tidak ada, dan lewat dari feather-nya fotonya
-utuh tanpa ditutup apa pun. Versi sebelumnya memakai gradien putih di atas
-foto: terbaca, tapi fotonya jadi seperti berkabut sepertiga bingkai.
+tulisannya berada fotonya memang tidak ada, dan satu piksel lewat dari
+feather-nya fotonya utuh tanpa ditutup apa pun. Versi sebelumnya memakai
+gradien putih di atas foto: terbaca, tapi fotonya jadi seperti berkabut
+sepertiga bingkai.
 
-Titik fade-nya `max()` dari piksel dan persen, karena kolom teksnya bukan
-keduanya. Di atas 1280px kolomnya wadah 1116px yang ditengahkan, jadi tepi
-kanannya di 50% + 42px dan fade-nya harus ikut tengah jendela. Di 1024px
-wadahnya kehabisan ruang dan jatuh ke padding: kolomnya berakhir di 632px
-sementara setengah jendela baru 512px, jadi persen saja akan memotong baris
-terakhir paragrafnya. Angka pikselnya yang menutup celah itu.
+**Feather-nya pendek dan menempel di ujung tulisan**, bukan campuran lebar yang
+membuat separuh bingkai jadi bukan foto dan bukan panel. Lebarnya satu angka,
+`--fade-span`, sekarang **72px**.
 
-Diukur: fade-nya mulai di 660px atau 50% + 72px, mana yang lebih kanan.
-Jarak terdekatnya ke huruf **49px** (bahasa Inggris di 1024px); dalam bahasa
-Indonesia 148px.
+Titik mulainya `max()` dari piksel dan persen, karena kolom teksnya bukan
+keduanya. Di atas 1280px kolomnya wadah 1116px yang ditengahkan, jadi tepinya
+ikut tengah jendela. Di 1024px wadahnya kehabisan ruang dan jatuh ke padding,
+jadi persen saja akan mendarat di baris terakhir paragrafnya. Angka pikselnya
+yang menutup celah itu: `max(560px, 50% + 16px)`.
+
+Diukur di dua bahasa, 1024 sampai 2560: jarak terdekat feather ke huruf **48px**
+(bahasa Indonesia di 1024px), selebihnya 71px atau lebih.
 
 **Keterbacaannya juga diukur, bukan dikira.** Latarnya foto, dan tidak ada cara
 menghitungnya dari CSS: yang dilakukan adalah membuat tulisannya transparan,

@@ -497,29 +497,39 @@ input[type="search"]::-webkit-search-decoration {
  * across a whole screen of scrolling is small on purpose; the effect wanted
  * here is depth, not a zoom.
  */
+[data-anim] [data-hero-photo] {
+  transform: scale(calc(1 + var(--p, 0) * 0.08));
+  transform-origin: center;
+  will-change: transform;
+}
+
 /*
  * The photograph's left edge.
  *
- * It was a white gradient laid over the picture: readable, but milky across a
- * third of the frame, and the picture never quite arrived. This does the
- * opposite. The fade is a mask, so where the words are the photograph is
- * simply absent, and everywhere past the feather it is untouched.
+ * A mask, not a wash: where the words are the photograph is absent, and one
+ * pixel past the feather it is untouched. A white gradient laid over the
+ * picture reads as fog, and fog over a photograph is worse the more of it
+ * there is.
  *
- * The stops are `max()` of a length and a percentage because the text column
- * is neither. Above 1280 it is a 1116px container centred in the window, so
- * its right edge sits at 50% + 42px and the fade has to follow the middle of
- * the window. At 1024 the container runs out of room and falls back to its
- * padding, leaving the column ending at 632px while half the window is 512 —
- * a percentage alone would cut through the last line of the paragraph. The
- * pixel floor is what covers that.
+ * So the feather is short and it sits just off the last word, rather than
+ * being a wide blend that turns half the frame into neither one thing nor the
+ * other. `--fade-span` is the whole of it.
  *
- * Measured: the longest run of type ends between 46% and 50% of the window
- * from 1024 to 2560, and the fade starts at 660px or 50% + 72px, whichever is
- * further right. The nearest the two ever come is 49px.
+ * The start is `max()` of a length and a percentage because the type is
+ * neither. Above 1280 the text sits in a 1116px container centred in the
+ * window, so its edge follows the middle of the window; at 1024 the container
+ * runs out of room and falls back to its padding, and the percentage alone
+ * would land in the last line of the paragraph. The pixel floor covers that.
+ *
+ * Measured, both languages, 1024 to 2560: the longest run of type ends
+ * between 46% and 50% of the window, and the nearest the feather ever comes
+ * to a letter is 48px, at 1024 in Indonesian. Everywhere else it is 71px or
+ * more.
  */
 [data-hero-fade] {
-  --fade-from: max(660px, calc(50% + 72px));
-  --fade-to: max(860px, calc(50% + 260px));
+  --fade-span: 72px;
+  --fade-from: max(560px, calc(50% + 16px));
+  --fade-to: calc(var(--fade-from) + var(--fade-span));
   -webkit-mask-image: linear-gradient(90deg, transparent var(--fade-from), #000 var(--fade-to));
   mask-image: linear-gradient(90deg, transparent var(--fade-from), #000 var(--fade-to));
   /* Both stated: a mask defaults to repeating, and the picture inside this box
@@ -529,12 +539,6 @@ input[type="search"]::-webkit-search-decoration {
   mask-repeat: no-repeat;
   -webkit-mask-size: 100% 100%;
   mask-size: 100% 100%;
-}
-
-[data-anim] [data-hero-photo] {
-  transform: scale(calc(1 + var(--p, 0) * 0.08));
-  transform-origin: center;
-  will-change: transform;
 }
 
 /* The scrim deepens as the picture goes, which is what keeps the white type

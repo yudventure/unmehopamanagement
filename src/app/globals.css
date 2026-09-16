@@ -82,13 +82,27 @@
   --color-ok: #2f8a63;
   --color-dot-all: #d9cbb5;
 
-  /* Eddo Homestay. Its own palette because it is its own brand: the teal is
-     lifted from the tiki badge in its logo, and the pages are white rather
-     than cream, which is what keeps the two sites from looking like one
-     site with two names. */
+  /* Eddo Homestay. Its own palette because it is its own brand: the pages are
+     white rather than cream, which is what keeps the two sites from looking
+     like one site with two names.
+
+     `eddo` is the badge's own teal, sampled from the logo file rather than
+     guessed at — the value that was here before, #17a9ae, was my eye on a
+     picture and it was wrong. It is a light colour, so it is decoration and
+     nothing else: white on it measures 2.78:1 and so does it on white, which
+     fails for text either way round. It colours the logo, a 6px dot and a
+     border, and it is not allowed near a word.
+
+     `deep` is what carries text, in both directions: 5.33:1 against white and
+     4.79:1 against `tint`, which covers teal words on either ground and white
+     words on a teal fill. It was a shade lighter until the page was measured:
+     on white it passed and on the pale tint under the eyebrows and the step
+     numbers it came to 4.31, which is a fail nobody would have caught by eye.
+     `dark` is its hover. */
   --font-script: var(--font-script), "Kaushan Script", cursive;
-  --color-eddo: #17a9ae;
-  --color-eddo-deep: #0f8489;
+  --color-eddo: #04acb4;
+  --color-eddo-deep: #06777d;
+  --color-eddo-dark: #05666c;
   --color-eddo-ink: #12343a;
   --color-eddo-tint: #e6f6f7;
   --color-eddo-wash: #f2fafb;

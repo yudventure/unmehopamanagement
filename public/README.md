@@ -232,7 +232,8 @@ fotonya yang tampil, tanpa mengubah kode.
 
 | Berkas | Dipakai di | Rasio |
 |---|---|---|
-| `eddo-logo.png` | kepala halaman dan footer | persegi, latar transparan. Lencana tiki toska yang dikirim pemilik |
+| `website_logo_eddo_homestay.png` | **tidak dipakai**, disimpan sebagai master | aslinya dari pemilik: 2000×2000, latar transparan, 388 KB |
+| `eddo-logo.png` | kepala halaman dan footer | 164×240, 45 KB. Dibuat dari master di atas |
 | `eddo-hero.jpg` | foto di samping judul | 5:4. Dermaga Sawinggrai paling pas. **Berkas ini juga menentukan bentuk hero**: selama belum ada, judulnya memakai lebar penuh; begitu ada, hero jadi dua kolom |
 | `eddo-bawah.jpg` | kartu kamar Eddo Bawah | 16:10 |
 | `eddo-atas.jpg` | kartu kamar Eddo Atas | 16:10 |
@@ -245,14 +246,34 @@ fotonya yang tampil, tanpa mengubah kode.
 Aturannya sama seperti situs Turtle: huruf kecil semua, lebar 1080 sampai
 1920px, usahakan di bawah 300 KB per foto.
 
-**Logonya wajib PNG dengan latar transparan.** Kepala halaman sekarang tidak
-punya latar sendiri selama halaman diam di paling atas, jadi logo berlatar
-putih akan terlihat sebagai kotak putih menempel di atas gradasi hero. Kode
-sengaja tidak menggambar bingkai atau sudut membulat apa pun di sekeliling
-logo, karena lencananya sudah punya garis tepinya sendiri.
+**Logonya sudah ada dan latarnya memang sudah transparan.** Dua berkas, satu
+dipakai, polanya sama dengan logo SSI di situs Turtle:
 
-Kalau berkasnya belum ada, kepala halaman memakai nama dalam huruf, bukan
-gambar rusak.
+`eddo-logo.png` dibuat dari masternya, bukan digambar ulang. Masternya kanvas
+2000×2000 dengan lencananya menempati 60% lebar dan 87% tinggi, jadi sepertiga
+kanvasnya udara kosong: dipakai apa adanya di kepala halaman, lencananya akan
+mengecil sendiri untuk muat di kotak persegi dan menyisakan ruang kosong di
+kiri-kanan. Jadi ia dipotong ke isinya lalu diperkecil ke tinggi 240px. Dari
+388 KB jadi 45 KB, untuk gambar yang di layar cuma 40px tingginya.
+
+Lencananya **tegak**, 164×240, bukan persegi. Di kode ukurannya diatur lewat
+tinggi dan lebarnya ikut sendiri; kalau dipaksa ke kotak persegi, hasilnya
+lencana kecil di tengah kotak yang kebanyakan kosong.
+
+Kode sengaja tidak menggambar bingkai atau sudut membulat apa pun di
+sekelilingnya, karena lencananya sudah punya garis tepi sendiri.
+
+**Kalau logonya diganti**, timpa masternya lalu buat ulang yang dipakai:
+potong ke isinya, skalakan ke tinggi 240px, simpan PNG. Skripnya tidak
+disimpan di repo karena sekali pakai.
+
+Kalau berkasnya hilang, kepala halaman memakai nama dalam huruf, bukan gambar
+rusak.
+
+**Warna toska situs ini diambil dari logonya**, bukan dikira-kira: `#04acb4`,
+hasil membaca piksel berkasnya. Nilai sebelumnya `#17a9ae` adalah tebakan mata
+dan meleset. Warna itu terang, jadi ia cuma untuk hiasan; yang membawa huruf
+adalah `#06777d`. Alasannya ada di `src/app/globals.css`.
 
 Tidak ada foto yang boleh ditaruh di belakang kepala halaman tanpa mengubah
 warna tautannya. Tautan di sana gelap karena latarnya memang nyaris putih;

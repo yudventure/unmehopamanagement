@@ -76,10 +76,18 @@ const FILL = "absolute inset-0 h-full w-full";
 const step = (i: number) => ({ "--i": i }) as React.CSSProperties;
 
 /**
+ * The badge is taller than it is wide — 164 by 240 in the file — so it is
+ * sized by its height and lets its width follow. Forcing it into a square box
+ * would fit it to the shorter side and leave a third of the box empty, which
+ * on a header reads as a logo that is too small rather than as space.
+ */
+const LOGO_RATIO = 164 / 240;
+
+/**
  * The tiki badge from `public/eddo-logo.png`, or the name in type if the file
- * is not there yet. An `<img>` that fails to load draws a broken-picture glyph
+ * is not there. An `<img>` that fails to load draws a broken-picture glyph
  * where the logo should be, and a header wearing one of those looks
- * abandoned; the wordmark is what the header looks like until the file lands.
+ * abandoned; the wordmark is what the header falls back to.
  */
 function EddoLogo({ size = 40, light = false }: { size?: number; light?: boolean }) {
   const [missing, setMissing] = useState(false);
@@ -99,23 +107,22 @@ function EddoLogo({ size = 40, light = false }: { size?: number; light?: boolean
           ref={ref}
           src="/eddo-logo.png"
           alt=""
-          width={size}
+          width={Math.round(size * LOGO_RATIO)}
           height={size}
           onError={() => setMissing(true)}
           /* No rounding and no fill of our own: the badge carries its own
              outline and its own shape, so a box drawn around it would be a
-             second frame fighting the first. It wants a PNG with a
-             transparent ground, which is also what lets it sit on the bare
-             header without a white tile appearing under it. */
-          className="shrink-0 object-contain"
-          style={{ width: size, height: size }}
+             second frame fighting the first. Its ground is transparent, which
+             is what lets it sit on the bare header with nothing behind it. */
+          className="shrink-0"
+          style={{ width: Math.round(size * LOGO_RATIO), height: size }}
         />
       )}
       <span className="leading-[1.05]">
         <span className={`block text-[16px] font-bold tracking-[-.01em] ${light ? "text-white" : "text-eddo-ink"}`}>
           Eddo Homestay
         </span>
-        <span className={`block font-mono text-[9.5px] tracking-[.14em] uppercase ${light ? "text-white/70" : "text-eddo"}`}>
+        <span className={`block font-mono text-[9.5px] tracking-[.14em] uppercase ${light ? "text-white/70" : "text-eddo-deep"}`}>
           Sawinggrai · Raja Ampat
         </span>
       </span>
@@ -193,7 +200,7 @@ function Title({
   return (
     <h2 className={`m-0 leading-[1.05] font-bold tracking-[-.03em] text-eddo-ink ${className}`}>
       {plain}{" "}
-      <span className="font-script font-normal tracking-normal text-eddo">{script}</span>
+      <span className="font-script font-normal tracking-normal text-eddo-deep">{script}</span>
     </h2>
   );
 }
@@ -210,7 +217,7 @@ function LangSwitch({ lang, onPick, label }: { lang: Lang; onPick: (l: Lang) => 
           aria-label={l.label}
           aria-pressed={lang === l.key}
           className={`cursor-pointer rounded-full border-none px-[10px] py-[5px] text-[12px] font-medium transition-colors ${
-            lang === l.key ? "bg-eddo text-white" : "bg-transparent text-slate hover:text-eddo-ink"
+            lang === l.key ? "bg-eddo-deep text-white" : "bg-transparent text-slate hover:text-eddo-ink"
           }`}
         >
           {l.short}
@@ -229,7 +236,7 @@ const TRUST_ICONS = [
 ];
 
 const BTN =
-  "inline-flex cursor-pointer items-center justify-center gap-2 rounded-full border-none bg-eddo px-[22px] py-[12px] text-[14px] font-medium text-white no-underline transition-colors hover:bg-eddo-deep hover:text-white hover:no-underline";
+  "inline-flex cursor-pointer items-center justify-center gap-2 rounded-full border-none bg-eddo-deep px-[22px] py-[12px] text-[14px] font-medium text-white no-underline transition-colors hover:bg-eddo-dark hover:text-white hover:no-underline";
 const BTN_GHOST =
   "inline-flex cursor-pointer items-center justify-center gap-2 rounded-full border border-eddo-line bg-surface px-[22px] py-[12px] text-[14px] font-medium text-eddo-ink no-underline transition-colors hover:border-eddo hover:no-underline";
 
@@ -386,8 +393,8 @@ export function EddoSite({
               <a
                 key={n.href}
                 href={n.href}
-                className={`text-[13.5px] no-underline transition-colors hover:text-eddo hover:no-underline ${
-                  i === 0 ? "font-medium text-eddo" : "text-ink-soft"
+                className={`text-[13.5px] no-underline transition-colors hover:text-eddo-deep hover:no-underline ${
+                  i === 0 ? "font-medium text-eddo-deep" : "text-ink-soft"
                 }`}
               >
                 {n.label}
@@ -402,7 +409,7 @@ export function EddoSite({
               rel="noreferrer"
               className="flex items-center gap-[10px] no-underline hover:no-underline"
             >
-              <span className="flex h-[36px] w-[36px] items-center justify-center rounded-full bg-eddo-tint p-[9px] text-eddo">
+              <span className="flex h-[36px] w-[36px] items-center justify-center rounded-full bg-eddo-tint p-[9px] text-eddo-deep">
                 <WhatsAppIcon />
               </span>
               <span className="leading-[1.15]">
@@ -470,7 +477,7 @@ export function EddoSite({
             <h1 className="mt-5 mb-0 text-[clamp(38px,6vw,68px)] leading-[1.02] font-bold tracking-[-.035em] text-eddo-ink">
               {t.hero.title}
               <br />
-              <span className="font-script font-normal tracking-normal text-eddo">{t.hero.script}</span>
+              <span className="font-script font-normal tracking-normal text-eddo-deep">{t.hero.script}</span>
             </h1>
             <p className="mt-5 max-w-[480px] text-[15px] leading-[1.7] text-slate">{t.hero.sub}</p>
             <div className="mt-7 flex flex-wrap gap-3">
@@ -558,7 +565,7 @@ export function EddoSite({
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {t.trust.map((x, i) => (
             <div key={i} data-reveal style={step(i)} className="flex items-start gap-[14px]">
-              <span className="flex h-[46px] w-[46px] shrink-0 items-center justify-center rounded-full bg-eddo-tint p-[12px] text-eddo">
+              <span className="flex h-[46px] w-[46px] shrink-0 items-center justify-center rounded-full bg-eddo-tint p-[12px] text-eddo-deep">
                 {TRUST_ICONS[i]}
               </span>
               <span>
@@ -708,7 +715,7 @@ export function EddoSite({
               <details key={i} data-reveal style={step(i)} className="group border-b border-line-strong py-[18px]">
                 <summary className="flex cursor-pointer list-none items-center gap-4 text-[16px] font-medium text-eddo-ink">
                   <span className="flex-1">{f.q}</span>
-                  <span className="text-[20px] leading-none text-eddo transition-transform group-open:rotate-45">+</span>
+                  <span className="text-[20px] leading-none text-eddo-deep transition-transform group-open:rotate-45">+</span>
                 </summary>
                 <p className="mt-3 mb-0 max-w-[640px] text-[14px] leading-[1.65] text-slate">{f.a}</p>
               </details>
@@ -719,7 +726,7 @@ export function EddoSite({
 
       {/* -------------------------------------------------- contact bar */}
       <Section className="pb-10">
-        <div data-reveal className="flex flex-col gap-6 rounded-[24px] bg-eddo px-7 py-7 text-white md:flex-row md:items-center md:justify-between md:px-10">
+        <div data-reveal className="flex flex-col gap-6 rounded-[24px] bg-eddo-deep px-7 py-7 text-white md:flex-row md:items-center md:justify-between md:px-10">
           <div className="flex items-start gap-4">
             <span className="mt-[2px] hidden h-[44px] w-[44px] shrink-0 items-center justify-center rounded-full bg-white/15 p-[11px] sm:flex">
               <MailIcon />
@@ -764,7 +771,7 @@ export function EddoSite({
           <div className="text-[12.5px] leading-[1.7] text-slate md:text-right">
             <div>
               {t.footer.sister}{" "}
-              <Link href={sisterHref} className="font-medium text-eddo no-underline hover:underline">
+              <Link href={sisterHref} className="font-medium text-eddo-deep no-underline hover:underline">
                 {t.footer.sisterLink}
               </Link>
             </div>

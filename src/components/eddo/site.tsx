@@ -505,16 +505,17 @@ export function EddoSite({
 
         {hasHeroPhoto && (
           <>
-            {/* The picture. Where it sits and how its left edge is feathered
-                are both in `globals.css`: it begins below the bar and to the
-                right of the words, so nothing is ever laid over it.
+            {/* The picture, edge to edge. It begins below the bar, which is the
+                one thing it does not run under: the bar's links are ink, and
+                ink over a photograph needs either a wash or a different
+                colour, while ink over the pale strip above needs neither.
 
                 Below 1024 it leaves the hero altogether and becomes a band of
                 its own, further down. It is not a second design for its own
                 sake: at 390px there is no room to put words beside a picture,
                 and covering one enough to read the other leaves a photograph
                 nobody can see, on the phones most guests arrive on. */}
-            <div data-hero-fade className="hidden lg:block">
+            <div className="absolute inset-x-0 top-[70px] bottom-0 hidden lg:block">
               {/* The scale lives inside the fade, not on it: a mask scales
                   with the element it is on, so the two together would walk the
                   feather across the paragraph as the reader scrolls. */}
@@ -523,14 +524,14 @@ export function EddoSite({
                     height for `h-full` to be a percentage of. */}
                 <picture className="block h-full w-full">
                   <source media="(min-width: 1024px)" srcSet="/eddo-hero.jpg" />
-                  {/* Left of centre, not right of it. The sea, the beach and
-                      the boat are in the middle of this photograph and the
-                      canopy is down its right side; anchored right, all this
-                      window ever showed was trees. */}
+                  {/* Edge to edge the whole width is in view, so only the
+                      vertical crop is a choice. Slightly below centre: the top
+                      of the frame is sky the hero does not need, the bottom is
+                      the water it does. */}
                   <img
                     src={BLANK_PIXEL}
                     alt={t.hero.alt}
-                    className="h-full w-full object-cover object-[30%_center]"
+                    className="h-full w-full object-cover object-[center_58%]"
                   />
                 </picture>
               </div>
@@ -539,7 +540,16 @@ export function EddoSite({
         )}
 
         <Section className="relative grid grid-cols-1 items-center gap-10 pt-[112px] pb-12 md:pt-[128px] lg:pb-[104px]">
-          <div data-reveal className="max-w-[600px]">
+          <div data-reveal className="relative max-w-[600px]">
+            {/* The only white on the picture, and it is shaped to the words
+                rather than to the frame. Its size and falloff are in
+                `globals.css`, where the measurements that set them are.
+
+                It comes first and the words come after: both are positioned,
+                so the later one paints on top without either needing a
+                z-index to say so. */}
+            {hasHeroPhoto && <div aria-hidden="true" data-hero-wash className="hidden lg:block" />}
+            <div className="relative">
             <Eyebrow>{t.hero.eyebrow}</Eyebrow>
             <h1 className="mt-5 mb-0 text-[clamp(38px,6vw,68px)] leading-[1.02] font-bold tracking-[-.035em] text-eddo-ink">
               {t.hero.title}
@@ -559,6 +569,7 @@ export function EddoSite({
               <button type="button" onClick={() => setEnquiryOpen(true)} className={BTN_GHOST}>
                 {t.book}
               </button>
+            </div>
             </div>
           </div>
 

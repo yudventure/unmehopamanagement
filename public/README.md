@@ -287,10 +287,9 @@ sewaktu build (`src/app/eddo/page.tsx`), bukan di browser. Kalau dicek di
 browser, pembacanya akan melihat halamannya berubah bentuk setelah tampil.
 Tanpa berkas itu, hero jadi blok warna pucat polos. Dengan berkas itu:
 
-- **≥1024px** fotonya satu blok di sisi kanan hero: **mulai 70px dari atas**
-  (tepat di bawah bar) sampai dasar hero, dengan tepi kiri yang dilembutkan
-  (feather). Tulisannya di panel pucat di sebelah kirinya, tidak di atas foto,
-  dan bar di atasnya juga tidak di atas foto.
+- **≥1024px** fotonya **selebar layar**, dari 70px di bawah puncak (tepat di
+  bawah bar) sampai dasar hero. Tidak ada panel putih di sisi mana pun. Yang
+  putih cuma **di sekitar tulisannya**.
 - **<1024px** fotonya keluar dari hero dan turun jadi pita sendiri di bawah
   tulisan, tinggi 240px (320px dari 640px ke atas).
 
@@ -299,39 +298,32 @@ untuk menaruh tulisan di samping foto, dan menutup fotonya sampai tulisannya
 terbaca menyisakan foto yang tidak kelihatan, di HP, tempat sebagian besar tamu
 membukanya. Turun ke bawah tulisan, fotonya tidak perlu ditutup sama sekali.
 
-**Fotonya blok, bukan latar.** Tidak ada bagiannya yang berada di bawah sesuatu,
-dan tidak ada apa pun yang ditumpuk di atasnya. Tiga percobaan sebelumnya
-menaruh foto di belakang seluruh hero lalu berjuang menjaga tulisannya tetap
-terbaca; gradien putih di atas foto terbaca sebagai kabut, dan kabut di atas
-foto makin buruk kalau makin banyak.
+**Putihnya dibentuk mengikuti tulisan, bukan mengikuti bingkai.** Itu bedanya
+dengan tiga percobaan sebelumnya, yang semuanya kesalahan yang sama dalam ukuran
+berbeda: panel di sisi kiri, pita di puncak, feather lebar di antaranya. Semua
+membentuk putih menurut bingkai lalu meminta fotonya tinggal di sisanya.
 
-Satu baris `top: 70px` itu yang menggantikan lapisan putih setinggi 132px di
-puncak bingkai. Begitu fotonya mulai di bawah bar, tautan di bar kembali berdiri
-di atas latar pucat yang memang jadi dasar warnanya, dan fotonya menyimpan
-cahayanya sendiri.
+Sekarang satu gradien radial (`[data-hero-wash]` di `src/app/globals.css`) yang
+menempel pada kotak tulisannya sendiri, jadi ia ikut ke mana pun tulisan itu
+pindah. Lebih besar dari tulisannya supaya tidak ada tepinya yang berjalan di
+samping baris, dan sudah habis sebelum tengah bingkai.
 
-**Tepi kirinya mask, bukan lapisan putih.** Artinya di tempat tulisannya berada
-fotonya memang tidak ada, dan satu piksel lewat dari feather-nya fotonya utuh
-tanpa ditutup apa pun.
+Dua hal yang membuatnya terbaca sebagai cahaya, bukan sebagai gumpalan:
+`closest-side` (tiap jari-jarinya nol di sisi terdekat, jadi seluruh gradiennya
+mendarat di dalam kotaknya sendiri dan sudutnya bersih) dan empat titik warna,
+bukan tiga. Dengan satu landaian saja ke nol, titik habisnya menggambar
+tepinya sendiri, dan tepi oval di atas foto itu gumpalan.
 
-**Crop-nya `object-position: 30%`, bukan tengah atau kanan.** Laut, pantai, dan
-perahunya ada di tengah foto sementara kanopinya di sisi kanan; waktu masih
-dipatok ke kanan, jendela sesempit ini cuma menampilkan pohon.
+**Satu baris `top: 70px`** menggantikan lapisan putih setinggi 132px di puncak
+bingkai. Begitu fotonya mulai di bawah bar, tautan di bar kembali berdiri di
+atas latar pucat yang memang jadi dasar warnanya.
 
-**Feather-nya pendek dan menempel di ujung tulisan**, bukan campuran lebar yang
-membuat separuh bingkai jadi bukan foto dan bukan panel. Lebarnya satu angka,
-`--fade-span`, sekarang **72px**.
+**Crop-nya `object-position: center 58%`.** Selebar layar berarti seluruh lebar
+fotonya kelihatan, jadi yang tersisa untuk dipilih cuma potongan tegaknya: agak
+ke bawah, karena puncak bingkainya langit yang tidak diperlukan hero dan
+dasarnya airnya yang diperlukan.
 
-Titik mulainya `max()` dari piksel dan persen, karena kolom teksnya bukan
-keduanya. Di atas 1280px kolomnya wadah 1116px yang ditengahkan, jadi tepinya
-ikut tengah jendela. Di 1024px wadahnya kehabisan ruang dan jatuh ke padding,
-jadi persen saja akan mendarat di baris terakhir paragrafnya. Angka pikselnya
-yang menutup celah itu: `max(560px, 50% + 16px)`.
-
-Diukur di dua bahasa, 1024 sampai 2560: jarak terdekat feather ke huruf **48px**
-(bahasa Indonesia di 1024px), selebihnya 71px atau lebih.
-
-**Keterbacaannya juga diukur, bukan dikira.** Latarnya foto, dan tidak ada cara
+**Keterbacaannya diukur, bukan dikira.** Latarnya foto, dan tidak ada cara
 menghitungnya dari CSS: yang dilakukan adalah membuat tulisannya transparan,
 memotret halamannya, lalu membaca piksel yang tadinya tertutup huruf. Piksel
 terburuk yang menentukan, bukan rata-ratanya. Di lima lebar (1440, 1024, 768,

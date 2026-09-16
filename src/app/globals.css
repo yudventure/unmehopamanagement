@@ -504,48 +504,43 @@ input[type="search"]::-webkit-search-decoration {
 }
 
 /*
- * Where the hero photograph sits, and how its left edge ends.
+ * The white behind the hero words, and the only white on the picture.
  *
- * It is a block, not a backdrop. It starts below the bar and to the right of
- * the words, so no part of it is ever under anything, and nothing is ever
- * laid over it. Three earlier tries put it behind the whole hero and then
- * fought to keep the type readable: a white gradient over the picture reads
- * as fog, and fog over a photograph is worse the more of it there is.
+ * Everything before this covered part of the frame: a panel down the left, a
+ * band across the top, a wide feather between them. All of it was the same
+ * mistake in different sizes, which is to shape the white to the frame and
+ * then ask the photograph to live in what is left. This is shaped to the
+ * words instead. It is bigger than the text it sits under, so no edge of it
+ * ever runs beside a line, and it is gone before the middle of the frame.
  *
- * `top` clears the fixed bar, which measures 70px. That single line is what
- * replaced a 132px white wash across the top of the frame: with the picture
- * beginning under the bar, the bar's links are back on the pale ground they
- * were coloured for, and the photograph keeps its own light.
+ * `closest-side` is what makes the whole thing land inside its own box: each
+ * radius reaches zero at the nearest side, so the corners stay clear and the
+ * blob never meets an edge it has to stop at.
  *
- * `left` is `max()` of a length and a percentage because the type is neither.
- * Above 1280 the text sits in a 1116px container centred in the window, so
- * its edge follows the middle of the window; at 1024 the container runs out
- * of room and falls back to its padding, and the percentage alone would land
- * in the last line of the paragraph. The pixel floor covers that.
- *
- * Measured, both languages, 1024 to 2560: the longest run of type ends
- * between 46% and 50% of the window, and the nearest the feather ever comes
- * to a letter is 48px, at 1024 in Indonesian. Everywhere else it is 71px or
- * more.
+ * The insets and the stops are set by measurement, not by eye. The words fill
+ * a 600px column and about 420px of height; the wash reaches full strength
+ * well past both, then falls away. The numbers below are the ones under which
+ * every run of type in the hero measured at least 4.5:1 against the worst
+ * pixel behind it, at 1024, 1280, 1440, 1920 and 2560, in both languages.
  */
-[data-hero-fade] {
-  --fade-span: 72px;
+[data-hero-wash] {
   position: absolute;
-  top: 70px;
-  right: 0;
-  bottom: 0;
-  left: max(560px, calc(50% + 16px));
-  /* Measured from this block's own left edge rather than from the window, now
-     that the block starts where the picture starts. */
-  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 var(--fade-span));
-  mask-image: linear-gradient(90deg, transparent 0, #000 var(--fade-span));
-  /* Both stated: a mask defaults to repeating, and the picture inside this box
-     grows past it as the reader scrolls, which would tile the feather back
-     across the frame instead of clipping it. */
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  -webkit-mask-size: 100% 100%;
-  mask-size: 100% 100%;
+  top: -120px;
+  right: -230px;
+  bottom: -128px;
+  left: -230px;
+  pointer-events: none;
+  /* Four stops, not three. The last two are what keep it from reading as a
+     shape: with a single ramp to nothing, the point where it gives out draws
+     an edge of its own, and an oval edge on a photograph is a blob. */
+  background: radial-gradient(
+    ellipse closest-side at center,
+    rgba(255, 255, 255, 0.97) 0%,
+    rgba(255, 255, 255, 0.95) 54%,
+    rgba(255, 255, 255, 0.74) 74%,
+    rgba(255, 255, 255, 0.3) 88%,
+    rgba(255, 255, 255, 0) 100%
+  );
 }
 
 /* The scrim deepens as the picture goes, which is what keeps the white type

@@ -535,14 +535,30 @@ input[type="search"]::-webkit-search-decoration {
  */
 [data-hero-deep] {
   --deep: 3, 26, 31;
+  /*
+   * Below 1024 the words fill the width, so there is no side for the picture
+   * to keep: the gradient runs down instead of across and covers all of it,
+   * a little lighter at the foot where the reasons card is coming up anyway.
+   */
   background: linear-gradient(
-    103deg,
-    rgba(var(--deep), 0.64) 0%,
-    rgba(var(--deep), 0.58) 30%,
-    rgba(var(--deep), 0.52) 52%,
-    rgba(var(--deep), 0.16) 64%,
-    rgba(var(--deep), 0) 76%
+    180deg,
+    rgba(var(--deep), 0.58) 0%,
+    rgba(var(--deep), 0.56) 62%,
+    rgba(var(--deep), 0.44) 100%
   );
+}
+
+@media (min-width: 64rem) {
+  [data-hero-deep] {
+    background: linear-gradient(
+      103deg,
+      rgba(var(--deep), 0.64) 0%,
+      rgba(var(--deep), 0.58) 30%,
+      rgba(var(--deep), 0.52) 52%,
+      rgba(var(--deep), 0.16) 64%,
+      rgba(var(--deep), 0) 76%
+    );
+  }
 }
 
 [data-hero-deep-top] {
@@ -567,60 +583,64 @@ input[type="search"]::-webkit-search-decoration {
  * `invert(1)` turns that white, so the tiki keeps its own outline and its own
  * soft edges without a white copy of it having to be made and kept in step.
  *
- * All of it only above 1024. Below that the picture is a band of its own
- * further down the page and the bar and the words are ink on a near-white
- * ground, which needs none of this. That is also why the switch is a media
- * query rather than the flag the bar uses for its own background: the flag is
- * about scrolling, this is about whether the photograph is up here at all.
+ * At every width now. The phone used to keep the picture in a band below the
+ * words and the words in ink on a near-white ground; with the wash going dark
+ * rather than light, the photograph survives being read over and the phone
+ * gets the same hero the desktop does.
+ *
+ * `[data-on-photo]` is put there by the markup and not by a media query, so
+ * what decides is what it has always decided: whether there is a photograph up
+ * here, and whether the bar has gone frosted over the white page below.
  */
-@media (min-width: 64rem) {
-  [data-on-photo] {
-    --halo:
-      0 1px 2px rgba(2, 22, 26, 0.92), 0 2px 8px rgba(2, 22, 26, 0.75), 0 0 30px rgba(2, 22, 26, 0.55);
-  }
+[data-on-photo] {
+  --halo:
+    0 1px 2px rgba(2, 22, 26, 0.92), 0 2px 8px rgba(2, 22, 26, 0.75), 0 0 30px rgba(2, 22, 26, 0.55);
+}
 
-  [data-on-photo] [data-ink],
-  [data-on-photo] [data-ink-script],
-  [data-on-photo] [data-ink-soft],
-  [data-on-photo] [data-ink-pill] button[aria-pressed="false"] {
-    text-shadow: var(--halo);
-  }
+[data-on-photo] [data-ink],
+[data-on-photo] [data-ink-script],
+[data-on-photo] [data-ink-soft],
+[data-on-photo] [data-ink-pill] button[aria-pressed="false"] {
+  text-shadow: var(--halo);
+}
 
-  [data-on-photo] [data-ink],
-  [data-on-photo] [data-ink-pill] button[aria-pressed="false"] {
-    color: #fff;
-  }
+[data-on-photo] [data-ink],
+[data-on-photo] [data-ink-pill] button[aria-pressed="false"] {
+  color: #fff;
+}
 
-  [data-on-photo] [data-ink-badge] {
-    filter: brightness(0) invert(1);
-  }
+[data-on-photo] [data-ink-badge] {
+  filter: brightness(0) invert(1);
+}
 
-  /* The quieter line of a pair keeps being the quieter line: white at full
-     strength everywhere would flatten the bar into one voice. */
-  [data-on-photo] [data-ink-soft] {
-    color: rgba(255, 255, 255, 0.86);
-  }
+/* The quieter line of a pair keeps being the quieter line: white at full
+   strength everywhere would flatten the bar into one voice. */
+[data-on-photo] [data-ink-soft] {
+  color: rgba(255, 255, 255, 0.86);
+}
 
-  /* The script line keeps a tint of the brand rather than going white with
-     everything else, which is the only thing still saying which site this is
-     once the ink has gone. */
-  [data-on-photo] [data-ink-script] {
-    color: #a9e6ea;
-  }
+/* The script line keeps a tint of the brand rather than going white with
+   everything else, which is the only thing still saying which site this is
+   once the ink has gone. */
+[data-on-photo] [data-ink-script] {
+  color: #a9e6ea;
+}
 
-  [data-on-photo] [data-ink-pill] {
-    border-color: rgba(255, 255, 255, 0.6);
-  }
+[data-on-photo] [data-ink-pill] {
+  border-color: rgba(255, 255, 255, 0.6);
+}
 
-  /* The chip keeps a ground of its own, but it borrows the picture's rather
-     than staying the pale one it wears on white. A single pale badge on a
-     deepened frame reads as something left behind from another design. */
-  [data-on-photo] [data-ink-chip] {
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    background: rgba(255, 255, 255, 0.15);
-    color: #fff;
-    text-shadow: var(--halo);
-  }
+/* The chip keeps a ground of its own, but a darkened one rather than the pale
+   one it wears on white: a pale badge on a deepened frame reads as something
+   left behind from another design, and white letters on a translucent white
+   pill measured 4.45:1 at 768, where the chip sits just past the foot of the
+   gradient above it. Dark under white is the same answer the rest of this
+   hero gives. */
+[data-on-photo] [data-ink-chip] {
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  background: rgba(2, 22, 26, 0.34);
+  color: #fff;
+  text-shadow: var(--halo);
 }
 
 /* The scrim deepens as the picture goes, which is what keeps the white type

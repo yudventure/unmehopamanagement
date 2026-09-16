@@ -85,19 +85,6 @@ const step = (i: number) => ({ "--i": i }) as React.CSSProperties;
 const LOGO_RATIO = 164 / 240;
 
 /**
- * A transparent pixel, inline so it costs no request.
- *
- * It stands in for the wide hero file below 1024, where that layer is
- * `display: none`. Hiding an `<img>` that way does not stop the browser
- * fetching it: measured, a 390px phone pulled the 1760px file *and* the 900px
- * one, 283kB for a band that shows 65kB of it. A `<picture>` whose only
- * `<source>` is gated on the same width the layer is gated on falls back to
- * this instead, and the phone asks for nothing.
- */
-const BLANK_PIXEL =
-  "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
-
-/**
  * Midtrans's client key, which is public by design and inlined at build. Its
  * presence is what decides whether the room panel offers to take money or to
  * take a question: a pay button on a site with no keys is a dead end, and the
@@ -584,7 +571,14 @@ export function EddoSite({
        *
        * The top padding clears the fixed bar above, which measures 70px.
        */}
-      <div ref={heroRef} className="relative overflow-hidden bg-eddo-wash">
+      {/* Full height on a phone, so the photograph is the screen rather than a
+          strip of it. `svh` and not `vh`: `vh` is measured against the browser
+          with its bars hidden, so a hero sized in it starts taller than the
+          screen and settles as the reader scrolls. */}
+      <div
+        ref={heroRef}
+        className={`relative overflow-hidden bg-eddo-wash ${hasHeroPhoto ? "min-h-[100svh] lg:min-h-0" : ""}`}
+      >
         {/* The pale ground: the whole hero without a photograph, the panel the
             type sits on with one. It is painted first so the picture can lie
             on top of it, which is the only order in which a feathered edge
@@ -596,16 +590,18 @@ export function EddoSite({
 
         {hasHeroPhoto && (
           <>
-            {/* The picture, edge to edge and top to bottom, with nothing over
-                it and nothing cut out of it. The bar has no ground of its own
-                at rest, so what is behind its links here is this photograph.
+            {/* The picture, edge to edge and top to bottom, at every width. The
+                bar has no ground of its own at rest, so what is behind its
+                links here is this photograph.
 
-                Below 1024 it leaves the hero altogether and becomes a band of
-                its own, further down. It is not a second design for its own
-                sake: at 390px there is no room to put words beside a picture,
-                and covering one enough to read the other leaves a photograph
-                nobody can see, on the phones most guests arrive on. */}
-            <div className="absolute inset-0 hidden lg:block">
+                It used to step aside below 1024 and become a band under the
+                words, because a white wash strong enough to read a paragraph
+                through covered the whole frame and left a photograph nobody
+                could see. What changed is the direction of the wash: dark
+                deepens the water instead of bleaching it, so the picture
+                survives being read over and the phone gets the same hero the
+                desktop does. */}
+            <div className="absolute inset-0">
               {/* The scale lives inside the fade, not on it: a mask scales
                   with the element it is on, so the two together would walk the
                   feather across the paragraph as the reader scrolls. */}
@@ -614,14 +610,19 @@ export function EddoSite({
                     height for `h-full` to be a percentage of. */}
                 <picture className="block h-full w-full">
                   <source media="(min-width: 1024px)" srcSet="/eddo-hero.jpg" />
-                  {/* Edge to edge the whole width is in view, so only the
-                      vertical crop is a choice. Slightly below centre: the top
-                      of the frame is sky the hero does not need, the bottom is
-                      the water it does. */}
+                  {/* Two crops, because the box is two shapes. Wide, the whole
+                      width is in view and only the vertical choice is left:
+                      slightly low, since the top of the frame is sky the hero
+                      does not need. Narrow, the frame is taller than the
+                      photograph and the crop runs the other way, right of
+                      centre where the houses and the boat are.
+
+                      The small file is the `<img>` and the wide one a
+                      `<source>`, so each screen fetches one and only one. */}
                   <img
-                    src={BLANK_PIXEL}
+                    src="/eddo-hero-900.jpg"
                     alt={t.hero.alt}
-                    className="h-full w-full object-cover object-[center_58%]"
+                    className="h-full w-full object-cover object-[62%_50%] lg:object-[50%_58%]"
                   />
                 </picture>
               </div>
@@ -631,8 +632,8 @@ export function EddoSite({
                 one for the strip the bar sits in. Dark deepens a photograph
                 where light bleaches it. Stops and reasoning are in
                 `globals.css`. */}
-            <div aria-hidden="true" data-hero-deep className="absolute inset-0 hidden lg:block" />
-            <div aria-hidden="true" data-hero-deep-top className="absolute inset-x-0 top-0 hidden lg:block" />
+            <div aria-hidden="true" data-hero-deep className="absolute inset-0" />
+            <div aria-hidden="true" data-hero-deep-top className="absolute inset-x-0 top-0" />
           </>
         )}
 
@@ -686,24 +687,6 @@ export function EddoSite({
 
         </Section>
 
-        {/* The picture's own band below 1024, edge to edge and with nothing
-            over it. The search bar that follows laps onto its foot, which is
-            what ties the two together rather than leaving a photograph
-            stranded between two blocks of white. */}
-        {hasHeroPhoto && (
-          <div className="relative lg:hidden">
-            {/* Two widths. The band is at most 1024 across and usually 390,
-                so the desk file would be four times the pixels anybody on a
-                phone can see, on the connection least able to afford them. */}
-            <img
-              src="/eddo-hero-900.jpg"
-              srcSet="/eddo-hero-900.jpg 900w, /eddo-hero.jpg 1760w"
-              sizes="100vw"
-              alt={t.hero.alt}
-              className="block h-[240px] w-full object-cover object-[62%_center] sm:h-[320px]"
-            />
-          </div>
-        )}
       </div>
 
       {/* ------------------------------------------------ reasons card */}

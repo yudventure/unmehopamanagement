@@ -31,7 +31,7 @@ export function Price({
   currency: CurrencyCode;
   rates: Rates | null;
   className?: string;
-  size?: "lg" | "sm";
+  size?: "xl" | "lg" | "sm";
   tone?: "dark" | "light" | "amber";
 }) {
   const approx = convert(rupiah, currency, rates);
@@ -44,12 +44,23 @@ export function Price({
 
   return (
     <div className={className}>
-      <div className={size === "lg" ? "text-[20px] font-bold" : "text-[17px] font-bold"}>
+      <div
+        className={
+          size === "xl"
+            ? /* Big enough to be read across a room, and it takes its colour
+                 from the caller so one page can make the price the loudest
+                 thing on it without every page having to. */
+              "text-[clamp(30px,3.6vw,40px)] leading-[1.05] font-bold tracking-[-.02em]"
+            : size === "lg"
+              ? "text-[20px] font-bold"
+              : "text-[17px] font-bold"
+        }
+      >
         {money(rupiah, lang)}
       </div>
       {/* Reserved height even when empty, so a card does not jump as the rates
           land a moment after the page does. */}
-      <div className={`min-h-[15px] text-[11.5px] ${sub}`}>
+      <div className={`min-h-[15px] ${size === "xl" ? "mt-1 text-[13px]" : "text-[11.5px]"} ${sub}`}>
         {approx ? `≈ ${approx}` : ""}
       </div>
     </div>

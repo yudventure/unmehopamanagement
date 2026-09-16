@@ -107,22 +107,23 @@ export function seedRooms(): Room[] {
       active: i !== 7,
     });
   }
-  rooms.push({
-    id: "E1",
-    prop: "eddo",
-    name: "Eddo Bawah",
-    cap: "2 dewasa",
-    rate: 400000,
-    active: true,
-  });
-  rooms.push({
-    id: "E2",
-    prop: "eddo",
-    name: "Eddo Atas",
-    cap: "4 dewasa",
-    rate: 700000,
-    active: true,
-  });
+  /* Eddo is five of one thing, not two of two. Each unit is a house of its
+     own, so they share a rate and a capacity and differ only by number; the
+     site shows one card and says how many there are, and the calendar still
+     has five rows to fill.
+
+     The rate and the capacity carried over from the old "Eddo Bawah" and are
+     the owner's to confirm. */
+  for (let i = 1; i <= 5; i++) {
+    rooms.push({
+      id: "E" + i,
+      prop: "eddo",
+      name: "Rumah " + String(i).padStart(2, "0"),
+      cap: "4 dewasa",
+      rate: 400000,
+      active: true,
+    });
+  }
   return rooms;
 }
 

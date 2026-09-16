@@ -15,6 +15,7 @@ import {
   TikTokIcon,
   WhatsAppIcon,
 } from "@/components/web/icons";
+import { RoomCarousel } from "@/components/eddo/room-carousel";
 import { CurrencySwitch, Price } from "@/components/web/price";
 import {
   IsletScene,
@@ -91,6 +92,33 @@ const LOGO_RATIO = 164 / 240;
  */
 const BLANK_PIXEL =
   "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+
+/**
+ * Midtrans's client key, which is public by design and inlined at build. Its
+ * presence is what decides whether the room panel offers to take money or to
+ * take a question: a pay button on a site with no keys is a dead end, and the
+ * enquiry form was never worse than one.
+ */
+const MIDTRANS_CLIENT_KEY = process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY ?? "";
+
+declare global {
+  interface Window {
+    snap?: { pay: (token: string, cb?: Record<string, unknown>) => void };
+  }
+}
+
+/** Loads Snap once, from wherever the server says its Midtrans lives. */
+function loadSnap(src: string) {
+  return new Promise<void>((done, fail) => {
+    if (window.snap) return done();
+    const el = document.createElement("script");
+    el.src = src;
+    el.setAttribute("data-client-key", MIDTRANS_CLIENT_KEY);
+    el.onload = () => done();
+    el.onerror = () => fail(new Error("snap-script"));
+    document.head.appendChild(el);
+  });
+}
 
 /**
  * The badge from `public/eddo-logo.png` beside the name.
@@ -278,6 +306,7 @@ export function EddoSite({
   maintenance = false,
   sisterHref = "/turtle",
   hasHeroPhoto = false,
+  roomPhotos = [],
 }: {
   maintenance?: boolean;
   /** Where Turtle lives. A path while the two share a domain, an absolute
@@ -288,6 +317,10 @@ export function EddoSite({
       which can look at the disk at build time; the hero's shape depends on
       it, and a shape that settles after the first paint is a visible jump. */
   hasHeroPhoto?: boolean;
+  /** The room photographs that exist, in order, as web paths. Counted on the
+      disk by the page: the carousel has no maximum, and a number baked into
+      the code would be one. */
+  roomPhotos?: string[];
 }) {
   const { lang, pickLang } = useLang();
   const { currency, pickCurrency } = useCurrency();
@@ -324,9 +357,61 @@ export function EddoSite({
   /* An open drawer needs something behind it whether or not the page has
      moved, or the links hang over the hero with nothing under them. */
   const barSolid = scrolled || menuOpen;
+  /* The booking fields. They belong to the room panel, not to the dialog: the
+     dialog is for asking, and these are for paying. */
+  const [stayFrom, setStayFrom] = useState("");
+  const [payName, setPayName] = useState("");
+  const [payContact, setPayContact] = useState("");
+  const [nights, setNights] = useState(2);
+  const [guests, setGuests] = useState(2);
+  const [paying, setPaying] = useState(false);
   const [enquiry, setEnquiry] = useState<Enquiry>(EMPTY_ENQUIRY);
   const [enquiryOpen, setEnquiryOpen] = useState(false);
   const patch = (p: Partial<Enquiry>) => setEnquiry((prev) => ({ ...prev, ...p }));
+  const canPay = Boolean(MIDTRANS_CLIENT_KEY);
+
+  /**
+   * Opens Midtrans with an amount the server worked out.
+   *
+   * Nothing about money leaves this function: the dates and the guest go up,
+   * a token comes back. If the server has no keys of its own it answers 503
+   * and the reader gets the enquiry form instead of an error, which is the
+   * same fallback every other optional service on this site has.
+   */
+  const startPayment = async () => {
+    if (paying) return;
+    setPaying(true);
+    try {
+      const looksEmail = payContact.includes("@");
+      const res = await fetch("/api/pay", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          checkIn: stayFrom,
+          nights,
+          guests,
+          name: payName,
+          ...(looksEmail ? { email: payContact } : { phone: payContact }),
+        }),
+      });
+      if (!res.ok) throw new Error(String(res.status));
+      const out = (await res.json()) as { token: string; snap: string };
+      await loadSnap(out.snap);
+      window.snap?.pay(out.token);
+    } catch {
+      /* A missing key, a refused order, a blocked script: whatever went wrong,
+         the reader still wants the house. Hand them the form. */
+      ask("stay", t.rooms.ctaNote(t.rooms.name), {
+        name: payName,
+        ...(payContact.includes("@") ? { email: payContact } : { phone: payContact }),
+        people: String(guests),
+        nights: String(nights),
+      });
+    } finally {
+      setPaying(false);
+    }
+  };
+
   const ask = (activity: ActivityKey, notes: string, extra: Partial<Enquiry> = {}) => {
     patch({ activity, notes, ...extra });
     setEnquiryOpen(true);
@@ -630,42 +715,138 @@ export function EddoSite({
           </div>
         </div>
 
-        <div className="mt-9 grid grid-cols-1 gap-6 md:grid-cols-2">
-          {rooms.map((r, i) => {
-            const rc = t.rooms.types[r.key];
-            return (
-              <article key={r.key} data-reveal style={step(i)} className="overflow-hidden rounded-[24px] border border-line bg-surface shadow-[0_18px_40px_-30px_rgba(18,52,58,.35)]">
-                <div className="relative aspect-[16/10] overflow-hidden bg-eddo-tint">
-                  {i === 0 ? <JettyScene className={FILL} /> : <IsletScene className={FILL} warm />}
-                  <Photo src={r.photo} alt={rc.alt} />
-                  <span className="absolute top-4 left-4 rounded-full bg-white/92 px-[12px] py-[6px] text-[12px] font-medium text-eddo-ink">
-                    {t.rooms.sleeps(rc.sleeps)}
-                  </span>
-                </div>
-                <div className="px-6 py-6">
-                  <div className="flex flex-wrap items-baseline justify-between gap-2">
-                    <h3 className="m-0 text-[21px] font-bold tracking-[-.015em] text-eddo-ink">{rc.name}</h3>
-                    <div className="text-right">
-                      <Price rupiah={r.rate} lang={lang} currency={currency} rates={rates} size="sm" />
-                      <div className="text-[11.5px] text-slate-soft">{t.rooms.perNight}</div>
-                    </div>
-                  </div>
-                  <p className="mt-2 text-[14px] leading-[1.6] text-slate">{rc.blurb}</p>
-                  <ul className="mt-4 mb-0 grid list-none grid-cols-1 gap-x-4 gap-y-[7px] p-0 sm:grid-cols-2">
-                    {rc.features.map((f) => (
-                      <li key={f} className="flex items-start gap-[9px] text-[13px] text-ink-soft">
-                        <span className="mt-[6px] h-[6px] w-[6px] shrink-0 rounded-full bg-eddo" />
-                        {f}
-                      </li>
-                    ))}
-                  </ul>
-                  <button type="button" onClick={() => ask("stay", t.rooms.ctaNote(rc.name))} className={`${BTN} mt-6 w-full`}>
-                    {t.rooms.cta}
-                  </button>
-                </div>
-              </article>
-            );
-          })}
+        {/* Photographs on one side, what a night buys on the other. The price
+            is the biggest thing in the column and the only teal figure on the
+            page, because "what does it cost" is the question this section
+            exists to answer and nobody should have to hunt for it. */}
+        <div className="mt-9 grid grid-cols-1 items-start gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,.95fr)] lg:gap-10">
+          <div data-reveal>
+            <RoomCarousel
+              photos={roomPhotos}
+              alt={t.rooms.photoAlt}
+              prev={t.rooms.prev}
+              next={t.rooms.next}
+              counter={t.rooms.photoAlt}
+            />
+          </div>
+
+          <div data-reveal style={step(1)} className="rounded-[24px] border border-line bg-surface p-6 shadow-[0_18px_40px_-30px_rgba(18,52,58,.35)] md:p-7">
+            <span className="inline-flex items-center gap-[7px] rounded-full bg-eddo-tint px-[12px] py-[5px] text-[12px] font-medium text-eddo-deep">
+              {t.rooms.count(rooms.count)}
+            </span>
+            <h3 className="mt-4 mb-0 text-[24px] leading-[1.15] font-bold tracking-[-.02em] text-eddo-ink">
+              {t.rooms.name}
+            </h3>
+            <p className="mt-2 mb-0 text-[14px] leading-[1.6] text-slate">{t.rooms.blurb}</p>
+
+            <ul className="mt-5 mb-0 grid list-none grid-cols-1 gap-x-4 gap-y-[9px] p-0 sm:grid-cols-2">
+              {t.rooms.included.map((f) => (
+                <li key={f} className="flex items-start gap-[9px] text-[13.5px] text-ink-soft">
+                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="mt-[3px] shrink-0 text-eddo-deep">
+                    <path d="M4 12.5l5.5 5.5L20 7" />
+                  </svg>
+                  {f}
+                </li>
+              ))}
+            </ul>
+
+            <div className="mt-6 flex flex-wrap items-end justify-between gap-3 border-t border-line pt-5">
+              <Price
+                rupiah={rooms.rate}
+                lang={lang}
+                currency={currency}
+                rates={rates}
+                size="xl"
+                className="text-eddo-deep"
+              />
+              <span className="pb-[2px] text-[13px] text-slate">{t.rooms.perNight}</span>
+            </div>
+
+            <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <label className="flex flex-col gap-[4px] rounded-[14px] border border-line-strong px-[14px] py-[9px] text-[11px] font-medium text-slate">
+                {t.rooms.checkIn}
+                <input
+                  type="date"
+                  value={stayFrom}
+                  onChange={(e) => setStayFrom(e.target.value)}
+                  className="border-none bg-transparent p-0 text-[14px] font-medium text-eddo-ink outline-none"
+                />
+              </label>
+              <label className="flex flex-col gap-[4px] rounded-[14px] border border-line-strong px-[14px] py-[9px] text-[11px] font-medium text-slate">
+                {t.rooms.nights}
+                <select
+                  value={nights}
+                  onChange={(e) => setNights(Number(e.target.value))}
+                  className="cursor-pointer border-none bg-transparent p-0 text-[14px] font-medium text-eddo-ink outline-none"
+                >
+                  {[1, 2, 3, 4, 5, 6, 7, 10, 14].map((n) => (
+                    <option key={n} value={n}>{t.rooms.nightsValue(n)}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="flex flex-col gap-[4px] rounded-[14px] border border-line-strong px-[14px] py-[9px] text-[11px] font-medium text-slate">
+                {t.rooms.guests}
+                <select
+                  value={guests}
+                  onChange={(e) => setGuests(Number(e.target.value))}
+                  className="cursor-pointer border-none bg-transparent p-0 text-[14px] font-medium text-eddo-ink outline-none"
+                >
+                  {[1, 2, 3, 4, 5, 6].map((n) => (
+                    <option key={n} value={n}>{t.rooms.guestsValue(n)}</option>
+                  ))}
+                </select>
+              </label>
+            </div>
+
+            {canPay && (
+              <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <label className="flex flex-col gap-[4px] rounded-[14px] border border-line-strong px-[14px] py-[9px] text-[11px] font-medium text-slate">
+                  {t.rooms.yourName}
+                  <input
+                    value={payName}
+                    onChange={(e) => setPayName(e.target.value)}
+                    className="border-none bg-transparent p-0 text-[14px] font-medium text-eddo-ink outline-none"
+                  />
+                </label>
+                <label className="flex flex-col gap-[4px] rounded-[14px] border border-line-strong px-[14px] py-[9px] text-[11px] font-medium text-slate">
+                  {t.rooms.contact}
+                  <input
+                    value={payContact}
+                    onChange={(e) => setPayContact(e.target.value)}
+                    className="border-none bg-transparent p-0 text-[14px] font-medium text-eddo-ink outline-none"
+                  />
+                </label>
+              </div>
+            )}
+
+            <div className="mt-4 flex items-baseline justify-between gap-3">
+              <span className="text-[13px] text-slate">{t.rooms.total}</span>
+              <Price
+                rupiah={rooms.rate * nights}
+                lang={lang}
+                currency={currency}
+                rates={rates}
+                className="text-right text-eddo-ink"
+              />
+            </div>
+
+            {/* One button, and which one it is depends on whether the keys are
+                there. Without them it asks instead of charging, which is what
+                this section did before Midtrans existed on it. */}
+            <button
+              type="button"
+              onClick={() => (canPay ? startPayment() : ask("stay", t.rooms.ctaNote(t.rooms.name)))}
+              disabled={paying}
+              className={`${BTN} mt-5 w-full disabled:cursor-wait disabled:opacity-70`}
+            >
+              {canPay ? t.rooms.pay : t.rooms.cta}
+            </button>
+            {/* The line under the button describes the button that is there,
+                not the one that would be there with keys set. */}
+            <p className="mt-3 mb-0 text-center text-[12px] leading-[1.5] text-slate-soft">
+              {canPay ? t.rooms.payNote : t.rooms.askNote}
+            </p>
+          </div>
         </div>
       </Section>
 

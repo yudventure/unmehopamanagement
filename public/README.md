@@ -237,8 +237,7 @@ Begitu berkasnya ditaruh, fotonya yang tampil, tanpa mengubah kode.
 | `Eddo_Homestay_1.png` | **tidak dipakai**, disimpan sebagai master | aslinya dari pemilik: 4,0 MB |
 | `eddo-hero.jpg` | latar hero di layar ≥1024px | 2:1, 1760×880, 218 KB. Dibuat dari master di atas. **Berkas ini juga menentukan bentuk hero** — lihat di bawah |
 | `eddo-hero-900.jpg` | pita foto hero di layar <1024px | 2:1, 900×450, 65 KB. Isi yang sama, dikecilkan |
-| `eddo-bawah.jpg` | kartu kamar Eddo Bawah | 16:10 |
-| `eddo-atas.jpg` | kartu kamar Eddo Atas | 16:10 |
+| `eddo-kamar-1.jpg`, `-2`, `-3`, … | karosel foto di bagian kamar | 4:3 |
 | `eddo-around-1.jpg` | kartu "Dermaga Sawinggrai" | 3:4 (tegak) |
 | `eddo-around-2.jpg` | kartu "Burung cendrawasih" | 3:4 |
 | `eddo-around-3.jpg` | kartu "Arborek" | 3:4 |
@@ -247,6 +246,19 @@ Begitu berkasnya ditaruh, fotonya yang tampil, tanpa mengubah kode.
 
 Aturannya sama seperti situs Turtle: huruf kecil semua, lebar 1080 sampai
 1920px, usahakan di bawah 300 KB per foto.
+
+**Karosel kamarnya tidak punya batas jumlah foto.** Yang menentukan isinya
+adalah isi folder ini, bukan angka di dalam kode: `src/app/eddo/page.tsx`
+membaca `public/` sewaktu build dan mengambil semua berkas bernama
+`eddo-kamar-<angka>.jpg` (juga `.jpeg`, `.png`, `.webp`), diurutkan menurut
+angkanya. Jadi menambah foto kesebelas berarti menaruh satu berkas, bukan
+menyunting kode. Urutan angkanya tidak harus rapat, tapi rapat lebih mudah
+dibaca orang berikutnya.
+
+Selama belum ada satu pun, karoselnya menampilkan dua ilustrasi seperti bagian
+lain di situs ini. Titik-titik penandanya berhenti digambar kalau fotonya lebih
+dari dua belas, karena di atas itu titiknya tidak bisa dibedakan lagi dan
+penghitung di pojok yang mengerjakan tugasnya.
 
 **Lencananya dipakai lagi, bersama nama dalam huruf.** Yang dilepas cuma baris
 kampung di bawah nama: tiga hal dalam bar setinggi 46px membuat baris itu

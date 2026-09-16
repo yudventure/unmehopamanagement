@@ -1,4 +1,4 @@
-import { existsSync } from "node:fs";
+import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
 import type { Metadata } from "next";
@@ -41,11 +41,20 @@ export default function EddoPage() {
      the page has painted means the reader watches it rearrange. This page is
      prerendered, so the check runs once at build and costs nothing. */
   const hasHeroPhoto = existsSync(join(process.cwd(), "public", "eddo-hero.jpg"));
+  /* The room carousel takes whatever is in the folder, so "no maximum" is
+     true of the site and not just of the component: `eddo-kamar-1.jpg`,
+     `-2`, `-3` and on. Sorted by their number rather than by their name, or
+     ten would come between one and two. Counted at build, like the hero. */
+  const roomPhotos = readdirSync(join(process.cwd(), "public"))
+    .filter((f) => /^eddo-kamar-\d+\.(jpe?g|png|webp)$/i.test(f))
+    .sort((a, b) => Number(a.replace(/\D/g, "")) - Number(b.replace(/\D/g, "")))
+    .map((f) => `/${f}`);
   return (
     <EddoSite
       maintenance={SITE_CONFIG.maintenance}
       sisterHref={turtle ? `https://${turtle}/` : "/turtle"}
       hasHeroPhoto={hasHeroPhoto}
+      roomPhotos={roomPhotos}
     />
   );
 }

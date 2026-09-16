@@ -28,28 +28,16 @@ export function waLink(message: string) {
   return `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(message)}`;
 }
 
-export type EddoRoomKey = "bawah" | "atas";
-
-export interface EddoRoom {
-  key: EddoRoomKey;
-  rate: number;
-  /** Photo under `public/`; the drawn scene shows if the file is missing. */
-  photo: string;
-}
-
 /**
- * Two rooms, priced from the same table the manager uses, so the site and the
- * calendar cannot disagree. Keyed by the room rather than by position, so a
- * photo cannot end up over the wrong room if the two are ever reordered.
+ * Eddo's rooms, read from the same table the manager's calendar uses so the
+ * site and the calendar cannot disagree about the price.
+ *
+ * One type, five units. They differ by number and nothing else, so what the
+ * page needs from the table is the rate and the count, not a row each.
  */
-export function eddoRooms(): EddoRoom[] {
-  const rooms = seedRooms().filter((r) => r.prop === "eddo");
-  const rate = (name: string) =>
-    rooms.find((r) => r.name === name)?.rate ?? 0;
-  return [
-    { key: "bawah", rate: rate("Eddo Bawah"), photo: "/eddo-bawah.jpg" },
-    { key: "atas", rate: rate("Eddo Atas"), photo: "/eddo-atas.jpg" },
-  ];
+export function eddoRooms(): { rate: number; count: number } {
+  const rooms = seedRooms().filter((r) => r.prop === "eddo" && r.active);
+  return { rate: rooms[0]?.rate ?? 0, count: rooms.length };
 }
 
 /**
@@ -87,14 +75,35 @@ export interface EddoCopy {
     /** The tail of the title, set in the script face. */
     script: string;
     intro: string;
+    /** "five houses", said once under the title. */
+    count: (n: number) => string;
     perNight: string;
     sleeps: (n: number) => string;
-    types: Record<
-      EddoRoomKey,
-      { name: string; sleeps: number; blurb: string; features: string[]; alt: string }
-    >;
+    name: string;
+    blurb: string;
+    /** What a night buys, listed beside the price. */
+    included: string[];
+    /** Alt text for a room photograph, numbered as the reader sees them. */
+    photoAlt: (n: number, of: number) => string;
+    prev: string;
+    next: string;
+    /** The small form that turns a rate into an amount. */
+    checkIn: string;
+    nights: string;
+    nightsValue: (n: number) => string;
+    guests: string;
+    guestsValue: (n: number) => string;
+    yourName: string;
+    contact: string;
+    total: string;
+    /** Sends the reader to Midtrans. */
+    pay: string;
+    /** Shown in place of the pay button when no payment keys are set. */
     cta: string;
     ctaNote: (room: string) => string;
+    /** Said under the button when it charges, and when it asks. */
+    payNote: string;
+    askNote: string;
   };
   around: {
     eyebrow: string;
@@ -165,29 +174,38 @@ const EN: EddoCopy = {
   ],
   rooms: {
     eyebrow: "Rooms & rates",
-    title: "Two rooms,",
+    title: "Five houses,",
     script: "one shore",
-    intro: "Per room, per night, with three meals. No cleaning fee, no service fee.",
+    intro: "Per house, per night, with three meals. No cleaning fee, no service fee.",
+    count: (n) => `${n} houses, all the same`,
     perNight: "per night",
     sleeps: (n) => `Sleeps ${n}`,
-    types: {
-      bawah: {
-        name: "Eddo Bawah",
-        sleeps: 2,
-        blurb: "The lower room, a few steps from the water. A double bed, a deck facing the bay, and the sound of the tide under the floor.",
-        features: ["Double bed", "Private deck", "Fan", "Shared bathroom", "Three meals a day", "Electricity in the evening"],
-        alt: "The lower room at Eddo Homestay with its deck facing the water",
-      },
-      atas: {
-        name: "Eddo Atas",
-        sleeps: 4,
-        blurb: "The upper room, with space for a family. Two beds, a wider deck, and the view over the roofs to the strait.",
-        features: ["Two beds", "Wide deck", "Fan", "Shared bathroom", "Three meals a day", "Electricity in the evening"],
-        alt: "The upper room at Eddo Homestay with a wide deck",
-      },
-    },
-    cta: "Ask about this room",
+    name: "A house to yourselves",
+    blurb: "Not a room in someone else's house. Five stand along the shore, each one yours for the nights you are here, with a deck facing the water and the family a short walk away.",
+    included: [
+      "The whole house to yourselves",
+      "Three meals a day, cooked here",
+      "A deck facing the water",
+      "Fan in every room",
+      "Internet 24/7",
+      "No agent and no booking fee",
+    ],
+    photoAlt: (n, of) => `Eddo Homestay, photograph ${n} of ${of}`,
+    prev: "Previous photo",
+    next: "Next photo",
+    checkIn: "Check-in",
+    nights: "Nights",
+    nightsValue: (n) => (n === 1 ? "1 night" : `${n} nights`),
+    guests: "Guests",
+    guestsValue: (n) => (n === 1 ? "1 guest" : `${n} guests`),
+    yourName: "Your name",
+    contact: "WhatsApp or email",
+    total: "Total",
+    pay: "Book and pay",
+    cta: "Ask about a house",
     ctaNote: (room) => `I would like to ask about ${room}.`,
+    payNote: "Payment goes through Midtrans. We check the dates against the calendar and message you the same day.",
+    askNote: "Your message reaches the family directly, on WhatsApp or email.",
   },
   around: {
     eyebrow: "Around us",
@@ -294,29 +312,38 @@ const ID: EddoCopy = {
   ],
   rooms: {
     eyebrow: "Kamar & tarif",
-    title: "Dua kamar,",
-    script: "satu pesisir",
-    intro: "Per kamar, per malam, sudah termasuk tiga kali makan. Tidak ada biaya kebersihan atau biaya layanan.",
+    title: "Lima rumah,",
+    script: "satu pantai",
+    intro: "Per rumah, per malam, sudah dengan tiga kali makan. Tanpa biaya kebersihan, tanpa biaya layanan.",
+    count: (n) => `${n} rumah, semuanya sama`,
     perNight: "per malam",
-    sleeps: (n) => `Untuk ${n} orang`,
-    types: {
-      bawah: {
-        name: "Eddo Bawah",
-        sleeps: 2,
-        blurb: "Kamar bawah, beberapa langkah dari air. Satu ranjang besar, teras menghadap teluk, dan suara pasang di bawah lantai.",
-        features: ["Ranjang besar", "Teras sendiri", "Kipas angin", "Kamar mandi bersama", "Tiga kali makan", "Listrik malam hari"],
-        alt: "Kamar bawah Eddo Homestay dengan teras menghadap air",
-      },
-      atas: {
-        name: "Eddo Atas",
-        sleeps: 4,
-        blurb: "Kamar atas, cukup untuk keluarga. Dua ranjang, teras lebih lebar, dan pemandangan ke selat lewat atap-atap kampung.",
-        features: ["Dua ranjang", "Teras lebar", "Kipas angin", "Kamar mandi bersama", "Tiga kali makan", "Listrik malam hari"],
-        alt: "Kamar atas Eddo Homestay dengan teras lebar",
-      },
-    },
-    cta: "Tanya kamar ini",
+    sleeps: (n) => `Muat ${n} orang`,
+    name: "Satu rumah dipakai sendiri",
+    blurb: "Bukan satu kamar di rumah orang lain. Ada lima berjajar di tepi pantai, satu untukmu selama menginap, dengan teras menghadap air dan rumah keluarganya tidak jauh dari situ.",
+    included: [
+      "Satu rumah dipakai sendiri",
+      "Makan 3x sehari, dimasak di rumah",
+      "Teras menghadap air",
+      "Kipas angin di tiap kamar",
+      "Internet 24/7",
+      "Tanpa agen dan tanpa biaya pemesanan",
+    ],
+    photoAlt: (n, of) => `Eddo Homestay, foto ke-${n} dari ${of}`,
+    prev: "Foto sebelumnya",
+    next: "Foto berikutnya",
+    checkIn: "Check-in",
+    nights: "Malam",
+    nightsValue: (n) => `${n} malam`,
+    guests: "Tamu",
+    guestsValue: (n) => `${n} tamu`,
+    yourName: "Nama",
+    contact: "WhatsApp atau email",
+    total: "Total",
+    pay: "Pesan dan bayar",
+    cta: "Tanya soal rumahnya",
     ctaNote: (room) => `Saya mau tanya soal ${room}.`,
+    payNote: "Pembayaran lewat Midtrans. Tanggalnya kami cek di kalender lalu kami kabari di hari yang sama.",
+    askNote: "Pesanmu langsung sampai ke keluarganya, lewat WhatsApp atau email.",
   },
   around: {
     eyebrow: "Sekitar kami",

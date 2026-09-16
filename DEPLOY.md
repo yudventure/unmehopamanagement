@@ -32,6 +32,36 @@ bersangkutan, dan matinya dijelaskan di layar, bukan berupa error.
 | `NEXT_PUBLIC_LOGIN_HERO` | foto panel login | panel tampil sebagai bingkai kosong |
 | `SITE_DOMAIN_TURTLE` | domain situs Turtle | Turtle tetap di `/turtle` |
 | `SITE_DOMAIN_EDDO` | domain situs Eddo | Eddo tetap di `/eddo` |
+| `MIDTRANS_SERVER_KEY` | membuat transaksi Snap dan memeriksa notifikasi | tombol di bagian kamar Eddo bertanya, bukan menagih |
+| `NEXT_PUBLIC_MIDTRANS_CLIENT_KEY` | dipakai browser untuk membuka Snap | sama seperti di atas |
+| `MIDTRANS_IS_PRODUCTION` | `true` untuk keluar dari sandbox | tetap di sandbox |
+
+### Midtrans
+
+Tiga hal yang harus benar, dan dua di antaranya tidak ada di sini:
+
+1. **Kunci server dan kunci client harus sepasang** dan dari lingkungan yang
+   sama. Kunci sandbox dengan `MIDTRANS_IS_PRODUCTION=true` akan ditolak
+   Midtrans, bukan gagal diam-diam.
+2. **Payment Notification URL** diisi di dashboard Midtrans →
+   Settings → Configuration, diarahkan ke `https://<domain>/api/pay/notify`.
+   Tanpa itu pembayaran tetap masuk ke Midtrans tapi tidak ada yang memberi
+   tahu pemiliknya.
+3. **Endpoint notifikasi itu terbuka untuk umum**, jadi yang menentukan bukan
+   siapa yang mengirim melainkan tanda tangannya: SHA-512 dari
+   `order_id + status_code + gross_amount + server key`. Body yang tidak lolos
+   dijawab 401 dan tidak ada email yang dikirim.
+
+Nominalnya dihitung di server dari tabel kamar, tidak pernah diambil dari
+permintaan. Nominal yang datang bersama permintaan adalah nominal yang dipilih
+pengirimnya.
+
+**Yang belum diuji:** panggilan sebenarnya ke Midtrans. Jaringan di lingkungan
+pengembangan ini memblokir `app.sandbox.midtrans.com`, jadi jalur sampai
+sebelum panggilan itu sudah diuji (503 tanpa kunci, 422 tanpa kontak, 502 kalau
+Midtrans menolak) dan pemeriksaan tanda tangannya diuji dengan digest asli,
+tapi transaksi sungguhan di sandbox belum pernah dijalankan. Lakukan satu
+pembayaran uji di sandbox sebelum kuncinya diganti ke produksi.
 
 ## Menyambungkan tiga domain
 

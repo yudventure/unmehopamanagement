@@ -271,15 +271,6 @@ const BTN =
 const BTN_GHOST =
   "inline-flex cursor-pointer items-center justify-center gap-2 rounded-full border border-eddo-line bg-surface px-[22px] py-[12px] text-[14px] font-medium text-eddo-ink no-underline transition-colors hover:border-eddo hover:no-underline";
 
-/** Month index into the enquiry's list for a check-in date, if one was picked. */
-function monthIndexFor(date: string): number | null {
-  if (!date) return null;
-  const d = new Date(date + "T00:00:00");
-  if (Number.isNaN(d.getTime())) return null;
-  const ix = (d.getFullYear() - MONTH_ANCHOR.getFullYear()) * 12 + d.getMonth() - MONTH_ANCHOR.getMonth();
-  return Math.min(11, Math.max(0, ix));
-}
-
 export function EddoSite({
   maintenance = false,
   sisterHref = "/turtle",
@@ -336,30 +327,6 @@ export function EddoSite({
   const ask = (activity: ActivityKey, notes: string, extra: Partial<Enquiry> = {}) => {
     patch({ activity, notes, ...extra });
     setEnquiryOpen(true);
-  };
-
-  /* The search bar's own fields. Not the dialog's: someone can fill these and
-     never press the button, and a later "ask about this room" should not
-     carry dates they typed and abandoned. Pressing the button copies them. */
-  const [tab, setTab] = useState<EddoActivity>("stay");
-  const [checkIn, setCheckIn] = useState("");
-  const [checkOut, setCheckOut] = useState("");
-  const [guests, setGuests] = useState(2);
-
-  /* A room and the full package are stays; hire and diving are days. */
-  const staying = tab === "stay" || tab === "package";
-
-  const search = () => {
-    const nights =
-      checkIn && checkOut
-        ? Math.max(1, Math.round((Date.parse(checkOut) - Date.parse(checkIn)) / 86400000))
-        : Number(EMPTY_ENQUIRY.nights);
-    const ix = monthIndexFor(checkIn);
-    ask(tab, t.search.note(t.search.tabs[tab], checkIn, checkOut, guests), {
-      people: String(guests),
-      nights: String(nights),
-      ...(ix === null ? {} : { monthIx: ix }),
-    });
   };
 
   const message = t.message({
@@ -616,66 +583,22 @@ export function EddoSite({
         )}
       </div>
 
-      {/* ------------------------------------------------- search bar */}
+      {/* ------------------------------------------------ reasons card */}
       {/* In flow and pulled up over the hero's foot by a fixed margin, rather
           than positioned absolutely: the overlap is then the same whatever
-          height the bar takes on a phone, nothing clips it, and whatever
-          follows simply starts after it. */}
-      <div className="relative z-10 -mt-[64px] px-5 md:-mt-[72px] md:px-8">
-          <div data-reveal style={step(2)} className="mx-auto max-w-[1180px] rounded-[22px] border border-eddo-line bg-surface p-4 shadow-[0_24px_60px_-28px_rgba(18,52,58,.35)] md:p-5">
-            <div className="flex flex-wrap gap-2">
-              {EDDO_ACTIVITIES.map((k) => (
-                <button
-                  key={k}
-                  type="button"
-                  onClick={() => setTab(k)}
-                  aria-pressed={tab === k}
-                  className={`cursor-pointer rounded-full border-none px-[16px] py-[8px] text-[13px] font-medium transition-colors ${
-                    tab === k ? "bg-eddo-tint text-eddo-deep" : "bg-transparent text-slate hover:text-eddo-ink"
-                  }`}
-                >
-                  {t.search.tabs[k]}
-                </button>
-              ))}
-            </div>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                search();
-              }}
-              className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1fr_auto]"
-            >
-              {/* "Check-in" is the right word for a room and the wrong one
-                  for a motorbike, so the two date fields say what the chosen
-                  tab makes them mean. */}
-              <label className="flex flex-col gap-[4px] rounded-[14px] border border-line-strong px-[14px] py-[9px] text-[11px] font-medium text-slate">
-                {staying ? t.search.checkIn : t.search.from}
-                <input type="date" value={checkIn} onChange={(e) => setCheckIn(e.target.value)} className="border-none bg-transparent p-0 text-[14px] font-medium text-eddo-ink outline-none" />
-              </label>
-              <label className="flex flex-col gap-[4px] rounded-[14px] border border-line-strong px-[14px] py-[9px] text-[11px] font-medium text-slate">
-                {staying ? t.search.checkOut : t.search.to}
-                <input type="date" value={checkOut} min={checkIn || undefined} onChange={(e) => setCheckOut(e.target.value)} className="border-none bg-transparent p-0 text-[14px] font-medium text-eddo-ink outline-none" />
-              </label>
-              <label className="flex flex-col gap-[4px] rounded-[14px] border border-line-strong px-[14px] py-[9px] text-[11px] font-medium text-slate">
-                {t.search.guests}
-                <select value={guests} onChange={(e) => setGuests(Number(e.target.value))} className="cursor-pointer border-none bg-transparent p-0 text-[14px] font-medium text-eddo-ink outline-none">
-                  {[1, 2, 3, 4, 5, 6].map((n) => (
-                    <option key={n} value={n}>{t.search.guestsValue(n)}</option>
-                  ))}
-                </select>
-              </label>
-              <button type="submit" className={`${BTN} h-full min-h-[56px] px-[26px]`}>
-                {t.search.go}
-              </button>
-            </form>
-          </div>
-      </div>
+          height the card takes on a phone, nothing clips it, and whatever
+          follows simply starts after it.
 
-      {/* ---------------------------------------------------------- trust */}
-      <Section className="pt-14 md:pt-16">
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          It held a search bar until now. The four reasons were a plain row
+          under it; in the card they are the first thing the hero hands over
+          to, which is what the reader is actually deciding on at this point. */}
+      <div className="relative z-10 -mt-[64px] px-5 md:-mt-[72px] md:px-8">
+        <div
+          data-reveal
+          style={step(2)}
+          className="mx-auto grid max-w-[1180px] grid-cols-1 gap-5 rounded-[22px] border border-eddo-line bg-surface p-5 shadow-[0_24px_60px_-28px_rgba(18,52,58,.35)] sm:grid-cols-2 md:p-7 lg:grid-cols-4 lg:gap-7">
           {t.trust.map((x, i) => (
-            <div key={i} data-reveal style={step(i)} className="flex items-start gap-[14px]">
+            <div key={i} className="flex items-start gap-[14px]">
               <span className="flex h-[46px] w-[46px] shrink-0 items-center justify-center rounded-full bg-eddo-tint p-[12px] text-eddo-deep">
                 {TRUST_ICONS[i]}
               </span>
@@ -686,7 +609,8 @@ export function EddoSite({
             </div>
           ))}
         </div>
-      </Section>
+      </div>
+
 
       {/* ---------------------------------------------------------- rooms */}
       <Section id="kamar" className="pt-20 md:pt-24">
@@ -749,7 +673,12 @@ export function EddoSite({
             <Eyebrow>{t.around.eyebrow}</Eyebrow>
             <h2 className="mt-4 mb-0 text-[clamp(30px,4.6vw,48px)] leading-[1.05] font-bold tracking-[-.03em] text-eddo-ink">{t.around.title}</h2>
           </div>
-          <button type="button" onClick={() => ask("snorkeling", t.around.all)} className={BTN_GHOST}>
+          {/* Not "snorkeling": that key left this site's list when the list
+              became the five the enquiry card offers, and an activity the
+              dialog cannot show is an activity the reader cannot correct.
+              "Everything together" is the nearest of the five to a day
+              arranged from the house. */}
+          <button type="button" onClick={() => ask("package", t.around.all)} className={BTN_GHOST}>
             {t.around.all}
             <span aria-hidden="true">→</span>
           </button>

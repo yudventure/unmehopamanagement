@@ -80,19 +80,6 @@ export interface EddoCopy {
     cta: string;
     alt: string;
   };
-  search: {
-    tabs: Record<EddoActivity, string>;
-    checkIn: string;
-    checkOut: string;
-    /** The same two fields when what is being asked for is not a room. */
-    from: string;
-    to: string;
-    guests: string;
-    guestsValue: (n: number) => string;
-    go: string;
-    /** What lands in the enquiry's notes when the bar is used. */
-    note: (tab: string, from: string, to: string, guests: number) => string;
-  };
   trust: { title: string; sub: string }[];
   rooms: {
     eyebrow: string;
@@ -169,24 +156,6 @@ const EN: EddoCopy = {
     sub: "Two rooms on the shore of Sawinggrai, kept by the family who lives here. Three meals a day, a jetty to snorkel from, and the forest behind the village where the birds of paradise call at dawn.",
     cta: "See the rooms",
     alt: "The jetty at Sawinggrai with clear water over the reef",
-  },
-  search: {
-    tabs: {
-      stay: "Room",
-      diving: "Diving",
-      motorbike: "Motorbike",
-      camera: "Camera",
-      package: "Full package",
-    },
-    checkIn: "Check-in",
-    checkOut: "Check-out",
-    from: "From",
-    to: "Until",
-    guests: "Guests",
-    guestsValue: (n) => (n === 1 ? "1 guest" : `${n} guests`),
-    go: "Ask availability",
-    note: (tab, from, to, guests) =>
-      `${tab}${from ? `, arriving ${from}` : ""}${to ? `, leaving ${to}` : ""}, ${guests} ${guests === 1 ? "guest" : "guests"}.`,
   },
   trust: [
     { title: "Direct from the family", sub: "No agent, no booking fee. The price you see is the price." },
@@ -316,24 +285,6 @@ const ID: EddoCopy = {
     sub: "Dua kamar di pesisir Sawinggrai, dijaga keluarga yang memang tinggal di sini. Tiga kali makan sehari, dermaga untuk snorkeling, dan hutan di belakang kampung tempat cendrawasih berbunyi saat fajar.",
     cta: "Lihat kamarnya",
     alt: "Dermaga Sawinggrai dengan air jernih di atas karang",
-  },
-  search: {
-    tabs: {
-      stay: "Kamar",
-      diving: "Selam",
-      motorbike: "Motor",
-      camera: "Kamera",
-      package: "Paket lengkap",
-    },
-    checkIn: "Check-in",
-    checkOut: "Check-out",
-    from: "Dari",
-    to: "Sampai",
-    guests: "Tamu",
-    guestsValue: (n) => `${n} tamu`,
-    go: "Tanya ketersediaan",
-    note: (tab, from, to, guests) =>
-      `${tab}${from ? `, datang ${from}` : ""}${to ? `, pulang ${to}` : ""}, ${guests} tamu.`,
   },
   trust: [
     { title: "Langsung dari keluarga", sub: "Tanpa agen, tanpa biaya pemesanan. Harga yang tertulis itu harganya." },

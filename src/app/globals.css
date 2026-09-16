@@ -504,43 +504,115 @@ input[type="search"]::-webkit-search-decoration {
 }
 
 /*
- * The white behind the hero words, and the only white on the picture.
+ * The two gradients that let white type live on the photograph.
  *
- * Everything before this covered part of the frame: a panel down the left, a
- * band across the top, a wide feather between them. All of it was the same
- * mistake in different sizes, which is to shape the white to the frame and
- * then ask the photograph to live in what is left. This is shaped to the
- * words instead. It is bigger than the text it sits under, so no edge of it
- * ever runs beside a line, and it is gone before the middle of the frame.
+ * Measured with nothing over the picture at all, the background behind a
+ * single line of hero type runs from luminance 0.003 to 0.837: the sky and
+ * the sand at one end, the palms and the island at the other. No text colour
+ * survives that on its own. Ink needs a ground brighter than 0.31, white needs
+ * one darker than 0.18, and this photograph is both, inside one line. A halo
+ * alone was tried and measured too: 1.3 to 1.9:1 even at the edge of a stroke,
+ * because a shadow wide enough to matter is too thin to darken anything.
  *
- * `closest-side` is what makes the whole thing land inside its own box: each
- * radius reaches zero at the nearest side, so the corners stay clear and the
- * blob never meets an edge it has to stop at.
+ * So there is something between the type and the picture, and the only real
+ * choice was which direction. White was tried four ways and thrown out four
+ * times, and rightly: white bleaches a photograph, and the more of it there is
+ * the more it reads as fog. These go the other way. The water deepens from
+ * turquoise to deep turquoise, the palms keep their edges, and nothing is
+ * bleached. It is also what the Turtle hero already does.
  *
- * The insets and the stops are set by measurement, not by eye. The words fill
- * a 600px column and about 420px of height; the wash reaches full strength
- * well past both, then falls away. The numbers below are the ones under which
- * every run of type in the hero measured at least 4.5:1 against the worst
- * pixel behind it, at 1024, 1280, 1440, 1920 and 2560, in both languages.
+ * `--deep` is one colour in two places so the frame cannot end up with two
+ * different darks in it.
+ *
+ * The side gradient is strong where the words are and gone by the middle of
+ * the frame. Its stops are percentages, which is safe here and was not safe
+ * for the white panel: measured from 1024 to 2560, in both languages, the
+ * longest run of hero type always ends between 46% and 50% of the window, so
+ * a stop at 50% follows the text at every width.
+ *
+ * The top one is for the bar, which spans the whole frame and so cannot be
+ * covered by the side one. 118px is the bar's own height plus a little, and it
+ * is weaker than the side gradient because the bar's type is small but sparse,
+ * and because anything heavier reads as a bar that has come back.
  */
-[data-hero-wash] {
-  position: absolute;
-  top: -120px;
-  right: -230px;
-  bottom: -128px;
-  left: -230px;
-  pointer-events: none;
-  /* Four stops, not three. The last two are what keep it from reading as a
-     shape: with a single ramp to nothing, the point where it gives out draws
-     an edge of its own, and an oval edge on a photograph is a blob. */
-  background: radial-gradient(
-    ellipse closest-side at center,
-    rgba(255, 255, 255, 0.97) 0%,
-    rgba(255, 255, 255, 0.95) 54%,
-    rgba(255, 255, 255, 0.74) 74%,
-    rgba(255, 255, 255, 0.3) 88%,
-    rgba(255, 255, 255, 0) 100%
+[data-hero-deep] {
+  --deep: 3, 26, 31;
+  background: linear-gradient(
+    103deg,
+    rgba(var(--deep), 0.64) 0%,
+    rgba(var(--deep), 0.58) 30%,
+    rgba(var(--deep), 0.5) 50%,
+    rgba(var(--deep), 0.18) 64%,
+    rgba(var(--deep), 0) 80%
   );
+}
+
+[data-hero-deep-top] {
+  --deep: 3, 26, 31;
+  height: 132px;
+  background: linear-gradient(
+    180deg,
+    rgba(var(--deep), 0.58) 0%,
+    rgba(var(--deep), 0.46) 44%,
+    rgba(var(--deep), 0.14) 76%,
+    rgba(var(--deep), 0) 100%
+  );
+}
+
+/*
+ * Type on the photograph.
+ *
+ * White, with a halo. The halo is not what makes it readable, the gradients
+ * above are; it is what keeps a stroke from dissolving where the picture
+ * happens to be pale under it, and it costs nothing.
+ *
+ * Only above 1024. Below it the picture is a band of its own further down the
+ * page and the words are ink on a near-white ground, which needs none of this.
+ */
+@media (min-width: 64rem) {
+  [data-on-photo] {
+    --halo:
+      0 1px 2px rgba(2, 22, 26, 0.92), 0 2px 8px rgba(2, 22, 26, 0.75), 0 0 30px rgba(2, 22, 26, 0.55);
+  }
+
+  [data-on-photo] [data-ink],
+  [data-on-photo] [data-ink-script],
+  [data-on-photo] [data-ink-soft],
+  [data-on-photo] [data-ink-pill] button[aria-pressed="false"] {
+    text-shadow: var(--halo);
+  }
+
+  [data-on-photo] [data-ink],
+  [data-on-photo] [data-ink-pill] button[aria-pressed="false"] {
+    color: #fff;
+  }
+
+  /* The quieter line of a pair keeps being the quieter line: white at full
+     strength everywhere would flatten the bar into one voice. */
+  [data-on-photo] [data-ink-soft] {
+    color: rgba(255, 255, 255, 0.86);
+  }
+
+  /* The script line keeps a tint of the brand rather than going white with
+     everything else, which is the only thing still saying which site this is
+     once the ink has gone. */
+  [data-on-photo] [data-ink-script] {
+    color: #a9e6ea;
+  }
+
+  [data-on-photo] [data-ink-pill] {
+    border-color: rgba(255, 255, 255, 0.6);
+  }
+
+  /* The chip keeps a ground of its own, but it borrows the picture's rather
+     than staying the pale one it wears on white. A single pale badge on a
+     deepened frame reads as something left behind from another design. */
+  [data-on-photo] [data-ink-chip] {
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    text-shadow: var(--halo);
+  }
 }
 
 /* The scrim deepens as the picture goes, which is what keeps the white type

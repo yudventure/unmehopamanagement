@@ -287,9 +287,9 @@ sewaktu build (`src/app/eddo/page.tsx`), bukan di browser. Kalau dicek di
 browser, pembacanya akan melihat halamannya berubah bentuk setelah tampil.
 Tanpa berkas itu, hero jadi blok warna pucat polos. Dengan berkas itu:
 
-- **≥1024px** fotonya **selebar layar**, dari 70px di bawah puncak (tepat di
-  bawah bar) sampai dasar hero. Tidak ada panel putih di sisi mana pun. Yang
-  putih cuma **di sekitar tulisannya**.
+- **≥1024px** fotonya **memenuhi seluruh hero**, dari puncak sampai dasar,
+  termasuk di belakang bar. Tidak ada penutup putih di mana pun. Tulisannya
+  putih di atas foto.
 - **<1024px** fotonya keluar dari hero dan turun jadi pita sendiri di bawah
   tulisan, tinggi 240px (320px dari 640px ke atas).
 
@@ -298,25 +298,40 @@ untuk menaruh tulisan di samping foto, dan menutup fotonya sampai tulisannya
 terbaca menyisakan foto yang tidak kelihatan, di HP, tempat sebagian besar tamu
 membukanya. Turun ke bawah tulisan, fotonya tidak perlu ditutup sama sekali.
 
-**Putihnya dibentuk mengikuti tulisan, bukan mengikuti bingkai.** Itu bedanya
-dengan tiga percobaan sebelumnya, yang semuanya kesalahan yang sama dalam ukuran
-berbeda: panel di sisi kiri, pita di puncak, feather lebar di antaranya. Semua
-membentuk putih menurut bingkai lalu meminta fotonya tinggal di sisanya.
+**Kenapa harus ada sesuatu di antara tulisan dan foto.** Diukur tanpa penutup
+apa pun, latar di belakang **satu baris yang sama** berkisar dari luminansi
+**0,003 sampai 0,837**: langit dan pasirnya di satu ujung, palem dan pulaunya di
+ujung lain. Tidak ada satu warna huruf yang selamat dari rentang itu. Tinta
+gelap perlu latar lebih terang dari 0,31; putih perlu latar lebih gelap dari
+0,18; dan foto ini dua-duanya, di dalam satu baris.
 
-Sekarang satu gradien radial (`[data-hero-wash]` di `src/app/globals.css`) yang
-menempel pada kotak tulisannya sendiri, jadi ia ikut ke mana pun tulisan itu
-pindah. Lebih besar dari tulisannya supaya tidak ada tepinya yang berjalan di
-samping baris, dan sudah habis sebelum tengah bingkai.
+Halo saja juga sudah dicoba dan diukur: **1,3 sampai 1,9:1 bahkan di tepi
+huruf**, karena bayangan yang cukup lebar untuk berarti jadi terlalu tipis untuk
+menggelapkan apa pun.
 
-Dua hal yang membuatnya terbaca sebagai cahaya, bukan sebagai gumpalan:
-`closest-side` (tiap jari-jarinya nol di sisi terdekat, jadi seluruh gradiennya
-mendarat di dalam kotaknya sendiri dan sudutnya bersih) dan empat titik warna,
-bukan tiga. Dengan satu landaian saja ke nol, titik habisnya menggambar
-tepinya sendiri, dan tepi oval di atas foto itu gumpalan.
+**Jadi yang dipilih arahnya, bukan ada-tidaknya.** Putih sudah dicoba empat cara
+dan ditolak empat kali, dan memang wajar: putih memucatkan foto, makin banyak
+makin seperti kabut. Dua gradien di sini arahnya sebaliknya, **gelap**: airnya
+dari toska jadi toska tua, bukan jadi susu, dan palemnya tetap bertepi. Pola
+yang sama sudah dipakai hero Turtle.
 
-**Satu baris `top: 70px`** menggantikan lapisan putih setinggi 132px di puncak
-bingkai. Begitu fotonya mulai di bawah bar, tautan di bar kembali berdiri di
-atas latar pucat yang memang jadi dasar warnanya.
+| | Untuk | Kekuatan |
+|---|---|---|
+| `[data-hero-deep]` | tulisan hero | kuat di kiri, habis di 80% lebar |
+| `[data-hero-deep-top]` | bar | 132px, lebih lembut |
+
+Titiknya persen, dan di sini persen aman padahal untuk panel putih dulu tidak:
+diukur dari 1024 sampai 2560 di dua bahasa, baris terpanjang hero selalu
+berakhir di antara 46% dan 50% lebar jendela, jadi satu titik di 50% mengikuti
+tulisannya di lebar berapa pun.
+
+Gradien bar dibuat terpisah karena bar membentang selebar layar, jadi tidak
+mungkin tertutup gradien sisi. Ia lebih lembut karena tulisannya kecil tapi
+jarang, dan apa pun yang lebih tebal akan terbaca sebagai bar yang muncul lagi.
+
+**Hurufnya tetap pakai halo.** Bukan halo yang membuatnya terbaca, tapi
+gradiennya; halo cuma menjaga goresan huruf tidak larut di tempat fotonya
+kebetulan pucat, dan itu gratis.
 
 **Crop-nya `object-position: center 58%`.** Selebar layar berarti seluruh lebar
 fotonya kelihatan, jadi yang tersisa untuk dipilih cuma potongan tegaknya: agak
@@ -341,16 +356,17 @@ Sesudahnya: HP **0,43 MB**, desktop 0,58 MB satu halaman penuh.
 Jadi kalau suatu saat susunannya diubah, **jangan** cukup memasang `hidden` di
 gambar yang tidak dipakai — biayanya tetap dibayar pembacanya.
 
-**Kepala halaman tidak lagi berdiri di atas foto**, karena fotonya mulai di
-bawahnya. Tautannya gelap karena latarnya memang nyaris putih, dan sekarang itu
-benar di seluruh lebar. Kalau suatu saat fotonya dinaikkan sampai menyentuh
-puncak hero lagi, warna tulisan di sisi kanan bar harus ikut berubah, atau
-lapisan putihnya harus kembali.
+**Bar ikut berubah bersama latarnya, dan itu satu saklar.** Waktu diam di
+puncak, bar tidak punya latar sendiri sama sekali (tanpa isian, tanpa garis,
+tanpa blur) dan tulisannya putih berhalo di atas foto. Begitu digulir, bar jadi
+buram tembus pandang di atas halaman putih dan tulisannya kembali jadi tinta.
+Saklarnya sama dengan yang mengatur latarnya, jadi tidak mungkin yang satu
+berubah tanpa yang lain.
 
-Waktu fotonya masih menerobos ke belakang bar, pemilih bahasa yang tidak
-terpilih ("ID" saat situsnya sedang Inggris) jatuh ke 3,91:1 karena ia huruf
-langsung di atas foto tanpa latar sendiri. Warnanya sudah digelapkan ke
-`ink-soft` dan dibiarkan begitu.
+Di bawah 1024px fotonya tidak ada di atas sana, jadi seluruh pertukaran warna
+itu ditaruh di balik media query, bukan di saklar itu. Kalau kelak susunannya
+diubah lagi, yang harus dijaga adalah pasangan ini: **latar terang selalu
+dengan tinta, latar foto selalu dengan putih.**
 
 Kontak dan tautan media sosialnya **masih memakai isian yang sama dengan
 Turtle** (tab Website di dashboard). Kalau Eddo perlu nomor WhatsApp atau

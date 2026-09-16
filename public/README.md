@@ -233,7 +233,7 @@ fotonya yang tampil, tanpa mengubah kode.
 | Berkas | Dipakai di | Rasio |
 |---|---|---|
 | `eddo-logo.png` | kepala halaman dan footer | persegi, latar transparan. Lencana tiki toska yang dikirim pemilik |
-| `eddo-hero.jpg` | foto besar di samping judul | 5:4 (mendatar sedikit). Dermaga Sawinggrai paling pas |
+| `eddo-hero.jpg` | foto di samping judul | 5:4. Dermaga Sawinggrai paling pas. **Berkas ini juga menentukan bentuk hero**: selama belum ada, judulnya memakai lebar penuh; begitu ada, hero jadi dua kolom |
 | `eddo-bawah.jpg` | kartu kamar Eddo Bawah | 16:10 |
 | `eddo-atas.jpg` | kartu kamar Eddo Atas | 16:10 |
 | `eddo-around-1.jpg` | kartu "Dermaga Sawinggrai" | 3:4 (tegak) |
@@ -245,9 +245,19 @@ fotonya yang tampil, tanpa mengubah kode.
 Aturannya sama seperti situs Turtle: huruf kecil semua, lebar 1080 sampai
 1920px, usahakan di bawah 300 KB per foto.
 
-**Logonya sebaiknya PNG transparan**, karena ditaruh di atas latar putih di
-kepala halaman dan di atas latar toska di footer. Kalau berkasnya belum ada,
-kepala halaman memakai nama dalam huruf, bukan gambar rusak.
+**Logonya wajib PNG dengan latar transparan.** Kepala halaman sekarang tidak
+punya latar sendiri selama halaman diam di paling atas, jadi logo berlatar
+putih akan terlihat sebagai kotak putih menempel di atas gradasi hero. Kode
+sengaja tidak menggambar bingkai atau sudut membulat apa pun di sekeliling
+logo, karena lencananya sudah punya garis tepinya sendiri.
+
+Kalau berkasnya belum ada, kepala halaman memakai nama dalam huruf, bukan
+gambar rusak.
+
+Tidak ada foto yang boleh ditaruh di belakang kepala halaman tanpa mengubah
+warna tautannya. Tautan di sana gelap karena latarnya memang nyaris putih;
+kalau suatu saat hero diganti jadi foto lebar di belakang tulisan, warnanya
+harus ikut jadi putih.
 
 Kontak dan tautan media sosialnya **masih memakai isian yang sama dengan
 Turtle** (tab Website di dashboard). Kalau Eddo perlu nomor WhatsApp atau

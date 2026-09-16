@@ -349,6 +349,11 @@ membawa semua piksel ke hitam dan membiarkan alpha-nya, `invert(1)` membalik
 jadi putih; jadi tikinya tetap punya garis tepi dan tepi halusnya sendiri tanpa
 harus ada salinan putih yang mesti ikut diperbarui setiap kali logonya ganti.
 
+**Tinggi hero-nya satu angka juga.** Padding bawahnya 212px di atas 1024px:
+itu yang menentukan seberapa banyak fotonya kelihatan sekaligus seberapa jauh
+tombol hero berdiri dari kartu booking, karena kartunya naik 72px menimpa kaki
+hero. Terukur: hero 700px, dan 140px udara di bawah tombolnya.
+
 **Crop-nya `object-position: center 58%`.** Selebar layar berarti seluruh lebar
 fotonya kelihatan, jadi yang tersisa untuk dipilih cuma potongan tegaknya: agak
 ke bawah, karena puncak bingkainya langit yang tidak diperlukan hero dan

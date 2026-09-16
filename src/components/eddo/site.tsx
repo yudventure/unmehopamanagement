@@ -556,7 +556,11 @@ export function EddoSite({
           </>
         )}
 
-        <Section className="relative grid grid-cols-1 items-center gap-10 pt-[112px] pb-12 md:pt-[128px] lg:pb-[104px]">
+        {/* The foot of the hero is what sets two things at once: how much of the
+            photograph is in view, and how far the button stands from the card
+            below it. 212px leaves 140px of air under the button once the card
+            has lapped 72px back up over it. */}
+        <Section className="relative grid grid-cols-1 items-center gap-10 pt-[112px] pb-12 md:pt-[128px] lg:pb-[212px]">
           <div
             data-reveal
             /* Above 1024 these words are on the photograph and go white with

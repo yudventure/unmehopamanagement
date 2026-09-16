@@ -1,3 +1,6 @@
+import { existsSync } from "node:fs";
+import { join } from "node:path";
+
 import type { Metadata } from "next";
 
 import { EddoSite } from "@/components/eddo/site";
@@ -33,10 +36,16 @@ export default function EddoPage() {
      domain of its own, the footer's "sister homestay" link has to leave this
      domain rather than point at a copy of Turtle sitting under it. */
   const turtle = siteDomain("turtle");
+  /* Looked up on disk rather than guessed in the browser. The hero is one
+     column without the photograph and two with it, and deciding that after
+     the page has painted means the reader watches it rearrange. This page is
+     prerendered, so the check runs once at build and costs nothing. */
+  const hasHeroPhoto = existsSync(join(process.cwd(), "public", "eddo-hero.jpg"));
   return (
     <EddoSite
       maintenance={SITE_CONFIG.maintenance}
       sisterHref={turtle ? `https://${turtle}/` : "/turtle"}
+      hasHeroPhoto={hasHeroPhoto}
     />
   );
 }

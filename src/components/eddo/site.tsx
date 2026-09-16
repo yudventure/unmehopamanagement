@@ -102,7 +102,12 @@ function EddoLogo({ size = 40, light = false }: { size?: number; light?: boolean
           width={size}
           height={size}
           onError={() => setMissing(true)}
-          className="shrink-0 rounded-[10px] object-contain"
+          /* No rounding and no fill of our own: the badge carries its own
+             outline and its own shape, so a box drawn around it would be a
+             second frame fighting the first. It wants a PNG with a
+             transparent ground, which is also what lets it sit on the bare
+             header without a white tile appearing under it. */
+          className="shrink-0 object-contain"
           style={{ width: size, height: size }}
         />
       )}
@@ -240,12 +245,17 @@ function monthIndexFor(date: string): number | null {
 export function EddoSite({
   maintenance = false,
   sisterHref = "/turtle",
+  hasHeroPhoto = false,
 }: {
   maintenance?: boolean;
   /** Where Turtle lives. A path while the two share a domain, an absolute
       address once Turtle has its own. Resolved by the page, which can read
       the environment; this component cannot. */
   sisterHref?: string;
+  /** Whether `public/eddo-hero.jpg` is actually there. Answered by the page,
+      which can look at the disk at build time; the hero's shape depends on
+      it, and a shape that settles after the first paint is a visible jump. */
+  hasHeroPhoto?: boolean;
 }) {
   const { lang, pickLang } = useLang();
   const { currency, pickCurrency } = useCurrency();
@@ -265,6 +275,23 @@ export function EddoSite({
   const heroRef = useHeroScroll<HTMLDivElement>();
 
   const [menuOpen, setMenuOpen] = useState(false);
+
+  /* The bar carries nothing of its own while the page is at the top, and
+     frosts over once it starts covering content. It begins `false` rather than
+     reading the offset during render: this page is prerendered, and a value
+     read at render time would not match what the browser hydrates with. The
+     effect settles it on mount, which also covers a reload part-way down. */
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 16);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  /* An open drawer needs something behind it whether or not the page has
+     moved, or the links hang over the hero with nothing under them. */
+  const barSolid = scrolled || menuOpen;
   const [enquiry, setEnquiry] = useState<Enquiry>(EMPTY_ENQUIRY);
   const [enquiryOpen, setEnquiryOpen] = useState(false);
   const patch = (p: Partial<Enquiry>) => setEnquiry((prev) => ({ ...prev, ...p }));
@@ -334,7 +361,21 @@ export function EddoSite({
   return (
     <div id="atas" className="bg-surface text-ink">
       {/* ------------------------------------------------------------ nav */}
-      <header className="sticky top-0 z-50 border-b border-line bg-surface/92 backdrop-blur-md">
+      {/* Fixed, not sticky. A sticky bar keeps its height in the flow, so a
+          transparent one would show a band of page background above the hero
+          rather than the hero itself. Fixed lifts it off the flow and the hero
+          runs underneath; the hero pays for that with the top padding that
+          keeps its own content clear of the bar. */}
+      <header
+        className={`fixed inset-x-0 top-0 z-50 border-b transition-[background-color,border-color] duration-300 ${
+          barSolid
+            ? "border-line bg-surface/80 backdrop-blur-md"
+            : /* Nothing at all at rest: no fill, no rule, no blur. The links
+                 are ink on a near-white wash either way, so there is nothing
+                 here they need protecting from. */
+              "border-transparent bg-transparent"
+        }`}
+      >
         <div className="mx-auto flex max-w-[1180px] items-center gap-4 px-5 py-[12px] md:px-8">
           <a href="#atas" className="no-underline hover:no-underline">
             <EddoLogo />
@@ -415,8 +456,15 @@ export function EddoSite({
       </header>
 
       {/* ----------------------------------------------------------- hero */}
+      {/* The top padding clears the fixed bar above: the bar measures 70px at
+          both widths, and the rest is the space the hero would have had
+          anyway. */}
       <div ref={heroRef} className="relative bg-[linear-gradient(135deg,var(--color-eddo-wash)_0%,var(--color-surface)_55%)]">
-        <Section className="grid grid-cols-1 items-center gap-10 pt-12 pb-[96px] md:grid-cols-[1fr_1.1fr] md:pt-16 md:pb-[104px] lg:gap-14">
+        <Section
+          className={`grid grid-cols-1 items-center gap-10 pt-[112px] pb-[96px] md:pt-[128px] md:pb-[104px] lg:gap-14 ${
+            hasHeroPhoto ? "md:grid-cols-[1fr_1.1fr]" : ""
+          }`}
+        >
           <div data-reveal>
             <Eyebrow>{t.hero.eyebrow}</Eyebrow>
             <h1 className="mt-5 mb-0 text-[clamp(38px,6vw,68px)] leading-[1.02] font-bold tracking-[-.035em] text-eddo-ink">
@@ -436,16 +484,20 @@ export function EddoSite({
             </div>
           </div>
 
-          {/* The picture sits in a rounded frame rather than bleeding to the
-              edge, the way the reference layout holds its own. It grows a
-              little as the page scrolls; the drawn islet is the floor under
-              a photograph that has not been taken yet. */}
-          <div data-reveal style={step(1)} className="relative aspect-[4/3] overflow-hidden rounded-[28px] bg-eddo-tint shadow-[0_30px_60px_-30px_rgba(18,52,58,.45)] md:aspect-[5/4]">
-            <div data-hero-photo className="absolute inset-0">
-              <IsletScene className={`${FILL} object-cover`} />
-              <Photo src="/eddo-hero.jpg" alt={t.hero.alt} />
+          {/* The photograph, and nothing around it. No frame, no tint, no
+              shadow, and no drawn stand-in underneath: until the real picture
+              exists this half of the hero is not there at all, and the words
+              take the full width rather than sitting beside an empty box.
+              Whether it exists is settled at build time by the page, so the
+              layout is right in the first frame instead of rearranging itself
+              once an image has finished failing to load. */}
+          {hasHeroPhoto && (
+            <div data-reveal style={step(1)} className="relative aspect-[4/3] md:aspect-[5/4]">
+              <div data-hero-photo className="absolute inset-0">
+                <Photo src="/eddo-hero.jpg" alt={t.hero.alt} />
+              </div>
             </div>
-          </div>
+          )}
         </Section>
       </div>
 

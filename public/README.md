@@ -309,16 +309,21 @@ Halo saja juga sudah dicoba dan diukur: **1,3 sampai 1,9:1 bahkan di tepi
 huruf**, karena bayangan yang cukup lebar untuk berarti jadi terlalu tipis untuk
 menggelapkan apa pun.
 
-**Jadi yang dipilih arahnya, bukan ada-tidaknya.** Putih sudah dicoba empat cara
-dan ditolak empat kali, dan memang wajar: putih memucatkan foto, makin banyak
-makin seperti kabut. Dua gradien di sini arahnya sebaliknya, **gelap**: airnya
-dari toska jadi toska tua, bukan jadi susu, dan palemnya tetap bertepi. Pola
-yang sama sudah dipakai hero Turtle.
+**Jadi yang dipilih arahnya, bukan ada-tidaknya.** Gelap sudah dicoba dan
+memang berhasil, tapi ia mengubah pagi jadi sore, dan yang dijual homestay ini
+bukan sore. Dua gradien di sini arahnya **terang**: kabut tipis di atas air,
+bukan senja di atasnya.
 
 | | Untuk | Kekuatan |
 |---|---|---|
-| `[data-hero-deep]` | tulisan hero | kuat di kiri, habis di 80% lebar |
-| `[data-hero-deep-top]` | bar | 132px, lebih lembut |
+| `[data-hero-lift]` | tulisan hero | 0,72 di kiri, habis di 82% lebar |
+| `[data-hero-lift-top]` | bar | 132px, 0,80 di puncak |
+
+**Angkanya bukan selera.** Tinta perlu latarnya 0,308 atau lebih terang, dan
+piksel paling gelap di belakang tulisannya ada di 0,003. Mengangkat piksel itu
+saja sampai 0,308 butuh putih 0,56. Semua titik di atas adalah lantai itu
+ditambah margin yang ditunjukkan pengukuran di bagian tepinya. Lebih tipis dari
+ini, paragrafnya mulai tidak lolos; itu sebabnya angkanya tidak lebih kecil.
 
 Titiknya persen, dan di sini persen aman padahal untuk panel putih dulu tidak:
 diukur dari 1024 sampai 2560 di dua bahasa, baris terpanjang hero selalu
@@ -326,12 +331,13 @@ berakhir di antara 46% dan 50% lebar jendela, jadi satu titik di 50% mengikuti
 tulisannya di lebar berapa pun.
 
 Gradien bar dibuat terpisah karena bar membentang selebar layar, jadi tidak
-mungkin tertutup gradien sisi. Ia lebih lembut karena tulisannya kecil tapi
-jarang, dan apa pun yang lebih tebal akan terbaca sebagai bar yang muncul lagi.
+mungkin tertutup gradien sisi.
 
-**Hurufnya tetap pakai halo.** Bukan halo yang membuatnya terbaca, tapi
-gradiennya; halo cuma menjaga goresan huruf tidak larut di tempat fotonya
-kebetulan pucat, dan itu gratis.
+**Dua warna huruf digelapkan supaya putihnya bisa tetap tipis**, bukan
+sebaliknya. Baris skripnya (`by the water`) jadi `eddo-dark`, sebelumnya
+`eddo-deep` dan terukur 2,53:1 dari 3 yang dibutuhkan. Paragraf hero-nya jadi
+`eddo-ink`, sebelumnya `ink-soft` dan terukur 4,21:1 dari 4,5. Menambah putih
+untuk keduanya akan memucatkan fotonya lebih jauh dari yang perlu.
 
 **Crop-nya `object-position: center 58%`.** Selebar layar berarti seluruh lebar
 fotonya kelihatan, jadi yang tersisa untuk dipilih cuma potongan tegaknya: agak
@@ -341,8 +347,22 @@ dasarnya airnya yang diperlukan.
 **Keterbacaannya diukur, bukan dikira.** Latarnya foto, dan tidak ada cara
 menghitungnya dari CSS: yang dilakukan adalah membuat tulisannya transparan,
 memotret halamannya, lalu membaca piksel yang tadinya tertutup huruf. Piksel
-terburuk yang menentukan, bukan rata-ratanya. Di lima lebar (1440, 1024, 768,
-390, 360) semuanya lolos AA, yang paling lemah **4,79:1** dengan syarat 4,5.
+terburuk yang menentukan, bukan rata-ratanya.
+
+Diukur dua cara, dan dua-duanya lolos:
+
+| Ukuran | Yang dilihat | Terburuk |
+|---|---|---|
+| kotak | seluruh kotak barisnya, termasuk sela antar huruf | 3,19:1 (syaratnya 3 untuk huruf besar) |
+| tepi | piksel dalam 3px dari goresan huruf | 3,20:1 |
+
+Ukuran "tepi" ditambahkan waktu mencoba halo, karena "kotak" adalah pertanyaan
+yang benar untuk penutup dan salah untuk halo. Versi pertamanya keliru: mask
+hurufnya diambil dari potret magenta lawan transparan, jadi halonya sendiri
+ikut tertandai sebagai huruf dan hasilnya 1,67:1 untuk tulisan yang jelas
+terbaca. Sekarang mask-nya dari dua potret yang cuma beda warna tinta dengan
+halo dimatikan.
+
 Kalau susunan hero-nya diubah, **ukur ulang**.
 
 **Kenapa dua berkas.** `hidden` di Tailwind itu `display: none`, dan Chromium
@@ -356,17 +376,11 @@ Sesudahnya: HP **0,43 MB**, desktop 0,58 MB satu halaman penuh.
 Jadi kalau suatu saat susunannya diubah, **jangan** cukup memasang `hidden` di
 gambar yang tidak dipakai — biayanya tetap dibayar pembacanya.
 
-**Bar ikut berubah bersama latarnya, dan itu satu saklar.** Waktu diam di
-puncak, bar tidak punya latar sendiri sama sekali (tanpa isian, tanpa garis,
-tanpa blur) dan tulisannya putih berhalo di atas foto. Begitu digulir, bar jadi
-buram tembus pandang di atas halaman putih dan tulisannya kembali jadi tinta.
-Saklarnya sama dengan yang mengatur latarnya, jadi tidak mungkin yang satu
-berubah tanpa yang lain.
-
-Di bawah 1024px fotonya tidak ada di atas sana, jadi seluruh pertukaran warna
-itu ditaruh di balik media query, bukan di saklar itu. Kalau kelak susunannya
-diubah lagi, yang harus dijaga adalah pasangan ini: **latar terang selalu
-dengan tinta, latar foto selalu dengan putih.**
+**Bar tidak punya latar sendiri waktu diam** di puncak: tanpa isian, tanpa
+garis, tanpa blur. Begitu digulir ia jadi buram tembus pandang di atas halaman
+putih. Tulisannya tinta di kedua keadaan, dan itu hanya benar karena gradien
+terang di puncak hero mengangkat fotonya di belakang bar. Kalau gradien itu
+dilepas, warna tulisan di bar harus ikut diurus, bukan dibiarkan.
 
 Kontak dan tautan media sosialnya **masih memakai isian yang sama dengan
 Turtle** (tab Website di dashboard). Kalau Eddo perlu nomor WhatsApp atau

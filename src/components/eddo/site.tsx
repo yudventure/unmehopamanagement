@@ -132,13 +132,10 @@ function EddoLogo({ size = 40, light = false }: { size?: number; light?: boolean
         />
       )}
       <span className="leading-[1.05]">
-        <span data-ink className={`block text-[16px] font-bold tracking-[-.01em] ${light ? "text-white" : "text-eddo-ink"}`}>
+        <span className={`block text-[16px] font-bold tracking-[-.01em] ${light ? "text-white" : "text-eddo-ink"}`}>
           Eddo Homestay
         </span>
-        <span
-          data-ink-soft
-          className={`block font-mono text-[9.5px] tracking-[.14em] uppercase ${light ? "text-white/70" : "text-eddo-deep"}`}
-        >
+        <span className={`block font-mono text-[9.5px] tracking-[.14em] uppercase ${light ? "text-white/70" : "text-eddo-deep"}`}>
           Sawinggrai · Raja Ampat
         </span>
       </span>
@@ -197,10 +194,7 @@ function Section({
 
 function Eyebrow({ children }: { children: React.ReactNode }) {
   return (
-    <span
-      data-ink-chip
-      className="inline-flex items-center gap-[7px] rounded-full bg-eddo-tint px-[13px] py-[6px] font-mono text-[10.5px] tracking-[.1em] text-eddo-deep uppercase"
-    >
+    <span className="inline-flex items-center gap-[7px] rounded-full bg-eddo-tint px-[13px] py-[6px] font-mono text-[10.5px] tracking-[.1em] text-eddo-deep uppercase">
       {children}
     </span>
   );
@@ -226,11 +220,7 @@ function Title({
 
 function LangSwitch({ lang, onPick, label }: { lang: Lang; onPick: (l: Lang) => void; label: string }) {
   return (
-    <div
-      data-ink-pill
-      className="flex items-center gap-[2px] rounded-full border border-line-strong p-[2px]"
-      aria-label={label}
-    >
+    <div className="flex items-center gap-[2px] rounded-full border border-line-strong p-[2px]" aria-label={label}>
       {LANGS.map((l) => (
         <button
           key={l.key}
@@ -400,12 +390,6 @@ export function EddoSite({
           runs underneath; the hero pays for that with the top padding that
           keeps its own content clear of the bar. */}
       <header
-        /* At rest above the photograph the bar has no ground of its own, so
-           its type turns light and carries its own shadow. The moment it goes
-           frosted it is back over a near-white ground and the type goes back
-           to ink. Below 1024 the picture is not up here at all, which is why
-           the switch lives behind a media query rather than in this flag. */
-        {...(hasHeroPhoto && !barSolid ? { "data-on-photo": "" } : {})}
         className={`fixed inset-x-0 top-0 z-50 border-b transition-[background-color,border-color] duration-300 ${
           barSolid
             ? "border-line bg-surface/80 backdrop-blur-md"
@@ -423,7 +407,6 @@ export function EddoSite({
               <a
                 key={n.href}
                 href={n.href}
-                data-ink
                 className={`text-[13.5px] no-underline transition-colors hover:text-eddo-deep hover:no-underline ${
                   i === 0 ? "font-medium text-eddo-deep" : "text-ink-soft"
                 }`}
@@ -444,12 +427,8 @@ export function EddoSite({
                 <WhatsAppIcon />
               </span>
               <span className="leading-[1.15]">
-                <span data-ink-soft className="block text-[10.5px] text-slate">
-                  {t.help}
-                </span>
-                <span data-ink className="block font-mono text-[12.5px] font-medium text-eddo-ink">
-                  +{WHATSAPP}
-                </span>
+                <span className="block text-[10.5px] text-slate">{t.help}</span>
+                <span className="block font-mono text-[12.5px] font-medium text-eddo-ink">+{WHATSAPP}</span>
               </span>
             </a>
             <button type="button" onClick={() => setEnquiryOpen(true)} className={BTN}>
@@ -555,45 +534,34 @@ export function EddoSite({
               </div>
             </div>
 
-            {/* Two gradients, both dark, neither white. Dark deepens a
-                photograph where white bleaches it: the water goes from
-                turquoise to deep turquoise instead of to milk, and the palms
-                keep their edges. Sizes and stops are in `globals.css`, with
-                the measurements that set them. */}
-            <div aria-hidden="true" data-hero-deep className="absolute inset-0 hidden lg:block" />
-            <div aria-hidden="true" data-hero-deep-top className="absolute inset-x-0 top-0 hidden lg:block" />
+            {/* Two gradients, both light. One lifts the side the words are
+                on, one lifts the strip the bar sits in. Their strength is not
+                a taste: it is the least that keeps ink readable on the darkest
+                pixel behind it. Stops and reasoning are in `globals.css`. */}
+            <div aria-hidden="true" data-hero-lift className="absolute inset-0 hidden lg:block" />
+            <div aria-hidden="true" data-hero-lift-top className="absolute inset-x-0 top-0 hidden lg:block" />
           </>
         )}
 
         <Section className="relative grid grid-cols-1 items-center gap-10 pt-[112px] pb-12 md:pt-[128px] lg:pb-[104px]">
-          <div
-            data-reveal
-            /* Above 1024 these words are on the photograph and nothing is
-               between them and it, so they turn light and take their shadow
-               with them. Below 1024 the picture is a band further down and
-               they stay ink on the pale ground. */
-            {...(hasHeroPhoto ? { "data-on-photo": "" } : {})}
-            className="relative max-w-[600px]"
-          >
+          <div data-reveal className="relative max-w-[600px]">
             <div className="relative">
             <Eyebrow>{t.hero.eyebrow}</Eyebrow>
-            <h1
-              data-ink
-              className="mt-5 mb-0 text-[clamp(38px,6vw,68px)] leading-[1.02] font-bold tracking-[-.035em] text-eddo-ink"
-            >
+            <h1 className="mt-5 mb-0 text-[clamp(38px,6vw,68px)] leading-[1.02] font-bold tracking-[-.035em] text-eddo-ink">
               {t.hero.title}
               <br />
-              <span data-ink-script className="font-script font-normal tracking-normal text-eddo-deep">
-                {t.hero.script}
-              </span>
+              {/* A step darker than the teal the rest of the page uses for
+                  this line. On white either reads; on the hazy photograph the
+                  lighter one measured 2.53:1 against 3 needed, and the fix was
+                  a darker word rather than more white over the picture. */}
+              <span className="font-script font-normal tracking-normal text-eddo-dark">{t.hero.script}</span>
             </h1>
-            {/* Darker than the body grey the rest of the page uses. That grey
-                was picked to sit on white; below 1024 this paragraph sits on
-                a near-white ground and needs the extra weight. Above 1024 it
-                is light type on the photograph instead. */}
-            <p data-ink className="mt-5 max-w-[480px] text-[15px] leading-[1.7] text-ink-soft">
-              {t.hero.sub}
-            </p>
+            {/* Full ink, not the body grey the rest of the page uses. That
+                grey was chosen to sit on white; here it sits on a photograph
+                under a light haze, where it measured 4.21:1 against 4.5
+                needed. Ink passes with room to spare and lets the haze stay
+                as faint as it is. */}
+            <p className="mt-5 max-w-[480px] text-[15px] leading-[1.7] text-eddo-ink">{t.hero.sub}</p>
             <div className="mt-7 flex flex-wrap gap-3">
               <a href="#kamar" className={BTN}>
                 {t.hero.cta}

@@ -52,15 +52,22 @@ export function eddoRooms(): EddoRoom[] {
   ];
 }
 
-/** The four things a visitor can pick in the search bar's first tab. */
-export const STAY_KEYS = ["stay", "snorkeling"] as const;
+/**
+ * The five things a visitor can ask Eddo for, in the order the card offers
+ * them. One list, used twice: it is the row of tabs on the booking card and it
+ * is the list in the enquiry dialog, so the two can never drift apart.
+ *
+ * Diving is on it although Eddo has no dive centre of its own. The family runs
+ * one at Turtle, on the next island, and a guest asking here is asking the same
+ * family. Hire is the other way round: Turtle's list does not carry it.
+ */
+export const EDDO_ACTIVITIES = ["stay", "diving", "motorbike", "camera", "package"] as const;
+export type EddoActivity = (typeof EDDO_ACTIVITIES)[number];
 
 export interface EddoCopy {
   htmlLang: string;
   meta: { title: string; description: string };
   nav: { home: string; rooms: string; around: string; why: string; faq: string };
-  help: string;
-  book: string;
   openMenu: string;
   currencyLabel: string;
   langLabel: string;
@@ -74,9 +81,12 @@ export interface EddoCopy {
     alt: string;
   };
   search: {
-    tabs: { stay: string; snorkeling: string };
+    tabs: Record<EddoActivity, string>;
     checkIn: string;
     checkOut: string;
+    /** The same two fields when what is being asked for is not a room. */
+    from: string;
+    to: string;
     guests: string;
     guestsValue: (n: number) => string;
     go: string;
@@ -128,7 +138,7 @@ export interface EddoCopy {
   };
   maintenance: { title: string; body: string; whatsapp: string };
   /** The enquiry dialog's activity labels, keyed like the shared modal expects. */
-  activities: { stay: string; snorkeling: string };
+  activities: Record<EddoActivity, string>;
   message: (v: {
     activity: string;
     name: string;
@@ -149,8 +159,6 @@ const EN: EddoCopy = {
       "A two-room family homestay in Sawinggrai on Pulau Gam, Raja Ampat. Rooms by the water, three meals a day, snorkelling off the jetty, and birds of paradise at dawn.",
   },
   nav: { home: "Home", rooms: "Rooms", around: "Around us", why: "Why Eddo", faq: "Questions" },
-  help: "Need help?",
-  book: "Book",
   openMenu: "Open menu",
   currencyLabel: "Show an approximate price in",
   langLabel: "Language",
@@ -163,9 +171,17 @@ const EN: EddoCopy = {
     alt: "The jetty at Sawinggrai with clear water over the reef",
   },
   search: {
-    tabs: { stay: "Stay", snorkeling: "Snorkelling" },
+    tabs: {
+      stay: "Room",
+      diving: "Diving",
+      motorbike: "Motorbike",
+      camera: "Camera",
+      package: "Full package",
+    },
     checkIn: "Check-in",
     checkOut: "Check-out",
+    from: "From",
+    to: "Until",
     guests: "Guests",
     guestsValue: (n) => (n === 1 ? "1 guest" : `${n} guests`),
     go: "Ask availability",
@@ -260,7 +276,13 @@ const EN: EddoCopy = {
     body: "The site will be back on its own. Nothing about the homestay has changed, and we are answering messages as usual.",
     whatsapp: "Message on WhatsApp",
   },
-  activities: { stay: "Stay", snorkeling: "Snorkelling" },
+  activities: {
+    stay: "a room",
+    diving: "diving",
+    motorbike: "motorbike hire",
+    camera: "camera hire",
+    package: "the full package",
+  },
   message: (v) =>
     [
       `Hello Eddo Homestay, I would like to ask about ${v.activity.toLowerCase()}.`,
@@ -284,8 +306,6 @@ const ID: EddoCopy = {
       "Homestay keluarga dua kamar di Sawinggrai, Pulau Gam, Raja Ampat. Kamar di tepi air, tiga kali makan, snorkeling dari dermaga, dan burung cendrawasih saat fajar.",
   },
   nav: { home: "Beranda", rooms: "Kamar", around: "Sekitar kami", why: "Kenapa Eddo", faq: "Tanya" },
-  help: "Butuh bantuan?",
-  book: "Pesan",
   openMenu: "Buka menu",
   currencyLabel: "Tampilkan perkiraan harga dalam",
   langLabel: "Bahasa",
@@ -298,9 +318,17 @@ const ID: EddoCopy = {
     alt: "Dermaga Sawinggrai dengan air jernih di atas karang",
   },
   search: {
-    tabs: { stay: "Menginap", snorkeling: "Snorkeling" },
+    tabs: {
+      stay: "Kamar",
+      diving: "Selam",
+      motorbike: "Motor",
+      camera: "Kamera",
+      package: "Paket lengkap",
+    },
     checkIn: "Check-in",
     checkOut: "Check-out",
+    from: "Dari",
+    to: "Sampai",
     guests: "Tamu",
     guestsValue: (n) => `${n} tamu`,
     go: "Tanya ketersediaan",
@@ -395,7 +423,13 @@ const ID: EddoCopy = {
     body: "Situsnya akan kembali dengan sendirinya. Tidak ada yang berubah di homestay-nya, dan pesan tetap kami balas seperti biasa.",
     whatsapp: "Pesan lewat WhatsApp",
   },
-  activities: { stay: "Menginap", snorkeling: "Snorkeling" },
+  activities: {
+    stay: "kamar",
+    diving: "selam",
+    motorbike: "sewa motor",
+    camera: "sewa kamera",
+    package: "paket lengkap",
+  },
   message: (v) =>
     [
       `Halo Eddo Homestay, saya mau tanya soal ${v.activity.toLowerCase()}.`,

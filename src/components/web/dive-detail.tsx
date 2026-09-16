@@ -14,6 +14,7 @@ import { useReveal } from "@/hooks/use-reveal";
 import { useCurrency, useLang, useRates } from "@/hooks/use-site-prefs";
 import { DIVE_DETAIL } from "@/lib/dive-detail";
 import {
+  TURTLE_ACTIVITIES,
   COPY,
   DIVE_PRICE,
   LANGS,
@@ -287,6 +288,7 @@ export function DiveDetail({ pack }: { pack: DiveKey }) {
         onChange={patch}
         message={message}
         lang={lang}
+        activities={TURTLE_ACTIVITIES}
       />
     </div>
   );

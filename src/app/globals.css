@@ -90,8 +90,10 @@
      guessed at — the value that was here before, #17a9ae, was my eye on a
      picture and it was wrong. It is a light colour, so it is decoration and
      nothing else: white on it measures 2.78:1 and so does it on white, which
-     fails for text either way round. It colours the logo, a 6px dot and a
-     border, and it is not allowed near a word.
+     fails for text either way round. It colours a 6px dot and a border, and it is
+     not allowed near a word. It was sampled from the badge in
+     `public/eddo-logo.png`, which the pages no longer show: the name is set as
+     type now, and the colour outlived the picture it came from.
 
      `deep` is what carries text, in both directions: 5.33:1 against white and
      4.79:1 against `tint`, which covers teal words on either ground and white
@@ -540,9 +542,9 @@ input[type="search"]::-webkit-search-decoration {
     103deg,
     rgba(255, 255, 255, 0.72) 0%,
     rgba(255, 255, 255, 0.68) 30%,
-    rgba(255, 255, 255, 0.62) 50%,
-    rgba(255, 255, 255, 0.22) 66%,
-    rgba(255, 255, 255, 0) 82%
+    rgba(255, 255, 255, 0.62) 52%,
+    rgba(255, 255, 255, 0.12) 64%,
+    rgba(255, 255, 255, 0) 76%
   );
 }
 

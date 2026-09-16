@@ -233,7 +233,7 @@ Begitu berkasnya ditaruh, fotonya yang tampil, tanpa mengubah kode.
 | Berkas | Dipakai di | Rasio |
 |---|---|---|
 | `website_logo_eddo_homestay.png` | **tidak dipakai**, disimpan sebagai master | aslinya dari pemilik: 2000×2000, latar transparan, 388 KB |
-| `eddo-logo.png` | kepala halaman dan footer | 164×240, 45 KB. Dibuat dari master di atas |
+| `eddo-logo.png` | **tidak dipakai lagi**, disimpan sebagai master siap pakai | 164×240, 45 KB. Dibuat dari master di atas |
 | `Eddo_Homestay_1.png` | **tidak dipakai**, disimpan sebagai master | aslinya dari pemilik: 4,0 MB |
 | `eddo-hero.jpg` | latar hero di layar ≥1024px | 2:1, 1760×880, 218 KB. Dibuat dari master di atas. **Berkas ini juga menentukan bentuk hero** — lihat di bawah |
 | `eddo-hero-900.jpg` | pita foto hero di layar <1024px | 2:1, 900×450, 65 KB. Isi yang sama, dikecilkan |
@@ -248,8 +248,12 @@ Begitu berkasnya ditaruh, fotonya yang tampil, tanpa mengubah kode.
 Aturannya sama seperti situs Turtle: huruf kecil semua, lebar 1080 sampai
 1920px, usahakan di bawah 300 KB per foto.
 
-**Logonya sudah ada dan latarnya memang sudah transparan.** Dua berkas, satu
-dipakai, polanya sama dengan logo SSI di situs Turtle:
+**Lencana tikinya sekarang tidak dipakai di halaman.** Nama situsnya ditulis
+sebagai huruf saja, di bar maupun di footer: tiga hal dalam bar setinggi 46px
+(lencana, nama, baris kampung) membuat lencananya berebut tinggi dan baris
+kampungnya mengecil sampai terbaca sebagai tekstur, bukan sebagai kata. Kedua
+berkasnya tetap disimpan sebagai master, dan catatan di bawah ini tetap berlaku
+kalau suatu saat lencananya dipasang lagi.
 
 `eddo-logo.png` dibuat dari masternya, bukan digambar ulang. Masternya kanvas
 2000×2000 dengan lencananya menempati 60% lebar dan 87% tinggi, jadi sepertiga
@@ -316,8 +320,12 @@ bukan senja di atasnya.
 
 | | Untuk | Kekuatan |
 |---|---|---|
-| `[data-hero-lift]` | tulisan hero | 0,72 di kiri, habis di 82% lebar |
+| `[data-hero-lift]` | tulisan hero | 0,72 di kiri, penuh sampai 52%, habis di 76% lebar |
 | `[data-hero-lift-top]` | bar | 132px, 0,80 di puncak |
+
+Titik 52% itu batas tulisannya, bukan angka bulat: di 1024px baris terpanjang
+berakhir di 50% lebar jendela, jadi kabutnya dipertahankan penuh sampai lewat
+situ lalu dijatuhkan cepat supaya warna fotonya kembali sesegera mungkin.
 
 **Angkanya bukan selera.** Tinta perlu latarnya 0,308 atau lebih terang, dan
 piksel paling gelap di belakang tulisannya ada di 0,003. Mengangkat piksel itu

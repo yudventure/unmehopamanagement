@@ -31,6 +31,7 @@ import { useReveal } from "@/hooks/use-reveal";
 import { useCurrency, useLang, useRates } from "@/hooks/use-site-prefs";
 import { SITE_CONFIG } from "@/lib/site-config";
 import {
+  TURTLE_ACTIVITIES,
   ACTIVITY_KEYS,
   COPY,
   DEFAULT_LANG,
@@ -1292,6 +1293,7 @@ export function TurtleSite() {
         onChange={patchEnquiry}
         message={message}
         lang={lang}
+        activities={TURTLE_ACTIVITIES}
       />
     </div>
   );

@@ -29,7 +29,8 @@ import {
   EDDO,
   EDDO_COPY,
   EMAIL,
-  STAY_KEYS,
+  EDDO_ACTIVITIES,
+  type EddoActivity,
   WHATSAPP,
   eddoRooms,
   waLink,
@@ -76,14 +77,6 @@ const FILL = "absolute inset-0 h-full w-full";
 const step = (i: number) => ({ "--i": i }) as React.CSSProperties;
 
 /**
- * The badge is taller than it is wide — 164 by 240 in the file — so it is
- * sized by its height and lets its width follow. Forcing it into a square box
- * would fit it to the shorter side and leave a third of the box empty, which
- * on a header reads as a logo that is too small rather than as space.
- */
-const LOGO_RATIO = 164 / 240;
-
-/**
  * A transparent pixel, inline so it costs no request.
  *
  * It stands in for the wide hero file below 1024, where that layer is
@@ -97,48 +90,22 @@ const BLANK_PIXEL =
   "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
 
 /**
- * The tiki badge from `public/eddo-logo.png`, or the name in type if the file
- * is not there. An `<img>` that fails to load draws a broken-picture glyph
- * where the logo should be, and a header wearing one of those looks
- * abandoned; the wordmark is what the header falls back to.
+ * The name, set as a wordmark.
+ *
+ * It was the tiki badge from `public/eddo-logo.png` with the name beside it
+ * and the village under that: three things in a 46px bar, the badge fighting
+ * for height and the village line small enough to be texture rather than
+ * words. The name on its own is the whole mark now, sized off one number so
+ * the bar and the footer stay in proportion to each other rather than each
+ * being tuned by hand. The file stays in `public/` as the master.
  */
-function EddoLogo({ size = 40, light = false }: { size?: number; light?: boolean }) {
-  const [missing, setMissing] = useState(false);
-  const ref = useRef<HTMLImageElement>(null);
-  /* The page is prerendered, so a file that is not there has already failed
-     by the time React attaches `onError`, and that handler never fires. Ask
-     the element on mount whether it already gave up. */
-  useEffect(() => {
-    const img = ref.current;
-    if (img && img.complete && img.naturalWidth === 0) setMissing(true);
-  }, []);
+function EddoLogo({ size = 19, light = false }: { size?: number; light?: boolean }) {
   return (
-    <span className="flex items-center gap-[10px]">
-      {!missing && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          ref={ref}
-          src="/eddo-logo.png"
-          alt=""
-          width={Math.round(size * LOGO_RATIO)}
-          height={size}
-          onError={() => setMissing(true)}
-          /* No rounding and no fill of our own: the badge carries its own
-             outline and its own shape, so a box drawn around it would be a
-             second frame fighting the first. Its ground is transparent, which
-             is what lets it sit on the bare header with nothing behind it. */
-          className="shrink-0"
-          style={{ width: Math.round(size * LOGO_RATIO), height: size }}
-        />
-      )}
-      <span className="leading-[1.05]">
-        <span className={`block text-[16px] font-bold tracking-[-.01em] ${light ? "text-white" : "text-eddo-ink"}`}>
-          Eddo Homestay
-        </span>
-        <span className={`block font-mono text-[9.5px] tracking-[.14em] uppercase ${light ? "text-white/70" : "text-eddo-deep"}`}>
-          Sawinggrai · Raja Ampat
-        </span>
-      </span>
+    <span
+      className={`block font-bold tracking-[-.02em] ${light ? "text-white" : "text-eddo-ink"}`}
+      style={{ fontSize: size, lineHeight: 1.1 }}
+    >
+      Eddo Homestay
     </span>
   );
 }
@@ -326,10 +293,13 @@ export function EddoSite({
   /* The search bar's own fields. Not the dialog's: someone can fill these and
      never press the button, and a later "ask about this room" should not
      carry dates they typed and abandoned. Pressing the button copies them. */
-  const [tab, setTab] = useState<(typeof STAY_KEYS)[number]>("stay");
+  const [tab, setTab] = useState<EddoActivity>("stay");
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
   const [guests, setGuests] = useState(2);
+
+  /* A room and the full package are stays; hire and diving are days. */
+  const staying = tab === "stay" || tab === "package";
 
   const search = () => {
     const nights =
@@ -345,7 +315,7 @@ export function EddoSite({
   };
 
   const message = t.message({
-    activity: t.activities[enquiry.activity as (typeof STAY_KEYS)[number]] ?? shared.activities[enquiry.activity],
+    activity: t.activities[enquiry.activity as EddoActivity] ?? shared.activities[enquiry.activity],
     name: enquiry.name,
     phone: enquiry.phone,
     email: enquiry.email,
@@ -367,7 +337,7 @@ export function EddoSite({
     return (
       <main className="flex min-h-screen items-center justify-center bg-eddo-wash px-5 text-center">
         <div className="max-w-[520px]">
-          <EddoLogo size={56} />
+          <EddoLogo size={28} />
           <h1 className="mt-8 text-[clamp(28px,5vw,44px)] leading-[1.1] font-bold tracking-[-.03em] text-eddo-ink">
             {t.maintenance.title}
           </h1>
@@ -416,31 +386,17 @@ export function EddoSite({
             ))}
           </nav>
 
+          {/* Two switches and nothing else. The bar used to carry a number
+              and a Book button as well, which put three calls to action within
+              an inch of each other and left the reader to work out which one
+              was the real one. The card below the hero is the real one. */}
           <div className="ml-auto hidden items-center gap-3 md:flex">
-            <a
-              href={waLink("Halo Eddo Homestay")}
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center gap-[10px] no-underline hover:no-underline"
-            >
-              <span className="flex h-[36px] w-[36px] items-center justify-center rounded-full bg-eddo-tint p-[9px] text-eddo-deep">
-                <WhatsAppIcon />
-              </span>
-              <span className="leading-[1.15]">
-                <span className="block text-[10.5px] text-slate">{t.help}</span>
-                <span className="block font-mono text-[12.5px] font-medium text-eddo-ink">+{WHATSAPP}</span>
-              </span>
-            </a>
-            <button type="button" onClick={() => setEnquiryOpen(true)} className={BTN}>
-              {t.book}
-            </button>
+            <CurrencySwitch currency={currency} onPick={pickCurrency} srLabel={t.currencyLabel} tone="dark" />
             <LangSwitch lang={lang} onPick={pickLang} label={t.langLabel} />
           </div>
 
           <div className="ml-auto flex items-center gap-2 md:hidden">
-            <button type="button" onClick={() => setEnquiryOpen(true)} className={`${BTN} px-[16px] py-[9px] text-[13px]`}>
-              {t.book}
-            </button>
+            <CurrencySwitch currency={currency} onPick={pickCurrency} srLabel={t.currencyLabel} tone="dark" />
             <button
               type="button"
               onClick={() => setMenuOpen((v) => !v)}
@@ -567,9 +523,6 @@ export function EddoSite({
                 {t.hero.cta}
                 <span aria-hidden="true">→</span>
               </a>
-              <button type="button" onClick={() => setEnquiryOpen(true)} className={BTN_GHOST}>
-                {t.book}
-              </button>
             </div>
             </div>
           </div>
@@ -604,7 +557,7 @@ export function EddoSite({
       <div className="relative z-10 -mt-[64px] px-5 md:-mt-[72px] md:px-8">
           <div data-reveal style={step(2)} className="mx-auto max-w-[1180px] rounded-[22px] border border-eddo-line bg-surface p-4 shadow-[0_24px_60px_-28px_rgba(18,52,58,.35)] md:p-5">
             <div className="flex flex-wrap gap-2">
-              {STAY_KEYS.map((k) => (
+              {EDDO_ACTIVITIES.map((k) => (
                 <button
                   key={k}
                   type="button"
@@ -625,12 +578,15 @@ export function EddoSite({
               }}
               className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1fr_auto]"
             >
+              {/* "Check-in" is the right word for a room and the wrong one
+                  for a motorbike, so the two date fields say what the chosen
+                  tab makes them mean. */}
               <label className="flex flex-col gap-[4px] rounded-[14px] border border-line-strong px-[14px] py-[9px] text-[11px] font-medium text-slate">
-                {t.search.checkIn}
+                {staying ? t.search.checkIn : t.search.from}
                 <input type="date" value={checkIn} onChange={(e) => setCheckIn(e.target.value)} className="border-none bg-transparent p-0 text-[14px] font-medium text-eddo-ink outline-none" />
               </label>
               <label className="flex flex-col gap-[4px] rounded-[14px] border border-line-strong px-[14px] py-[9px] text-[11px] font-medium text-slate">
-                {t.search.checkOut}
+                {staying ? t.search.checkOut : t.search.to}
                 <input type="date" value={checkOut} min={checkIn || undefined} onChange={(e) => setCheckOut(e.target.value)} className="border-none bg-transparent p-0 text-[14px] font-medium text-eddo-ink outline-none" />
               </label>
               <label className="flex flex-col gap-[4px] rounded-[14px] border border-line-strong px-[14px] py-[9px] text-[11px] font-medium text-slate">
@@ -853,7 +809,7 @@ export function EddoSite({
       <footer className="border-t border-line">
         <div className="mx-auto flex max-w-[1180px] flex-col gap-5 px-5 py-8 md:flex-row md:items-center md:justify-between md:px-8">
           <div>
-            <EddoLogo size={36} />
+            <EddoLogo size={21} />
             <p className="mt-3 mb-0 text-[13px] text-slate">{t.footer.tagline}</p>
           </div>
           <div className="text-[12.5px] leading-[1.7] text-slate md:text-right">
@@ -879,7 +835,7 @@ export function EddoSite({
         onChange={patch}
         message={message}
         lang={lang}
-        activities={STAY_KEYS}
+        activities={EDDO_ACTIVITIES}
         site={EDDO.name}
       />
     </div>

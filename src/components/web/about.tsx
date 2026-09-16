@@ -16,6 +16,7 @@ import { useCurrency, useLang, useRates } from "@/hooks/use-site-prefs";
 import { DIVE_GALLERY, STAY_GALLERY } from "@/lib/gallery";
 import { SITE_CONFIG } from "@/lib/site-config";
 import {
+  TURTLE_ACTIVITIES,
   COPY,
   LANGS,
   PROPERTY,
@@ -388,6 +389,7 @@ export function AboutPage() {
         onChange={patch}
         message={message}
         lang={lang}
+        activities={TURTLE_ACTIVITIES}
       />
     </div>
   );

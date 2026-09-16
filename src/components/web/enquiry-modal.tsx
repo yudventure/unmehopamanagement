@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 
 import {
-  ACTIVITY_KEYS,
   type ActivityKey,
   type SiteCopy,
   waLink,
@@ -59,7 +58,7 @@ export function EnquiryModal({
   onChange,
   message,
   lang,
-  activities = ACTIVITY_KEYS,
+  activities,
   site,
 }: {
   open: boolean;
@@ -70,9 +69,11 @@ export function EnquiryModal({
   onChange: (patch: Partial<Enquiry>) => void;
   message: string;
   lang: string;
-  /** Which of the activities to offer. A homestay without a dive centre has
+  /** Which of the activities to offer. Required rather than defaulted: the
+      two sites answer for different things, and a default is how one of them
+      ends up offering the other's. A homestay without a dive centre has
       no business offering diving, so a site can narrow the list. */
-  activities?: readonly ActivityKey[];
+  activities: readonly ActivityKey[];
   /** Which property the message is about, when the family runs more than
       one. It goes into the email's subject so the inbox can tell them apart. */
   site?: string;

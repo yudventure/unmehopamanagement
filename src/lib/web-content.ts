@@ -130,13 +130,28 @@ export const DIVE_PRICE = SITE_CONFIG.divePrices as Record<DiveKey, number>;
 /** Drawn as the accented card. */
 export const DIVE_FEATURED: DiveKey = "fun3";
 
+/**
+ * Everything either site can be asked about, in one list.
+ *
+ * Neither site offers all of it. Turtle has a dive centre and no hire;
+ * Eddo has hire and sends divers to Turtle. So this is the vocabulary, not the
+ * menu: each site passes the subset it can actually answer for, and the
+ * enquiry dialog has no default of its own so that picking is never skipped by
+ * accident.
+ */
 export const ACTIVITY_KEYS = [
   "stay",
   "diving",
   "snorkeling",
   "both",
+  "motorbike",
+  "camera",
+  "package",
 ] as const;
 export type ActivityKey = (typeof ACTIVITY_KEYS)[number];
+
+/** What Turtle answers for: a dive centre, and no hire desk. */
+export const TURTLE_ACTIVITIES = ["stay", "diving", "snorkeling", "both"] as const;
 
 // ------------------------------------------------------------------- words
 
@@ -946,6 +961,9 @@ const EN: SiteCopy = {
     diving: "Diving",
     snorkeling: "Snorkelling",
     both: "Staying + diving",
+    motorbike: "Motorbike hire",
+    camera: "Camera hire",
+    package: "Full package",
   },
   months: [
     "January",
@@ -1537,6 +1555,9 @@ const ID: SiteCopy = {
     diving: "Diving",
     snorkeling: "Snorkeling",
     both: "Menginap + diving",
+    motorbike: "Sewa motor",
+    camera: "Sewa kamera",
+    package: "Paket lengkap",
   },
   months: [
     "Januari",

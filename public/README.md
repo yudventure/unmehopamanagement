@@ -225,16 +225,18 @@ Logo ini hanya dipakai di website. Dashboard `/` memakai lencana Unmehopa
 
 ## Situs Eddo Homestay (`/eddo`)
 
-Situs kedua, untuk properti kedua. Berkas-berkasnya **belum ada satu pun**;
-halamannya sudah lengkap tanpa itu karena setiap foto punya ilustrasi SVG di
-bawahnya yang tampil selama berkasnya belum ada. Begitu berkasnya ditaruh,
-fotonya yang tampil, tanpa mengubah kode.
+Situs kedua, untuk properti kedua. **Logo dan foto hero-nya sudah ada; foto
+yang lain belum.** Halamannya tetap lengkap tanpa yang belum ada, karena setiap
+foto punya ilustrasi SVG di bawahnya yang tampil selama berkasnya kosong.
+Begitu berkasnya ditaruh, fotonya yang tampil, tanpa mengubah kode.
 
 | Berkas | Dipakai di | Rasio |
 |---|---|---|
 | `website_logo_eddo_homestay.png` | **tidak dipakai**, disimpan sebagai master | aslinya dari pemilik: 2000×2000, latar transparan, 388 KB |
 | `eddo-logo.png` | kepala halaman dan footer | 164×240, 45 KB. Dibuat dari master di atas |
-| `eddo-hero.jpg` | foto di samping judul | 5:4. Dermaga Sawinggrai paling pas. **Berkas ini juga menentukan bentuk hero**: selama belum ada, judulnya memakai lebar penuh; begitu ada, hero jadi dua kolom |
+| `Eddo_Homestay_1.png` | **tidak dipakai**, disimpan sebagai master | aslinya dari pemilik: 4,0 MB |
+| `eddo-hero.jpg` | latar hero di layar ≥1024px | 2:1, 1760×880, 218 KB. Dibuat dari master di atas. **Berkas ini juga menentukan bentuk hero** — lihat di bawah |
+| `eddo-hero-900.jpg` | pita foto hero di layar <1024px | 2:1, 900×450, 65 KB. Isi yang sama, dikecilkan |
 | `eddo-bawah.jpg` | kartu kamar Eddo Bawah | 16:10 |
 | `eddo-atas.jpg` | kartu kamar Eddo Atas | 16:10 |
 | `eddo-around-1.jpg` | kartu "Dermaga Sawinggrai" | 3:4 (tegak) |
@@ -275,10 +277,54 @@ hasil membaca piksel berkasnya. Nilai sebelumnya `#17a9ae` adalah tebakan mata
 dan meleset. Warna itu terang, jadi ia cuma untuk hiasan; yang membawa huruf
 adalah `#06777d`. Alasannya ada di `src/app/globals.css`.
 
-Tidak ada foto yang boleh ditaruh di belakang kepala halaman tanpa mengubah
-warna tautannya. Tautan di sana gelap karena latarnya memang nyaris putih;
-kalau suatu saat hero diganti jadi foto lebar di belakang tulisan, warnanya
-harus ikut jadi putih.
+### Foto hero: `eddo-hero.jpg` dan `eddo-hero-900.jpg`
+
+Dua berkas dari satu master, dan **keduanya perlu diganti bersamaan** kalau
+fotonya diganti. Masternya `Eddo_Homestay_1.png` (4,0 MB) disimpan apa adanya.
+
+**Bentuk hero ditentukan oleh ada-tidaknya `eddo-hero.jpg`**, dicek di disk
+sewaktu build (`src/app/eddo/page.tsx`), bukan di browser — kalau dicek di
+browser, pembacanya akan melihat halamannya berubah bentuk setelah tampil.
+Tanpa berkas itu, hero jadi blok warna pucat polos. Dengan berkas itu:
+
+- **≥1024px** fotonya memenuhi seluruh hero, tulisannya di atasnya.
+- **<1024px** fotonya keluar dari belakang tulisan dan turun jadi pita
+  sendiri di bawahnya, 240px (320px dari 640px ke atas).
+
+Pembagian itu bukan dua desain untuk gaya-gayaan. Supaya satu paragraf tetap
+terbaca di layar 390px, lapisan putih di atas fotonya harus menutup hampir
+seluruh bingkai — dan yang tersisa adalah foto yang tidak kelihatan, di HP,
+tempat sebagian besar tamu membukanya. Keluar dari balik tulisan, fotonya tidak
+perlu ditutup sama sekali.
+
+**Tulisannya diukur, bukan dikira.** Latarnya foto di bawah dua gradien, dan
+tidak ada cara menghitungnya dari CSS: yang dilakukan adalah membuat tulisannya
+transparan, memotret halamannya, lalu membaca piksel yang tadinya tertutup
+huruf. Piksel terburuk yang menentukan, bukan rata-ratanya. Di lima lebar
+(1440, 1024, 768, 390, 360) semuanya lolos AA, yang paling lemah **4,75:1**
+dengan syarat 4,5. Kalau fotonya diganti dengan yang lebih terang di sisi kiri,
+**ukur ulang** — gradiennya dipatok untuk foto ini.
+
+Lapisan putihnya dipatok dalam **piksel**, bukan persen, karena kolom teksnya
+selebar 600px di layar mana pun. Waktu masih persen, hasilnya 3,35:1 di 1440px
+tapi 1,03:1 di 768px: penutupnya habis di tengah paragraf.
+
+**Kenapa dua berkas.** `hidden` di Tailwind itu `display: none`, dan Chromium
+tetap mengunduh gambar di dalam elemen yang disembunyikan begitu. Diukur: HP
+390px mengunduh berkas 1760px **dan** yang 900px sekaligus, 283 KB untuk pita
+yang cuma perlu 65 KB. Jadi lapisan lebarnya dibungkus `<picture>` dengan satu
+`<source media="(min-width: 1024px)">`; di bawah 1024 ia jatuh ke piksel
+transparan yang ditulis langsung di kode, dan HP tidak meminta apa-apa.
+Sesudahnya: HP **0,43 MB**, desktop 0,58 MB satu halaman penuh.
+
+Jadi kalau suatu saat susunannya diubah, **jangan** cukup memasang `hidden` di
+gambar yang tidak dipakai — biayanya tetap dibayar pembacanya.
+
+**Kepala halaman ada di atas foto ini.** Tautannya gelap karena dulu latarnya
+nyaris putih, dan itu tidak diubah; yang ditambahkan adalah lapisan putih kedua
+setinggi 150px di puncak hero, yang padam sebelum sampai ke judul jadi terbaca
+sebagai cahaya yang meredup, bukan sebagai bar yang diam-diam muncul lagi.
+Kalau lapisan itu dilepas, warna tautannya harus ikut jadi putih.
 
 Kontak dan tautan media sosialnya **masih memakai isian yang sama dengan
 Turtle** (tab Website di dashboard). Kalau Eddo perlu nomor WhatsApp atau

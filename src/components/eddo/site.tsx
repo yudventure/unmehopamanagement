@@ -84,6 +84,19 @@ const step = (i: number) => ({ "--i": i }) as React.CSSProperties;
 const LOGO_RATIO = 164 / 240;
 
 /**
+ * A transparent pixel, inline so it costs no request.
+ *
+ * It stands in for the wide hero file below 1024, where that layer is
+ * `display: none`. Hiding an `<img>` that way does not stop the browser
+ * fetching it: measured, a 390px phone pulled the 1760px file *and* the 900px
+ * one, 283kB for a band that shows 65kB of it. A `<picture>` whose only
+ * `<source>` is gated on the same width the layer is gated on falls back to
+ * this instead, and the phone asks for nothing.
+ */
+const BLANK_PIXEL =
+  "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+
+/**
  * The tiki badge from `public/eddo-logo.png`, or the name in type if the file
  * is not there. An `<img>` that fails to load draws a broken-picture glyph
  * where the logo should be, and a header wearing one of those looks
@@ -463,23 +476,98 @@ export function EddoSite({
       </header>
 
       {/* ----------------------------------------------------------- hero */}
-      {/* The top padding clears the fixed bar above: the bar measures 70px at
-          both widths, and the rest is the space the hero would have had
-          anyway. */}
-      <div ref={heroRef} className="relative bg-[linear-gradient(135deg,var(--color-eddo-wash)_0%,var(--color-surface)_55%)]">
-        <Section
-          className={`grid grid-cols-1 items-center gap-10 pt-[112px] pb-[96px] md:pt-[128px] md:pb-[104px] lg:gap-14 ${
-            hasHeroPhoto ? "md:grid-cols-[1fr_1.1fr]" : ""
+      {/*
+       * The photograph fills the hero and the words sit on it. That is the
+       * arrangement the picture was sent for, and it is also the one that can
+       * go wrong: this shot is bright and even, peaking at 0.88 luminance, so
+       * white type on it is hopeless, while the ink the rest of the site uses
+       * is only safe over the pale sky and sand and not over the trees.
+       *
+       * So the type stays ink and the picture is lifted to meet it, by two
+       * washes rather than one. Neither is a flat veil over the whole frame:
+       * that would cost the photograph everything and buy readability the
+       * cheapest possible way.
+       *
+       * The top padding clears the fixed bar above, which measures 70px.
+       */}
+      <div ref={heroRef} className="relative overflow-hidden bg-eddo-wash">
+        {hasHeroPhoto && (
+          <>
+            {/* Behind the words, but only where there is room to put words
+                beside the picture rather than on top of it.
+
+                Below 1024 the picture moves out from behind the type and into
+                a band of its own, further down. It is not a second design for
+                its own sake: a wash strong enough to keep a paragraph legible
+                on a 390px screen covers the whole frame, and what was left was
+                a photograph nobody could see on the phones most guests will
+                arrive on. Out from under the type it needs no wash at all. */}
+            <div data-hero-photo className="absolute inset-0 hidden lg:block">
+              {/* Anchored right of centre: the boat and the houses live in the
+                  right half, and that is the half the words leave alone. */}
+              {/* `<picture>` is inline by default, and an inline box has no
+                  height for `h-full` to be a percentage of. */}
+              <picture className="block h-full w-full">
+                <source media="(min-width: 1024px)" srcSet="/eddo-hero.jpg" />
+                <img
+                  src={BLANK_PIXEL}
+                  alt={t.hero.alt}
+                  className="h-full w-full object-cover object-[68%_center]"
+                />
+              </picture>
+            </div>
+
+            {/* Wash one, for the words. Down the frame below 1024, where the
+                type stacks over it; across the frame above, where the type
+                keeps to the left and the photograph is left clean on the
+                right.
+
+                The stops are in pixels, not percentages. The text column is a
+                fixed 600px wherever it is read, so a wash measured in percent
+                covers all of it on a wide screen and runs out halfway through
+                the paragraph on a narrow one — which is exactly what it did:
+                measured 1.03:1 at 768px, against 3.35 at 1440. In pixels the
+                cover is the same everywhere and the photograph keeps whatever
+                is left over. */}
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 hidden lg:block bg-[linear-gradient(97deg,rgba(255,255,255,.96)_0px,rgba(255,255,255,.94)_700px,rgba(255,255,255,.4)_880px,rgba(255,255,255,0)_1060px)]"
+            />
+
+            {/* Wash two, for the bar. The header carries nothing of its own at
+                rest, so its links would otherwise be ink over whatever the
+                photograph happens to put behind them. It dies out well before
+                the headline, so it reads as light falling off rather than as a
+                bar that has quietly come back. */}
+            <div
+              aria-hidden="true"
+              className="absolute inset-x-0 top-0 hidden h-[150px] lg:block bg-[linear-gradient(180deg,rgba(255,255,255,.92)_0%,rgba(255,255,255,.74)_46%,rgba(255,255,255,0)_100%)]"
+            />
+          </>
+        )}
+
+        {/* The pale ground: the whole hero without a photograph, and the part
+            the type sits on below 1024 with one. */}
+        <div
+          aria-hidden="true"
+          className={`absolute inset-0 bg-[linear-gradient(135deg,var(--color-eddo-wash)_0%,var(--color-surface)_55%)] ${
+            hasHeroPhoto ? "lg:hidden" : ""
           }`}
-        >
-          <div data-reveal>
+        />
+
+        <Section className="relative grid grid-cols-1 items-center gap-10 pt-[112px] pb-12 md:pt-[128px] lg:pb-[104px]">
+          <div data-reveal className="max-w-[600px]">
             <Eyebrow>{t.hero.eyebrow}</Eyebrow>
             <h1 className="mt-5 mb-0 text-[clamp(38px,6vw,68px)] leading-[1.02] font-bold tracking-[-.035em] text-eddo-ink">
               {t.hero.title}
               <br />
               <span className="font-script font-normal tracking-normal text-eddo-deep">{t.hero.script}</span>
             </h1>
-            <p className="mt-5 max-w-[480px] text-[15px] leading-[1.7] text-slate">{t.hero.sub}</p>
+            {/* Darker than the body grey the rest of the page uses. That grey
+                was picked to sit on white, and this paragraph sits on a
+                photograph; the wash lifts the picture but the margin it leaves
+                is worth spending on the text as well. */}
+            <p className="mt-5 max-w-[480px] text-[15px] leading-[1.7] text-ink-soft">{t.hero.sub}</p>
             <div className="mt-7 flex flex-wrap gap-3">
               <a href="#kamar" className={BTN}>
                 {t.hero.cta}
@@ -491,21 +579,26 @@ export function EddoSite({
             </div>
           </div>
 
-          {/* The photograph, and nothing around it. No frame, no tint, no
-              shadow, and no drawn stand-in underneath: until the real picture
-              exists this half of the hero is not there at all, and the words
-              take the full width rather than sitting beside an empty box.
-              Whether it exists is settled at build time by the page, so the
-              layout is right in the first frame instead of rearranging itself
-              once an image has finished failing to load. */}
-          {hasHeroPhoto && (
-            <div data-reveal style={step(1)} className="relative aspect-[4/3] md:aspect-[5/4]">
-              <div data-hero-photo className="absolute inset-0">
-                <Photo src="/eddo-hero.jpg" alt={t.hero.alt} />
-              </div>
-            </div>
-          )}
         </Section>
+
+        {/* The picture's own band below 1024, edge to edge and with nothing
+            over it. The search bar that follows laps onto its foot, which is
+            what ties the two together rather than leaving a photograph
+            stranded between two blocks of white. */}
+        {hasHeroPhoto && (
+          <div className="relative lg:hidden">
+            {/* Two widths. The band is at most 1024 across and usually 390,
+                so the desk file would be four times the pixels anybody on a
+                phone can see, on the connection least able to afford them. */}
+            <img
+              src="/eddo-hero-900.jpg"
+              srcSet="/eddo-hero-900.jpg 900w, /eddo-hero.jpg 1760w"
+              sizes="100vw"
+              alt={t.hero.alt}
+              className="block h-[240px] w-full object-cover object-[62%_center] sm:h-[320px]"
+            />
+          </div>
+        )}
       </div>
 
       {/* ------------------------------------------------- search bar */}

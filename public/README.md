@@ -236,7 +236,7 @@ Begitu berkasnya ditaruh, fotonya yang tampil, tanpa mengubah kode.
 | `eddo-logo.png` | kepala halaman, footer, halaman perbaikan | 164×240, 45 KB. Dibuat dari master di atas. Di atas foto ditampilkan putih lewat filter |
 | `Eddo_Homestay_1.png` | **tidak dipakai**, disimpan sebagai master | aslinya dari pemilik: 4,0 MB |
 | `eddo-hero.jpg` | latar hero di layar ≥1024px | 2:1, 1760×880, 218 KB. Dibuat dari master di atas. **Berkas ini juga menentukan bentuk hero** — lihat di bawah |
-| `eddo-hero-900.jpg` | pita foto hero di layar <1024px | 2:1, 900×450, 65 KB. Isi yang sama, dikecilkan |
+| `eddo-hero-900.jpg` | latar hero di layar <1024px | 2:1, 900×450, 65 KB. Isi yang sama, dikecilkan |
 | `eddo-kamar-1.jpg`, `-2`, `-3`, … | karosel foto di bagian kamar | 4:3 |
 | `eddo-around-1.jpg` | kartu "Dermaga Yenbuba" | 3:4 (tegak) |
 | `eddo-around-2.jpg` | kartu "Burung cendrawasih" | 3:4 |
@@ -305,13 +305,27 @@ Tanpa berkas itu, hero jadi blok warna pucat polos. Dengan berkas itu:
 - **≥1024px** fotonya **memenuhi seluruh hero**, dari puncak sampai dasar,
   termasuk di belakang bar. Tidak ada penutup putih di mana pun. Tulisannya
   putih di atas foto.
-- **<1024px** fotonya keluar dari hero dan turun jadi pita sendiri di bawah
-  tulisan, tinggi 240px (320px dari 640px ke atas).
+- **<1024px** sama: fotonya memenuhi layar (`min-height: 100svh`), bukan lagi
+  pita di bawah tulisan.
 
-Pembagian itu bukan dua desain untuk gaya-gayaan. Di layar 390px tidak ada ruang
-untuk menaruh tulisan di samping foto, dan menutup fotonya sampai tulisannya
-terbaca menyisakan foto yang tidak kelihatan, di HP, tempat sebagian besar tamu
-membukanya. Turun ke bawah tulisan, fotonya tidak perlu ditutup sama sekali.
+Dulu di HP fotonya turun jadi pita sendiri, karena lapisan putih yang cukup kuat
+untuk membaca satu paragraf di atasnya menutupi seluruh bingkai dan menyisakan
+foto yang tidak kelihatan. Yang berubah arah lapisannya: gelap memperdalam
+airnya, bukan memucatkannya, jadi fotonya selamat dibaca di atasnya dan HP dapat
+hero yang sama dengan desktop.
+
+`svh`, bukan `vh`: `vh` diukur terhadap browser dengan bar-nya disembunyikan,
+jadi hero yang memakainya mulai lebih tinggi dari layarnya lalu menyusut sambil
+digulir.
+
+Crop-nya dua, karena kotaknya dua bentuk. Layar lebar: seluruh lebar fotonya
+kelihatan, jadi yang tersisa cuma potongan tegaknya, agak ke bawah karena
+puncaknya langit yang tidak diperlukan hero. Layar sempit: bingkainya lebih
+tinggi daripada fotonya, jadi potongannya berjalan ke arah sebaliknya, ke kanan
+dari tengah tempat rumah dan perahunya berada.
+
+Berkas kecilnya jadi `<img>` dan yang lebar jadi `<source>`, jadi tiap layar
+mengunduh satu dan hanya satu.
 
 **Kenapa harus ada sesuatu di antara tulisan dan foto.** Diukur tanpa penutup
 apa pun, latar di belakang **satu baris yang sama** berkisar dari luminansi
@@ -346,11 +360,15 @@ tulisannya di lebar berapa pun.
 Gradien bar dibuat terpisah karena bar membentang selebar layar, jadi tidak
 mungkin tertutup gradien sisi.
 
-**Di atas 1024px hurufnya putih dan berhalo;** di bawah itu fotonya turun jadi
-pita sendiri dan hurufnya kembali jadi tinta di atas latar pucat. Seluruh
-pertukaran itu ada di media query, bukan di saklar yang mengatur latar bar,
-karena yang menentukan bukan posisi gulir melainkan ada-tidaknya foto di atas
-sana.
+**Hurufnya putih dan berhalo di setiap lebar**, dan kembali jadi tinta begitu
+bar-nya buram di atas halaman putih. Yang menentukan dua hal saja: ada-tidaknya
+foto di hero, dan sudah-belum digulir. Keduanya dipasang oleh markup, bukan oleh
+media query.
+
+Gradien sisinya sendiri memang cuma untuk layar lebar, tempat tulisannya
+menepi. Di bawah 1024 tulisannya memenuhi lebar, jadi tidak ada sisi yang bisa
+disisakan untuk fotonya dan gradiennya berjalan ke bawah, menutupi semuanya,
+sedikit lebih ringan di kaki tempat kartu alasan memang akan naik menimpanya.
 
 Halo di huruf bukan itu yang membuatnya terbaca, gradiennya yang membuat.
 Halo cuma menjaga goresan huruf tidak larut di tempat fotonya kebetulan pucat,

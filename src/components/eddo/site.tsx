@@ -439,21 +439,16 @@ export function EddoSite({
             ))}
           </nav>
 
-          {/* Two switches and nothing else. The bar used to carry a number
-              and a Book button as well, which put three calls to action within
-              an inch of each other and left the reader to work out which one
-              was the real one. The card below the hero is the real one. */}
+          {/* The language and nothing else. Everything that was here before it
+              was a call to action of some kind, and three of those within an
+              inch of each other left the reader to work out which one was the
+              real one. The card below the hero is the real one. Currency is
+              set where prices are actually read, beside the rooms. */}
           <div className="ml-auto hidden items-center gap-3 md:flex">
-            <span data-ink-switch>
-              <CurrencySwitch currency={currency} onPick={pickCurrency} srLabel={t.currencyLabel} tone="dark" />
-            </span>
             <LangSwitch lang={lang} onPick={pickLang} label={t.langLabel} />
           </div>
 
           <div className="ml-auto flex items-center gap-2 md:hidden">
-            <span data-ink-switch>
-              <CurrencySwitch currency={currency} onPick={pickCurrency} srLabel={t.currencyLabel} tone="dark" />
-            </span>
             <button
               type="button"
               onClick={() => setMenuOpen((v) => !v)}

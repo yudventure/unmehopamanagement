@@ -612,22 +612,6 @@ input[type="search"]::-webkit-search-decoration {
     border-color: rgba(255, 255, 255, 0.6);
   }
 
-  /* The currency switch is a shared component with two tones and neither fits
-     here: its light tone is for a dark card and its dark tone is a solid white
-     pill, which on a deepened photograph reads as a button that wants
-     pressing. Restyled from outside rather than given a third tone, because
-     this is the only place that needs it. */
-  [data-on-photo] [data-ink-switch] label {
-    border-color: rgba(255, 255, 255, 0.55);
-    background: transparent;
-    color: rgba(255, 255, 255, 0.86);
-    text-shadow: var(--halo);
-  }
-
-  [data-on-photo] [data-ink-switch] select {
-    color: #fff;
-  }
-
   /* The chip keeps a ground of its own, but it borrows the picture's rather
      than staying the pale one it wears on white. A single pale badge on a
      deepened frame reads as something left behind from another design. */

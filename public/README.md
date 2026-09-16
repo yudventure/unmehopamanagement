@@ -233,7 +233,7 @@ Begitu berkasnya ditaruh, fotonya yang tampil, tanpa mengubah kode.
 | Berkas | Dipakai di | Rasio |
 |---|---|---|
 | `website_logo_eddo_homestay.png` | **tidak dipakai**, disimpan sebagai master | aslinya dari pemilik: 2000×2000, latar transparan, 388 KB |
-| `eddo-logo.png` | **tidak dipakai lagi**, disimpan sebagai master siap pakai | 164×240, 45 KB. Dibuat dari master di atas |
+| `eddo-logo.png` | kepala halaman, footer, halaman perbaikan | 164×240, 45 KB. Dibuat dari master di atas. Di atas foto ditampilkan putih lewat filter |
 | `Eddo_Homestay_1.png` | **tidak dipakai**, disimpan sebagai master | aslinya dari pemilik: 4,0 MB |
 | `eddo-hero.jpg` | latar hero di layar ≥1024px | 2:1, 1760×880, 218 KB. Dibuat dari master di atas. **Berkas ini juga menentukan bentuk hero** — lihat di bawah |
 | `eddo-hero-900.jpg` | pita foto hero di layar <1024px | 2:1, 900×450, 65 KB. Isi yang sama, dikecilkan |
@@ -248,12 +248,11 @@ Begitu berkasnya ditaruh, fotonya yang tampil, tanpa mengubah kode.
 Aturannya sama seperti situs Turtle: huruf kecil semua, lebar 1080 sampai
 1920px, usahakan di bawah 300 KB per foto.
 
-**Lencana tikinya sekarang tidak dipakai di halaman.** Nama situsnya ditulis
-sebagai huruf saja, di bar maupun di footer: tiga hal dalam bar setinggi 46px
-(lencana, nama, baris kampung) membuat lencananya berebut tinggi dan baris
-kampungnya mengecil sampai terbaca sebagai tekstur, bukan sebagai kata. Kedua
-berkasnya tetap disimpan sebagai master, dan catatan di bawah ini tetap berlaku
-kalau suatu saat lencananya dipasang lagi.
+**Lencananya dipakai lagi, bersama nama dalam huruf.** Yang dilepas cuma baris
+kampung di bawah nama: tiga hal dalam bar setinggi 46px membuat baris itu
+mengecil sampai terbaca sebagai tekstur, bukan sebagai kata. Tinggi lencananya
+2,1 kali ukuran huruf namanya, jadi bar, footer, dan halaman perbaikan tetap
+sebanding tanpa disetel satu per satu.
 
 `eddo-logo.png` dibuat dari masternya, bukan digambar ulang. Masternya kanvas
 2000×2000 dengan lencananya menempati 60% lebar dan 87% tinggi, jadi sepertiga
@@ -313,25 +312,19 @@ Halo saja juga sudah dicoba dan diukur: **1,3 sampai 1,9:1 bahkan di tepi
 huruf**, karena bayangan yang cukup lebar untuk berarti jadi terlalu tipis untuk
 menggelapkan apa pun.
 
-**Jadi yang dipilih arahnya, bukan ada-tidaknya.** Gelap sudah dicoba dan
-memang berhasil, tapi ia mengubah pagi jadi sore, dan yang dijual homestay ini
-bukan sore. Dua gradien di sini arahnya **terang**: kabut tipis di atas air,
-bukan senja di atasnya.
+**Jadi yang dipilih arahnya, bukan ada-tidaknya.** Terang sudah dicoba: ia
+mengangkat bingkainya, tapi juga memucatkannya, dan airnya berubah dari toska
+jadi susu. Dua gradien di sini arahnya **gelap**: airnya makin dalam, bukan
+makin pucat, dan palemnya tetap bertepi.
 
 | | Untuk | Kekuatan |
 |---|---|---|
-| `[data-hero-lift]` | tulisan hero | 0,72 di kiri, penuh sampai 52%, habis di 76% lebar |
-| `[data-hero-lift-top]` | bar | 132px, 0,80 di puncak |
+| `[data-hero-deep]` | tulisan hero | 0,64 di kiri, penuh sampai 52%, habis di 76% lebar |
+| `[data-hero-deep-top]` | bar | 132px, 0,58 di puncak |
 
 Titik 52% itu batas tulisannya, bukan angka bulat: di 1024px baris terpanjang
-berakhir di 50% lebar jendela, jadi kabutnya dipertahankan penuh sampai lewat
+berakhir di 50% lebar jendela, jadi gradiennya dipertahankan penuh sampai lewat
 situ lalu dijatuhkan cepat supaya warna fotonya kembali sesegera mungkin.
-
-**Angkanya bukan selera.** Tinta perlu latarnya 0,308 atau lebih terang, dan
-piksel paling gelap di belakang tulisannya ada di 0,003. Mengangkat piksel itu
-saja sampai 0,308 butuh putih 0,56. Semua titik di atas adalah lantai itu
-ditambah margin yang ditunjukkan pengukuran di bagian tepinya. Lebih tipis dari
-ini, paragrafnya mulai tidak lolos; itu sebabnya angkanya tidak lebih kecil.
 
 Titiknya persen, dan di sini persen aman padahal untuk panel putih dulu tidak:
 diukur dari 1024 sampai 2560 di dua bahasa, baris terpanjang hero selalu
@@ -341,11 +334,20 @@ tulisannya di lebar berapa pun.
 Gradien bar dibuat terpisah karena bar membentang selebar layar, jadi tidak
 mungkin tertutup gradien sisi.
 
-**Dua warna huruf digelapkan supaya putihnya bisa tetap tipis**, bukan
-sebaliknya. Baris skripnya (`by the water`) jadi `eddo-dark`, sebelumnya
-`eddo-deep` dan terukur 2,53:1 dari 3 yang dibutuhkan. Paragraf hero-nya jadi
-`eddo-ink`, sebelumnya `ink-soft` dan terukur 4,21:1 dari 4,5. Menambah putih
-untuk keduanya akan memucatkan fotonya lebih jauh dari yang perlu.
+**Di atas 1024px hurufnya putih dan berhalo;** di bawah itu fotonya turun jadi
+pita sendiri dan hurufnya kembali jadi tinta di atas latar pucat. Seluruh
+pertukaran itu ada di media query, bukan di saklar yang mengatur latar bar,
+karena yang menentukan bukan posisi gulir melainkan ada-tidaknya foto di atas
+sana.
+
+Halo di huruf bukan itu yang membuatnya terbaca, gradiennya yang membuat.
+Halo cuma menjaga goresan huruf tidak larut di tempat fotonya kebetulan pucat,
+dan itu gratis.
+
+**Lencananya jadi putih lewat filter, bukan berkas kedua.** `brightness(0)`
+membawa semua piksel ke hitam dan membiarkan alpha-nya, `invert(1)` membalik
+jadi putih; jadi tikinya tetap punya garis tepi dan tepi halusnya sendiri tanpa
+harus ada salinan putih yang mesti ikut diperbarui setiap kali logonya ganti.
 
 **Crop-nya `object-position: center 58%`.** Selebar layar berarti seluruh lebar
 fotonya kelihatan, jadi yang tersisa untuk dipilih cuma potongan tegaknya: agak

@@ -91,9 +91,7 @@
      picture and it was wrong. It is a light colour, so it is decoration and
      nothing else: white on it measures 2.78:1 and so does it on white, which
      fails for text either way round. It colours a 6px dot and a border, and it is
-     not allowed near a word. It was sampled from the badge in
-     `public/eddo-logo.png`, which the pages no longer show: the name is set as
-     type now, and the colour outlived the picture it came from.
+     not allowed near a word.
 
      `deep` is what carries text, in both directions: 5.33:1 against white and
      4.79:1 against `tint`, which covers teal words on either ground and white
@@ -506,8 +504,8 @@ input[type="search"]::-webkit-search-decoration {
 }
 
 /*
- * The two gradients the hero type is read against. Light, so the frame reads
- * as morning rather than as evening.
+ * The two gradients the hero type is read against, and the type that reads
+ * against them.
  *
  * Measured with nothing over the picture at all, the background behind a
  * single line of hero type runs from luminance 0.003 to 0.837: the sky and the
@@ -518,45 +516,127 @@ input[type="search"]::-webkit-search-decoration {
  * because a shadow wide enough to matter is too thin to change anything.
  *
  * So something sits between the type and the picture, and the only question is
- * which way it goes. Dark was tried, and it works, but it turns a bright
- * morning into an evening and this homestay is not selling evenings. These
- * lift instead: haze on the water, not dusk on it.
+ * which way it goes. Light was tried; it lifts the frame but it also bleaches
+ * it, and the water went from turquoise to milk. These go the other way: the
+ * water deepens instead of paling, and the palms keep their edges.
  *
- * The strength is not a taste. Ink needs its ground at 0.308 or brighter, and
- * the darkest pixel behind the words sits at 0.003. Lifting that one pixel to
- * 0.308 takes white at 0.56, and every stop below is that floor plus the
- * margin measurement showed was needed at the edges. Weaker than this and the
- * paragraph stops passing; that is the whole reason these numbers are not
- * lower.
+ * `--deep` is one colour in two places so the frame cannot end up with two
+ * different darks in it.
  *
- * The stops are percentages, which is safe here and was not safe for the white
- * panel this replaced: measured from 1024 to 2560, in both languages, the
+ * The side gradient holds full strength to 52% and then falls away fast, which
+ * is the one thing kept from the light version: 52% is where the type ends,
+ * not a round number. Measured from 1024 to 2560 in both languages, the
  * longest run of hero type always ends between 46% and 50% of the window, so a
- * stop at 50% follows the text at every width.
+ * stop just past 50% follows the text at every width and the photograph gets
+ * its own colour back as early as it can.
  *
  * The top one is for the bar, which spans the whole frame and so cannot be
  * served by the side one. 132px is the bar's own height plus its falloff.
  */
-[data-hero-lift] {
+[data-hero-deep] {
+  --deep: 3, 26, 31;
   background: linear-gradient(
     103deg,
-    rgba(255, 255, 255, 0.72) 0%,
-    rgba(255, 255, 255, 0.68) 30%,
-    rgba(255, 255, 255, 0.62) 52%,
-    rgba(255, 255, 255, 0.12) 64%,
-    rgba(255, 255, 255, 0) 76%
+    rgba(var(--deep), 0.64) 0%,
+    rgba(var(--deep), 0.58) 30%,
+    rgba(var(--deep), 0.52) 52%,
+    rgba(var(--deep), 0.16) 64%,
+    rgba(var(--deep), 0) 76%
   );
 }
 
-[data-hero-lift-top] {
+[data-hero-deep-top] {
+  --deep: 3, 26, 31;
   height: 132px;
   background: linear-gradient(
     180deg,
-    rgba(255, 255, 255, 0.8) 0%,
-    rgba(255, 255, 255, 0.7) 44%,
-    rgba(255, 255, 255, 0.16) 76%,
-    rgba(255, 255, 255, 0) 100%
+    rgba(var(--deep), 0.58) 0%,
+    rgba(var(--deep), 0.46) 44%,
+    rgba(var(--deep), 0.14) 76%,
+    rgba(var(--deep), 0) 100%
   );
+}
+
+/*
+ * The type on top of them: white, with a halo. The halo is not what makes it
+ * readable, the gradients are; it keeps a stroke from dissolving where the
+ * picture happens to be pale under it, and it costs nothing.
+ *
+ * The badge goes white the same way, by filter rather than by a second file:
+ * `brightness(0)` takes every pixel to black and leaves the alpha alone,
+ * `invert(1)` turns that white, so the tiki keeps its own outline and its own
+ * soft edges without a white copy of it having to be made and kept in step.
+ *
+ * All of it only above 1024. Below that the picture is a band of its own
+ * further down the page and the bar and the words are ink on a near-white
+ * ground, which needs none of this. That is also why the switch is a media
+ * query rather than the flag the bar uses for its own background: the flag is
+ * about scrolling, this is about whether the photograph is up here at all.
+ */
+@media (min-width: 64rem) {
+  [data-on-photo] {
+    --halo:
+      0 1px 2px rgba(2, 22, 26, 0.92), 0 2px 8px rgba(2, 22, 26, 0.75), 0 0 30px rgba(2, 22, 26, 0.55);
+  }
+
+  [data-on-photo] [data-ink],
+  [data-on-photo] [data-ink-script],
+  [data-on-photo] [data-ink-soft],
+  [data-on-photo] [data-ink-pill] button[aria-pressed="false"] {
+    text-shadow: var(--halo);
+  }
+
+  [data-on-photo] [data-ink],
+  [data-on-photo] [data-ink-pill] button[aria-pressed="false"] {
+    color: #fff;
+  }
+
+  [data-on-photo] [data-ink-badge] {
+    filter: brightness(0) invert(1);
+  }
+
+  /* The quieter line of a pair keeps being the quieter line: white at full
+     strength everywhere would flatten the bar into one voice. */
+  [data-on-photo] [data-ink-soft] {
+    color: rgba(255, 255, 255, 0.86);
+  }
+
+  /* The script line keeps a tint of the brand rather than going white with
+     everything else, which is the only thing still saying which site this is
+     once the ink has gone. */
+  [data-on-photo] [data-ink-script] {
+    color: #a9e6ea;
+  }
+
+  [data-on-photo] [data-ink-pill] {
+    border-color: rgba(255, 255, 255, 0.6);
+  }
+
+  /* The currency switch is a shared component with two tones and neither fits
+     here: its light tone is for a dark card and its dark tone is a solid white
+     pill, which on a deepened photograph reads as a button that wants
+     pressing. Restyled from outside rather than given a third tone, because
+     this is the only place that needs it. */
+  [data-on-photo] [data-ink-switch] label {
+    border-color: rgba(255, 255, 255, 0.55);
+    background: transparent;
+    color: rgba(255, 255, 255, 0.86);
+    text-shadow: var(--halo);
+  }
+
+  [data-on-photo] [data-ink-switch] select {
+    color: #fff;
+  }
+
+  /* The chip keeps a ground of its own, but it borrows the picture's rather
+     than staying the pale one it wears on white. A single pale badge on a
+     deepened frame reads as something left behind from another design. */
+  [data-on-photo] [data-ink-chip] {
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    text-shadow: var(--halo);
+  }
 }
 
 /* The scrim deepens as the picture goes, which is what keeps the white type

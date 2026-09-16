@@ -76,6 +76,9 @@ const FILL = "absolute inset-0 h-full w-full";
 /** A card's place in its row, which the stylesheet turns into a delay. */
 const step = (i: number) => ({ "--i": i }) as React.CSSProperties;
 
+/** The badge's own proportions, 164 by 240 in the file. */
+const LOGO_RATIO = 164 / 240;
+
 /**
  * A transparent pixel, inline so it costs no request.
  *
@@ -90,22 +93,60 @@ const BLANK_PIXEL =
   "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
 
 /**
- * The name, set as a wordmark.
+ * The badge from `public/eddo-logo.png` beside the name.
  *
- * It was the tiki badge from `public/eddo-logo.png` with the name beside it
- * and the village under that: three things in a 46px bar, the badge fighting
- * for height and the village line small enough to be texture rather than
- * words. The name on its own is the whole mark now, sized off one number so
- * the bar and the footer stay in proportion to each other rather than each
- * being tuned by hand. The file stays in `public/` as the master.
+ * The village line that used to sit under the name is gone: three things in a
+ * 46px bar left it small enough to read as texture rather than as words. What
+ * is left is sized off one number, so the bar, the footer and the maintenance
+ * page stay in proportion to each other rather than each being tuned by hand.
+ *
+ * On the photograph the badge is white, done with a filter rather than a
+ * second file — the reasoning is with the rule in `globals.css`.
+ *
+ * An `<img>` that fails to load draws a broken-picture glyph where the logo
+ * should be, and a header wearing one of those looks abandoned. On a
+ * prerendered page the load has already failed by the time React attaches
+ * `onError`, so the element is asked directly on mount; the name alone is what
+ * the header falls back to.
  */
 function EddoLogo({ size = 19, light = false }: { size?: number; light?: boolean }) {
+  const [missing, setMissing] = useState(false);
+  const ref = useRef<HTMLImageElement>(null);
+  useEffect(() => {
+    const img = ref.current;
+    if (img && img.complete && img.naturalWidth === 0) setMissing(true);
+  }, []);
+  /* The badge is taller than it is wide, 164 by 240 in the file, so it is
+     sized by its height and lets its width follow. Rather more than twice the
+     cap height of the name beside it, which is what keeps it reading as a mark
+     and not as a bullet. */
+  const badge = Math.round(size * 2.1);
   return (
-    <span
-      className={`block font-bold tracking-[-.02em] ${light ? "text-white" : "text-eddo-ink"}`}
-      style={{ fontSize: size, lineHeight: 1.1 }}
-    >
-      Eddo Homestay
+    <span className="flex items-center gap-[10px]">
+      {!missing && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          ref={ref}
+          data-ink-badge
+          src="/eddo-logo.png"
+          alt=""
+          width={Math.round(badge * LOGO_RATIO)}
+          height={badge}
+          onError={() => setMissing(true)}
+          /* No rounding and no fill of our own: the badge carries its own
+             outline and its own shape, so a box drawn around it would be a
+             second frame fighting the first. */
+          className="shrink-0"
+          style={{ width: Math.round(badge * LOGO_RATIO), height: badge }}
+        />
+      )}
+      <span
+        data-ink
+        className={`block font-bold tracking-[-.02em] ${light ? "text-white" : "text-eddo-ink"}`}
+        style={{ fontSize: size, lineHeight: 1.1 }}
+      >
+        Eddo Homestay
+      </span>
     </span>
   );
 }
@@ -161,7 +202,10 @@ function Section({
 
 function Eyebrow({ children }: { children: React.ReactNode }) {
   return (
-    <span className="inline-flex items-center gap-[7px] rounded-full bg-eddo-tint px-[13px] py-[6px] font-mono text-[10.5px] tracking-[.1em] text-eddo-deep uppercase">
+    <span
+      data-ink-chip
+      className="inline-flex items-center gap-[7px] rounded-full bg-eddo-tint px-[13px] py-[6px] font-mono text-[10.5px] tracking-[.1em] text-eddo-deep uppercase"
+    >
       {children}
     </span>
   );
@@ -187,7 +231,11 @@ function Title({
 
 function LangSwitch({ lang, onPick, label }: { lang: Lang; onPick: (l: Lang) => void; label: string }) {
   return (
-    <div className="flex items-center gap-[2px] rounded-full border border-line-strong p-[2px]" aria-label={label}>
+    <div
+      data-ink-pill
+      className="flex items-center gap-[2px] rounded-full border border-line-strong p-[2px]"
+      aria-label={label}
+    >
       {LANGS.map((l) => (
         <button
           key={l.key}
@@ -360,6 +408,10 @@ export function EddoSite({
           runs underneath; the hero pays for that with the top padding that
           keeps its own content clear of the bar. */}
       <header
+        /* At rest above the photograph the bar has no ground of its own, so
+           its badge and its type go white. The moment it goes frosted it is
+           over a near-white ground again and both go back to ink. */
+        {...(hasHeroPhoto && !barSolid ? { "data-on-photo": "" } : {})}
         className={`fixed inset-x-0 top-0 z-50 border-b transition-[background-color,border-color] duration-300 ${
           barSolid
             ? "border-line bg-surface/80 backdrop-blur-md"
@@ -377,6 +429,7 @@ export function EddoSite({
               <a
                 key={n.href}
                 href={n.href}
+                data-ink
                 className={`text-[13.5px] no-underline transition-colors hover:text-eddo-deep hover:no-underline ${
                   i === 0 ? "font-medium text-eddo-deep" : "text-ink-soft"
                 }`}
@@ -391,12 +444,16 @@ export function EddoSite({
               an inch of each other and left the reader to work out which one
               was the real one. The card below the hero is the real one. */}
           <div className="ml-auto hidden items-center gap-3 md:flex">
-            <CurrencySwitch currency={currency} onPick={pickCurrency} srLabel={t.currencyLabel} tone="dark" />
+            <span data-ink-switch>
+              <CurrencySwitch currency={currency} onPick={pickCurrency} srLabel={t.currencyLabel} tone="dark" />
+            </span>
             <LangSwitch lang={lang} onPick={pickLang} label={t.langLabel} />
           </div>
 
           <div className="ml-auto flex items-center gap-2 md:hidden">
-            <CurrencySwitch currency={currency} onPick={pickCurrency} srLabel={t.currencyLabel} tone="dark" />
+            <span data-ink-switch>
+              <CurrencySwitch currency={currency} onPick={pickCurrency} srLabel={t.currencyLabel} tone="dark" />
+            </span>
             <button
               type="button"
               onClick={() => setMenuOpen((v) => !v)}
@@ -490,34 +547,45 @@ export function EddoSite({
               </div>
             </div>
 
-            {/* Two gradients, both light. One lifts the side the words are
-                on, one lifts the strip the bar sits in. Their strength is not
-                a taste: it is the least that keeps ink readable on the darkest
-                pixel behind it. Stops and reasoning are in `globals.css`. */}
-            <div aria-hidden="true" data-hero-lift className="absolute inset-0 hidden lg:block" />
-            <div aria-hidden="true" data-hero-lift-top className="absolute inset-x-0 top-0 hidden lg:block" />
+            {/* Two gradients, both dark. One for the side the words are on,
+                one for the strip the bar sits in. Dark deepens a photograph
+                where light bleaches it. Stops and reasoning are in
+                `globals.css`. */}
+            <div aria-hidden="true" data-hero-deep className="absolute inset-0 hidden lg:block" />
+            <div aria-hidden="true" data-hero-deep-top className="absolute inset-x-0 top-0 hidden lg:block" />
           </>
         )}
 
         <Section className="relative grid grid-cols-1 items-center gap-10 pt-[112px] pb-12 md:pt-[128px] lg:pb-[104px]">
-          <div data-reveal className="relative max-w-[600px]">
+          <div
+            data-reveal
+            /* Above 1024 these words are on the photograph and go white with
+               it. Below 1024 the picture is a band further down and they stay
+               ink on the pale ground. */
+            {...(hasHeroPhoto ? { "data-on-photo": "" } : {})}
+            className="relative max-w-[600px]"
+          >
             <div className="relative">
             <Eyebrow>{t.hero.eyebrow}</Eyebrow>
-            <h1 className="mt-5 mb-0 text-[clamp(38px,6vw,68px)] leading-[1.02] font-bold tracking-[-.035em] text-eddo-ink">
+            <h1 data-ink className="mt-5 mb-0 text-[clamp(38px,6vw,68px)] leading-[1.02] font-bold tracking-[-.035em] text-eddo-ink">
               {t.hero.title}
               <br />
               {/* A step darker than the teal the rest of the page uses for
                   this line. On white either reads; on the hazy photograph the
                   lighter one measured 2.53:1 against 3 needed, and the fix was
                   a darker word rather than more white over the picture. */}
-              <span className="font-script font-normal tracking-normal text-eddo-dark">{t.hero.script}</span>
+              <span data-ink-script className="font-script font-normal tracking-normal text-eddo-dark">
+                {t.hero.script}
+              </span>
             </h1>
             {/* Full ink, not the body grey the rest of the page uses. That
                 grey was chosen to sit on white; here it sits on a photograph
                 under a light haze, where it measured 4.21:1 against 4.5
                 needed. Ink passes with room to spare and lets the haze stay
                 as faint as it is. */}
-            <p className="mt-5 max-w-[480px] text-[15px] leading-[1.7] text-eddo-ink">{t.hero.sub}</p>
+            <p data-ink className="mt-5 max-w-[480px] text-[15px] leading-[1.7] text-eddo-ink">
+              {t.hero.sub}
+            </p>
             <div className="mt-7 flex flex-wrap gap-3">
               <a href="#kamar" className={BTN}>
                 {t.hero.cta}

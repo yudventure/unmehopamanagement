@@ -142,7 +142,7 @@ function EddoLogo({ size = 19, light = false }: { size?: number; light?: boolean
       )}
       <span
         data-ink
-        className={`block font-bold tracking-[-.02em] ${light ? "text-white" : "text-eddo-ink"}`}
+        className={`block font-bold tracking-[-.02em] ${light ? "text-white" : "text-eddo-deep"}`}
         style={{ fontSize: size, lineHeight: 1.1 }}
       >
         Eddo Homestay
@@ -260,10 +260,13 @@ function LangSwitch({ lang, onPick, label }: { lang: Lang; onPick: (l: Lang) => 
 
 /* Four glyphs for the reasons row, drawn inline like the footer icons. */
 const TRUST_ICONS = [
-  <svg key="a" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 12l-8 8-8-8V4h8l8 8z" /><circle cx="8.5" cy="8.5" r="1.4" /></svg>,
-  <svg key="b" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4V5z" /><path d="M8 9h8M8 12h5" /></svg>,
-  <svg key="c" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 12h18a9 9 0 0 1-18 0z" /><path d="M6 12V9m6 3V6m6 6V9" /></svg>,
-  <svg key="d" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7" /><path d="M5 10v10h14V10" /><path d="M10 20v-6h4v6" /></svg>,
+  /* A card, a covered plate, a signal, a face. In the order the four reasons
+     are written, so a reason moved in `eddo-content.ts` without its glyph is
+     a mismatch anyone can see rather than one nobody notices. */
+  <svg key="bayar" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="2.5" y="5.5" width="19" height="13" rx="2.5" /><path d="M2.5 10h19M6.5 14.5h4" /></svg>,
+  <svg key="makan" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 12h18a9 9 0 0 1-18 0z" /><path d="M6 12V9m6 3V6m6 6V9" /></svg>,
+  <svg key="internet" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M2.6 8.6a14 14 0 0 1 18.8 0" /><path d="M5.6 12.1a9.5 9.5 0 0 1 12.8 0" /><path d="M8.6 15.6a5 5 0 0 1 6.8 0" /><path d="M12 19.2h.01" /></svg>,
+  <svg key="layanan" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M8.3 14.2a4.6 4.6 0 0 0 7.4 0" /><path d="M9.2 9.6h.01M14.8 9.6h.01" /></svg>,
 ];
 
 const BTN =

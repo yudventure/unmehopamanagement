@@ -158,10 +158,10 @@ const EN: EddoCopy = {
     alt: "The jetty at Sawinggrai with clear water over the reef",
   },
   trust: [
-    { title: "Direct from the family", sub: "No agent, no booking fee. The price you see is the price." },
-    { title: "Replies the same day", sub: "Usually within a few hours, on WhatsApp or email." },
-    { title: "Three meals included", sub: "Cooked at the house, eaten together." },
-    { title: "Two rooms only", sub: "Small on purpose. You will not share the jetty with a crowd." },
+    { title: "Easy payment", sub: "No agent, no booking fee. The price you see is the price." },
+    { title: "Three meals a day included", sub: "Cooked at the house, eaten together." },
+    { title: "Internet 24/7", sub: "On all day, every day of your stay." },
+    { title: "Friendly service", sub: "Kept by the family who live here." },
   ],
   rooms: {
     eyebrow: "Rooms & rates",
@@ -287,10 +287,10 @@ const ID: EddoCopy = {
     alt: "Dermaga Sawinggrai dengan air jernih di atas karang",
   },
   trust: [
-    { title: "Langsung dari keluarga", sub: "Tanpa agen, tanpa biaya pemesanan. Harga yang tertulis itu harganya." },
-    { title: "Dibalas di hari yang sama", sub: "Biasanya dalam beberapa jam, lewat WhatsApp atau email." },
-    { title: "Sudah termasuk tiga kali makan", sub: "Dimasak di rumah, dimakan bersama." },
-    { title: "Cuma dua kamar", sub: "Sengaja kecil. Dermaganya tidak akan ramai." },
+    { title: "Kemudahan pembayaran", sub: "Tanpa agen, tanpa biaya pemesanan. Harga yang tertulis itu harganya." },
+    { title: "Sudah termasuk makan 3x sehari", sub: "Dimasak di rumah, dimakan bersama." },
+    { title: "Internet 24/7", sub: "Bisa dipakai kapan saja selama menginap." },
+    { title: "Pelayanan ramah", sub: "Dijaga keluarga yang tinggal di rumah ini." },
   ],
   rooms: {
     eyebrow: "Kamar & tarif",

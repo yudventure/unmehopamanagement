@@ -176,6 +176,55 @@ Saklar bersama `maintenance` di akar berkas masih ada dan dipakai sebagai
 cadangan untuk situs yang belum punya nilainya sendiri, supaya berkas yang
 ditulis CMS versi lama tetap berlaku apa adanya.
 
+## Deploy otomatis lewat branch `deploy`
+
+Rantainya dulu putus di satu tempat. Saya commit dan push otomatis, Actions
+build otomatis, lalu berhenti: seseorang harus mengunduh arsipnya dan
+mengunggahnya lagi. Artinya setiap harga yang diubah pemiliknya lewat CMS
+mengendap di GitHub sampai ada yang sadar.
+
+Sekarang Actions mendorong hasil build ke branch **`deploy`**, dan host tinggal
+menariknya.
+
+Yang ada di branch itu **hasil build, bukan kode sumber**: `server.js`, `.next`,
+`public`, dan `node_modules` hasil penelusuran, tersusun persis seperti yang
+diminta server. Tidak ada `src`, tidak ada `next.config.ts`, jadi tidak ada yang
+perlu dibangun di sana.
+
+Tiap jalannya dimulai dengan `git init` baru lalu didorong paksa, sehingga
+branch itu selalu berisi satu commit. Tanpa itu, dua puluh deploy berarti dua
+puluh salinan `node_modules` menumpuk di riwayat repositori.
+
+Berjalan di `main` saja. Build dari branch lain untuk dilihat, bukan untuk
+dipasang di domain sebuah homestay.
+
+### Menyambungkannya di Hostinger
+
+Di aplikasi Node-nya, ganti sumbernya dari unggahan berkas menjadi repositori
+Git, arahkan ke repositori ini dan **branch `deploy`**, lalu:
+
+```
+Build command  : kosong          <- penting, tidak ada yang perlu dibangun
+Entry file     : server.js
+Versi node     : 22
+Root directory : ./
+```
+
+Build command yang tidak dikosongkan akan mencoba `next build` terhadap hasil
+build, dan itu gagal.
+
+Kalau panelnya menawarkan deploy otomatis saat ada push, nyalakan; rantainya
+tertutup penuh dan perubahan dari CMS tayang tanpa ada yang menyentuh Hostinger.
+Kalau tidak menawarkan, deploy-nya jadi satu klik di hPanel, bukan lagi unduh
+dan unggah.
+
+### Kalau nanti mau lewat SSH
+
+Alternatifnya Actions mengunggah sendiri lewat SSH atau FTP. Itu butuh
+kredensial server disimpan sebagai GitHub secret, dan cara di atas tidak butuh
+apa pun, jadi itu yang dikerjakan lebih dulu. Kalau integrasi Git Hostinger
+ternyata tidak bisa menarik sendiri, jalur SSH tinggal ditambahkan.
+
 ## Masuk ke dashboard
 
 Sampai hari ini kata sandinya tidak pernah diperiksa. `doLogin` menguji kolom

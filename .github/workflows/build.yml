@@ -24,6 +24,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    # Needed only by the last step, which pushes the built app to its own
+    # branch. Everything before it reads.
+    permissions:
+      contents: write
+
     # Everything here is read at `next build` and baked into the output, so it
     # has to be present now rather than on the server. Repository variables
     # rather than secrets on purpose: a domain name is public, and anything
@@ -74,3 +79,37 @@ jobs:
             dist/app.tar.gz
             dist/app.zip
           retention-days: 14
+
+      # Publishes the built application to a branch of its own, so the host can
+      # deploy by pulling instead of waiting for somebody to download an
+      # archive and upload it again.
+      #
+      # That last step was the one part of the chain still done by hand, which
+      # meant every price the owner changed in the CMS sat in GitHub until a
+      # person noticed. The build was already automatic; this is what makes the
+      # whole path automatic.
+      #
+      # `deploy` holds the *output*, never the source: `server.js`, `.next`,
+      # `public` and the traced `node_modules`, laid out exactly as the server
+      # wants them. A fresh `git init` each run and a force push mean the branch
+      # is always a single commit, so twenty deploys do not become twenty
+      # copies of `node_modules` in the repository's history.
+      #
+      # It runs on `main` only. A branch build is for looking at, not for
+      # putting on a homestay's domain.
+      - name: Publish the built app to the deploy branch
+        if: github.ref == 'refs/heads/main'
+        working-directory: .next/standalone
+        run: |
+          set -euo pipefail
+          git init -q -b deploy
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "Build dari ${GITHUB_SHA:0:7}"
+          git push -q -f \
+            "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" \
+            HEAD:deploy
+          echo "branch deploy diperbarui dari ${GITHUB_SHA:0:7}"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

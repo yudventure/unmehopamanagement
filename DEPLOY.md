@@ -218,7 +218,43 @@ tertutup penuh dan perubahan dari CMS tayang tanpa ada yang menyentuh Hostinger.
 Kalau tidak menawarkan, deploy-nya jadi satu klik di hPanel, bukan lagi unduh
 dan unggah.
 
-### Kalau nanti mau lewat SSH
+### Satu tindakan yang tidak bisa diotomatiskan dari sini
+
+Hop terakhir, dari GitHub ke server, butuh satu dari dua hal, dan keduanya
+hanya bisa dilakukan pemilik akun sekali:
+
+**Cara A, disarankan.** Di hPanel, ganti sumber aplikasi Node dari unggahan
+berkas menjadi repositori Git, branch `deploy`, build command kosong. Setelah
+itu Hostinger yang menarik dan yang me-restart, dan restart itu justru bagian
+yang tidak bisa dilakukan dari luar.
+
+**Cara B.** Isi empat secret di GitHub, lalu Actions yang mendorong lewat SSH:
+
+```
+SSH_HOST          alamat server, dari hPanel bagian SSH Access
+SSH_USER          nama pengguna di baris yang sama
+SSH_PORT          opsional, kosong berarti 22
+SSH_KEY           kunci privat yang pasangannya sudah didaftarkan di hPanel
+SSH_KNOWN_HOSTS   opsional tapi dianjurkan, hasil ssh-keyscan server itu
+```
+
+Ditambah satu repository variable `DEPLOY_PATH`, berisi folder tempat aplikasi
+berjalan.
+
+Langkahnya tidur selama `SSH_HOST` kosong, jadi workflow-nya berlaku persis
+seperti sebelumnya bagi yang belum menyiapkannya. Ia membongkar ke folder
+sementara dan baru menukar setelah `server.js` dan `.next/static` terbukti ada,
+sehingga transfer yang putus di tengah meninggalkan situs yang sedang jalan apa
+adanya, bukan setengah tertimpa. Rilis sebelumnya disimpan sebagai `.prev`
+untuk satu deploy, yang membedakan deploy buruk berbiaya semenit dari deploy
+buruk berbiaya semalam.
+
+**Cara A lebih dianjurkan**, dan alasannya jujur: bagaimana proses Node yang
+dikelola panel memungut berkas baru adalah satu-satunya bagian di sini yang
+belum pernah diuji terhadap server sungguhan. Cara A menyerahkan urusan itu ke
+pihak yang memang mengelolanya.
+
+### Catatan lama soal SSH
 
 Alternatifnya Actions mengunggah sendiri lewat SSH atau FTP. Itu butuh
 kredensial server disimpan sebagai GitHub secret, dan cara di atas tidak butuh

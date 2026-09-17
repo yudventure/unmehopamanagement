@@ -43,6 +43,17 @@ jobs:
       NEXT_PUBLIC_MIDTRANS_CLIENT_KEY: ${{ vars.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY }}
       NEXT_PUBLIC_LOGIN_HERO: ${{ vars.NEXT_PUBLIC_LOGIN_HERO }}
 
+      # Read by the optional SSH step at the end. Declared at job level rather
+      # than on the step, because a step cannot see its own `env` from its `if`,
+      # and that `if` is what keeps this whole path dormant until someone adds
+      # the secrets.
+      SSH_HOST: ${{ secrets.SSH_HOST }}
+      SSH_USER: ${{ secrets.SSH_USER }}
+      SSH_PORT: ${{ secrets.SSH_PORT }}
+      SSH_KEY: ${{ secrets.SSH_KEY }}
+      SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+      DEPLOY_PATH: ${{ vars.DEPLOY_PATH }}
+
     steps:
       - uses: actions/checkout@v4
 
@@ -113,3 +124,56 @@ jobs:
           echo "branch deploy diperbarui dari ${GITHUB_SHA:0:7}"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # The other way to close the last hop: push the build to the server
+      # instead of waiting for the server to pull it.
+      #
+      # Dormant until `SSH_HOST` exists, so the workflow behaves exactly as
+      # before for anyone who has not set it up. Preferred order is still the
+      # `deploy` branch above, because Hostinger's own Git integration handles
+      # the restart and this cannot: what a panel-managed Node process needs in
+      # order to pick up new files is the one part of this that has never been
+      # tested against the real server.
+      #
+      # Extracts into a staging directory and only then swaps, so a transfer cut
+      # halfway leaves the running site alone rather than half-replaced. The
+      # previous release is kept as `.prev` for exactly one deploy, which is the
+      # difference between a bad deploy costing a minute and costing an evening.
+      - name: Deploy over SSH
+        if: github.ref == 'refs/heads/main' && env.SSH_HOST != ''
+        run: |
+          set -euo pipefail
+          PORT="${SSH_PORT:-22}"
+          mkdir -p ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+
+          if [ -n "${SSH_KNOWN_HOSTS:-}" ]; then
+            printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          else
+            # Trust on first use. Weaker than pinning the key, and said out loud
+            # rather than hidden: set SSH_KNOWN_HOSTS to remove the window.
+            echo "SSH_KNOWN_HOSTS kosong, memakai ssh-keyscan (trust on first use)"
+            ssh-keyscan -p "$PORT" -H "$SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+          fi
+          chmod 600 ~/.ssh/known_hosts
+
+          SSH="ssh -i ~/.ssh/id_deploy -p $PORT -o BatchMode=yes $SSH_USER@$SSH_HOST"
+          scp -i ~/.ssh/id_deploy -P "$PORT" dist/app.tar.gz \
+            "$SSH_USER@$SSH_HOST:$DEPLOY_PATH/../app-incoming.tar.gz"
+
+          $SSH bash -se <<REMOTE
+          set -euo pipefail
+          cd "$DEPLOY_PATH/.."
+          rm -rf .staging && mkdir -p .staging
+          tar -xzf app-incoming.tar.gz -C .staging
+          test -f .staging/server.js
+          test -d .staging/.next/static
+          rm -rf "\$(basename "$DEPLOY_PATH").prev"
+          mv "$DEPLOY_PATH" "\$(basename "$DEPLOY_PATH").prev"
+          mv .staging "$DEPLOY_PATH"
+          rm -f app-incoming.tar.gz
+          mkdir -p "$DEPLOY_PATH/tmp" && touch "$DEPLOY_PATH/tmp/restart.txt"
+          REMOTE
+
+          echo "terkirim ke $SSH_HOST:$DEPLOY_PATH"

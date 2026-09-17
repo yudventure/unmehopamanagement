@@ -85,6 +85,14 @@ SITE_DOMAIN_EDDO   = eddohomestay.com,www.eddohomestay.com
 Dipisah koma kalau lebih dari satu. **Yang pertama dianggap yang resmi** dan
 dipakai sebagai alamat canonical; sisanya dianggap alias.
 
+**Variabel ini dibaca waktu build, bukan waktu server menyala.** Next menulis
+daftar rewrite-nya ke `.next/routes-manifest.json` sewaktu `next build`, jadi
+mengisi variabelnya lalu menyalakan ulang server saja tidak mengubah apa pun:
+domainnya akan tetap menyajikan dashboard. Diuji, bukan dikira. Di Vercel ini
+otomatis benar karena setiap deploy adalah build baru; di VPS, pastikan
+variabelnya ada di lingkungan yang menjalankan build, bukan cuma di yang
+menjalankan `next start`.
+
 Domain dashboard tidak perlu variabel apa pun. Ia menyajikan `/`, yang memang
 sudah dashboard.
 
@@ -97,6 +105,14 @@ Sesudah itu:
 | `turtlehomestay.com/turtle` | memantul ke `turtlehomestay.com/` |
 | `eddohomestay.com/` | situs Eddo |
 | `unmehoppa.com/` | dashboard |
+| `eddohomestay.com/turtle` | situs Turtle |
+
+Baris terakhir itu bukan kebocoran, melainkan yang membuat tautan "homestay
+saudara kami" di footer Eddo tetap hidup selama Turtle belum punya domain
+sendiri. Rewrite jalur dijalankan **setelah** filesystem, jadi `/turtle` yang
+memang halaman sungguhan ditemukan lebih dulu dan tidak pernah ikut ditulis
+ulang. Begitu `SITE_DOMAIN_TURTLE` diisi, tautannya berhenti memakai jalur itu
+dan langsung menyeberang ke domain Turtle.
 
 ## Kenapa ini ada di `next.config.ts` dan bukan di setelan Vercel
 
@@ -128,6 +144,48 @@ tertutup, karena pemilik harus tetap bisa bekerja saat situsnya ditutup.
 
 Teks di tab Website masih menyebut `/turtle` saja. Itu perlu diperbaiki, atau
 saklarnya dipisah jadi dua, sebelum ada yang menutup Eddo tanpa sengaja.
+
+## Pindah server nanti, misalnya dari VPS kecil ke yang lebih besar
+
+Aplikasi ini **tidak punya database**, dan itu yang membuat pindahan jadi
+pekerjaan setengah jam, bukan proyek sendiri. Yang biasanya bikin pindahan
+menakutkan adalah data yang cuma ada di satu mesin; di sini tidak ada:
+
+| Yang orang kira ada di server | Sebenarnya di mana |
+|---|---|
+| Isi tab Website | di repo GitHub, ditulis lewat `GITHUB_TOKEN` |
+| Foto dan logo | di repo, folder `public/` |
+| Pesan dari formulir | di kotak masuk email, tidak pernah disimpan |
+| Pembayaran | di dashboard Midtrans, plus email pemberitahuan |
+| Harga kamar | di tabel kamar dalam kode |
+
+Jadi yang benar-benar pindah cuma tiga: **repo, variabel lingkungan, dan
+DNS.** Urutan yang aman:
+
+1. Turunkan TTL DNS domainnya ke 5 menit, sehari sebelum pindah.
+2. Siapkan server barunya sampai situsnya jalan di alamat sementara, dengan
+   **variabel lingkungan yang sama persis**. Cocokkan satu per satu dengan
+   tabel di atas; yang paling sering ketinggalan adalah `SITE_DOMAIN_*`, dan
+   ketinggalan itu tidak terlihat sebagai error, melainkan sebagai domain yang
+   menyajikan dashboard.
+3. Arahkan DNS ke server baru, tunggu TLS-nya terbit di sana.
+4. Cek daftar di bawah, lalu matikan server lama setelah sehari, bukan
+   langsung.
+
+Yang **tidak** ikut pindah sendiri dan harus dicek ulang:
+
+- **Payment Notification URL di Midtrans**, kalau domainnya ikut berubah.
+  Kalau domainnya sama, ini aman.
+- **Backup harian.** Di aplikasi tanpa database, isi backup yang berharga
+  bukan datanya melainkan variabel lingkungan dan konfigurasi servernya.
+  Simpan salinan variabelnya di tempat lain juga, bukan cuma di server.
+
+Satu hal yang perlu dipastikan sebelum memakai VPS kecil: **`next build` butuh
+memori.** Kalau server barunya 1 vCPU dengan RAM kecil dan Coolify ikut
+berjalan di situ, build bisa mati di tengah jalan karena kehabisan memori.
+Dua jalan keluarnya, pilih salah satu: tambahkan swap 2 GB di server, atau
+build di GitHub Actions dan kirim hasilnya ke server. Yang kedua juga bikin
+deploy tidak lagi membebani server yang sedang melayani tamu.
 
 ## Setelah deploy: yang wajib dicek
 

@@ -659,7 +659,7 @@ export function EddoSite({
             `justify-end` on the hero and not `items-end` here: the section is a
             block inside it, so aligning within the section moves nothing. What
             had to move was the section itself. */}
-        <Section className="relative grid w-full grid-cols-1 items-center gap-10 pt-[112px] pb-[190px] md:pt-[128px] lg:pb-[212px]">
+        <Section className="relative grid w-full grid-cols-1 items-center gap-10 pt-[112px] pb-[220px] md:pt-[128px] md:pb-[190px] lg:pb-[212px]">
           <div
             data-reveal
             /* Above 1024 these words are on the photograph and go white with
@@ -716,7 +716,12 @@ export function EddoSite({
           It held a search bar until now. The four reasons were a plain row
           under it; in the card they are the first thing the hero hands over
           to, which is what the reader is actually deciding on at this point. */}
-      <div className="relative z-10 -mt-[64px] px-5 md:-mt-[72px] md:px-8">
+      {/* How far the card laps back over the hero: half its own height, so the
+          hero's edge crosses the middle of it. The card is three shapes at
+          three widths, so the number is three numbers. Measured, both
+          languages: 303px tall on a phone, 187px at 768, 121 to 142 at 1440.
+          The desktop value was already half and has not moved. */}
+      <div className="relative z-10 -mt-[150px] px-5 md:-mt-[92px] md:px-8 lg:-mt-[72px]">
         <div
           data-reveal
           style={step(2)}

@@ -174,6 +174,38 @@ Saklar bersama `maintenance` di akar berkas masih ada dan dipakai sebagai
 cadangan untuk situs yang belum punya nilainya sendiri, supaya berkas yang
 ditulis CMS versi lama tetap berlaku apa adanya.
 
+## Di mana dashboard-nya kalau domainnya milik homestay
+
+Di domain yang terdaftar di `SITE_DOMAIN_*`, `/` milik homestay dan jalur lain
+ditulis ulang di bawah awalan situsnya. Akibatnya dashboard tidak punya alamat
+sama sekali di sana, dan itu ditemukan dengan cara yang tidak enak: setelah
+`eddohomestay.com` live, `/` menyajikan Eddo dan semua jalur lain menjawab 404.
+
+Jadi dashboard punya alamat kedua:
+
+```
+eddohomestay.com/kelola        dashboard dan CMS
+unmehopamanagement.com/kelola  sama, nanti
+unmehopamanagement.com/        juga dashboard, seperti biasa
+```
+
+Bekerja karena penulisan ulang jalur berjalan **sesudah** filesystem, jadi
+route sungguhan menang atasnya. Itu alasan yang sama kenapa `/turtle`,
+`/api/...` dan `/preview` tetap hidup di domain homestay.
+
+**Subdomain di panel Hostinger bukan jalan keluarnya.** Subdomain di sana
+dipetakan ke folder dokumen, misalnya
+`/home/u.../domains/eddohomestay.com/public_html/kelola`, sedangkan aplikasi
+Node kita hidup di `hbuilds/versions/<uuid>` dan dijalankan lsnode untuk domain
+utama. Subdomain semacam itu akan menyajikan folder kosong, bukan dashboard.
+Menjadikannya website Node tersendiri juga bisa, tapi berarti men-deploy arsip
+yang sama dua kali dan menjaganya tetap seiring selamanya, dan hari keduanya
+melenceng adalah hari seseorang mengubah harga di salinan yang tidak disajikan
+siapa pun.
+
+Halaman `/kelola` diberi `noindex`: pintunya bukan rahasia, tapi juga bukan
+pintu masuk.
+
 ## Mengerjakan situs yang domainnya sudah menyala
 
 Mode perbaikan dulu berarti semua orang melihat halaman tunggu, termasuk yang

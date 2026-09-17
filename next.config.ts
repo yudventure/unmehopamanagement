@@ -110,6 +110,26 @@ function canonicalPathRedirects() {
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  /**
+   * Ship the server, not the toolchain.
+   *
+   * `next build` traces which files each route actually loads and, with this
+   * set, copies just those into `.next/standalone` together with a small
+   * `server.js` that replaces `next start`. The result runs with no
+   * `node_modules` install on the far side, which is what makes this
+   * deployable somewhere that cannot spare the memory to build.
+   *
+   * The build itself is unchanged and just as heavy; it simply stops having to
+   * happen on the machine that serves the site. Vercel is unaffected, which is
+   * the point: this is additive, and the deployment that works today keeps
+   * working the same way.
+   *
+   * `server.js` does not serve `public/` or `.next/static` on its own. Both
+   * have to be copied in beside it, which is what `npm run package` does. Skip
+   * that and the pages render with no photographs and no stylesheet, which
+   * looks like a broken build rather than a missing copy step.
+   */
+  output: "standalone",
   async rewrites() {
     const { beforeFiles, afterFiles } = hostRewrites();
     return { beforeFiles, afterFiles, fallback: [] };

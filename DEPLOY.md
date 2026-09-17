@@ -145,14 +145,11 @@ tertutup, karena pemilik harus tetap bisa bekerja saat situsnya ditutup.
 Teks di tab Website masih menyebut `/turtle` saja. Itu perlu diperbaiki, atau
 saklarnya dipisah jadi dua, sebelum ada yang menutup Eddo tanpa sengaja.
 
-## Bisa tidak di hosting bersama (shared hosting)?
+## Bisa tidak di hosting bersama, dan khususnya di Hostinger?
 
-Pertanyaan ini muncul karena hosting bersama jauh lebih murah dari VPS. Yang
-menentukan bukan harganya, melainkan satu hal: **hosting itu bisa menjalankan
-proses Node yang hidup terus atau tidak.**
-
-Aplikasi ini Next.js, disajikan oleh `next start`, dan lima endpoint-nya
-ditulis khusus untuk runtime Node:
+Yang menentukan bukan harga paketnya, melainkan satu hal: **hosting itu bisa
+menjalankan proses Node yang hidup terus atau tidak.** Aplikasi ini Next.js dan
+lima endpoint-nya ditulis khusus untuk runtime Node:
 
 ```
 src/app/api/content/route.ts      runtime = "nodejs"
@@ -162,16 +159,21 @@ src/app/api/pay/notify/route.ts   runtime = "nodejs"
 src/app/api/rates/route.ts        runtime = "nodejs"
 ```
 
-Hosting bersama kebanyakan dijual untuk PHP dan MySQL. Kalau paketnya memang
-begitu, situs ini tidak bisa jalan di sana sama sekali, dan pertanyaan soal
-payment gateway jadi tidak relevan karena bukan cuma pembayarannya yang tidak
-jalan. **Cara memastikannya satu menit:** buka panelnya, cari menu bernama
-"Node.js" atau "Setup Node.js App". Tidak ada menu itu, jawabannya tidak.
+**Cara memastikannya satu menit:** buka panel hosting, cari menu "Node.js" atau
+"Setup Node.js App". Tidak ada menu itu, jawabannya tidak, dan bukan cuma
+pembayarannya yang mati melainkan seluruh situsnya.
 
-### Kenapa payment gateway justru yang paling tidak bisa dipindah ke sana
+**Untuk Hostinger, jawabannya ada.** Paket Business Web Hosting mencantumkan
+"5 Aplikasi Node.js", dan dokumentasi Next 16 yang ikut terpasang di repositori
+ini mencantumkan Hostinger sebagai target deploy resmi, di
+`node_modules/next/dist/docs/01-app/01-getting-started/17-deploying.md` baris
+38. Ketiga situs ini satu aplikasi yang sama, jadi yang terpakai satu slot
+Node, bukan tiga.
 
-Kalaupun situsnya diubah jadi berkas statis supaya muat di hosting bersama,
-pembayarannya tetap mati, dan bukan karena kode ini kurang pintar:
+### Kenapa payment gateway yang paling mengunci pilihan hosting
+
+Kalau situsnya diubah jadi berkas statis supaya muat di hosting yang tidak
+punya Node, pembayarannya tetap mati, dan bukan karena kodenya kurang pintar:
 
 1. **Kunci server Midtrans tidak boleh sampai ke browser.** Kunci itu yang
    menandatangani permintaan Snap. Di situs statis tidak ada tempat
@@ -180,19 +182,105 @@ pembayarannya tetap mati, dan bukan karena kode ini kurang pintar:
 2. **Notifikasi Midtrans butuh alamat yang bisa menerima POST.**
    `/api/pay/notify` memeriksa tanda tangan SHA-512 sebelum percaya. Berkas
    statis tidak bisa menerima POST, apalagi memeriksa tanda tangan.
-3. **Nominalnya dihitung di server** dari tabel kamar. Tanpa server,
-   nominalnya datang dari browser, dan nominal yang datang dari browser adalah
-   nominal yang dipilih pengirimnya.
+3. **Nominalnya dihitung di server** dari tabel kamar. Tanpa server, nominalnya
+   datang dari browser, dan nominal yang datang dari browser adalah nominal
+   yang dipilih pengirimnya.
 
-Jadi urutannya bukan "situsnya di hosting murah, pembayarannya menyusul".
-Pembayaran justru bagian yang mengunci pilihan hostingnya.
+## Pindah ke Hostinger
+
+### Aturan pertama: jangan pernah build di server itu
+
+Diukur di repositori ini, `next build` memuncak di sekitar **1,4 GB memori**
+tersebar di proses pekerjanya. Di mesin build itu lega, di hosting bersama itu
+jatah paket, dan build yang kehabisan memori mati di tengah jalan tanpa pesan
+yang jelas. Jadi build dilakukan di luar, lalu hasilnya yang diunggah.
+
+`next.config.ts` memakai `output: "standalone"`, yang membuat `next build`
+menelusuri berkas apa saja yang benar-benar dipakai tiap route lalu menyalin
+hanya itu ke `.next/standalone`, lengkap dengan `server.js` kecil pengganti
+`next start`. Bedanya bukan sedikit:
+
+```
+node_modules             563 MB
+.next                    164 MB
+.next/standalone          75 MB   <- ini saja yang perlu diunggah
+dist/app.tar.gz           33 MB   <- terkompresi
+```
+
+Yang di sebelah kanan jalan **tanpa `npm install`** di server.
+
+`server.js` tidak menyajikan `public/` dan `.next/static` dengan sendirinya,
+karena Vercel menyajikan keduanya dari edge-nya sendiri. Satu proses Node tidak
+punya edge, jadi keduanya harus disalin masuk. Itu tugas `npm run package`.
+**Kalau langkah ini terlewat situsnya tetap menyala tapi tanpa CSS dan tanpa
+foto**, yang kelihatan seperti build rusak padahal cuma penyalinan yang tidak
+jalan. Karena itu skripnya memeriksa hasil kerjanya sendiri di akhir.
+
+### Langkahnya
+
+1. **Build di GitHub Actions.** Workflow `.github/workflows/build.yml` jalan
+   setiap push ke `main` dan bisa dijalankan manual. Hasilnya `app.tar.gz` di
+   bagian Artifacts. Mau build di laptop sendiri juga boleh:
+   `npm ci && npm run build && npm run package:archive`.
+2. **Isi dulu variabel yang dibaca saat build** (lihat tabel di bawah), di
+   Settings, Secrets and variables, Actions, tab Variables. Kalau ini kosong
+   saat build, domainnya tidak akan dikenali dan tombol bayarnya tidak punya
+   client key, dan mengisinya setelah build tidak memperbaiki apa pun.
+3. **Unggah dan bongkar** `app.tar.gz` ke folder aplikasi di Hostinger.
+4. **Perintah start:** `node server.js`. Bukan `npm start`, karena di dalam
+   arsip itu tidak ada `next`, yang ada `server.js` hasil standalone.
+5. **Port:** jangan dipatok. `server.js` membaca `PORT` dan `HOSTNAME` dari
+   lingkungan, dan Hostinger yang menentukan portnya.
+6. **Isi variabel runtime** di panel Node.js-nya, lalu restart aplikasinya.
+7. **Daftarkan URL notifikasi Midtrans** ke `https://<domain>/api/pay/notify`
+   di dashboard Midtrans. Tanpa ini pembayaran tetap jalan tapi tidak ada yang
+   memberi tahu servernya bahwa uangnya sudah masuk.
+
+### Variabel mana yang dibaca kapan
+
+Salah menaruh yang kiri ke kanan adalah kesalahan paling sering di sini, dan
+gejalanya membingungkan karena tidak ada yang error, cuma perilakunya salah.
+
+| Dibaca saat **build** (di GitHub Actions) | Dibaca saat **jalan** (di panel Hostinger) |
+| --- | --- |
+| `SITE_DOMAIN_TURTLE` | `MIDTRANS_SERVER_KEY` |
+| `SITE_DOMAIN_EDDO` | `MIDTRANS_IS_PRODUCTION` |
+| `NEXT_PUBLIC_MIDTRANS_CLIENT_KEY` | `RESEND_API_KEY`, `ENQUIRY_FROM` |
+| `NEXT_PUBLIC_LOGIN_HERO` | `GITHUB_TOKEN`, `GITHUB_REPO`, `GITHUB_BRANCH` |
+| | `CMS_PASSWORD` |
+| | `RATES_URL` (opsional) |
+
+Yang kiri ikut tertanam ke dalam hasil build, jadi **ganti domain berarti build
+ulang**, bukan sekadar ubah variabel lalu restart. Yang berawalan
+`NEXT_PUBLIC_` ikut tertanam ke JavaScript yang diunduh browser, jadi jangan
+pernah menaruh rahasia di sana. Yang kanan tidak pernah ikut ke arsip dan tidak
+pernah sampai ke browser.
+
+### Yang perlu dipastikan ada di sana
+
+- **Node 22.** Versi yang dipakai mengembangkan dan yang dipatok di workflow.
+- **Koneksi HTTPS keluar.** `/api/rates` memanggil sumber kurs, `/api/pay`
+  memanggil Midtrans, `/api/enquiry` memanggil Resend, dan CMS menulis ke
+  GitHub. Kalau keluarnya diblokir, `/api/rates` menjawab 503 dan harga tampil
+  dalam rupiah saja, sementara pembayaran dan enquiry ikut mati.
+- **Proses yang dihidupkan lagi kalau mati**, dan yang mulai sendiri setelah
+  server reboot.
+
+### Yang berubah dalam cara kerja sehari-hari
+
+Di Vercel, CMS menyimpan ke GitHub lalu Vercel build ulang sendiri dan semenit
+kemudian perubahannya tayang. Di Hostinger rantai itu putus di langkah
+terakhir: buildnya jalan di Actions, tapi hasilnya tidak berjalan sendiri ke
+server. Jadi **setiap kali pemiliknya mengubah harga atau nomor WhatsApp lewat
+CMS, ada satu langkah unggah manual**, kecuali nanti dipasang deploy otomatis.
+Ini bukan alasan untuk tidak pindah, cuma hal yang harus diketahui sebelum
+menjanjikannya ke pemilik homestay.
 
 ### Yang tetap boleh tinggal di hosting bersama
 
-Email. Domain bisa menunjuk ke Vercel atau ke VPS lewat A record, sementara
-emailnya tetap di Hostinger lewat MX record; keduanya catatan DNS yang
-berbeda dan tidak saling mengganggu. Jadi paket hosting yang sudah dibeli
-untuk email tidak jadi mubazir.
+Email. Domain bisa menunjuk ke Vercel atau ke VPS lewat A record sementara
+emailnya tetap di Hostinger lewat MX record. Keduanya catatan DNS yang berbeda
+dan tidak saling mengganggu, jadi paket yang sudah dibeli tidak mubazir.
 
 ## Pindah server nanti, misalnya dari VPS kecil ke yang lebih besar
 

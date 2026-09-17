@@ -5,7 +5,10 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "package": "node scripts/package.mjs",
+    "package:archive": "node scripts/package.mjs --archive",
     "start": "next start",
+    "start:standalone": "node .next/standalone/server.js",
     "lint": "next lint",
     "typecheck": "tsc --noEmit"
   },

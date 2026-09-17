@@ -1,0 +1,70 @@
+# Builds the application somewhere with enough memory, so the server does not
+# have to have any.
+#
+# Measured on this repository: `next build` peaks at about 1.4 GB of resident
+# memory across its worker processes. That is comfortable on a build machine
+# and is the single thing most likely to fail on shared hosting, where the
+# ceiling belongs to the plan rather than to the machine. Building here removes
+# the question instead of answering it.
+#
+# The output is `app.tar.gz`, which unpacks into a folder that runs with one
+# command and no `npm install`. Download it from the run's Artifacts section.
+#
+# Vercel is untouched by this. It keeps building from the same repository the
+# way it does today; this is a second way out, not a replacement.
+
+name: Build
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    # Everything here is read at `next build` and baked into the output, so it
+    # has to be present now rather than on the server. Repository variables
+    # rather than secrets on purpose: a domain name is public, and anything
+    # prefixed NEXT_PUBLIC_ is compiled into the JavaScript the browser
+    # downloads, so calling it a secret would be a promise this cannot keep.
+    #
+    # The real secrets (Midtrans server key, Resend, the CMS password) are read
+    # at runtime and belong on the server, never here.
+    env:
+      SITE_DOMAIN_TURTLE: ${{ vars.SITE_DOMAIN_TURTLE }}
+      SITE_DOMAIN_EDDO: ${{ vars.SITE_DOMAIN_EDDO }}
+      NEXT_PUBLIC_MIDTRANS_CLIENT_KEY: ${{ vars.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY }}
+      NEXT_PUBLIC_LOGIN_HERO: ${{ vars.NEXT_PUBLIC_LOGIN_HERO }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Pinned to the major version the application is developed against. A
+      # newer Node is usually fine and occasionally is not, and a build that
+      # differs from the one that was tested is not worth the surprise.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # `ci` rather than `install`: it installs exactly what the lockfile says
+      # and fails if the lockfile and package.json disagree, which is what you
+      # want from a build you are going to deploy without looking at.
+      - run: npm ci
+
+      - run: npm run typecheck
+
+      - run: npm run build
+
+      # Copies public/ and .next/static in beside the server, then writes the
+      # archive. Without this the site comes up unstyled rather than broken,
+      # which is the harder failure to spot.
+      - run: npm run package:archive
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: app
+          path: dist/app.tar.gz
+          retention-days: 14

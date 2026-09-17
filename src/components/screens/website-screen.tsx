@@ -40,30 +40,36 @@ type Status =
   | { kind: "saved" }
   | { kind: "error"; message: string };
 
-type TabKey = "kontak" | "sosial" | "profil" | "harga" | "status";
+/* One tab per public site. They used to be one tab per *kind* of setting,
+   which made sense when there was one site and became a trap when there were
+   two: the contact card showed both homestays at once, and picking the wrong
+   row meant changing the other property's number. Sorted by property, the
+   thing you are editing is named at the top of the screen. */
+type TabKey = PublicSite;
 
 const TABS: { key: TabKey; label: string }[] = [
-  { key: "kontak", label: "Kontak" },
-  { key: "sosial", label: "Media sosial" },
-  { key: "profil", label: "Profil" },
-  { key: "harga", label: "Harga selam" },
-  { key: "status", label: "Status situs" },
+  { key: "eddo", label: "Eddo Homestay" },
+  { key: "turtle", label: "Turtle Dive" },
 ];
 
+/* Turtle carries a dive centre and a founding year; Eddo carries neither.
+   Asked rather than assumed, so adding a third property is one line here
+   instead of a hunt through the render. */
+const HAS_DIVING: Record<TabKey, boolean> = { turtle: true, eddo: false };
+
+/* Printed inside sentences, so it reads as the property's name rather than as
+   a key: "tombol Kirim di website Eddo Homestay". */
+const LABEL_OF: Record<TabKey, string> = {
+  eddo: "Eddo Homestay",
+  turtle: "Turtle Dive",
+};
+
 /** Which tab owns which part of the file, so "changed" can be per tab. */
+/* What each tab owns, so "changed" can be marked per tab. Turtle's tab also
+   owns the two settings that belong to the dive centre rather than to a site. */
 const OWNS: Record<TabKey, (c: SiteConfig) => unknown> = {
-  /* Each of these now covers the shared value and both per-site overrides,
-     or editing only Eddo's number would leave the tab looking unchanged and
-     the Save button looking like it had nothing to do. */
-  kontak: (c) => [c.contact, c.sites?.turtle?.contact, c.sites?.eddo?.contact],
-  sosial: (c) => [c.social, c.sites?.turtle?.social, c.sites?.eddo?.social],
-  profil: (c) => c.founded,
-  harga: (c) => c.divePrices,
-  status: (c) => [
-    c.maintenance,
-    c.sites?.turtle?.maintenance,
-    c.sites?.eddo?.maintenance,
-  ],
+  eddo: (c) => c.sites?.eddo,
+  turtle: (c) => [c.sites?.turtle, c.founded, c.divePrices],
 };
 
 /* The two public sites, named here so every tab that lists them lists them
@@ -91,7 +97,7 @@ export function WebsiteScreen({ editor }: WebsiteScreenProps) {
   const [writable, setWritable] = useState(false);
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState<Status>({ kind: "idle" });
-  const [tab, setTab] = useState<TabKey>("kontak");
+  const [tab, setTab] = useState<TabKey>("eddo");
 
   useEffect(() => {
     fetch("/api/content")
@@ -160,6 +166,23 @@ export function WebsiteScreen({ editor }: WebsiteScreenProps) {
       contact: { ...(config.sites?.[site]?.contact ?? {}), [field]: v },
     });
 
+  const patchSiteSocial = (site: PublicSite, field: string, v: string) =>
+    patchSite(site, {
+      social: { ...(config.sites?.[site]?.social ?? {}), [field]: v },
+    });
+
+  /* What is stored for this site, not what it falls back to. The form edits the
+     site's own values, so showing an inherited one as if it were typed here
+     would make a blank field look filled. */
+  const siteContact = (site: PublicSite) =>
+    (config.sites?.[site]?.contact ?? {}) as Record<string, string>;
+  const siteSocial = (site: PublicSite) =>
+    (config.sites?.[site]?.social ?? {}) as Record<string, string>;
+  const siteClosed = (site: PublicSite) => {
+    const own = config.sites?.[site]?.maintenance;
+    return typeof own === "boolean" ? own : config.maintenance;
+  };
+
   const save = async () => {
     setStatus({ kind: "saving" });
     const res = await fetch("/api/content", {
@@ -211,10 +234,10 @@ export function WebsiteScreen({ editor }: WebsiteScreenProps) {
     <div>
       <div className="mb-1 text-[22px] font-bold">Website</div>
       <div className="mb-5 max-w-[760px] text-[13.5px] leading-[1.55] text-slate-soft">
-        Pengaturan halaman publik di <code className="font-mono">/turtle</code>.
-        Menyimpan akan menulis ulang berkas isi website di GitHub, lalu server
-        membangun ulang situsnya. Perubahan biasanya terlihat sekitar satu menit
-        setelah disimpan, bukan seketika.
+        Pengaturan situs publik, satu tab per properti. Menyimpan menulis ulang
+        berkas isi website di GitHub, lalu server membangun ulang situsnya.
+        Perubahan biasanya terlihat sekitar satu menit setelah disimpan, bukan
+        seketika.
       </div>
 
       {!writable && (
@@ -240,7 +263,7 @@ export function WebsiteScreen({ editor }: WebsiteScreenProps) {
               Mode perbaikan menyala:{" "}
               {closedSites.map((s) => s.label).join(" dan ")}.
             </strong>{" "}
-            {dirty.status
+            {dirty[tab]
               ? "Belum berlaku sampai disimpan."
               : "Halamannya sedang menampilkan halaman tunggu, bukan situsnya."}{" "}
             Dashboard ini tidak terpengaruh.
@@ -288,181 +311,79 @@ export function WebsiteScreen({ editor }: WebsiteScreenProps) {
       </div>
 
       <div className="flex flex-col gap-4">
-        {tab === "kontak" && (
-          <>
-            <section className={card}>
-              <div className="mb-1 text-[15px] font-bold">Kontak</div>
-              <div className={NOTE}>
-                Nomor WhatsApp dipakai tombol Kirim di website. Email publik
-                tampil di footer. Email owner tidak tampil di mana pun; ke
-                alamat itulah pesan dari website dikirim.
-              </div>
-              <div className="grid grid-cols-1 gap-[14px] sm:grid-cols-3">
-                <label className={LABEL}>
-                  WhatsApp (angka saja, kode negara di depan)
+        {/* Kontak, media sosial dan status berlaku untuk situs yang sedang
+            dibuka. `tab` itu situsnya, jadi tidak ada baris "situs mana" yang
+            bisa terlewat dibaca sebelum mengetik. */}
+        <>
+          <section className={card}>
+            <div className="mb-1 text-[15px] font-bold">Kontak</div>
+            <div className={NOTE}>
+              Nomor WhatsApp dipakai tombol Kirim di website {LABEL_OF[tab]}.
+              Email publik tampil di footernya. Email owner tidak tampil di mana
+              pun; ke alamat itulah pesan dari website ini dikirim.
+            </div>
+            <div className="grid grid-cols-1 gap-[14px] sm:grid-cols-3">
+              {(
+                [
+                  ["whatsapp", "WhatsApp (angka saja, kode negara di depan)", "628…"],
+                  ["email", "Email publik", ""],
+                  ["ownerEmail", "Email owner (penerima pesan)", ""],
+                ] as const
+              ).map(([field, label, ph]) => (
+                <label key={field} className={LABEL}>
+                  {label}
                   <input
-                    value={config.contact.whatsapp}
+                    value={siteContact(tab)[field] ?? ""}
                     onChange={(e) =>
-                      patch({
-                        contact: {
-                          ...config.contact,
-                          whatsapp: digits(e.target.value),
-                        },
-                      })
+                      patchSiteContact(
+                        tab,
+                        field,
+                        field === "whatsapp"
+                          ? digits(e.target.value)
+                          : e.target.value,
+                      )
                     }
-                    inputMode="numeric"
-                    placeholder="628…"
-                    className={`${FIELD} font-mono`}
+                    inputMode={field === "whatsapp" ? "numeric" : undefined}
+                    placeholder={ph}
+                    className={`${FIELD}${field === "whatsapp" ? " font-mono" : ""}`}
                   />
                 </label>
-                <label className={LABEL}>
-                  Email publik
-                  <input
-                    value={config.contact.email}
-                    onChange={(e) =>
-                      patch({
-                        contact: { ...config.contact, email: e.target.value },
-                      })
-                    }
-                    className={FIELD}
-                  />
-                </label>
-                <label className={LABEL}>
-                  Email owner (penerima pesan)
-                  <input
-                    value={config.contact.ownerEmail}
-                    onChange={(e) =>
-                      patch({
-                        contact: {
-                          ...config.contact,
-                          ownerEmail: e.target.value,
-                        },
-                      })
-                    }
-                    className={FIELD}
-                  />
-                </label>
-              </div>
-            </section>
+              ))}
+            </div>
+          </section>
 
-            <section className={card}>
-              <div className="mb-1 text-[15px] font-bold">Kontak per situs</div>
-              <div className={NOTE}>
-                Dua homestay, dua domain, dan sampai kolom di bawah ini diisi
-                keduanya memakai kontak yang sama. Akibatnya nyata: tamu yang
-                membuka eddohomestay.com melihat alamat email di
-                turtlehomestay.com, dan pesannya masuk ke kotak masuk yang sama.
-                Kolom yang dikosongkan berarti ikut nilai bersama di atas, jadi
-                boleh dipisah satu kolom dulu tanpa harus mengisi semuanya.
-              </div>
+          <section className="rounded-[20px] border border-line-soft bg-surface-mute px-5 py-[18px]">
+            <div className="mb-2 text-[15px] font-bold">
+              Pesan dari website masuk ke email
+            </div>
+            <div className="max-w-[760px] text-[13px] leading-[1.6] text-slate">
+              Setiap pesan dari tombol Kirim di website {LABEL_OF[tab]} dikirim
+              ke <strong>{siteContact(tab).ownerEmail || "(belum diisi)"}</strong>,
+              lengkap dengan nama, WhatsApp, email, rencana tanggal, jumlah
+              orang, dan catatan tamu. Tombol balas di email langsung tertuju ke
+              alamat tamunya.
+              <br />
+              <br />
+              Pesannya tidak disimpan di aplikasi ini. Tidak ada database, dan
+              kotak masuk email sudah menjadi tempat yang tepat untuk sesuatu
+              yang perlu dibalas. Server butuh dua variabel:{" "}
+              <code className="font-mono">RESEND_API_KEY</code> dari resend.com
+              dan <code className="font-mono">ENQUIRY_FROM</code> berisi alamat
+              pengirim di domain yang sudah diverifikasi di sana. Selama
+              keduanya belum ada, tombol Kirim di website otomatis beralih
+              membuka WhatsApp, jadi tidak ada pesan yang hilang.
+            </div>
+          </section>
+        </>
 
-              <div className="flex flex-col gap-4">
-                {PUBLIC_SITES.map(({ key, label }) => {
-                  const own = config.sites?.[key]?.contact ?? {};
-                  const fields = [
-                    ["whatsapp", "WhatsApp", config.contact.whatsapp],
-                    ["email", "Email publik", config.contact.email],
-                    ["ownerEmail", "Email owner", config.contact.ownerEmail],
-                  ] as const;
-                  const borrowed = fields.filter(
-                    ([f]) => !(own as Record<string, string>)[f]?.trim(),
-                  ).length;
-                  return (
-                    <div
-                      key={key}
-                      className="rounded-[14px] border border-line bg-surface-mute px-4 py-[14px]"
-                    >
-                      <div className="mb-[10px] flex flex-wrap items-center gap-2">
-                        <span className="text-[13.5px] font-bold">{label}</span>
-                        {borrowed > 0 && (
-                          <span className="rounded-full bg-amber-soft px-[9px] py-[2px] text-[11.5px] text-amber-ink">
-                            {borrowed === 3
-                              ? "semua masih ikut kontak bersama"
-                              : `${borrowed} kolom masih ikut kontak bersama`}
-                          </span>
-                        )}
-                      </div>
-                      <div className="grid grid-cols-1 gap-[14px] sm:grid-cols-3">
-                        {fields.map(([field, fieldLabel, shared]) => (
-                          <label key={field} className={LABEL}>
-                            {fieldLabel}
-                            <input
-                              value={
-                                (own as Record<string, string>)[field] ?? ""
-                              }
-                              onChange={(e) =>
-                                patchSiteContact(
-                                  key,
-                                  field,
-                                  field === "whatsapp"
-                                    ? digits(e.target.value)
-                                    : e.target.value,
-                                )
-                              }
-                              /* The shared value as the placeholder, so what
-                                 an empty box falls back to is visible instead
-                                 of being something you have to remember. */
-                              placeholder={shared}
-                              inputMode={
-                                field === "whatsapp" ? "numeric" : undefined
-                              }
-                              className={`${FIELD}${
-                                field === "whatsapp" ? " font-mono" : ""
-                              }`}
-                            />
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </section>
-
-            <section className="rounded-[20px] border border-line-soft bg-surface-mute px-5 py-[18px]">
-              <div className="mb-2 text-[15px] font-bold">
-                Pesan dari website masuk ke email
-              </div>
-              <div className="max-w-[760px] text-[13px] leading-[1.6] text-slate">
-                Setiap pesan dari tombol Kirim di website dikirim ke{" "}
-                <strong>{config.contact.ownerEmail}</strong>, lengkap dengan
-                nama, WhatsApp, email, rencana tanggal, jumlah orang, dan
-                catatan tamu. Tombol balas di email langsung tertuju ke alamat
-                tamunya.
-                <br />
-                <br />
-                Pesannya tidak disimpan di aplikasi ini. Tidak ada database, dan
-                kotak masuk email sudah menjadi tempat yang tepat untuk sesuatu
-                yang perlu dibalas. Server butuh dua variabel:{" "}
-                <code className="font-mono">RESEND_API_KEY</code> dari
-                resend.com dan <code className="font-mono">ENQUIRY_FROM</code>{" "}
-                berisi alamat pengirim di domain yang sudah diverifikasi di
-                sana. Selama keduanya belum ada, tombol Kirim di website
-                otomatis beralih membuka WhatsApp, jadi tidak ada pesan yang
-                hilang.
-              </div>
-            </section>
-          </>
-        )}
-
-        {tab === "sosial" && (
+        {(
           <section className={card}>
             <div className="mb-1 text-[15px] font-bold">Media sosial</div>
             <div className={NOTE}>
-              Tempel URL lengkap profilnya, mis.{" "}
+              Tempel URL lengkap profil {LABEL_OF[tab]}, mis.{" "}
               <code className="font-mono">https://instagram.com/namaakun</code>.
-              Sekarang ketiganya masih mengarah ke halaman depan platformnya,
-              supaya ikonnya sudah bisa diklik dan terlihat berfungsi. Ganti
-              dengan alamat akun yang sebenarnya sebelum situsnya dilivekan.
               Dikosongkan pun tidak apa-apa: ikonnya tetap tampil, cuma jadi
               penanda redup yang tidak bisa diklik.
-              <br />
-              <br />
-              Ketiganya masih dipakai bersama oleh kedua situs. Kalau nanti
-              Eddo punya akunnya sendiri, alamatnya diisi di{" "}
-              <code className="font-mono">content/site.json</code> pada bagian{" "}
-              <code className="font-mono">sites.eddo.social</code>; yang
-              dikosongkan di sana tetap ikut nilai bersama ini.
             </div>
             <div className="grid grid-cols-1 gap-[14px] sm:grid-cols-3">
               {(
@@ -475,18 +396,9 @@ export function WebsiteScreen({ editor }: WebsiteScreenProps) {
                 <label key={key} className={LABEL}>
                   {label}
                   <input
-                    value={config.social?.[key] ?? ""}
+                    value={siteSocial(tab)[key] ?? ""}
                     onChange={(e) =>
-                      patch({
-                        social: {
-                          ...(config.social ?? {
-                            facebook: "",
-                            instagram: "",
-                            tiktok: "",
-                          }),
-                          [key]: e.target.value.trim(),
-                        },
-                      })
+                      patchSiteSocial(tab, key, e.target.value.trim())
                     }
                     placeholder={ph}
                     className={FIELD}
@@ -497,7 +409,7 @@ export function WebsiteScreen({ editor }: WebsiteScreenProps) {
           </section>
         )}
 
-        {tab === "profil" && (
+        {HAS_DIVING[tab] && (
           <section className={card}>
             <div className="mb-1 text-[15px] font-bold">Tahun berdiri</div>
             <div className={NOTE}>
@@ -543,7 +455,7 @@ export function WebsiteScreen({ editor }: WebsiteScreenProps) {
           </section>
         )}
 
-        {tab === "harga" && (
+        {HAS_DIVING[tab] && (
           <section className={card}>
             <div className="mb-1 text-[15px] font-bold">Harga paket selam</div>
             <div className={NOTE}>
@@ -585,49 +497,39 @@ export function WebsiteScreen({ editor }: WebsiteScreenProps) {
           </section>
         )}
 
-        {tab === "status" && (
+        {(
           <section className={card}>
             <div className="mb-1 text-[15px] font-bold">Mode perbaikan</div>
             <div className={NOTE}>
-              Satu saklar per situs, karena keduanya dikerjakan bergantian:
-              menutup yang satu untuk diperbaiki tidak boleh ikut menutup yang
-              sedang menerima tamu. Halaman yang ditutup diganti halaman tunggu
-              berisi nama homestay, nomor WhatsApp, dan email, dua bahasa.
-              Dashboard ini tidak ikut mati, jadi kamu tetap bisa bekerja.
+              Saklar ini cuma menutup {LABEL_OF[tab]}. Keduanya dikerjakan
+              bergantian, jadi menutup yang satu untuk diperbaiki tidak boleh
+              ikut menutup yang sedang menerima tamu. Halaman yang ditutup
+              diganti halaman tunggu berisi nama homestay, nomor WhatsApp, dan
+              email, dua bahasa. Dashboard ini tidak ikut mati, jadi kamu tetap
+              bisa bekerja.
+              <br />
+              <br />
+              Yang mengerjakan situsnya tetap bisa melihat aslinya lewat{" "}
+              <code className="font-mono">/preview?token=…</code>, jadi menutup
+              situs tidak berarti ikut mengunci diri sendiri.
             </div>
 
-            <div className="flex flex-col gap-[10px]">
-              {PUBLIC_SITES.map(({ key, label }) => {
-                /* Absent inherits the shared switch, which is what a file
-                   written before this existed still does. */
-                const own = config.sites?.[key]?.maintenance;
-                const closed =
-                  typeof own === "boolean" ? own : config.maintenance;
-                return (
-                  <label
-                    key={key}
-                    className="flex cursor-pointer items-start gap-3 rounded-[14px] border border-line bg-surface-mute px-4 py-[13px]"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={closed}
-                      onChange={(e) =>
-                        patchSite(key, { maintenance: e.target.checked })
-                      }
-                      className="mt-[3px] h-[18px] w-[18px] shrink-0 cursor-pointer accent-[var(--color-teal)]"
-                    />
-                    <span>
-                      <span className="block text-[13.5px] font-medium">
-                        Tutup {label}
-                      </span>
-                      <span className="mt-[2px] block text-[12.5px] leading-[1.5] text-slate-soft">
-                        Sekarang: {closed ? "ditutup" : "terbuka"}.
-                      </span>
-                    </span>
-                  </label>
-                );
-              })}
-            </div>
+            <label className="flex cursor-pointer items-start gap-3 rounded-[14px] border border-line bg-surface-mute px-4 py-[13px]">
+              <input
+                type="checkbox"
+                checked={siteClosed(tab)}
+                onChange={(e) => patchSite(tab, { maintenance: e.target.checked })}
+                className="mt-[3px] h-[18px] w-[18px] shrink-0 cursor-pointer accent-[var(--color-teal)]"
+              />
+              <span>
+                <span className="block text-[13.5px] font-medium">
+                  Tutup {LABEL_OF[tab]}
+                </span>
+                <span className="mt-[2px] block text-[12.5px] leading-[1.5] text-slate-soft">
+                  Sekarang: {siteClosed(tab) ? "ditutup" : "terbuka"}.
+                </span>
+              </span>
+            </label>
 
             <div className="mt-4 flex items-start gap-3 rounded-[14px] border border-amber-soft bg-amber-soft/40 px-4 py-[13px]">
               <span className="mt-[5px] h-[9px] w-[9px] shrink-0 rounded-full bg-amber-shade" />
@@ -646,7 +548,7 @@ export function WebsiteScreen({ editor }: WebsiteScreenProps) {
               <code className="font-mono">web-content.ts</code>, kunci{" "}
               <code className="font-mono">maintenance</code>), dua bahasa,
               supaya tidak ada versi yang cuma terisi satu bahasa. Nomor dan
-              email yang tampil di sana diambil dari tab Kontak.
+              email yang tampil di sana diambil dari Kontak di atas.
             </div>
           </section>
         )}

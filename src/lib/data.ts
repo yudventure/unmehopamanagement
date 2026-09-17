@@ -112,15 +112,16 @@ export function seedRooms(): Room[] {
      site shows one card and says how many there are, and the calendar still
      has five rows to fill.
 
-     The rate and the capacity carried over from the old "Eddo Bawah" and are
-     the owner's to confirm. */
+     The rate is the owner's own figure, given on 17 September 2026. The
+     capacity still carried over from the old "Eddo Bawah" and is the one
+     number here nobody has confirmed. */
   for (let i = 1; i <= 5; i++) {
     rooms.push({
       id: "E" + i,
       prop: "eddo",
       name: "Rumah " + String(i).padStart(2, "0"),
       cap: "4 dewasa",
-      rate: 400000,
+      rate: 1_350_000,
       active: true,
     });
   }

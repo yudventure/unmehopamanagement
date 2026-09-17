@@ -25,14 +25,14 @@
   "sites": {
     "turtle": {
       "contact": {
-        "whatsapp": "",
-        "email": "",
-        "ownerEmail": ""
+        "whatsapp": "6281200000000",
+        "email": "halo@turtlehomestay.com",
+        "ownerEmail": "halo@turtlehomestay.com"
       },
       "social": {
-        "facebook": "",
-        "instagram": "",
-        "tiktok": ""
+        "facebook": "https://www.facebook.com",
+        "instagram": "https://www.instagram.com",
+        "tiktok": "https://www.tiktok.com"
       },
       "maintenance": false
     },

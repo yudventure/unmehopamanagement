@@ -21,14 +21,16 @@ import { MONTHS, WEEKDAYS, fmt, fmtDate } from "@/lib/format";
 const PLOT_H = 156;
 const AXIS = [0, 25, 50, 75, 100];
 
-const TEAL = "#2F8A63";
+/* Read from the theme so the charts follow the manager's palette instead
+   of holding the old one on their own. */
+const TEAL = "var(--color-teal)";
 /*
  * Green is a finished period, gold one still filling. Both clear 3:1 on the
  * surface, and the pair sits in the 6-8 CVD band — legal here because the
  * distinction is carried three more ways: the legend, the position (open
  * periods are always the right-hand tail), and the table view.
  */
-const GOLD_OPEN = "#B5842A";
+const GOLD_OPEN = "var(--color-amber-ink)";
 
 function Gridlines() {
   return (

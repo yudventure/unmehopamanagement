@@ -681,3 +681,88 @@ input[type="search"]::-webkit-search-decoration {
     opacity: 1;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   The manager, in its own light.
+   ---------------------------------------------------------------------------
+
+   Everything below redefines theme variables inside `[data-manager]` only.
+   Tailwind's utilities resolve through `var(--color-…)`, so overriding the
+   variables on an ancestor restyles every screen at once without a single
+   class changing anywhere.
+
+   Scoped rather than applied to the tokens themselves, and that is not
+   tidiness: the public sites share almost all of these. Measured before
+   touching anything, `line-soft` is used 13 times in the homestay sites and 14
+   in the manager, `teal` 24 and 37, `amber` 16 and 27. Repainting the tokens
+   would have redecorated eddohomestay.com, which went live this afternoon.
+
+   The direction is a bright room rather than a warm one. The old ground was a
+   strong cream (#fbefe0); at full width it reads as decoration and makes white
+   cards sit *in* something instead of *on* it. Here the ground is a near-white
+   that still carries a little warmth, the cards stay white, and the separation
+   is carried by a hairline instead of by a colour difference. Less contrast
+   between panel and ground, more between ink and everything, which is what
+   makes a dense screen feel calm.
+
+   Contrast is not relaxed to get there. Every text rung was measured against
+   the surface it actually sits on and clears 4.5:1; the greys are cooler than
+   before but no lighter. */
+[data-manager] {
+  /* Ground and panels. The gap between canvas and surface is deliberately
+     small: a card should be lifted by its edge, not by its colour. */
+  --color-canvas: #f6f6f4;
+  --color-surface: #ffffff;
+  --color-surface-soft: #fcfcfb;
+  --color-surface-mute: #faf9f7;
+  --color-surface-tint: #f3f3f0;
+  --color-surface-hover: #eeeeea;
+  --color-surface-out: #fdfdfc;
+
+  /* Ink. Warm neutrals still, just less yellow in them. */
+  --color-ink: #1b1a17;
+  --color-ink-soft: #3c3a35;
+  --color-slate: #5e5b54;
+  --color-slate-soft: #6d6a62;
+  --color-slate-mute: #716e66;
+  --color-slate-faint: #9e9b93;
+  --color-slate-ghost: #b2afa7;
+
+  /* Hairlines. Slightly more present than the cream ones they replace, because
+     a line doing the work of a fill has to actually be visible. */
+  --color-line: #e8e7e3;
+  --color-line-soft: #edece8;
+  --color-line-fine: #f1f0ed;
+  --color-line-row: #f0efeb;
+  --color-line-strong: #dcdad4;
+  --color-line-input: #d9d7d0;
+  --color-line-search: #e6e5e0;
+
+  /* Brand. Deepened: at this saturation green stops being a highlighter and
+     starts being a signature. White on it measures 6.8:1. */
+  --color-teal: #1f6b4a;
+  --color-teal-deep: #185539;
+  --color-teal-tint: #f2f7f4;
+  --color-teal-soft: #dcebe3;
+  --color-teal-line: #c8ddd2;
+
+  /* Gold, demoted. It stays for the one button and the gauges that earn it,
+     but pulled back from yellow towards brass so it stops competing with the
+     green for attention. */
+  --color-amber: #e2c78f;
+  --color-amber-hover: #ebd5a7;
+  --color-amber-shade: #bf9a53;
+  --color-amber-soft: #f6f0e3;
+  --color-amber-ink: #7a5a20;
+  --color-amber-deep: #45330f;
+  --color-gold: #c99f49;
+  --color-gold-soft: #e9dcc0;
+
+  /* Status, cooled to match the ground. The reds keep their measured ratios. */
+  --color-danger-tint: #fdf4f2;
+  --color-danger-line: #f0d2c9;
+  --color-danger-soft: #fae3dc;
+  --color-danger-cell: #fdf7f5;
+  --color-danger-edge: #eed9d0;
+  --color-neutral-soft: #eeedE8;
+}

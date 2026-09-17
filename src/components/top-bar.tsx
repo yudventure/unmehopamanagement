@@ -26,7 +26,7 @@ export interface TopBarProps {
    is the tap target. With it here the field was a 20px band inside a 38px
    pill, and a thumb landing on the padding did nothing at all. */
 const SEARCH_SHELL =
-  "flex items-center gap-[10px] rounded-full border border-line-search bg-surface-tint";
+  "flex items-center gap-[10px] rounded-[11px] border border-line-input bg-surface-mute transition-colors focus-within:border-teal-line focus-within:bg-surface";
 
 /**
  * The search field, on a phone as well as on a desk.
@@ -185,7 +185,7 @@ export function TopBar({
           <button
             type="button"
             onClick={onOpenForm}
-            className="shrink-0 cursor-pointer rounded-[12px] border-none bg-amber px-[14px] py-[10px] text-[13px] font-bold whitespace-nowrap text-amber-deep shadow-[0_2px_0_var(--color-amber-shade)] hover:bg-amber-hover"
+            className="shrink-0 cursor-pointer rounded-[11px] border-none bg-teal px-[15px] py-[10px] text-[13px] font-semibold whitespace-nowrap text-white transition-colors hover:bg-teal-deep"
           >
             + Booking
           </button>
@@ -226,7 +226,7 @@ export function TopBar({
         <button
           type="button"
           onClick={onOpenForm}
-          className="cursor-pointer rounded-xl border-none bg-amber px-[18px] py-[11px] text-[13.5px] font-bold text-amber-deep shadow-[0_2px_0_var(--color-amber-shade)] hover:bg-amber-hover"
+          className="cursor-pointer rounded-[11px] border-none bg-teal px-[18px] py-[11px] text-[13.5px] font-semibold text-white transition-colors hover:bg-teal-deep"
         >
           + Booking Baru
         </button>

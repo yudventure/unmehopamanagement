@@ -669,10 +669,15 @@ export function WebsiteScreen({ editor }: WebsiteScreenProps) {
               type="button"
               onClick={save}
               disabled={!writable || status.kind === "saving" || !password}
-              className={`rounded-[10px] border-none px-5 py-[11px] text-[13.5px] font-bold text-white ${
+              /* `text-white` used to sit in the shared half of this string, so
+                 the disabled state painted white on a light grey fill and
+                 measured 1.44:1. The colour belongs to each state, not to
+                 both: a disabled control still has to be readable, otherwise
+                 nobody can tell what it is they cannot press. */
+              className={`rounded-[10px] border-none px-5 py-[11px] text-[13.5px] font-semibold ${
                 !writable || status.kind === "saving" || !password
-                  ? "cursor-not-allowed bg-line-input text-slate-mute"
-                  : "cursor-pointer bg-teal hover:bg-teal-deep"
+                  ? "cursor-not-allowed bg-surface-tint text-slate-mute"
+                  : "cursor-pointer bg-teal text-white hover:bg-teal-deep"
               }`}
             >
               {status.kind === "saving" ? "Menyimpan…" : "Simpan & terbitkan"}

@@ -82,7 +82,11 @@ export function UsersScreen({
                   type="button"
                   onClick={() => onToggleUser(u)}
                   className={`${TOGGLE_BUTTON} mt-3 w-full`}
-                  style={{ color: u.active ? "#B04A3A" : "#216B4B" }}
+                  style={{
+                    color: u.active
+                      ? "var(--color-danger-ink)"
+                      : "var(--color-teal-deep)",
+                  }}
                 >
                   {u.active ? "Nonaktifkan" : "Aktifkan kembali"}
                 </button>
@@ -130,7 +134,11 @@ export function UsersScreen({
                     type="button"
                     onClick={() => onToggleUser(u)}
                     className={TOGGLE_BUTTON}
-                    style={{ color: u.active ? "#B04A3A" : "#216B4B" }}
+                    style={{
+                    color: u.active
+                      ? "var(--color-danger-ink)"
+                      : "var(--color-teal-deep)",
+                  }}
                   >
                     {u.active ? "Nonaktifkan" : "Aktifkan kembali"}
                   </button>

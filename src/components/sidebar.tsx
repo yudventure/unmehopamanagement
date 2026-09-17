@@ -35,7 +35,7 @@ export interface SidebarProps {
  * light treatment.
  */
 const SECTION_LABEL =
-  "mb-[10px] font-mono text-[10.5px] tracking-[.09em] uppercase text-white/55";
+  "mb-[10px] font-mono text-[10.5px] tracking-[.09em] uppercase text-slate-mute";
 
 /*
  * The narrow nav scrolls sideways because six labels will not fit on a phone.
@@ -148,22 +148,22 @@ export function Sidebar({
   }
 
   return (
-    <div className="flex w-[248px] shrink-0 flex-col gap-[22px] px-[18px] pt-[22px] pb-[18px]">
+    <div className="flex w-[256px] shrink-0 flex-col gap-[22px] border-r border-line bg-surface px-[16px] pt-[22px] pb-[18px]">
       <div className="flex items-center gap-[10px] px-[6px]">
         {/* The mark is drawn in deep greens, which vanish on the shell. A white
             disc gives it back its own ground instead of recolouring it. */}
-        <span className="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-full bg-surface">
+        <span className="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-full bg-teal-tint ring-1 ring-teal-line">
           <BrandLogo size={30} />
         </span>
         {/* Two deliberate lines. On one, at a sidebar's width, the wordmark
             wraps of its own accord and drops its third line onto the rule. */}
         <div className="leading-[1.2]">
-          <div className="text-[15px] font-bold text-white">Unmehopa</div>
-          <div className="text-[12.5px] text-white/70">Management</div>
+          <div className="text-[15px] font-bold text-ink">Unmehopa</div>
+          <div className="text-[12.5px] text-slate">Management</div>
         </div>
       </div>
 
-      <nav className="flex flex-col gap-[3px] border-t border-white/15 pt-[18px]">
+      <nav className="flex flex-col gap-[2px] border-t border-line pt-[18px]">
         {nav.map((item) => {
           const active = screen === item.key;
           return (
@@ -174,8 +174,8 @@ export function Sidebar({
               aria-current={active ? "page" : undefined}
               className={`cursor-pointer rounded-[12px] border-none px-[14px] py-[11px] text-left text-[13.5px] whitespace-nowrap ${
                 active
-                  ? "bg-surface font-bold text-teal-deep"
-                  : "bg-transparent text-white/85 hover:bg-white/12"
+                  ? "bg-teal-tint font-bold text-teal-deep"
+                  : "bg-transparent text-ink-soft hover:bg-surface-tint"
               }`}
             >
               {item.label}
@@ -197,12 +197,12 @@ export function Sidebar({
               aria-pressed={filterProp === p.key}
               className={`flex w-full cursor-pointer items-center justify-between gap-2 rounded-[10px] border-none px-[11px] py-[7px] text-left text-[13px] ${
                 filterProp === p.key
-                  ? "bg-white/18 font-medium text-white"
-                  : "bg-transparent text-white/75 hover:bg-white/10"
+                  ? "bg-surface-tint font-medium text-ink"
+                  : "bg-transparent text-slate hover:bg-surface-tint"
               }`}
             >
               <span>{p.label}</span>
-              <span className="font-mono text-[11px] text-white/60">
+              <span className="font-mono text-[11px] text-slate-mute">
                 {p.count}
               </span>
             </button>
@@ -221,8 +221,8 @@ export function Sidebar({
               aria-pressed={filterCh === c.key}
               className={`flex w-full cursor-pointer items-center gap-[9px] rounded-[10px] border-none px-[11px] py-[6px] text-[13px] ${
                 filterCh === c.key
-                  ? "bg-white/18 font-medium text-white"
-                  : "bg-transparent text-white/75 hover:bg-white/10"
+                  ? "bg-surface-tint font-medium text-ink"
+                  : "bg-transparent text-slate hover:bg-surface-tint"
               }`}
             >
               <span
@@ -230,12 +230,12 @@ export function Sidebar({
                 style={{
                   background:
                     c.key === "all"
-                      ? "rgba(255,255,255,.5)"
+                      ? "var(--color-slate-ghost)"
                       : CH[c.key as (typeof CHANNEL_KEYS)[number]].dot,
                 }}
               />
               <span className="flex-1 text-left">{c.label}</span>
-              <span className="font-mono text-[11px] text-white/60">
+              <span className="font-mono text-[11px] text-slate-mute">
                 {c.count}
               </span>
             </button>
@@ -250,17 +250,17 @@ export function Sidebar({
           Reports the real state, which is that no feed is wired up yet. It
           used to print "12 menit lalu · 5 feed aktif" as fixed text, which
           reads as a working sync to anyone being shown the app. */}
-      <div className="rounded-[16px] bg-white/12 px-[15px] py-[14px]">
-        <div className="mb-[6px] text-[12px] text-white/65">
+      <div className="rounded-[14px] border border-line bg-surface-mute px-[15px] py-[14px]">
+        <div className="mb-[6px] text-[12px] text-slate-soft">
           Sinkronisasi iCal
         </div>
         <div className="flex items-center gap-[7px]">
-          <span className="inline-block h-[7px] w-[7px] rounded-full bg-amber" />
-          <span className="text-[13.5px] font-medium text-white">
+          <span className="inline-block h-[7px] w-[7px] rounded-full bg-amber-shade" />
+          <span className="text-[13.5px] font-medium text-ink">
             {feedCount ? `${feedCount} feed terdaftar` : "Belum tersambung"}
           </span>
         </div>
-        <div className="mt-[7px] text-[12px] leading-[1.45] text-white/65">
+        <div className="mt-[7px] text-[12px] leading-[1.45] text-slate-soft">
           {feedCount
             ? "Belum pernah ditarik — penjadwal jalan setelah backend siap."
             : "Belum ada feed OTA terpasang. Booking dari Booking.com, Agoda, dan Traveloka masih dicatat manual."}

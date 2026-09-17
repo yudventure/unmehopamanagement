@@ -1068,16 +1068,20 @@ export function BookingManager({
     <>
       {/*
        * Full-bleed: the shell is the viewport edge to edge, with no frame and
-       * no ground showing around it. Wide, the green is the sidebar's own
-       * column and nothing more; narrow, that column collapses to a nav row
-       * inside the white panel and no green is left at all.
+       * no ground showing around it.
+       *
+       * The sidebar used to be a solid green column. At a sidebar's width that
+       * much saturated colour is the first thing the eye lands on, every time,
+       * before any of the work on the screen. It now carries the same weight
+       * the rest of the manager does, a white panel and a hairline, and the
+       * green is spent where it means something: the screen you are on.
        */}
       <div className="min-h-screen">
         <div
           className={
             nw
               ? "flex min-h-screen flex-col bg-surface"
-              : "flex min-h-screen bg-teal"
+              : "flex min-h-screen bg-canvas"
           }
         >
           {!nw && (

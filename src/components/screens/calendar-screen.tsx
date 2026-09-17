@@ -31,10 +31,13 @@ const ARROW_BUTTON =
   "cursor-pointer rounded-[11px] border border-line-strong bg-surface text-slate hover:bg-surface-hover";
 
 function cellBackground(cell: CalendarCell) {
-  if (!cell.inMonth) return "#FEFCF9";
-  if (cell.conflictHere) return "#FDF6F3";
-  if (cell.isToday) return "#F0F8F3";
-  return "#FFFFFF";
+  /* Through the tokens rather than as literals, so the manager's own
+     palette reaches the grid too. Written straight into the file, these
+     four stayed the old cream while everything around them changed. */
+  if (!cell.inMonth) return "var(--color-surface-out)";
+  if (cell.conflictHere) return "var(--color-danger-cell)";
+  if (cell.isToday) return "var(--color-teal-tint)";
+  return "var(--color-surface)";
 }
 
 /**
@@ -333,7 +336,11 @@ export function CalendarScreen({
                       className="font-mono text-[10.5px]"
                       style={{
                         color:
-                          cell.occupied >= cell.capacity ? "#B04A3A" : "#9D9486",
+                          cell.occupied >= cell.capacity
+                            ? "var(--color-danger-ink)"
+                            : /* Was #9D9486, measured 2.99:1 on white. This is a
+                                 count somebody reads, not decoration. */
+                              "var(--color-slate-mute)",
                       }}
                     >
                       {cell.occupied}/{cell.capacity}

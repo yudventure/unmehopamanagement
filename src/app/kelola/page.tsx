@@ -38,6 +38,13 @@ export const metadata: Metadata = {
 
 export default async function KelolaPage() {
   const jar = await cookies();
-  if (!valid(jar.get(SESSION_COOKIE)?.value)) return <SignIn />;
-  return <BookingManager signedIn />;
+  const inside = valid(jar.get(SESSION_COOKIE)?.value);
+  /* The whole manager sits inside this one attribute. `globals.css` redefines
+     the theme variables under it, so every screen is restyled at once while
+     the homestay sites, which share most of those variables, are untouched. */
+  return (
+    <div data-manager className="min-h-screen bg-canvas">
+      {inside ? <BookingManager signedIn /> : <SignIn />}
+    </div>
+  );
 }

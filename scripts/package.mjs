@@ -282,4 +282,23 @@ if (process.argv.includes("--archive")) {
      three nested folders named after this machine's directory layout. */
   execFileSync("tar", ["-czf", out, "-C", standalone, "."], { stdio: "inherit" });
   console.log(`dist/app.tar.gz, ${mb(size(out))}`);
+
+  /*
+   * The same thing as a zip, because a hosting panel's upload form is fussier
+   * than it looks.
+   *
+   * Hostinger's accepts `.zip`, `.tar` and `.tar.gz` and still rejected a
+   * `.tar.gz`, which points at the name rather than the contents: a browser
+   * that ungzips on download leaves a `.tar` named `.tar.gz`, and a second
+   * download becomes `app.tar (1).gz`. Zip survives both, because nothing
+   * along the way tries to be helpful about it.
+   *
+   * `-r` from inside the folder so entries are `server.js` and `public/…`
+   * rather than a wrapper directory, matching the tar and landing at the
+   * application root when the panel extracts it. `-q` because the file list is
+   * seventeen hundred lines of nothing.
+   */
+  const zip = join(dist, "app.zip");
+  execFileSync("zip", ["-qr", zip, "."], { cwd: standalone, stdio: "inherit" });
+  console.log(`dist/app.zip, ${mb(size(zip))}`);
 }

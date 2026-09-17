@@ -63,8 +63,14 @@ jobs:
       # which is the harder failure to spot.
       - run: npm run package:archive
 
+      # Both formats, because which one an upload form will accept is not
+      # knowable from here: Hostinger's lists .zip, .tar and .tar.gz and still
+      # refused a .tar.gz, most likely over the filename a browser gave it on
+      # the way down rather than the bytes inside.
       - uses: actions/upload-artifact@v4
         with:
           name: app
-          path: dist/app.tar.gz
+          path: |
+            dist/app.tar.gz
+            dist/app.zip
           retention-days: 14

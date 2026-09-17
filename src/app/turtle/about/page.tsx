@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { AboutPage } from "@/components/web/about";
 import { Maintenance } from "@/components/web/maintenance";
+import { isClosedFor } from "@/lib/preview";
 import { siteConfig } from "@/lib/site-config";
 import { COPY, DEFAULT_LANG, PROPERTY } from "@/lib/web-content";
 
@@ -20,7 +21,7 @@ export const metadata: Metadata = {
       : {}),
 };
 
-export default function Page() {
-  if (siteConfig("turtle").maintenance) return <Maintenance />;
+export default async function Page() {
+  if (await isClosedFor("turtle")) return <Maintenance />;
   return <AboutPage />;
 }

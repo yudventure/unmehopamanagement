@@ -29,6 +29,7 @@ bersangkutan, dan matinya dijelaskan di layar, bukan berupa error.
 | `GITHUB_BRANCH` | opsional, default `main` | memakai `main` |
 | `CMS_PASSWORD` | ditanyakan sebelum menyimpan | endpoint menolak jalan sama sekali |
 | `RATES_URL` | opsional, sumber kurs | memakai open.er-api.com |
+| `PREVIEW_TOKEN` | membuka situs yang sedang ditutup, buat developer | tidak ada jalan masuk ke situs yang ditutup |
 | `NEXT_PUBLIC_LOGIN_HERO` | foto panel login | panel tampil sebagai bingkai kosong |
 | `SITE_DOMAIN_TURTLE` | domain situs Turtle | Turtle tetap di `/turtle` |
 | `SITE_DOMAIN_EDDO` | domain situs Eddo | Eddo tetap di `/eddo` |
@@ -172,6 +173,41 @@ saat situsnya ditutup.
 Saklar bersama `maintenance` di akar berkas masih ada dan dipakai sebagai
 cadangan untuk situs yang belum punya nilainya sendiri, supaya berkas yang
 ditulis CMS versi lama tetap berlaku apa adanya.
+
+## Mengerjakan situs yang domainnya sudah menyala
+
+Mode perbaikan dulu berarti semua orang melihat halaman tunggu, termasuk yang
+mengerjakan situsnya, sehingga tidak berguna justru untuk keadaan yang paling
+sering membutuhkannya.
+
+Sekarang ada jalan masuk. Isi `PREVIEW_TOKEN` di panel server, lalu buka sekali
+di tiap perangkat:
+
+```
+https://eddohomestay.com/preview?token=<isi PREVIEW_TOKEN>
+https://eddohomestay.com/preview?clear=1     mengembalikan cookie-nya
+```
+
+Cookie-nya `httpOnly`, jadi tidak ada skrip di halaman yang bisa membacanya,
+dan `sameSite=lax`, jadi ikut pada kunjungan biasa tapi tidak pada permintaan
+yang dibuat situs lain atas namamu. `secure` menyala sendiri di https dan mati
+di http, supaya pengujian lokal tetap bisa jalan tanpa token pernah lewat
+terbuka di produksi.
+
+Token yang salah dan token yang tidak diisi dijawab sama persis, 404, dan
+keduanya tidak menyebutkan yang mana. Tidak ada yang bisa dipelajari dari
+bedanya selain apakah menebak layak diteruskan.
+
+`PREVIEW_TOKEN` yang kosong berarti tidak ada jalan masuk sama sekali. Arah itu
+disengaja: token yang belum diisi tidak boleh berarti semua orang boleh melihat.
+
+**Soal performa, karena ini sering jadi alasan menolak fitur semacam ini.**
+Halaman publik membaca cookie hanya sesudah saklar build-time bilang situsnya
+tertutup. Jadi situs yang hidup tetap dibangun sekali saat build dan tidak
+pernah menyentuh bagian ini; yang tertutup jadi dinamis, dan itu tidak ada
+biayanya karena tidak ada yang sedang dilayani. Terlihat di keluaran `next
+build`: dengan Eddo ditutup dan Turtle terbuka, keluarannya `ƒ /eddo` dan
+`○ /turtle`.
 
 ## Kontak per situs
 

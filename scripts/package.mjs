@@ -133,6 +133,43 @@ if (usesNextImage) {
 }
 
 /*
+ * Replace the `package.json` Next copies in, because it describes the project
+ * this was built from rather than the thing in this folder.
+ *
+ * What it carries is `"build": "next build"`, `"start": "next start"`, and a
+ * full dependency list. None of that is true here: there is no `src`, no
+ * `next.config.ts` and no `next` binary in the archive, only the compiled
+ * server. A hosting panel that reads this file and helpfully does the standard
+ * thing will run `npm install`, pulling back the 563 MB of dependencies this
+ * archive exists to avoid, and then run `next build` against no source at all.
+ *
+ * Measured, not feared: Hostinger's Node.js deploy screen detects "Next.js" and
+ * offers "Default untuk Next.js" as the build settings, reading exactly this
+ * file.
+ *
+ * So the archive gets a `package.json` that is honest about what it is. No
+ * dependencies, so an `npm install` has nothing to do rather than undoing the
+ * pruning above; one script, `start`, pointing at the server that is actually
+ * here. A panel doing the standard thing then does the right thing.
+ */
+const shipped = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
+writeFileSync(
+  join(standalone, "package.json"),
+  `${JSON.stringify(
+    {
+      name: shipped.name,
+      version: shipped.version,
+      private: true,
+      /* Deliberately no "type": the compiled server is CommonJS, and declaring
+         it a module here makes Node refuse to load it. */
+      scripts: { start: "node server.js" },
+    },
+    null,
+    2,
+  )}\n`,
+);
+
+/*
  * A note to whoever unpacks this on a server.
  *
  * Domains and the Midtrans client key are read at `next build` and baked in,

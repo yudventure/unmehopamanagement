@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 
+import { cookies } from "next/headers";
+
 import { BookingManager } from "@/components/booking-manager";
+import { SignIn } from "@/components/sign-in";
+import { SESSION_COOKIE, valid } from "@/lib/session";
 
 /**
  * The booking manager, reachable from a homestay's own domain.
@@ -32,6 +36,8 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function KelolaPage() {
-  return <BookingManager />;
+export default async function KelolaPage() {
+  const jar = await cookies();
+  if (!valid(jar.get(SESSION_COOKIE)?.value)) return <SignIn />;
+  return <BookingManager signedIn />;
 }

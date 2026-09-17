@@ -30,6 +30,8 @@ bersangkutan, dan matinya dijelaskan di layar, bukan berupa error.
 | `CMS_PASSWORD` | ditanyakan sebelum menyimpan | endpoint menolak jalan sama sekali |
 | `RATES_URL` | opsional, sumber kurs | memakai open.er-api.com |
 | `PREVIEW_TOKEN` | membuka situs yang sedang ditutup, buat developer | tidak ada jalan masuk ke situs yang ditutup |
+| `DASHBOARD_PASSWORD` | kata sandi masuk dashboard booking | tidak ada yang bisa masuk ke dashboard |
+| `SESSION_SECRET` | menandatangani cookie sesi dashboard | dibuat acak tiap restart, semua sesi putus |
 | `NEXT_PUBLIC_LOGIN_HERO` | foto panel login | panel tampil sebagai bingkai kosong |
 | `SITE_DOMAIN_TURTLE` | domain situs Turtle | Turtle tetap di `/turtle` |
 | `SITE_DOMAIN_EDDO` | domain situs Eddo | Eddo tetap di `/eddo` |
@@ -173,6 +175,36 @@ saat situsnya ditutup.
 Saklar bersama `maintenance` di akar berkas masih ada dan dipakai sebagai
 cadangan untuk situs yang belum punya nilainya sendiri, supaya berkas yang
 ditulis CMS versi lama tetap berlaku apa adanya.
+
+## Masuk ke dashboard
+
+Sampai hari ini kata sandinya tidak pernah diperiksa. `doLogin` menguji kolom
+sandi hanya untuk memastikan tidak kosong, lalu meloloskan siapa pun, dan
+seluruh pemeriksaannya berjalan di browser. Itu tertahankan selama dashboard-nya
+demo pribadi, dan berhenti tertahankan begitu domain sebuah homestay menyajikan
+`/kelola`.
+
+Sekarang:
+
+- Kata sandi diperiksa `/api/login` di server, dibandingkan dengan
+  `DASHBOARD_PASSWORD` dalam waktu yang tetap sama berapa pun isinya.
+- Yang kembali cookie `httpOnly` berisi masa berlaku beserta tanda tangannya,
+  jadi masa berlakunya tidak bisa diubah oleh yang memegangnya. Delapan jam,
+  selama satu hari kerja dan cukup pendek untuk laptop yang dipinjam.
+- **Halamannya sendiri yang menjaga.** `/` dan `/kelola` memeriksa cookie di
+  server, dan tanpa cookie yang sah dashboard-nya tidak dikirim sama sekali,
+  bukan dikirim lalu ditutupi layar login. Layar yang digambar di atas halaman
+  yang sudah tiba itu tirai, bukan pintu.
+- `DASHBOARD_PASSWORD` kosong berarti tidak ada yang bisa masuk, dan
+  `/api/login` menjawab 503 supaya yang mengelola langsung mengenali sebabnya.
+
+**Satu kata sandi bersama, bukan satu akun per orang.** Tidak ada database
+tempat menyimpan kata sandi tiap orang, dan alternatifnya, menaruh hash di
+repositori atau menumbuhkan daftar variabel lingkungan, lebih buruk daripada
+mengakuinya. Email dan peran yang dipilih di layar masuk tetap menentukan layar
+dan angka mana yang ditampilkan, jadi staf tetap melihat tampilan staf. Tapi
+yang berdiri antara internet dan semuanya adalah satu kata sandi ini. Ini
+sambungan yang harus diganti begitu ada tempat menyimpan akun.
 
 ## Di mana dashboard-nya kalau domainnya milik homestay
 

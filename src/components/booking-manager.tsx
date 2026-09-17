@@ -122,6 +122,10 @@ const NAV_LABELS: Record<Screen, string> = {
 export interface BookingManagerProps {
   /** Screen shown right after signing in. */
   layarAwal?: Screen;
+  /** Whether the page already found a valid session cookie. The manager is
+      only rendered at all when it did, so this starts the view signed in
+      instead of drawing a login over a page that has already arrived. */
+  signedIn?: boolean;
   /** Hide every rupiah figure, the way staff accounts see the app. */
   modeStaf?: boolean;
   /**
@@ -153,6 +157,7 @@ const EMPTY_INVITE: InviteForm = {
 
 export function BookingManager({
   layarAwal = "kalender",
+  signedIn = false,
   modeStaf = false,
   bookingPerHari = 4,
 }: BookingManagerProps) {
@@ -185,7 +190,7 @@ export function BookingManager({
   const [inviteOpen, setInviteOpen] = useState(false);
   const [invite, setInvite] = useState<InviteForm>(EMPTY_INVITE);
 
-  const [auth, setAuth] = useState(false);
+  const [auth, setAuth] = useState(signedIn);
   const [role, setRole] = useState<Role>("owner");
   const [loginEmail, setLoginEmail] = useState(OWNER_EMAIL);
   const [loginPass, setLoginPass] = useState("");
@@ -585,7 +590,7 @@ export function BookingManager({
    * still said "Owner" handed out Owner access, including the screens and the
    * rupiah figures staff are not supposed to see.
    */
-  const doLogin = useCallback(() => {
+  const doLogin = useCallback(async () => {
     const email = loginEmail.trim().toLowerCase();
     if (!email || !loginPass.trim()) {
       setLoginError("Email dan kata sandi wajib diisi.");
@@ -598,6 +603,30 @@ export function BookingManager({
     }
     if (!account.active) {
       setLoginError("Akun ini dinonaktifkan. Hubungi Owner.");
+      return;
+    }
+
+    /* The password is checked by the server, which is the only place a check
+       means anything. This used to be the line that was missing entirely: the
+       field was tested for being non-empty and then anyone was let in. */
+    let ok = false;
+    try {
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: loginPass }),
+      });
+      if (res.status === 503) {
+        setLoginError("Login belum disiapkan di server. Isi DASHBOARD_PASSWORD.");
+        return;
+      }
+      ok = res.ok;
+    } catch {
+      setLoginError("Tidak bisa menghubungi server.");
+      return;
+    }
+    if (!ok) {
+      setLoginError("Email atau kata sandi salah.");
       return;
     }
 
@@ -615,6 +644,18 @@ export function BookingManager({
   }, [loginEmail, loginPass, users, layarAwal]);
 
   const doLogout = useCallback(() => {
+    /* The cookie is what grants access, so signing out has to reach the server
+       for it. Fire and forget, then reload: a failed request must still clear
+       the view rather than leave somebody looking at a manager they believe
+       they have left. */
+    void fetch("/api/login", { method: "DELETE" }).finally(() => {
+      try {
+        window.sessionStorage.removeItem("unmehopa_email");
+      } catch {
+        /* Storage can be refused; it changes nothing that matters here. */
+      }
+      window.location.reload();
+    });
     setAuth(false);
     setMenuOpen(false);
     setSelectedId(null);

@@ -147,10 +147,24 @@ if (usesNextImage) {
  * offers "Default untuk Next.js" as the build settings, reading exactly this
  * file.
  *
- * So the archive gets a `package.json` that is honest about what it is. No
- * dependencies, so an `npm install` has nothing to do rather than undoing the
- * pruning above; one script, `start`, pointing at the server that is actually
- * here. A panel doing the standard thing then does the right thing.
+ * So the archive gets a `package.json` that describes itself: the runtime
+ * dependencies and nothing else, and one script, `start`, pointing at the
+ * server that is actually here.
+ *
+ * The dependency list is not decoration, and leaving it empty was tried and is
+ * actively dangerous. `npm install` reifies `node_modules` to match
+ * `package.json`, so an empty list means every one of the traced packages is
+ * extraneous and npm deletes all of them. Measured: `node_modules` went from
+ * 19 MB and ten packages to 24 KB and three, and the server then died with
+ * `Cannot find module 'next'`, which reaches a visitor as a 503.
+ *
+ * Declaring them means an install that does run finds the tree already
+ * satisfied, and an install that never runs changes nothing. The archive works
+ * either way, which is the only way to be safe on a panel that insists on
+ * picking a package manager.
+ *
+ * `devDependencies` stay out: TypeScript and Tailwind built this, they do not
+ * run it.
  */
 const shipped = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
 writeFileSync(
@@ -163,11 +177,33 @@ writeFileSync(
       /* Deliberately no "type": the compiled server is CommonJS, and declaring
          it a module here makes Node refuse to load it. */
       scripts: { start: "node server.js" },
+      dependencies: shipped.dependencies,
     },
     null,
     2,
   )}\n`,
 );
+
+/*
+ * A note on what an install on the server undoes.
+ *
+ * If the host runs `npm install`, the pruning above is reversed: `node_modules`
+ * comes back at about 241 MB, sharp included. Shipping an `.npmrc` with
+ * `omit=optional` was tried to prevent that and measured not to work, so it is
+ * not shipped: a file whose comment promises something it does not do is worse
+ * than no file.
+ *
+ * That outcome is accepted rather than fought. The pruning's real job is
+ * getting the archive through an upload form, and 13.6 MB does that; 241 MB
+ * afterwards sits on a plan with 50 GB. What matters is that the server runs in
+ * both states, which is what the dependency list above buys and what is
+ * actually tested.
+ *
+ * Removed rather than merely not written, because `.next/standalone` survives a
+ * repackage: a version of this script did ship one, and without this line that
+ * stale file rides along in every archive built on the same machine afterwards.
+ */
+rmSync(join(standalone, ".npmrc"), { force: true });
 
 /*
  * A note to whoever unpacks this on a server.

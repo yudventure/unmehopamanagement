@@ -501,7 +501,11 @@ export function EddoSite({
             <EddoLogo />
           </a>
 
-          <nav className="ml-6 hidden items-center gap-[26px] lg:flex">
+          {/* Pushed right, so the bar reads as the name on one side and
+              everything you can do on the other. `lg:` on the auto margin and
+              nothing below it: between 768 and 1024 the nav is not rendered at
+              all, and the switch below needs the push instead. */}
+          <nav className="hidden items-center gap-[26px] lg:ml-auto lg:flex">
             {nav.map((n, i) => (
               <a
                 key={n.href}
@@ -521,7 +525,10 @@ export function EddoSite({
               inch of each other left the reader to work out which one was the
               real one. The card below the hero is the real one. Currency is
               set where prices are actually read, beside the rooms. */}
-          <div className="ml-auto hidden items-center gap-3 md:flex">
+          {/* Its own push below 1024 where the nav is gone, and a little air
+              from the last nav link above it so the pill does not read as a
+              sixth link. */}
+          <div className="ml-auto hidden items-center gap-3 md:flex lg:ml-4">
             <LangSwitch lang={lang} onPick={pickLang} label={t.langLabel} />
           </div>
 

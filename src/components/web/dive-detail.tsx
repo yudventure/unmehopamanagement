@@ -280,6 +280,7 @@ export function DiveDetail({ pack }: { pack: DiveKey }) {
       </div>
 
       <EnquiryModal
+        siteKey="turtle"
         open={open}
         onClose={() => setOpen(false)}
         t={t}

@@ -14,7 +14,8 @@
  * Without them nothing is sent and the caller is told so, rather than a
  * message being swallowed by a service that was never configured.
  */
-import { SITE_CONFIG } from "@/lib/site-config";
+import { siteConfig } from "@/lib/site-config";
+import type { PublicSite } from "@/lib/site-domains";
 
 export const esc = (v: string) =>
   v
@@ -49,11 +50,15 @@ export function rowsToHtml(lead: string, rows: Row[], footer = "") {
 
 /** Resolves to null on success, or a short reason the send failed. */
 export async function mailOwner({
+  site,
   subject,
   html,
   text,
   replyTo,
 }: {
+  /** Whose inbox this belongs to. Required, because the two properties are
+      answered by different people and a default would quietly pick one. */
+  site: PublicSite;
   subject: string;
   html: string;
   text: string;
@@ -71,7 +76,7 @@ export async function mailOwner({
     },
     body: JSON.stringify({
       from,
-      to: [SITE_CONFIG.contact.ownerEmail],
+      to: [siteConfig(site).contact.ownerEmail],
       reply_to: replyTo || undefined,
       subject: oneLine(subject),
       html,

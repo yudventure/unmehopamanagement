@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 import { AboutPage } from "@/components/web/about";
 import { Maintenance } from "@/components/web/maintenance";
-import { SITE_CONFIG } from "@/lib/site-config";
+import { siteConfig } from "@/lib/site-config";
 import { COPY, DEFAULT_LANG, PROPERTY } from "@/lib/web-content";
 
 /**
@@ -15,10 +15,12 @@ import { COPY, DEFAULT_LANG, PROPERTY } from "@/lib/web-content";
 export const metadata: Metadata = {
   title: `About · ${PROPERTY.name}`,
   description: COPY[DEFAULT_LANG].about.lede,
-  ...(SITE_CONFIG.maintenance ? { robots: { index: false, follow: false } } : {}),
+  ...(siteConfig("turtle").maintenance
+      ? { robots: { index: false, follow: false } }
+      : {}),
 };
 
 export default function Page() {
-  if (SITE_CONFIG.maintenance) return <Maintenance />;
+  if (siteConfig("turtle").maintenance) return <Maintenance />;
   return <AboutPage />;
 }

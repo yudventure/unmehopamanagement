@@ -159,14 +159,47 @@ berkas di `public/`, dan aset `_next/*` — ketiganya tidak boleh ikut ditulis
 ulang — serta pantulan alamat kembar, yang harus mendarat di 200 dan bukan
 berputar.
 
-## Mode perbaikan menutup dua situs sekaligus
+## Mode perbaikan, satu saklar per situs
 
-Saklar di tab Website (`maintenance` di `content/site.json`) sekarang menutup
-**`/turtle` dan `/eddo`** berikut keduanya sekaligus. Dashboard tidak ikut
-tertutup, karena pemilik harus tetap bisa bekerja saat situsnya ditutup.
+Tab Website punya satu saklar untuk tiap situs publik, disimpan di
+`content/site.json` pada `sites.<situs>.maintenance`. Menutup Turtle untuk
+dikerjakan tidak ikut menutup Eddo yang sedang menerima tamu, dan itu memang
+alasannya dipisah: ketiga pekerjaan ini dikerjakan bergantian, bukan bersamaan.
 
-Teks di tab Website masih menyebut `/turtle` saja. Itu perlu diperbaiki, atau
-saklarnya dipisah jadi dua, sebelum ada yang menutup Eddo tanpa sengaja.
+Dashboard tidak pernah ikut tertutup, karena pemilik harus tetap bisa bekerja
+saat situsnya ditutup.
+
+Saklar bersama `maintenance` di akar berkas masih ada dan dipakai sebagai
+cadangan untuk situs yang belum punya nilainya sendiri, supaya berkas yang
+ditulis CMS versi lama tetap berlaku apa adanya.
+
+## Kontak per situs
+
+Dua homestay dengan dua pemilik tidak boleh berbagi satu kotak masuk hanya
+karena dulu situsnya cuma satu. `content/site.json` sekarang punya
+`sites.turtle` dan `sites.eddo`, masing-masing bisa menyetel `contact`,
+`social`, dan `maintenance` sendiri.
+
+**Kolom yang dikosongkan berarti mewarisi nilai bersama**, bukan mengosongkan
+tampilan. Itu disengaja: pemisahan bisa dilakukan satu kolom sekali jalan, dan
+formulir yang baru terisi separuh tidak membuat footer jadi kosong.
+
+**Keadaan hari ini: kontak Eddo masih kosong, jadi masih ikut Turtle.** Artinya
+tamu yang membuka `eddohomestay.com` melihat alamat email di
+`turtlehomestay.com`, dan pesannya masuk ke kotak masuk Turtle. Mekanismenya
+sudah jalan dan sudah diuji; yang kurang tinggal tiga nilai yang cuma
+pemiliknya tahu, diisi lewat tab Kontak bagian "Kontak per situs":
+
+```
+sites.eddo.contact.whatsapp     nomor WhatsApp Eddo
+sites.eddo.contact.email        email yang tampil di footer Eddo
+sites.eddo.contact.ownerEmail   ke mana pesan dan notifikasi bayar Eddo dikirim
+```
+
+Perutean pesan tidak memakai nama properti yang tampil di layar, melainkan
+kunci tersendiri (`siteKey`). Nama bisa diganti kapan saja oleh siapa saja yang
+mengedit teks, dan perutean yang ikut berubah saat nama diganti adalah
+perutean yang akan salah tanpa ada yang tahu.
 
 ## Bisa tidak di hosting bersama, dan khususnya di Hostinger?
 

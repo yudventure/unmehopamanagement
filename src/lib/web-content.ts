@@ -1,5 +1,5 @@
 import { seedRooms } from "./data";
-import { SITE_CONFIG } from "./site-config";
+import { SITE_CONFIG, siteConfig } from "./site-config";
 
 /**
  * Everything the public site says, in both languages, in one place — so copy
@@ -33,8 +33,9 @@ export const DEFAULT_LANG: Lang = "en";
 // ------------------------------------------------------------------- facts
 
 /** Edited in the CMS tab, stored in `content/site.json`. */
-export const WHATSAPP = SITE_CONFIG.contact.whatsapp;
-export const EMAIL = SITE_CONFIG.contact.email;
+const TURTLE = siteConfig("turtle");
+export const WHATSAPP = TURTLE.contact.whatsapp;
+export const EMAIL = TURTLE.contact.email;
 
 /** Proper nouns, which stay as they are in either language. */
 export const PROPERTY = {

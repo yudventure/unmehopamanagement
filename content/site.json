@@ -22,6 +22,34 @@
     "homestay": null,
     "diveCenter": null
   },
+  "sites": {
+    "turtle": {
+      "contact": {
+        "whatsapp": "",
+        "email": "",
+        "ownerEmail": ""
+      },
+      "social": {
+        "facebook": "",
+        "instagram": "",
+        "tiktok": ""
+      },
+      "maintenance": false
+    },
+    "eddo": {
+      "contact": {
+        "whatsapp": "",
+        "email": "",
+        "ownerEmail": ""
+      },
+      "social": {
+        "facebook": "",
+        "instagram": "",
+        "tiktok": ""
+      },
+      "maintenance": false
+    }
+  },
   "updatedAt": "",
   "updatedBy": ""
 }

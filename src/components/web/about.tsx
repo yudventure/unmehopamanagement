@@ -381,6 +381,7 @@ export function AboutPage() {
       </div>
 
       <EnquiryModal
+        siteKey="turtle"
         open={open}
         onClose={() => setOpen(false)}
         t={t}

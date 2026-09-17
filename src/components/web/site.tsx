@@ -29,7 +29,7 @@ import { SeasonScene, type SeasonKey } from "@/components/web/season-scenes";
 import { useHeroScroll } from "@/hooks/use-hero-scroll";
 import { useReveal } from "@/hooks/use-reveal";
 import { useCurrency, useLang, useRates } from "@/hooks/use-site-prefs";
-import { SITE_CONFIG } from "@/lib/site-config";
+import { SITE_CONFIG, siteConfig } from "@/lib/site-config";
 import {
   TURTLE_ACTIVITIES,
   ACTIVITY_KEYS,
@@ -116,14 +116,15 @@ const SEASON_SCENES: SeasonKey[] = ["calm", "mixed", "windy"];
  * means it is not yet a link. The accounts exist, the addresses are not typed
  * in yet.
  */
+const TURTLE_SOCIAL = siteConfig("turtle").social;
 const SOCIALS = [
   {
     name: "Instagram",
-    href: SITE_CONFIG.social.instagram,
+    href: TURTLE_SOCIAL.instagram,
     icon: <InstagramIcon />,
   },
-  { name: "Facebook", href: SITE_CONFIG.social.facebook, icon: <FacebookIcon /> },
-  { name: "TikTok", href: SITE_CONFIG.social.tiktok, icon: <TikTokIcon /> },
+  { name: "Facebook", href: TURTLE_SOCIAL.facebook, icon: <FacebookIcon /> },
+  { name: "TikTok", href: TURTLE_SOCIAL.tiktok, icon: <TikTokIcon /> },
 ];
 
 /**
@@ -1285,6 +1286,7 @@ export function TurtleSite() {
       </footer>
 
       <EnquiryModal
+        siteKey="turtle"
         open={enquiryOpen}
         onClose={() => setEnquiryOpen(false)}
         t={t}

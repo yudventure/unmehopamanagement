@@ -1,5 +1,6 @@
 "use client";
 
+import type { PublicSite } from "@/lib/site-domains";
 import { useEffect, useState } from "react";
 
 import {
@@ -60,6 +61,7 @@ export function EnquiryModal({
   lang,
   activities,
   site,
+  siteKey,
 }: {
   open: boolean;
   onClose: () => void;
@@ -77,6 +79,14 @@ export function EnquiryModal({
   /** Which property the message is about, when the family runs more than
       one. It goes into the email's subject so the inbox can tell them apart. */
   site?: string;
+  /** Which site's owner the message is delivered to. Required, and separate
+      from `site` above on purpose: that one is a display name and belongs to
+      the copy, so renaming a homestay would quietly re-route its enquiries if
+      the two were the same field. Required rather than defaulted for the same
+      reason `activities` is: a default is how one property's guests end up in
+      the other property's inbox, and nobody finds out until someone is not
+      answered. */
+  siteKey: PublicSite;
 }) {
   const [status, setStatus] = useState<Status>("idle");
   /* Bots fill in every field they can see. This one is off-screen rather than
@@ -125,6 +135,7 @@ export function EnquiryModal({
           nights: stay ? value.nights : "",
           lang,
           site,
+          siteKey,
           website: trap,
         }),
       });

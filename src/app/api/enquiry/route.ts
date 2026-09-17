@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
-import { SITE_CONFIG } from "@/lib/site-config";
+import { siteConfig } from "@/lib/site-config";
+import type { PublicSite } from "@/lib/site-domains";
 
 /**
  * Takes an enquiry from the public site and emails it to the owner.
@@ -37,9 +38,12 @@ interface Payload {
   nights?: string;
   notes?: string;
   lang?: string;
-  /** Which property the message is about. The family runs two, and both
-      sites send to the same inbox. */
+  /** Which property the message is about, as a name to print in the email. */
   site?: string;
+  /** Which property's owner the message belongs to. Separate from `site`
+      above because that one is display copy: routing somebody's enquiry on a
+      string that exists to be renamed is how it ends up in the wrong inbox. */
+  siteKey?: string;
   /** Must stay empty. Anything in it came from a bot. */
   website?: string;
 }
@@ -97,7 +101,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "not-configured" }, { status: 503 });
   }
 
-  const to = SITE_CONFIG.contact.ownerEmail;
+  /* Anything unrecognised is Turtle, which is where every enquiry went
+     before there was a second site. A body arriving from an old cached page,
+     or from something that is not the form at all, should reach a person
+     rather than be dropped for having the wrong label on it. */
+  const which: PublicSite = clean(body.siteKey) === "eddo" ? "eddo" : "turtle";
+  const to = siteConfig(which).contact.ownerEmail;
   const rows: [string, string][] = feedback
     ? [
         ["Email", email || "(tidak diisi)"],

@@ -39,7 +39,7 @@ import {
   waLink,
   type EddoCopy,
 } from "@/lib/eddo-content";
-import { SITE_CONFIG } from "@/lib/site-config";
+import { siteConfig } from "@/lib/site-config";
 import {
   COPY,
   LANGS,
@@ -70,10 +70,11 @@ import {
 
 const MONTH_ANCHOR = new Date(2026, 7, 1);
 
+const EDDO_SOCIAL = siteConfig("eddo").social;
 const SOCIALS = [
-  { name: "Instagram", href: SITE_CONFIG.social.instagram, icon: <InstagramIcon /> },
-  { name: "Facebook", href: SITE_CONFIG.social.facebook, icon: <FacebookIcon /> },
-  { name: "TikTok", href: SITE_CONFIG.social.tiktok, icon: <TikTokIcon /> },
+  { name: "Instagram", href: EDDO_SOCIAL.instagram, icon: <InstagramIcon /> },
+  { name: "Facebook", href: EDDO_SOCIAL.facebook, icon: <FacebookIcon /> },
+  { name: "TikTok", href: EDDO_SOCIAL.tiktok, icon: <TikTokIcon /> },
 ];
 
 const FILL = "absolute inset-0 h-full w-full";
@@ -1098,6 +1099,7 @@ export function EddoSite({
       </footer>
 
       <EnquiryModal
+        siteKey="eddo"
         open={enquiryOpen}
         onClose={() => setEnquiryOpen(false)}
         t={shared}

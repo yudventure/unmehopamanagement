@@ -47,7 +47,11 @@ export async function POST(req: Request) {
     ["Status Midtrans", body.transaction_status ?? "—"],
   ];
 
+  /* Payment only exists on Eddo's rooms, so a payment notice is Eddo's by
+     construction. Named rather than assumed, so adding payment to the other
+     site is a compile error here instead of a misdelivered email. */
   const sent = await mailOwner({
+    site: "eddo",
     subject: `Pembayaran Eddo ${label[state]} · ${body.order_id ?? ""}`,
     html: rowsToHtml(
       state === "paid"

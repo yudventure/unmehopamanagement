@@ -1,6 +1,6 @@
 import type { Lang } from "@/lib/web-content";
 import { seedRooms } from "@/lib/data";
-import { SITE_CONFIG } from "@/lib/site-config";
+import { siteConfig } from "@/lib/site-config";
 
 /**
  * Everything the Eddo Homestay site says, in both languages.
@@ -20,9 +20,13 @@ export const EDDO = {
   region: "Raja Ampat",
 };
 
-/** Same inbox and number as the family's other property, for now. */
-export const WHATSAPP = SITE_CONFIG.contact.whatsapp;
-export const EMAIL = SITE_CONFIG.contact.email;
+/* Eddo's own number and address, which fall back to the shared ones while
+   they are blank. Blank is the state today, and it is the reason a guest on
+   eddohomestay.com is still shown an address at turtlehomestay.com: nobody
+   has typed Eddo's in yet. Filling them in the CMS is the whole fix. */
+const EDDO_SITE = siteConfig("eddo");
+export const WHATSAPP = EDDO_SITE.contact.whatsapp;
+export const EMAIL = EDDO_SITE.contact.email;
 
 export function waLink(message: string) {
   return `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(message)}`;

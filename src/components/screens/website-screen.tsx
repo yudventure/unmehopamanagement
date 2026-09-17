@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { fmt } from "@/lib/format";
 import { DIVE_KEYS, COPY, DEFAULT_LANG } from "@/lib/web-content";
 import type { SiteConfig } from "@/lib/site-config";
+import type { PublicSite } from "@/lib/site-domains";
 
 /**
  * The website's own settings, edited from inside the manager so the owner has
@@ -51,12 +52,26 @@ const TABS: { key: TabKey; label: string }[] = [
 
 /** Which tab owns which part of the file, so "changed" can be per tab. */
 const OWNS: Record<TabKey, (c: SiteConfig) => unknown> = {
-  kontak: (c) => c.contact,
-  sosial: (c) => c.social,
+  /* Each of these now covers the shared value and both per-site overrides,
+     or editing only Eddo's number would leave the tab looking unchanged and
+     the Save button looking like it had nothing to do. */
+  kontak: (c) => [c.contact, c.sites?.turtle?.contact, c.sites?.eddo?.contact],
+  sosial: (c) => [c.social, c.sites?.turtle?.social, c.sites?.eddo?.social],
   profil: (c) => c.founded,
   harga: (c) => c.divePrices,
-  status: (c) => c.maintenance,
+  status: (c) => [
+    c.maintenance,
+    c.sites?.turtle?.maintenance,
+    c.sites?.eddo?.maintenance,
+  ],
 };
+
+/* The two public sites, named here so every tab that lists them lists them
+   in the same order and with the same labels. */
+const PUBLIC_SITES: { key: PublicSite; label: string }[] = [
+  { key: "turtle", label: "Turtle Dive Homestay" },
+  { key: "eddo", label: "Eddo Homestay" },
+];
 
 const digits = (s: string) => s.replace(/\D/g, "");
 const grouped = (n: number) => n.toLocaleString("id-ID");
@@ -107,6 +122,16 @@ export function WebsiteScreen({ editor }: WebsiteScreenProps) {
 
   const dirtyCount = TABS.filter((t) => dirty[t.key]).length;
 
+  /* Which public sites are currently behind a holding page. Computed rather
+     than read off the shared switch, so the banner names the site that is
+     actually closed instead of implying both always are. */
+  const closedSites = config
+    ? PUBLIC_SITES.filter(({ key }) => {
+        const own = config.sites?.[key]?.maintenance;
+        return typeof own === "boolean" ? own : config.maintenance;
+      })
+    : [];
+
   if (!config) {
     return (
       <div>
@@ -118,6 +143,22 @@ export function WebsiteScreen({ editor }: WebsiteScreenProps) {
 
   const patch = (next: Partial<SiteConfig>) =>
     setConfig({ ...config, ...next });
+
+  /* Writes one field inside one site's overrides without disturbing the rest
+     of the tree. Spread at every level rather than mutating, because two of
+     these can be edited before a single Save. */
+  const patchSite = (site: PublicSite, next: Record<string, unknown>) =>
+    patch({
+      sites: {
+        ...(config.sites ?? {}),
+        [site]: { ...(config.sites?.[site] ?? {}), ...next },
+      },
+    });
+
+  const patchSiteContact = (site: PublicSite, field: string, v: string) =>
+    patchSite(site, {
+      contact: { ...(config.sites?.[site]?.contact ?? {}), [field]: v },
+    });
 
   const save = async () => {
     setStatus({ kind: "saving" });
@@ -191,14 +232,17 @@ export function WebsiteScreen({ editor }: WebsiteScreenProps) {
         </div>
       )}
 
-      {config.maintenance && (
+      {closedSites.length > 0 && (
         <div className="mb-5 flex items-start gap-3 rounded-[14px] border border-danger-line bg-danger-tint px-4 py-[13px]">
           <span className="mt-[5px] h-[9px] w-[9px] shrink-0 rounded-full bg-danger" />
           <div className="text-[13px] leading-[1.55] text-danger-deep">
-            <strong>Mode perbaikan menyala.</strong>{" "}
+            <strong>
+              Mode perbaikan menyala:{" "}
+              {closedSites.map((s) => s.label).join(" dan ")}.
+            </strong>{" "}
             {dirty.status
               ? "Belum berlaku sampai disimpan."
-              : "Semua halaman publik sedang menampilkan halaman tunggu, bukan situsnya."}{" "}
+              : "Halamannya sedang menampilkan halaman tunggu, bukan situsnya."}{" "}
             Dashboard ini tidak terpengaruh.
           </div>
         </div>
@@ -301,6 +345,80 @@ export function WebsiteScreen({ editor }: WebsiteScreenProps) {
               </div>
             </section>
 
+            <section className={card}>
+              <div className="mb-1 text-[15px] font-bold">Kontak per situs</div>
+              <div className={NOTE}>
+                Dua homestay, dua domain, dan sampai kolom di bawah ini diisi
+                keduanya memakai kontak yang sama. Akibatnya nyata: tamu yang
+                membuka eddohomestay.com melihat alamat email di
+                turtlehomestay.com, dan pesannya masuk ke kotak masuk yang sama.
+                Kolom yang dikosongkan berarti ikut nilai bersama di atas, jadi
+                boleh dipisah satu kolom dulu tanpa harus mengisi semuanya.
+              </div>
+
+              <div className="flex flex-col gap-4">
+                {PUBLIC_SITES.map(({ key, label }) => {
+                  const own = config.sites?.[key]?.contact ?? {};
+                  const fields = [
+                    ["whatsapp", "WhatsApp", config.contact.whatsapp],
+                    ["email", "Email publik", config.contact.email],
+                    ["ownerEmail", "Email owner", config.contact.ownerEmail],
+                  ] as const;
+                  const borrowed = fields.filter(
+                    ([f]) => !(own as Record<string, string>)[f]?.trim(),
+                  ).length;
+                  return (
+                    <div
+                      key={key}
+                      className="rounded-[14px] border border-line bg-surface-mute px-4 py-[14px]"
+                    >
+                      <div className="mb-[10px] flex flex-wrap items-center gap-2">
+                        <span className="text-[13.5px] font-bold">{label}</span>
+                        {borrowed > 0 && (
+                          <span className="rounded-full bg-amber-soft px-[9px] py-[2px] text-[11.5px] text-amber-ink">
+                            {borrowed === 3
+                              ? "semua masih ikut kontak bersama"
+                              : `${borrowed} kolom masih ikut kontak bersama`}
+                          </span>
+                        )}
+                      </div>
+                      <div className="grid grid-cols-1 gap-[14px] sm:grid-cols-3">
+                        {fields.map(([field, fieldLabel, shared]) => (
+                          <label key={field} className={LABEL}>
+                            {fieldLabel}
+                            <input
+                              value={
+                                (own as Record<string, string>)[field] ?? ""
+                              }
+                              onChange={(e) =>
+                                patchSiteContact(
+                                  key,
+                                  field,
+                                  field === "whatsapp"
+                                    ? digits(e.target.value)
+                                    : e.target.value,
+                                )
+                              }
+                              /* The shared value as the placeholder, so what
+                                 an empty box falls back to is visible instead
+                                 of being something you have to remember. */
+                              placeholder={shared}
+                              inputMode={
+                                field === "whatsapp" ? "numeric" : undefined
+                              }
+                              className={`${FIELD}${
+                                field === "whatsapp" ? " font-mono" : ""
+                              }`}
+                            />
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+
             <section className="rounded-[20px] border border-line-soft bg-surface-mute px-5 py-[18px]">
               <div className="mb-2 text-[15px] font-bold">
                 Pesan dari website masuk ke email
@@ -338,6 +456,13 @@ export function WebsiteScreen({ editor }: WebsiteScreenProps) {
               dengan alamat akun yang sebenarnya sebelum situsnya dilivekan.
               Dikosongkan pun tidak apa-apa: ikonnya tetap tampil, cuma jadi
               penanda redup yang tidak bisa diklik.
+              <br />
+              <br />
+              Ketiganya masih dipakai bersama oleh kedua situs. Kalau nanti
+              Eddo punya akunnya sendiri, alamatnya diisi di{" "}
+              <code className="font-mono">content/site.json</code> pada bagian{" "}
+              <code className="font-mono">sites.eddo.social</code>; yang
+              dikosongkan di sana tetap ikut nilai bersama ini.
             </div>
             <div className="grid grid-cols-1 gap-[14px] sm:grid-cols-3">
               {(
@@ -464,32 +589,45 @@ export function WebsiteScreen({ editor }: WebsiteScreenProps) {
           <section className={card}>
             <div className="mb-1 text-[15px] font-bold">Mode perbaikan</div>
             <div className={NOTE}>
-              Menyalakan ini membuat semua halaman publik{" "}
-              <code className="font-mono">/turtle</code> diganti halaman tunggu
+              Satu saklar per situs, karena keduanya dikerjakan bergantian:
+              menutup yang satu untuk diperbaiki tidak boleh ikut menutup yang
+              sedang menerima tamu. Halaman yang ditutup diganti halaman tunggu
               berisi nama homestay, nomor WhatsApp, dan email, dua bahasa.
               Dashboard ini tidak ikut mati, jadi kamu tetap bisa bekerja.
             </div>
 
-            <label className="flex cursor-pointer items-start gap-3 rounded-[14px] border border-line bg-surface-mute px-4 py-[13px]">
-              <input
-                type="checkbox"
-                checked={config.maintenance}
-                onChange={(e) => patch({ maintenance: e.target.checked })}
-                className="mt-[3px] h-[18px] w-[18px] shrink-0 cursor-pointer accent-[var(--color-teal)]"
-              />
-              <span>
-                <span className="block text-[13.5px] font-medium">
-                  Tampilkan halaman &ldquo;sedang diperbaiki&rdquo;
-                </span>
-                <span className="mt-[2px] block text-[12.5px] leading-[1.5] text-slate-soft">
-                  Sekarang:{" "}
-                  {config.maintenance
-                    ? "situs publik ditutup"
-                    : "situs publik terbuka"}
-                  .
-                </span>
-              </span>
-            </label>
+            <div className="flex flex-col gap-[10px]">
+              {PUBLIC_SITES.map(({ key, label }) => {
+                /* Absent inherits the shared switch, which is what a file
+                   written before this existed still does. */
+                const own = config.sites?.[key]?.maintenance;
+                const closed =
+                  typeof own === "boolean" ? own : config.maintenance;
+                return (
+                  <label
+                    key={key}
+                    className="flex cursor-pointer items-start gap-3 rounded-[14px] border border-line bg-surface-mute px-4 py-[13px]"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={closed}
+                      onChange={(e) =>
+                        patchSite(key, { maintenance: e.target.checked })
+                      }
+                      className="mt-[3px] h-[18px] w-[18px] shrink-0 cursor-pointer accent-[var(--color-teal)]"
+                    />
+                    <span>
+                      <span className="block text-[13.5px] font-medium">
+                        Tutup {label}
+                      </span>
+                      <span className="mt-[2px] block text-[12.5px] leading-[1.5] text-slate-soft">
+                        Sekarang: {closed ? "ditutup" : "terbuka"}.
+                      </span>
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
 
             <div className="mt-4 flex items-start gap-3 rounded-[14px] border border-amber-soft bg-amber-soft/40 px-4 py-[13px]">
               <span className="mt-[5px] h-[9px] w-[9px] shrink-0 rounded-full bg-amber-shade" />

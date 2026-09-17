@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 
 import { DiveDetail } from "@/components/web/dive-detail";
 import { Maintenance } from "@/components/web/maintenance";
-import { SITE_CONFIG } from "@/lib/site-config";
+import { siteConfig } from "@/lib/site-config";
 import { COPY, DEFAULT_LANG, DIVE_KEYS, PROPERTY, type DiveKey } from "@/lib/web-content";
 
 /**
@@ -36,7 +36,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: `${p.name} · ${PROPERTY.name}`,
     description: p.blurb,
-    ...(SITE_CONFIG.maintenance ? { robots: { index: false, follow: false } } : {}),
+    ...(siteConfig("turtle").maintenance
+      ? { robots: { index: false, follow: false } }
+      : {}),
   };
 }
 
@@ -45,6 +47,6 @@ export default async function DivePackagePage({ params }: Props) {
   if (!isPack(pack)) notFound();
   /* After the 404 check, not before: a bad package name is still a bad
      package name while the site is down. */
-  if (SITE_CONFIG.maintenance) return <Maintenance />;
+  if (siteConfig("turtle").maintenance) return <Maintenance />;
   return <DiveDetail pack={pack} />;
 }

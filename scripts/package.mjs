@@ -15,7 +15,16 @@
  *   node scripts/package.mjs           copy into place
  *   node scripts/package.mjs --archive also write dist/app.tar.gz to upload
  */
-import { cpSync, existsSync, mkdirSync, readdirSync, rmSync, statSync } from "node:fs";
+import {
+  cpSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
 import { join } from "node:path";
 import { execFileSync } from "node:child_process";
 
@@ -69,8 +78,73 @@ for (const required of ["server.js", ".next/static", "public"]) {
   }
 }
 
+/*
+ * A note to whoever unpacks this on a server.
+ *
+ * Domains and the Midtrans client key are read at `next build` and baked in,
+ * so "does this archive know about my domain?" is a question about the archive
+ * rather than about the server it lands on, and it is not answerable by
+ * looking at the files. Getting it wrong is quiet: a build with the variable
+ * unset produces an archive that works perfectly and serves the dashboard at
+ * the homestay's address.
+ *
+ * So the answer is read back out of the build's own routing manifest, not out
+ * of the environment this script happens to be running in, and written down
+ * next to the server it describes.
+ */
+function buildInfo() {
+  let hosts = [];
+  try {
+    const manifest = JSON.parse(
+      readFileSync(join(root, ".next", "routes-manifest.json"), "utf8"),
+    );
+    const rules = [
+      ...(manifest.rewrites?.beforeFiles ?? []),
+      ...(manifest.rewrites?.afterFiles ?? []),
+    ];
+    hosts = [
+      ...new Set(
+        rules.flatMap((r) =>
+          (r.has ?? [])
+            .filter((h) => h.type === "host")
+            .map((h) => h.value),
+        ),
+      ),
+    ].sort();
+  } catch {
+    /* No manifest means something is wrong that this note cannot fix. Say so
+       rather than claiming no domains were configured. */
+    return "Tidak bisa membaca routes-manifest.json, jadi status domain tidak diketahui.\n";
+  }
+
+  const midtrans = process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY ? "ada" : "KOSONG";
+  return [
+    `Dibuat        : ${new Date().toISOString()}`,
+    `Domain aktif  : ${hosts.length ? hosts.join(", ") : "TIDAK ADA"}`,
+    `Client Midtrans: ${midtrans}`,
+    "",
+    hosts.length
+      ? "Domain di atas sudah tertanam. Mengubahnya perlu build ulang."
+      : [
+          "PERINGATAN: tidak ada domain yang tertanam di build ini.",
+          "Arsip ini akan menyajikan dashboard di alamat homestay, bukan situsnya.",
+          "Isi SITE_DOMAIN_EDDO dan SITE_DOMAIN_TURTLE lalu build ulang.",
+        ].join("\n"),
+    midtrans === "ada"
+      ? ""
+      : "Catatan: tanpa client key Midtrans, tombol bayar bertanya lewat formulir, bukan menagih.",
+    "",
+    "Jalankan dengan: node server.js",
+    "PORT dan HOSTNAME dibaca dari lingkungan, jangan dipatok di kode.",
+    "",
+  ].join("\n");
+}
+
+const info = buildInfo();
+writeFileSync(join(standalone, "BUILD-INFO.txt"), info);
+
 console.log(`.next/standalone siap, ${mb(size(standalone))}`);
-console.log("  jalankan: PORT=3000 HOSTNAME=0.0.0.0 node .next/standalone/server.js");
+console.log(info.split("\n").map((l) => `  ${l}`).join("\n"));
 
 if (process.argv.includes("--archive")) {
   const dist = join(root, "dist");

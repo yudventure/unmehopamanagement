@@ -282,7 +282,19 @@ jalan. Karena itu skripnya memeriksa hasil kerjanya sendiri di akhir.
    Settings, Secrets and variables, Actions, tab Variables. Kalau ini kosong
    saat build, domainnya tidak akan dikenali dan tombol bayarnya tidak punya
    client key, dan mengisinya setelah build tidak memperbaiki apa pun.
-3. **Unggah dan bongkar** `app.tar.gz` ke folder aplikasi di Hostinger.
+3. **Unggah dan bongkar** `app.tar.gz` ke folder aplikasi di Hostinger, lalu
+   **buka `BUILD-INFO.txt`** yang ikut di dalamnya sebelum menjalankan apa pun.
+   Berkas itu ditulis saat pengemasan dengan membaca kembali routing manifest
+   hasil build, jadi isinya bukan niat melainkan kenyataan:
+
+   ```
+   Domain aktif  : eddohomestay.com, www.eddohomestay.com
+   ```
+
+   Tertulis `TIDAK ADA`, hentikan di situ dan ulangi dari langkah 2. Arsip
+   tanpa domain tidak rusak dan tidak mengeluh, ia cuma menyajikan dashboard di
+   alamat homestay. Sudah diuji: `eddohomestay.com` menjawab dengan halaman
+   berjudul "Unmehopa Management · Booking Manager".
 4. **Perintah start:** `node server.js`. Bukan `npm start`, karena di dalam
    arsip itu tidak ada `next`, yang ada `server.js` hasil standalone.
 5. **Port:** jangan dipatok. `server.js` membaca `PORT` dan `HOSTNAME` dari

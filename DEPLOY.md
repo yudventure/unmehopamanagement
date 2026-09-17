@@ -78,9 +78,17 @@ ke yang lain.
 **2. Isi dua variabel berikut**, lalu deploy ulang sekali supaya terbaca:
 
 ```
+SITE_DOMAIN_EDDO   = eddohomestay.com,www.eddohomestay.com   <- sudah dibeli
 SITE_DOMAIN_TURTLE = turtlehomestay.com,www.turtlehomestay.com
-SITE_DOMAIN_EDDO   = eddohomestay.com,www.eddohomestay.com
 ```
+
+Baris pertama bukan contoh lagi: `eddohomestay.com` adalah domain yang sudah
+dibeli, dan nilai di atas itu yang dipakai apa adanya. Baris kedua masih
+contoh sampai domain Turtle dibeli, dan selama variabelnya kosong Turtle tetap
+hidup di `/turtle` tanpa ada yang rusak.
+
+Daftar lengkap semua variabel beserta bentuk nilainya ada di `.env.example`,
+terpisah antara yang dibaca saat build dan yang dibaca saat jalan.
 
 Dipisah koma kalau lebih dari satu. **Yang pertama dianggap yang resmi** dan
 dipakai sebagai alamat canonical; sisanya dianggap alias.
@@ -93,6 +101,21 @@ otomatis benar karena setiap deploy adalah build baru; di VPS, pastikan
 variabelnya ada di lingkungan yang menjalankan build, bukan cuma di yang
 menjalankan `next start`.
 
+**3. Arahkan DNS-nya.** Dua catatan yang perlu diubah dan satu yang tidak
+boleh disentuh:
+
+- **A record** untuk apex `eddohomestay.com`, dan **CNAME** untuk
+  `www.eddohomestay.com`, diarahkan ke tempat aplikasinya berjalan. Nilai
+  persisnya jangan ditebak dari dokumen ini: panel tujuannya yang memberi
+  angka atau alamat yang benar, dan angka itu bisa berubah sewaktu-waktu.
+- **MX record jangan diubah.** Kalau emailnya di Hostinger, MX tetap ke
+  Hostinger sementara A record menyeberang ke tempat lain. Keduanya catatan
+  yang berbeda dan tidak saling mengganggu, jadi memindahkan situsnya tidak
+  ikut mematikan emailnya.
+
+Kalau domainnya memakai nameserver Hostinger, ketiga catatan itu diubah di
+hPanel bagian DNS Zone Editor, bukan di panel tempat aplikasinya berjalan.
+
 Domain dashboard tidak perlu variabel apa pun. Ia menyajikan `/`, yang memang
 sudah dashboard.
 
@@ -104,7 +127,7 @@ Sesudah itu:
 | `turtlehomestay.com/about` | halaman profil Turtle |
 | `turtlehomestay.com/turtle` | memantul ke `turtlehomestay.com/` |
 | `eddohomestay.com/` | situs Eddo |
-| `unmehoppa.com/` | dashboard |
+| `unmehopamanagement.com/` | dashboard |
 | `eddohomestay.com/turtle` | situs Turtle |
 
 Baris terakhir itu bukan kebocoran, melainkan yang membuat tautan "homestay

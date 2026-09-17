@@ -145,6 +145,55 @@ tertutup, karena pemilik harus tetap bisa bekerja saat situsnya ditutup.
 Teks di tab Website masih menyebut `/turtle` saja. Itu perlu diperbaiki, atau
 saklarnya dipisah jadi dua, sebelum ada yang menutup Eddo tanpa sengaja.
 
+## Bisa tidak di hosting bersama (shared hosting)?
+
+Pertanyaan ini muncul karena hosting bersama jauh lebih murah dari VPS. Yang
+menentukan bukan harganya, melainkan satu hal: **hosting itu bisa menjalankan
+proses Node yang hidup terus atau tidak.**
+
+Aplikasi ini Next.js, disajikan oleh `next start`, dan lima endpoint-nya
+ditulis khusus untuk runtime Node:
+
+```
+src/app/api/content/route.ts      runtime = "nodejs"
+src/app/api/enquiry/route.ts      runtime = "nodejs"
+src/app/api/pay/route.ts          runtime = "nodejs"
+src/app/api/pay/notify/route.ts   runtime = "nodejs"
+src/app/api/rates/route.ts        runtime = "nodejs"
+```
+
+Hosting bersama kebanyakan dijual untuk PHP dan MySQL. Kalau paketnya memang
+begitu, situs ini tidak bisa jalan di sana sama sekali, dan pertanyaan soal
+payment gateway jadi tidak relevan karena bukan cuma pembayarannya yang tidak
+jalan. **Cara memastikannya satu menit:** buka panelnya, cari menu bernama
+"Node.js" atau "Setup Node.js App". Tidak ada menu itu, jawabannya tidak.
+
+### Kenapa payment gateway justru yang paling tidak bisa dipindah ke sana
+
+Kalaupun situsnya diubah jadi berkas statis supaya muat di hosting bersama,
+pembayarannya tetap mati, dan bukan karena kode ini kurang pintar:
+
+1. **Kunci server Midtrans tidak boleh sampai ke browser.** Kunci itu yang
+   menandatangani permintaan Snap. Di situs statis tidak ada tempat
+   menyimpannya selain di dalam halaman, dan di dalam halaman artinya siapa pun
+   bisa membacanya.
+2. **Notifikasi Midtrans butuh alamat yang bisa menerima POST.**
+   `/api/pay/notify` memeriksa tanda tangan SHA-512 sebelum percaya. Berkas
+   statis tidak bisa menerima POST, apalagi memeriksa tanda tangan.
+3. **Nominalnya dihitung di server** dari tabel kamar. Tanpa server,
+   nominalnya datang dari browser, dan nominal yang datang dari browser adalah
+   nominal yang dipilih pengirimnya.
+
+Jadi urutannya bukan "situsnya di hosting murah, pembayarannya menyusul".
+Pembayaran justru bagian yang mengunci pilihan hostingnya.
+
+### Yang tetap boleh tinggal di hosting bersama
+
+Email. Domain bisa menunjuk ke Vercel atau ke VPS lewat A record, sementara
+emailnya tetap di Hostinger lewat MX record; keduanya catatan DNS yang
+berbeda dan tidak saling mengganggu. Jadi paket hosting yang sudah dibeli
+untuk email tidak jadi mubazir.
+
 ## Pindah server nanti, misalnya dari VPS kecil ke yang lebih besar
 
 Aplikasi ini **tidak punya database**, dan itu yang membuat pindahan jadi

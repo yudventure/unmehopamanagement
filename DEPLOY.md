@@ -259,9 +259,24 @@ hanya itu ke `.next/standalone`, lengkap dengan `server.js` kecil pengganti
 ```
 node_modules             563 MB
 .next                    164 MB
-.next/standalone          75 MB   <- ini saja yang perlu diunggah
-dist/app.tar.gz           33 MB   <- terkompresi
+.next/standalone          30 MB   <- ini saja yang perlu diunggah
+dist/app.tar.gz           14 MB   <- terkompresi
 ```
+
+Angka itu sudah termasuk satu pembuangan yang disengaja. Penelusuran Next ikut
+membawa `sharp`, si pengoptimal gambar, karena `next/image` *mungkin* dipakai.
+Di aplikasi ini tidak dipakai sama sekali: semua foto di ketiga situs disajikan
+`<img>` atau `<picture>` biasa, tidak ada satu pun impor `next/image`, dan tidak
+ada konfigurasi `images`. Yang terbawa jadinya 45 MB dari 64 MB berupa libvips
+siap pakai yang tidak pernah dipanggil, rangkap tiga pula: versi glibc, versi
+musl, dan cadangan WebAssembly, untuk server yang cuma akan jadi salah satunya.
+
+Jadi `scripts/package.mjs` membuangnya, tapi lebih dulu memeriksa apakah
+`next/image` benar-benar tidak ada. Ketemu, sharp dipertahankan dan skripnya
+memberi tahu. Ini bukan dibuang lewat `outputFileTracingExcludes`: opsi itu
+sudah dicoba dan tidak berpengaruh, karena kuncinya berbasis route sedangkan
+sharp ditarik oleh penelusuran server Next-nya sendiri, jadi tidak ada glob
+route yang pernah cocok.
 
 Yang di sebelah kanan jalan **tanpa `npm install`** di server.
 

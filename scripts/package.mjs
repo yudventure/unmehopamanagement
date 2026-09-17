@@ -79,6 +79,60 @@ for (const required of ["server.js", ".next/static", "public"]) {
 }
 
 /*
+ * Leave the image optimiser's native binaries behind.
+ *
+ * Tracing pulls in `sharp` because `next/image` might be used. It is not: every
+ * photograph on all three sites is served by a plain `<img>` or a `<picture>`,
+ * there is no `next/image` import anywhere in the application, and no `images`
+ * config. So 45 MB of a 64 MB bundle is prebuilt libvips that nothing calls,
+ * and it arrives in triplicate: a glibc build, a musl build and a WebAssembly
+ * fallback, for a server that is only ever one of those.
+ *
+ * Pruned here rather than through `outputFileTracingExcludes`, which was tried
+ * and does nothing for this: that option is keyed by route, and `sharp` is
+ * pulled in by the trace of the Next server itself rather than by any route, so
+ * no route glob ever matches it.
+ *
+ * `sharp` is loaded lazily, only when an image is actually optimised, so with
+ * no `next/image` it is never reached. Introduce `next/image` and this has to
+ * stop: the symptom would be image requests failing outright, which is at least
+ * a loud failure rather than a subtle one. The guard below is what makes that
+ * true, so it should be left alone rather than trusted to memory.
+ */
+const usesNextImage = ["src"].some((dir) => {
+  const stack = [join(root, dir)];
+  while (stack.length) {
+    const here = stack.pop();
+    if (!existsSync(here)) continue;
+    for (const entry of readdirSync(here)) {
+      const full = join(here, entry);
+      if (statSync(full).isDirectory()) {
+        stack.push(full);
+      } else if (/\.(tsx?|jsx?|mjs)$/.test(entry)) {
+        const body = readFileSync(full, "utf8");
+        if (/from\s+["']next\/image["']|require\(["']next\/image["']\)/.test(body)) {
+          return true;
+        }
+      }
+    }
+  }
+  return false;
+});
+
+if (usesNextImage) {
+  console.warn(
+    "next/image terdeteksi, jadi sharp DIPERTAHANKAN. Arsipnya akan jauh lebih besar.",
+  );
+} else {
+  for (const dead of ["@img", "sharp"]) {
+    rmSync(join(standalone, "node_modules", dead), {
+      recursive: true,
+      force: true,
+    });
+  }
+}
+
+/*
  * A note to whoever unpacks this on a server.
  *
  * Domains and the Midtrans client key are read at `next build` and baked in,

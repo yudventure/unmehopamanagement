@@ -281,11 +281,16 @@ function LangSwitch({ lang, onPick, label }: { lang: Lang; onPick: (l: Lang) => 
 const TRUST_ICONS = [
   /* A card, a covered plate, a signal, a face. In the order the four reasons
      are written, so a reason moved in `eddo-content.ts` without its glyph is
-     a mismatch anyone can see rather than one nobody notices. */
-  <svg key="bayar" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="2.5" y="5.5" width="19" height="13" rx="2.5" /><path d="M2.5 10h19M6.5 14.5h4" /></svg>,
-  <svg key="makan" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 12h18a9 9 0 0 1-18 0z" /><path d="M6 12V9m6 3V6m6 6V9" /></svg>,
-  <svg key="internet" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M2.6 8.6a14 14 0 0 1 18.8 0" /><path d="M5.6 12.1a9.5 9.5 0 0 1 12.8 0" /><path d="M8.6 15.6a5 5 0 0 1 6.8 0" /><path d="M12 19.2h.01" /></svg>,
-  <svg key="layanan" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M8.3 14.2a4.6 4.6 0 0 0 7.4 0" /><path d="M9.2 9.6h.01M14.8 9.6h.01" /></svg>,
+     a mismatch anyone can see rather than one nobody notices.
+
+     Sized in attributes, not left to the box. An `<svg>` carrying only a
+     viewBox has no intrinsic size; Chromium gives it the room its parent has
+     and Safari gives it none, so on a phone these were four empty circles
+     while every desktop screenshot of them looked right. */
+  <svg key="bayar" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="2.5" y="5.5" width="19" height="13" rx="2.5" /><path d="M2.5 10h19M6.5 14.5h4" /></svg>,
+  <svg key="makan" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 12h18a9 9 0 0 1-18 0z" /><path d="M6 12V9m6 3V6m6 6V9" /></svg>,
+  <svg key="internet" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M2.6 8.6a14 14 0 0 1 18.8 0" /><path d="M5.6 12.1a9.5 9.5 0 0 1 12.8 0" /><path d="M8.6 15.6a5 5 0 0 1 6.8 0" /><path d="M12 19.2h.01" /></svg>,
+  <svg key="layanan" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M8.3 14.2a4.6 4.6 0 0 0 7.4 0" /><path d="M9.2 9.6h.01M14.8 9.6h.01" /></svg>,
 ];
 
 /**
@@ -577,7 +582,9 @@ export function EddoSite({
           screen and settles as the reader scrolls. */}
       <div
         ref={heroRef}
-        className={`relative overflow-hidden bg-eddo-wash ${hasHeroPhoto ? "min-h-[100svh] lg:min-h-0" : ""}`}
+        className={`relative overflow-hidden bg-eddo-wash ${
+          hasHeroPhoto ? "flex min-h-[100svh] flex-col justify-end lg:block lg:min-h-0" : ""
+        }`}
       >
         {/* The pale ground: the whole hero without a photograph, the panel the
             type sits on with one. It is painted first so the picture can lie
@@ -641,7 +648,18 @@ export function EddoSite({
             photograph is in view, and how far the button stands from the card
             below it. 212px leaves 140px of air under the button once the card
             has lapped 72px back up over it. */}
-        <Section className="relative grid grid-cols-1 items-center gap-10 pt-[112px] pb-12 md:pt-[128px] lg:pb-[212px]">
+        {/* Below 1024 the words sit against the foot of the hero, which is what
+            turns the gap under the button into a number instead of a
+            leftover. The hero is a screen tall there and the words are not, so
+            whatever they did not use was falling below them: measured 355px of
+            empty photograph at 390 and 265px at 360, on the same page. Pushed
+            to the foot, the gap is this padding less the card's own 64px of
+            overlap, which is 126px at every width.
+
+            `justify-end` on the hero and not `items-end` here: the section is a
+            block inside it, so aligning within the section moves nothing. What
+            had to move was the section itself. */}
+        <Section className="relative grid w-full grid-cols-1 items-center gap-10 pt-[112px] pb-[190px] md:pt-[128px] lg:pb-[212px]">
           <div
             data-reveal
             /* Above 1024 these words are on the photograph and go white with

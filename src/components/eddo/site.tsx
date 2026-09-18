@@ -673,7 +673,23 @@ export function EddoSite({
             `justify-end` on the hero and not `items-end` here: the section is a
             block inside it, so aligning within the section moves nothing. What
             had to move was the section itself. */}
-        <Section className="relative grid w-full grid-cols-1 items-center gap-10 pt-[112px] pb-[220px] md:pt-[128px] md:pb-[190px] lg:pb-[212px]">
+        {/* The bottom padding is what stands between the button and the card
+            that laps back over the hero, because the card is pulled up by a
+            fixed amount: the gap a reader sees is this number minus that one.
+            Measured before changing it, the gap ran 70px on a phone, 98 at
+            768 and 140 at 1440, so the narrow end was half of what the wide
+            end had and the button sat almost against the card.
+
+            Raised to 110 and 128, leaving 1440 alone because it was already
+            the roomiest of the three.
+
+            Note the two ends do it differently. Below 1024 the hero is a
+            bottom-anchored flex column of a fixed height, so a bigger pad
+            lifts the type off the floor. At 1024 the hero is an ordinary
+            block, so the same change lengthens the hero and lowers the card
+            instead. Either way the two are further apart, but only the phone
+            actually moves its words. */}
+        <Section className="relative grid w-full grid-cols-1 items-center gap-10 pt-[112px] pb-[260px] md:pt-[128px] md:pb-[220px] lg:pb-[212px]">
           <div
             data-reveal
             /* Above 1024 these words are on the photograph and go white with

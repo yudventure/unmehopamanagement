@@ -625,19 +625,25 @@ export function EddoSite({
                     height for `h-full` to be a percentage of. */}
                 <picture className="block h-full w-full">
                   <source media="(min-width: 1024px)" srcSet="/eddo-hero.jpg" />
-                  {/* Two crops, because the box is two shapes. Wide, the whole
-                      width is in view and only the vertical choice is left:
-                      slightly low, since the top of the frame is sky the hero
-                      does not need. Narrow, the frame is taller than the
-                      photograph and the crop runs the other way, right of
-                      centre where the houses and the boat are.
+                  {/* Two photographs, because the box is two shapes, and for a
+                      long time only one of them was honest about it. The
+                      narrow file used to be the wide one at 900x450, set into
+                      a frame taller than it is wide: the browser enlarged it
+                      to about 1688px and threw away the sides, so the phone,
+                      which is where this page is mostly read, got the worst
+                      picture on the site. It is now a portrait frame at
+                      1080x1920, which is the shape it is drawn in, so nothing
+                      is enlarged and the crop is a few per cent rather than
+                      most of the image. That is why the horizontal anchor is
+                      back at centre: it was at 62% to chase the houses across
+                      a frame that was being stretched past them.
 
-                      The small file is the `<img>` and the wide one a
+                      The narrow file is the `<img>` and the wide one a
                       `<source>`, so each screen fetches one and only one. */}
                   <img
-                    src="/eddo-hero-900.jpg"
+                    src="/eddo-hero-1080.webp"
                     alt={t.hero.alt}
-                    className="h-full w-full object-cover object-[62%_50%] lg:object-[50%_58%]"
+                    className="h-full w-full object-cover object-[50%_50%] lg:object-[50%_58%]"
                   />
                 </picture>
               </div>
@@ -1004,7 +1010,7 @@ export function EddoSite({
 
           <div data-reveal style={step(2)} className="relative min-h-[320px] overflow-hidden rounded-[26px] bg-eddo-ink">
             <SnorkelScene className={`${FILL} object-cover opacity-90`} />
-            <Photo src="/eddo-cta.jpg" alt={t.why.cta.alt} />
+            <Photo src="/eddo-cta.webp" alt={t.why.cta.alt} />
             <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(18,52,58,.88)_0%,rgba(18,52,58,.55)_60%,rgba(18,52,58,.25)_100%)]" />
             <div className="relative flex h-full flex-col justify-center p-8 text-white md:p-10">
               <span className="font-mono text-[10.5px] tracking-[.12em] text-white/75 uppercase">{t.why.cta.eyebrow}</span>

@@ -225,27 +225,46 @@ Logo ini hanya dipakai di website. Dashboard `/` memakai lencana Unmehopa
 
 ## Situs Eddo Homestay (`/eddo`)
 
-Situs kedua, untuk properti kedua. **Logo dan foto hero-nya sudah ada; foto
-yang lain belum.** Halamannya tetap lengkap tanpa yang belum ada, karena setiap
-foto punya ilustrasi SVG di bawahnya yang tampil selama berkasnya kosong.
-Begitu berkasnya ditaruh, fotonya yang tampil, tanpa mengubah kode.
+Situs kedua, untuk properti kedua. **Logo, hero, karosel kamar, dan kartu
+ajakan sudah berfoto; empat kartu "di sekitar" belum.** Halamannya tetap
+lengkap tanpa yang belum ada, karena setiap foto punya ilustrasi SVG di
+bawahnya yang tampil selama berkasnya kosong. Begitu berkasnya ditaruh,
+fotonya yang tampil, tanpa mengubah kode.
 
 | Berkas | Dipakai di | Rasio |
 |---|---|---|
 | `website_logo_eddo_homestay.png` | **tidak dipakai**, disimpan sebagai master | aslinya dari pemilik: 2000×2000, latar transparan, 388 KB |
 | `eddo-logo.png` | kepala halaman, footer, halaman perbaikan | 164×240, 45 KB. Dibuat dari master di atas. Di atas foto ditampilkan putih lewat filter |
-| `Eddo_Homestay_1.png` | **tidak dipakai**, disimpan sebagai master | aslinya dari pemilik: 4,0 MB |
-| `eddo-hero.jpg` | latar hero di layar ≥1024px | 2:1, 1760×880, 218 KB. Dibuat dari master di atas. **Berkas ini juga menentukan bentuk hero** — lihat di bawah |
-| `eddo-hero-900.jpg` | latar hero di layar <1024px | 2:1, 900×450, 65 KB. Isi yang sama, dikecilkan |
-| `eddo-kamar-1.jpg`, `-2`, `-3`, … | karosel foto di bagian kamar | 4:3 |
-| `eddo-around-1.jpg` | kartu "Dermaga Yenbuba" | 3:4 (tegak) |
-| `eddo-around-2.jpg` | kartu "Burung cendrawasih" | 3:4 |
-| `eddo-around-3.jpg` | kartu "Arborek" | 3:4 |
-| `eddo-around-4.jpg` | kartu "Piaynemo" | 3:4 |
-| `eddo-cta.jpg` | kartu ajakan di bagian "Kenapa Eddo" | mendatar, akan ditutup lapisan toska gelap |
+| `eddo-hero.jpg` | latar hero di layar ≥1024px | 2:1, 1760×880, 218 KB. **Berkas ini juga menentukan bentuk hero** — lihat di bawah |
+| `eddo-hero-1080.webp` | latar hero di layar <1024px | 9:16, 1080×1920, 316 KB |
+| `eddo-kamar-1.webp` … `-10.webp` | karosel foto di bagian kamar | 4:3, 1440×1080, 103 sampai 262 KB |
+| `eddo-around-1.jpg` | kartu "Dermaga Yenbuba" | 3:4 (tegak). **Belum ada** |
+| `eddo-around-2.jpg` | kartu "Burung cendrawasih" | 3:4. **Belum ada** |
+| `eddo-around-3.jpg` | kartu "Arborek" | 3:4. **Belum ada** |
+| `eddo-around-4.jpg` | kartu "Piaynemo" | 3:4. **Belum ada** |
+| `eddo-cta.webp` | kartu ajakan di bagian "Kenapa Eddo" | 4:3, 1440×1080, 182 KB. Ditutup lapisan toska gelap dari kiri |
 
 Aturannya sama seperti situs Turtle: huruf kecil semua, lebar 1080 sampai
 1920px, usahakan di bawah 300 KB per foto.
+
+Empat kartu `eddo-around-*` masih kosong karena tidak ada fotonya. Semua foto
+yang dikirim pemilik adalah foto homestay-nya sendiri, dan menaruh foto rumah
+di bawah tulisan "Piaynemo" akan membuat situsnya berbohong. Selama kosong,
+yang tampil ilustrasi, dan itu jujur. Empat slot itu masih menunggu `.jpg`,
+bukan `.webp`, karena alamatnya ditulis pasti di dalam kode.
+
+### Master fotonya tidak disimpan di sini
+
+Ada di `assets/foto-asli/`, di luar folder ini. Folder `public/` disalin
+seluruhnya ke dalam paket yang dikirim ke server (`scripts/package.mjs`), jadi
+berkas yang disimpan di sini ikut terkirim di setiap deploy walaupun tidak
+pernah ditampilkan. Master 12 foto kamar plus dua master hero berjumlah sekitar
+14 MB; disimpan di sini, itu 14 MB yang diunggah ulang setiap kali harga kamar
+berubah.
+
+Yang ada di `assets/foto-asli/`: `1.png` sampai `11.png` (1440×1080, asli dari
+pemilik), `Hero_Mobile.png` (1080×1920), dan `Eddo_Homestay_1.png` (3780×1890,
+master hero layar lebar).
 
 **Karosel kamarnya tidak punya batas jumlah foto.** Yang menentukan isinya
 adalah isi folder ini, bukan angka di dalam kode: `src/app/eddo/page.tsx`
@@ -292,10 +311,21 @@ hasil membaca piksel berkasnya. Nilai sebelumnya `#17a9ae` adalah tebakan mata
 dan meleset. Warna itu terang, jadi ia cuma untuk hiasan; yang membawa huruf
 adalah `#06777d`. Alasannya ada di `src/app/globals.css`.
 
-### Foto hero: `eddo-hero.jpg` dan `eddo-hero-900.jpg`
+### Foto hero: `eddo-hero.jpg` dan `eddo-hero-1080.webp`
 
-Dua berkas dari satu master, dan **keduanya perlu diganti bersamaan** kalau
-fotonya diganti. Masternya `Eddo_Homestay_1.png` (4,0 MB) disimpan apa adanya.
+Dua berkas untuk satu tempat, dan **keduanya perlu diganti bersamaan** kalau
+fotonya diganti.
+
+Dulu keduanya satu foto yang sama: berkas layar sempit adalah `eddo-hero.jpg`
+yang dikecilkan, 900×450, mendatar, dipasang di bingkai yang tegak setinggi
+layar. Browser membesarkannya sampai sekitar 1688px lalu membuang sisi
+kiri-kanannya, jadi pembaca di HP, yang jumlahnya paling banyak, justru
+mendapat gambar terburuk di situs ini. Titik jangkar mendatarnya disetel ke 62%
+untuk mengejar rumah-rumahnya yang tergeser oleh peregangan itu.
+
+Sekarang berkas layar sempit adalah fotonya sendiri, 1080×1920, sebentuk dengan
+bingkainya. Tidak ada yang dibesarkan, potongannya cuma beberapa persen, dan
+jangkarnya kembali ke tengah.
 
 **Bentuk hero ditentukan oleh ada-tidaknya `eddo-hero.jpg`**, dicek di disk
 sewaktu build (`src/app/eddo/page.tsx`), bukan di browser. Kalau dicek di

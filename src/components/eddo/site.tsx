@@ -448,7 +448,17 @@ const SERVICE_ICONS: Record<ServiceKey, React.ReactNode> = {
     <svg {...SVG}><path d="M8.6 3.6 4.2 5.8 2.8 9.3l3 1.2 1-1.7v11.6h10.4V8.8l1 1.7 3-1.2-1.4-3.5-4.4-2.2a3.5 3.5 0 0 1-6.8 0Z" /></svg>
   ),
   motorbike: (
-    <svg {...SVG}><circle cx="5.2" cy="16.6" r="3.4" /><circle cx="18.8" cy="16.6" r="3.4" /><path d="M5.2 16.6h3.4l4.2-5.8h3.6l2.4 5.8" /><path d="M12.8 10.8 11 7.4h2.8" /><path d="M16.4 7.4h3" /></svg>
+    /* A scooter, not a motorcycle. The first attempt was two big wheels and a
+       diagonal frame, which at 26 pixels is a bicycle: the wheels were the
+       largest thing in it and there was nothing between them.
+
+       Five versions were drawn and looked at side by side at 26, 44 and 96
+       pixels before this one was picked, because an icon at 26 pixels is not
+       the icon you designed at 96. Outline alone kept reading as a frame at
+       every size; what fixed it was giving the rear body an actual fill, so
+       the eye meets a solid mass over the back wheel rather than a wire around
+       one. It is the only glyph here that is filled, and that is the reason. */
+    <svg {...SVG}><path fill="currentColor" fillOpacity=".22" stroke="none" d="M10.6 11.5h3.1c3.5 0 5.9 2.5 6 6.1h-2.3a3.6 3.6 0 0 0-7.2 0H5.5l1.4-2.9h2.7z" /><circle cx="6.2" cy="17.6" r="2.3" /><circle cx="17.8" cy="17.6" r="2.3" /><path d="M8.4 5.8h3.3" /><path d="M10.2 6.4 8.7 11.2" /><path d="M5.1 16 4.9 10.4c-.05-2.1 1.3-3.4 3.4-3.6" /><path d="M5.5 14.6h4.1l1-3.1h3.1c3.5 0 5.9 2.5 6 6.1h-2.1" /><path d="M10.9 11.5h5.4c1.3 0 2.1.6 2.4 1.9" /></svg>
   ),
   car: (
     <svg {...SVG}><path d="M3 16.4v-3l1.9-4a2 2 0 0 1 1.8-1.2h10.6a2 2 0 0 1 1.8 1.2l1.9 4v3" /><path d="M3 16.4h18" /><circle cx="7.3" cy="16.8" r="1.7" /><circle cx="16.7" cy="16.8" r="1.7" /><path d="M5.4 12.2h13.2" /></svg>
@@ -1381,16 +1391,23 @@ export function EddoSite({
             <p className="mt-3 mb-0 max-w-[54ch] text-[14.5px] leading-[1.75] text-slate">
               {t.services.items[service].body}
             </p>
-            {/* Opens the enquiry already pointed at this service, so nobody has
-                to find it again in a list of ten. */}
-            <button
-              type="button"
-              onClick={() => ask(service, t.services.items[service].title)}
-              className={`${BTN} mt-7`}
-            >
-              {t.services.cta}
-              <span aria-hidden="true">→</span>
-            </button>
+            {/* Only when the service has nothing listed under it.
+ 
+                With products below, every card carries its own button and this
+                one was a second way to say the same thing, sitting above them
+                in a louder colour: the reader has to decide which of the two is
+                the real one before they can ask about anything. Without
+                products, it is the only way to ask at all, so it stays. */}
+            {products.length === 0 && (
+              <button
+                type="button"
+                onClick={() => ask(service, t.services.items[service].title)}
+                className={`${BTN} mt-7`}
+              >
+                {t.services.cta}
+                <span aria-hidden="true">→</span>
+              </button>
+            )}
 
             {/* What the owner has actually listed under this service.
  
@@ -1400,7 +1417,7 @@ export function EddoSite({
                 card, because a price on a page is a promise and a stock photo
                 of somebody else's scooter is a different promise. */}
             {products.length > 0 && (
-              <div className="mt-8 grid grid-cols-1 gap-4 border-t border-eddo-line pt-7 sm:grid-cols-2 xl:grid-cols-3">
+              <div className="mt-7 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
                 {products.map((x) => (
                   <article
                     key={x.id}
@@ -1474,7 +1491,7 @@ export function EddoSite({
                         <button
                           type="button"
                           onClick={() =>
-                            ask(service, `${t.services.items[service].title} — ${x.name}`)
+                            ask(service, `${t.services.items[service].title}, ${x.name}`)
                           }
                           className={`${BTN_GHOST} mt-[12px] w-full px-[14px] py-[10px] text-[13px]`}
                         >

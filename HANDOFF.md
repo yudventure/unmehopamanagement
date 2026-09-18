@@ -227,7 +227,7 @@ src/
 content/
   site.json                   kontak + harga selam, ditulis oleh tab Website
 public/
-  hero.jpg 1.jpg 2.jpg 3.jpg  foto website (lihat public/README.md)
+  hero.jpg 1.jpg 2.jpg 3.jpg  foto website (lihat assets/README.md)
   logo.png                    logo homestay, juga jadi favicon /turtle
 ```
 
@@ -831,7 +831,7 @@ pekerjaan penerjemah di dalam formulir.
 
 ### Foto
 
-Empat berkas di `public/`, dan `public/README.md` menerangkan tiap slotnya:
+Empat berkas di `public/`, dan `assets/README.md` menerangkan tiap slotnya:
 `hero.jpg` (hero), `1.jpg`/`2.jpg`/`3.jpg` (tiga kartu), `logo.png` (favicon,
 disalin ke `src/app/turtle/icon.png`).
 

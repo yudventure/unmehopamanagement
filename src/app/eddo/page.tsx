@@ -47,11 +47,21 @@ export default async function EddoPage() {
   /* The room carousel takes whatever is in the folder, so "no maximum" is
      true of the site and not just of the component: `eddo-kamar-1.jpg`,
      `-2`, `-3` and on. Sorted by their number rather than by their name, or
-     ten would come between one and two. Counted at build, like the hero. */
-  const roomPhotos = readdirSync(join(process.cwd(), "public"))
+     ten would come between one and two. Counted at build, like the hero.
+
+     A file whose name ends `-720` is not a photograph of its own, it is the
+     same photograph for a narrow screen. So the list is built from the wide
+     ones and each is asked whether its narrow twin is there, which keeps the
+     rule for adding a picture as it was: drop a file in, and if you drop only
+     one, it still works, it is simply sent whole to every screen. */
+  const files = readdirSync(join(process.cwd(), "public"));
+  const roomPhotos = files
     .filter((f) => /^eddo-kamar-\d+\.(jpe?g|png|webp)$/i.test(f))
     .sort((a, b) => Number(a.replace(/\D/g, "")) - Number(b.replace(/\D/g, "")))
-    .map((f) => `/${f}`);
+    .map((f) => {
+      const narrow = f.replace(/\.([a-z]+)$/i, "-720.$1");
+      return { src: `/${f}`, narrow: files.includes(narrow) ? `/${narrow}` : null };
+    });
   return (
     <EddoSite
       maintenance={await isClosedFor("eddo")}

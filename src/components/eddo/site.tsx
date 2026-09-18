@@ -15,7 +15,7 @@ import {
   TikTokIcon,
   WhatsAppIcon,
 } from "@/components/web/icons";
-import { RoomCarousel } from "@/components/eddo/room-carousel";
+import { RoomCarousel, type RoomPhoto } from "@/components/eddo/room-carousel";
 import { CurrencySwitch, Price } from "@/components/web/price";
 import {
   IsletScene,
@@ -111,7 +111,7 @@ function loadSnap(src: string) {
 }
 
 /**
- * The badge from `public/eddo-logo.png` beside the name.
+ * The badge from `public/eddo-logo.webp` beside the name.
  *
  * The village line that used to sit under the name is gone: three things in a
  * 46px bar left it small enough to read as texture rather than as words. What
@@ -146,7 +146,7 @@ function EddoLogo({ size = 19, light = false }: { size?: number; light?: boolean
         <img
           ref={ref}
           data-ink-badge
-          src="/eddo-logo.png"
+          src="/eddo-logo.webp"
           alt=""
           width={Math.round(badge * LOGO_RATIO)}
           height={badge}
@@ -175,7 +175,18 @@ function EddoLogo({ size = 19, light = false }: { size?: number; light?: boolean
  * a broken-image marker. Every photograph on this site is still to be taken,
  * so today the drawings are what the page shows, and the page is complete.
  */
-function Photo({ src, alt }: { src: string; alt: string }) {
+function Photo({
+  src,
+  alt,
+  narrow,
+  sizes = "100vw",
+}: {
+  src: string;
+  alt: string;
+  /** The same picture cut down, for screens that cannot use the wide one. */
+  narrow?: string;
+  sizes?: string;
+}) {
   const [missing, setMissing] = useState(false);
   const ref = useRef<HTMLImageElement>(null);
   /* Same as the logo: on a prerendered page the load has already failed
@@ -190,6 +201,7 @@ function Photo({ src, alt }: { src: string; alt: string }) {
     <img
       ref={ref}
       src={src}
+      {...(narrow ? { srcSet: `${narrow} 720w, ${src} 1200w`, sizes } : {})}
       alt={alt}
       loading="lazy"
       decoding="async"
@@ -419,7 +431,7 @@ export function EddoSite({
   /** The room photographs that exist, in order, as web paths. Counted on the
       disk by the page: the carousel has no maximum, and a number baked into
       the code would be one. */
-  roomPhotos?: string[];
+  roomPhotos?: RoomPhoto[];
 }) {
   const { lang, pickLang } = useEddoLang();
   const { currency, pickCurrency } = useCurrency();
@@ -576,10 +588,17 @@ export function EddoSite({
            over a near-white ground again and both go back to ink. */
         {...(hasHeroPhoto && !barSolid ? { "data-on-photo": "" } : {})}
         className={`fixed inset-x-0 top-0 z-50 border-b transition-[background-color,border-color] duration-300 ${
-          barSolid
-            ? "border-line bg-surface/80 backdrop-blur-md"
-            : /* Nothing at all at rest: no fill, no rule, no blur. */
-              "border-transparent bg-transparent"
+          menuOpen
+            ? /* Solid, not frosted, while the menu is down. The panel below is
+                 opaque white, and a bar at 80% over a dark photograph is not:
+                 the picture came through it and the top strip read grey against
+                 the white sheet underneath, as though the menu had been cut out
+                 of something. One surface, one colour. */
+              "border-line bg-surface"
+            : barSolid
+              ? "border-line bg-surface/80 backdrop-blur-md"
+              : /* Nothing at all at rest: no fill, no rule, no blur. */
+                "border-transparent bg-transparent"
         }`}
       >
         <div className="mx-auto flex max-w-[1180px] items-center gap-4 px-5 py-[12px] md:px-8">
@@ -794,8 +813,22 @@ export function EddoSite({
                       The narrow file is the `<img>` and the wide one a
                       `<source>`, so each screen fetches one and only one. */}
                   <img
-                    src="/eddo-hero-1080.webp"
+                    src="/eddo-hero-tall.webp"
+                    /* Two widths, and the narrow one is 800 rather than the
+                       720 the rest of the site uses. A 390px phone at two
+                       device pixels wants 780: a 720 file is under that, so the
+                       browser correctly refuses it and takes the 1080 instead,
+                       which is how the first attempt at this saved nothing at
+                       all. 800 clears the bar, and a phone at three pixels
+                       still gets the 1080. */
+                    srcSet="/eddo-hero-tall-800.webp 800w, /eddo-hero-tall.webp 1080w"
+                    sizes="100vw"
                     alt={t.hero.alt}
+                    /* The one picture that is on screen before anything is
+                       scrolled, so it is the one the page is judged on. Told to
+                       go first rather than left to queue behind the scripts. */
+                    fetchPriority="high"
+                    decoding="async"
                     className="h-full w-full object-cover object-[50%_50%] lg:object-[50%_58%]"
                   />
                 </picture>
@@ -1187,7 +1220,12 @@ export function EddoSite({
 
           <div data-reveal style={step(2)} className="relative min-h-[320px] overflow-hidden rounded-[26px] bg-eddo-ink">
             <SnorkelScene className={`${FILL} object-cover opacity-90`} />
-            <Photo src="/eddo-cta.webp" alt={t.why.cta.alt} />
+            <Photo
+              src="/eddo-cta.webp"
+              narrow="/eddo-cta-720.webp"
+              sizes="(min-width: 1024px) 590px, calc(100vw - 40px)"
+              alt={t.why.cta.alt}
+            />
             <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(18,52,58,.88)_0%,rgba(18,52,58,.55)_60%,rgba(18,52,58,.25)_100%)]" />
             <div className="relative flex h-full flex-col justify-center p-8 text-white md:p-10">
               <span className="font-mono text-[10.5px] tracking-[.12em] text-white/75 uppercase">{t.why.cta.eyebrow}</span>

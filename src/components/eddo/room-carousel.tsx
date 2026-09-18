@@ -18,6 +18,12 @@ import { IsletScene, JettyScene } from "@/components/web/scenes";
  * from a reader's own half-swipe. The index here is the only state, so the
  * dots, the counter and the buttons cannot disagree with the picture.
  */
+/** A photograph, and the same photograph cut down for a narrow screen. */
+export interface RoomPhoto {
+  src: string;
+  narrow: string | null;
+}
+
 export function RoomCarousel({
   photos,
   alt,
@@ -25,7 +31,7 @@ export function RoomCarousel({
   next,
   counter,
 }: {
-  photos: string[];
+  photos: RoomPhoto[];
   /** Given the photograph's number and the total, in the reader's language. */
   alt: (n: number, of: number) => string;
   prev: string;
@@ -75,15 +81,36 @@ export function RoomCarousel({
               <JettyScene key="a" className="h-full w-full shrink-0 grow-0 basis-full" />,
               <IsletScene key="b" warm className="h-full w-full shrink-0 grow-0 basis-full" />,
             ]
-          : photos.map((src, i) => (
+          : photos.map((p, i) => (
               // eslint-disable-next-line @next/next/no-img-element
               <img
-                key={src}
-                src={src}
+                key={p.src}
+                src={p.src}
+                /* Two widths, and the browser picks. Without this every screen
+                   was sent the wide file: measured on a 390px phone, the box is
+                   348 CSS pixels, so 696 real ones against 1440 sent, which is
+                   three quarters of the bytes spent on detail the screen cannot
+                   paint.
+
+                   `sizes` has to describe the box and not the window, or the
+                   browser works from the full width and picks the wide file
+                   anyway. The 40px is the page's own side padding. */
+                {...(p.narrow
+                  ? {
+                      srcSet: `${p.narrow} 720w, ${p.src} 1200w`,
+                      sizes: "(min-width: 1024px) 560px, calc(100vw - 40px)",
+                    }
+                  : {})}
                 alt={alt(i + 1, count)}
-                /* The first one is what the reader is waiting for; the rest can
-                   arrive while they are looking at it. */
-                loading={i === 0 ? "eager" : "lazy"}
+                /* All of them lazy, including the first.
+
+                   It used to be eager, on the reasoning that the first picture
+                   is the one the reader is waiting for. True of a picture at
+                   the top of a page; this carousel is most of a screen further
+                   down, and measuring showed the cost of that word: 262 KB
+                   fetched before the page could be used, for a photograph
+                   nobody had scrolled to. */
+                loading="lazy"
                 decoding="async"
                 className="h-full w-full shrink-0 grow-0 basis-full object-cover"
               />

@@ -1,7 +1,13 @@
-# public/
+# Aset situs
 
-Berkas di folder ini disajikan apa adanya di root situs — `public/hero.jpg`
-menjadi `https…/hero.jpg`.
+Catatan tentang isi `public/`, yang **tidak** disimpan di sini bersamanya.
+
+Berkas di `public/` disajikan apa adanya di root situs: `public/hero.jpg`
+menjadi `https…/hero.jpg`. Itu juga berlaku untuk berkas yang bukan gambar,
+dan itulah sebabnya catatan ini pindah ke `assets/`. Selama ia berada di
+`public/`, ia bisa dibaca siapa pun di `https://eddohomestay.com/README.md`:
+dua puluh tiga kilobita catatan kerja, lengkap dengan alasan tiap keputusan,
+terbuka untuk umum tanpa ada yang meminta.
 
 **Nama berkas peka huruf besar-kecil.** Server-nya Linux; Mac bukan. `Hero.jpg`
 yang ditimpakan ke `hero.jpg` akan jadi berkas kedua dan halamannya kehilangan
@@ -234,15 +240,18 @@ fotonya yang tampil, tanpa mengubah kode.
 | Berkas | Dipakai di | Rasio |
 |---|---|---|
 | `website_logo_eddo_homestay.png` | **tidak dipakai**, disimpan sebagai master | aslinya dari pemilik: 2000×2000, latar transparan, 388 KB |
-| `eddo-logo.png` | kepala halaman, footer, halaman perbaikan | 164×240, 45 KB. Dibuat dari master di atas. Di atas foto ditampilkan putih lewat filter |
+| `eddo-logo.webp` | kepala halaman, footer, halaman perbaikan | 164×240, 20 KB. Dibuat dari master di `assets/foto-asli/`. Di atas foto ditampilkan putih lewat filter |
 | `eddo-hero.jpg` | latar hero di layar ≥1024px | 2:1, 1760×880, 218 KB. **Berkas ini juga menentukan bentuk hero** — lihat di bawah |
-| `eddo-hero-1080.webp` | latar hero di layar <1024px | 9:16, 1080×1920, 316 KB |
-| `eddo-kamar-1.webp` … `-10.webp` | karosel foto di bagian kamar | 4:3, 1440×1080, 103 sampai 262 KB |
+| `eddo-hero-tall.webp` | latar hero di layar <1024px | 9:16, 1080×1920, 305 KB |
+| `eddo-hero-tall-800.webp` | sama, untuk layar yang tidak butuh selebar itu | 800×1422, 166 KB |
+| `eddo-kamar-1.webp` … `-10.webp` | karosel foto di bagian kamar | 4:3, 1200×900, 76 sampai 168 KB |
+| `eddo-kamar-1-720.webp` … `-10-720.webp` | sama, untuk layar sempit | 4:3, 720×540, 35 sampai 69 KB |
 | `eddo-around-1.jpg` | kartu "Dermaga Yenbuba" | 3:4 (tegak). **Belum ada** |
 | `eddo-around-2.jpg` | kartu "Burung cendrawasih" | 3:4. **Belum ada** |
 | `eddo-around-3.jpg` | kartu "Arborek" | 3:4. **Belum ada** |
 | `eddo-around-4.jpg` | kartu "Piaynemo" | 3:4. **Belum ada** |
-| `eddo-cta.webp` | kartu ajakan di bagian "Kenapa Eddo" | 4:3, 1440×1080, 182 KB. Ditutup lapisan toska gelap dari kiri |
+| `eddo-cta.webp` | kartu ajakan di bagian "Kenapa Eddo" | 4:3, 1200×900, 134 KB. Ditutup lapisan toska gelap dari kiri |
+| `eddo-cta-720.webp` | sama, untuk layar sempit | 4:3, 720×540, 54 KB |
 
 Aturannya sama seperti situs Turtle: huruf kecil semua, lebar 1080 sampai
 1920px, usahakan di bawah 300 KB per foto.
@@ -285,7 +294,7 @@ mengecil sampai terbaca sebagai tekstur, bukan sebagai kata. Tinggi lencananya
 2,1 kali ukuran huruf namanya, jadi bar, footer, dan halaman perbaikan tetap
 sebanding tanpa disetel satu per satu.
 
-`eddo-logo.png` dibuat dari masternya, bukan digambar ulang. Masternya kanvas
+`eddo-logo.webp` dibuat dari masternya, bukan digambar ulang. Masternya kanvas
 2000×2000 dengan lencananya menempati 60% lebar dan 87% tinggi, jadi sepertiga
 kanvasnya udara kosong: dipakai apa adanya di kepala halaman, lencananya akan
 mengecil sendiri untuk muat di kotak persegi dan menyisakan ruang kosong di
@@ -311,7 +320,7 @@ hasil membaca piksel berkasnya. Nilai sebelumnya `#17a9ae` adalah tebakan mata
 dan meleset. Warna itu terang, jadi ia cuma untuk hiasan; yang membawa huruf
 adalah `#06777d`. Alasannya ada di `src/app/globals.css`.
 
-### Foto hero: `eddo-hero.jpg` dan `eddo-hero-1080.webp`
+### Foto hero: `eddo-hero.jpg` dan `eddo-hero-tall.webp`
 
 Dua berkas untuk satu tempat, dan **keduanya perlu diganti bersamaan** kalau
 fotonya diganti.

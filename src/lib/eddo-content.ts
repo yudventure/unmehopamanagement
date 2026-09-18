@@ -97,8 +97,45 @@ export function eddoRooms(): { rate: number; count: number } {
  * asking the same family. Hire is the other way round: Turtle's list does not
  * carry it.
  */
-export const EDDO_ACTIVITIES = ["stay", "diving", "motorbike", "camera", "package"] as const;
+/**
+ * What the family arranges besides the house, in the order the section lists
+ * them.
+ *
+ * Keys from the shared activity vocabulary rather than names of their own, so
+ * a service in this list and the same service in the enquiry dialog are the
+ * same thing rather than two things that agree today.
+ */
+export const SERVICE_KEYS = [
+  "merch",
+  "motorbike",
+  "car",
+  "boat",
+  "transfer",
+  "guide",
+  "camera",
+  "package",
+  "diving",
+] as const;
+export type ServiceKey = (typeof SERVICE_KEYS)[number];
+
+export const EDDO_ACTIVITIES = ["stay", ...SERVICE_KEYS] as const;
 export type EddoActivity = (typeof EDDO_ACTIVITIES)[number];
+
+/**
+ * The enquiry dialog's list of things to ask about, built from the services
+ * rather than written twice.
+ *
+ * It used to be its own block of words in every language, which meant ten
+ * labels and nine section headings saying the same nine things: the first time
+ * somebody renamed a service in the section, the dropdown would go on offering
+ * the old name and nobody would notice until a guest asked for something that
+ * is not on the page any more.
+ */
+export function eddoActivityLabels(t: EddoCopy): Record<EddoActivity, string> {
+  const out = { stay: t.stayLabel } as Record<EddoActivity, string>;
+  for (const k of SERVICE_KEYS) out[k] = t.services.items[k].title;
+  return out;
+}
 
 /**
  * What a night buys, in the order it is listed beside the price.
@@ -114,7 +151,7 @@ export type IncludedKey = (typeof INCLUDED_KEYS)[number];
 export interface EddoCopy {
   htmlLang: string;
   meta: { title: string; description: string };
-  nav: { home: string; rooms: string; around: string; why: string; faq: string };
+  nav: { home: string; rooms: string; around: string; services: string; why: string; faq: string };
   openMenu: string;
   currencyLabel: string;
   langLabel: string;
@@ -242,8 +279,34 @@ export interface EddoCopy {
     needContact: string;
     failed: string;
   };
-  /** The enquiry dialog's activity labels, keyed like the shared modal expects. */
-  activities: Record<EddoActivity, string>;
+  /**
+   * What the family arranges besides a bed, which is most of what a guest in
+   * Raja Ampat actually has to organise: getting to the island, getting around
+   * it, and getting on the water.
+   *
+   * No prices anywhere in here, and that is deliberate rather than an omission
+   * waiting to be filled. A boat's cost depends on the fuel that week and the
+   * tide that day, and a number printed on a page is a promise the family did
+   * not make. The section says what each thing is and offers to answer.
+   */
+  services: {
+    eyebrow: string;
+    title: string;
+    /** The tail of the title, set in the script face. */
+    script: string;
+    intro: string;
+    /** The button under the open service, which opens the enquiry at it. */
+    cta: string;
+    /** Said once under the whole list, about prices and availability. */
+    note: string;
+    items: Record<ServiceKey, { title: string; body: string }>;
+  };
+  /**
+   * The one thing on the enquiry list that is not one of the services above.
+   * The rest take their labels from `services.items`, so the dialog and the
+   * section cannot drift apart.
+   */
+  stayLabel: string;
   message: (v: {
     activity: string;
     name: string;
@@ -263,7 +326,7 @@ const EN: EddoCopy = {
     description:
       "Five family houses on the shore at Yenbuba, Pulau Mansuar, Raja Ampat. A house to yourselves, three meals a day, and snorkelling straight off the jetty.",
   },
-  nav: { home: "Home", rooms: "Rooms", around: "Around us", why: "Why Eddo", faq: "Questions" },
+  nav: { home: "Home", rooms: "Rooms", around: "Around us", services: "What we arrange", why: "Why Eddo", faq: "Questions" },
   openMenu: "Open menu",
   currencyLabel: "Show an approximate price in",
   langLabel: "Language",
@@ -405,16 +468,29 @@ const EN: EddoCopy = {
     needContact: "Please leave a WhatsApp number or an email, so we can answer.",
     failed: "That did not go through. Please try again, or message us on WhatsApp.",
   },
-  activities: {
-    stay: "a room",
-    diving: "diving",
-    motorbike: "motorbike hire",
-    camera: "camera hire",
-    package: "the full package",
+  services: {
+    eyebrow: "What else we arrange",
+    title: "Getting here, getting around,",
+    script: "getting on the water",
+    intro: "Most of what a stay in Raja Ampat takes is not the bed. It is the boat, the ride from the ferry, and somebody who knows where the fish are. The family arranges all of it, and you ask for it the same way you ask for a house.",
+    cta: "Ask about this",
+    note: "Nothing here carries a price on this page. A boat costs what the fuel costs that week and a crossing takes what the tide allows that day, so we quote when you ask rather than print a number we would have to take back.",
+    items: {
+      merch: { title: "Homestay T-shirts", body: "Shirts with the homestay's own mark on them. Ask which sizes are in the house and we will put one aside for you." },
+      motorbike: { title: "Motorbike hire in Waisai", body: "Waisai is where the ferry lands and where the roads are. Tell us the day you arrive and we will arrange one, so you are not looking for a bike at the harbour." },
+      car: { title: "Car hire in Waisai", body: "For a group, for luggage, or for a day of driving around Waigeo. Same as the bike: tell us when, and we arrange it." },
+      boat: { title: "Speedboat hire", body: "A boat and somebody to drive it, for going further than the jetty reaches. How far you can get depends on the sea that morning, so tell us what you want to see and we will say what is sensible." },
+      transfer: { title: "Island transfers", body: "Between the islands, and to and from the ferry at Waisai. This is how you get here in the first place, and how you reach the places a shared boat trip does not cover." },
+      guide: { title: "A guide for the day", body: "Somebody from the village who knows the water, the birds, and which house to knock on. For a morning, or for the length of your stay." },
+      camera: { title: "Camera hire", body: "For guests who did not bring one. Ask what is in the house when you book and we will tell you what is free for your dates." },
+      package: { title: "Trip packages", body: "A day, or several, put together end to end: the boat, the food, the guide, and the order to do them in. Tell us how long you have and what you would rather not miss." },
+      diving: { title: "Diving packages", body: "Run by Turtle Dive, our sister homestay in this same village. Certified dives or your first time in the water, arranged from here without you having to book twice." },
+    },
   },
+  stayLabel: "a house",
   message: (v) =>
     [
-      `Hello Eddo Homestay, I would like to ask about ${v.activity.toLowerCase()}.`,
+      `Hello Eddo Homestay, I would like to ask about ${v.activity}.`,
       v.when ? `When: ${v.when}` : "",
       v.people ? `People: ${v.people}` : "",
       v.nights ? `Nights: ${v.nights}` : "",
@@ -434,7 +510,7 @@ const ID: EddoCopy = {
     description:
       "Lima rumah keluarga di tepi air Yenbuba, Pulau Mansuar, Raja Ampat. Satu rumah dipakai sendiri, tiga kali makan, dan snorkeling langsung dari dermaga.",
   },
-  nav: { home: "Beranda", rooms: "Kamar", around: "Sekitar kami", why: "Kenapa Eddo", faq: "Tanya" },
+  nav: { home: "Beranda", rooms: "Kamar", around: "Sekitar kami", services: "Layanan", why: "Kenapa Eddo", faq: "Tanya" },
   openMenu: "Buka menu",
   currencyLabel: "Tampilkan perkiraan harga dalam",
   langLabel: "Bahasa",
@@ -576,16 +652,29 @@ const ID: EddoCopy = {
     needContact: "Isi nomor WhatsApp atau email dulu, supaya kami bisa membalas.",
     failed: "Pesannya gagal terkirim. Coba lagi, atau hubungi kami lewat WhatsApp.",
   },
-  activities: {
-    stay: "kamar",
-    diving: "selam",
-    motorbike: "sewa motor",
-    camera: "sewa kamera",
-    package: "paket lengkap",
+  services: {
+    eyebrow: "Yang juga kami urus",
+    title: "Sampai ke sini, keliling,",
+    script: "dan turun ke air",
+    intro: "Sebagian besar urusan menginap di Raja Ampat bukan soal kasurnya. Yang repot itu perahunya, jemputan dari kapal, dan orang yang tahu ikannya ada di mana. Semua itu kami yang urus, dan cara mintanya sama seperti minta rumah.",
+    cta: "Tanya soal ini",
+    note: "Tidak ada harga yang kami tulis di halaman ini. Ongkos perahu ikut harga bahan bakar minggu itu dan lama menyeberang ikut pasang hari itu, jadi kami sebutkan saat kamu tanya daripada mencantumkan angka yang nanti harus kami tarik lagi.",
+    items: {
+      merch: { title: "Kaos homestay", body: "Kaos dengan lambang homestay-nya sendiri. Tanya ukuran apa saja yang ada di rumah, nanti kami sisihkan satu untukmu." },
+      motorbike: { title: "Sewa motor di Waisai", body: "Waisai itu tempat kapal merapat dan tempat jalannya ada. Kabari tanggal kedatanganmu, kami yang aturkan, supaya kamu tidak mencari-cari motor di pelabuhan." },
+      car: { title: "Sewa mobil di Waisai", body: "Untuk rombongan, untuk barang bawaan, atau untuk sehari berkeliling Waigeo. Sama seperti motor: kabari kapan, kami aturkan." },
+      boat: { title: "Sewa speed boat", body: "Perahu beserta yang mengemudikan, untuk pergi lebih jauh dari jangkauan dermaga. Sampai mana bisanya tergantung laut pagi itu, jadi bilang saja mau lihat apa, nanti kami sebutkan mana yang masuk akal." },
+      transfer: { title: "Antar-jemput antar pulau", body: "Antar pulau, dan dari atau ke kapal di Waisai. Ini juga cara kamu sampai ke sini pertama kali, dan cara mencapai tempat yang tidak masuk trip perahu bersama." },
+      guide: { title: "Pemandu untuk sehari", body: "Orang kampung yang tahu airnya, burungnya, dan rumah mana yang harus diketuk. Untuk sepagi saja, atau untuk selama kamu menginap." },
+      camera: { title: "Sewa kamera", body: "Untuk tamu yang tidak membawa. Tanya apa yang ada di rumah saat memesan, nanti kami kabari mana yang kosong di tanggalmu." },
+      package: { title: "Paket trip", body: "Sehari, atau beberapa hari, disusun dari ujung ke ujung: perahunya, makannya, pemandunya, dan urutan mengerjakannya. Bilang berapa lama waktumu dan apa yang paling sayang dilewatkan." },
+      diving: { title: "Paket diving", body: "Dijalankan Turtle Dive, homestay saudara kami di kampung yang sama. Selam bersertifikat, atau pertama kali turun ke air, diatur dari sini tanpa kamu perlu memesan dua kali." },
+    },
   },
+  stayLabel: "rumah",
   message: (v) =>
     [
-      `Halo Eddo Homestay, saya mau tanya soal ${v.activity.toLowerCase()}.`,
+      `Halo Eddo Homestay, saya mau tanya soal ${v.activity}.`,
       v.when ? `Kapan: ${v.when}` : "",
       v.people ? `Jumlah orang: ${v.people}` : "",
       v.nights ? `Lama menginap: ${v.nights} malam` : "",
@@ -622,7 +711,7 @@ const FR: EddoCopy = {
     description:
       "Cinq maisons familiales au bord de l'eau à Yenbuba, Pulau Mansuar, Raja Ampat. Une maison rien que pour vous, trois repas par jour et du snorkeling depuis le ponton.",
   },
-  nav: { home: "Accueil", rooms: "Maisons", around: "Autour de nous", why: "Pourquoi Eddo", faq: "Questions" },
+  nav: { home: "Accueil", rooms: "Maisons", around: "Autour de nous", services: "Nos services", why: "Pourquoi Eddo", faq: "Questions" },
   openMenu: "Ouvrir le menu",
   currencyLabel: "Afficher un prix approximatif en",
   langLabel: "Langue",
@@ -764,16 +853,29 @@ const FR: EddoCopy = {
     needContact: "Laissez-nous un numéro WhatsApp ou un e-mail, pour que nous puissions répondre.",
     failed: "L'envoi n'a pas abouti. Réessayez, ou écrivez-nous sur WhatsApp.",
   },
-  activities: {
-    stay: "une maison",
-    diving: "la plongée",
-    motorbike: "la location de moto",
-    camera: "la location d'appareil photo",
-    package: "la formule complète",
+  services: {
+    eyebrow: "Ce que nous organisons aussi",
+    title: "Venir, se déplacer,",
+    script: "prendre la mer",
+    intro: "L'essentiel d'un séjour à Raja Ampat n'est pas le lit. C'est le bateau, le trajet depuis le ferry, et quelqu'un qui sait où sont les poissons. La famille organise tout cela, et cela se demande comme on demande une maison.",
+    cta: "Se renseigner",
+    note: "Rien ici n'a de prix sur cette page. Un bateau coûte ce que coûte le carburant cette semaine-là, et une traversée prend ce que la marée permet ce jour-là, alors nous chiffrons quand vous demandez plutôt que d'afficher un nombre que nous devrions reprendre.",
+    items: {
+      merch: { title: "T-shirts du homestay", body: "Des t-shirts portant la marque du homestay. Demandez quelles tailles sont à la maison et nous vous en mettrons un de côté." },
+      motorbike: { title: "Location de moto à Waisai", body: "Waisai, c'est là qu'accoste le ferry et là que sont les routes. Dites-nous le jour de votre arrivée et nous nous en occupons, pour que vous ne cherchiez pas une moto sur le port." },
+      car: { title: "Location de voiture à Waisai", body: "Pour un groupe, pour les bagages, ou pour une journée à sillonner Waigeo. Comme pour la moto : dites-nous quand, et nous organisons." },
+      boat: { title: "Location de bateau rapide", body: "Un bateau et quelqu'un pour le mener, pour aller plus loin que le ponton. Jusqu'où vous pouvez aller dépend de la mer ce matin-là, alors dites-nous ce que vous voulez voir et nous vous dirons ce qui est raisonnable." },
+      transfer: { title: "Transferts entre les îles", body: "Entre les îles, et depuis ou vers le ferry à Waisai. C'est ainsi que vous arrivez ici, et ainsi que vous atteignez les endroits qu'une sortie partagée ne couvre pas." },
+      guide: { title: "Un guide pour la journée", body: "Quelqu'un du village qui connaît l'eau, les oiseaux, et à quelle porte frapper. Pour une matinée, ou pour toute la durée de votre séjour." },
+      camera: { title: "Location d'appareil photo", body: "Pour les hôtes qui n'en ont pas apporté. Demandez ce qu'il y a à la maison au moment de réserver et nous vous dirons ce qui est libre à vos dates." },
+      package: { title: "Formules de sortie", body: "Une journée, ou plusieurs, montées d'un bout à l'autre : le bateau, les repas, le guide, et l'ordre dans lequel les faire. Dites-nous de combien de temps vous disposez et ce que vous ne voudriez pas manquer." },
+      diving: { title: "Formules de plongée", body: "Tenues par Turtle Dive, notre homestay jumeau dans ce même village. Plongées avec brevet ou première fois dans l'eau, organisées d'ici sans que vous ayez à réserver deux fois." },
+    },
   },
+  stayLabel: "une maison",
   message: (v) =>
     [
-      `Bonjour Eddo Homestay, je voudrais des renseignements sur ${v.activity.toLowerCase()}.`,
+      `Bonjour Eddo Homestay, je voudrais des renseignements sur ${v.activity}.`,
       v.when ? `Quand : ${v.when}` : "",
       v.people ? `Personnes : ${v.people}` : "",
       v.nights ? `Nuits : ${v.nights}` : "",
@@ -793,7 +895,7 @@ const JA: EddoCopy = {
     description:
       "Raja Ampat、Pulau Mansuar の Yenbuba 海辺に建つ家族経営の 5 棟。1 棟まるごと貸切、1 日 3 食付き、桟橋からそのままシュノーケリング。",
   },
-  nav: { home: "ホーム", rooms: "お部屋", around: "まわりのこと", why: "Eddo を選ぶ理由", faq: "よくある質問" },
+  nav: { home: "ホーム", rooms: "お部屋", around: "まわりのこと", services: "手配できること", why: "Eddo を選ぶ理由", faq: "よくある質問" },
   openMenu: "メニューを開く",
   currencyLabel: "おおよその価格を表示する通貨",
   langLabel: "言語",
@@ -935,13 +1037,26 @@ const JA: EddoCopy = {
     needContact: "お返事できるよう、WhatsApp の番号かメールをご記入ください。",
     failed: "送信できませんでした。もう一度お試しいただくか、WhatsApp からご連絡ください。",
   },
-  activities: {
-    stay: "宿泊",
-    diving: "ダイビング",
-    motorbike: "バイクの貸出",
-    camera: "カメラの貸出",
-    package: "まるごとおまかせ",
+  services: {
+    eyebrow: "宿泊のほかに手配できること",
+    title: "たどり着く、動きまわる、",
+    script: "海に出る",
+    intro: "Raja Ampat の滞在で手のかかるところは、寝る場所ではありません。舟、フェリーからの足、そして魚がどこにいるかを知っている人です。そのすべてを家族が手配します。頼み方は、お部屋を頼むときと同じです。",
+    cta: "これについて聞く",
+    note: "このページには値段をひとつも書いていません。舟代はその週の燃料しだい、渡る時間はその日の潮しだいだからです。あとで取り消すことになる数字を並べるより、お尋ねいただいたときにお見積りします。",
+    items: {
+      merch: { title: "ホームステイの T シャツ", body: "ホームステイの印が入った T シャツです。どのサイズが家にあるかお尋ねください。お取り置きします。" },
+      motorbike: { title: "Waisai でのバイクの貸出", body: "Waisai はフェリーが着く町で、道があるのもここです。到着日をお知らせいただければ手配しますので、港でバイクを探し回らずにすみます。" },
+      car: { title: "Waisai での車の貸出", body: "人数が多いとき、荷物が多いとき、あるいは一日 Waigeo を走ってみたいときに。バイクと同じで、いつかをお知らせいただければ手配します。" },
+      boat: { title: "スピードボートの貸切", body: "桟橋の先まで行くための、舟と操る人。どこまで行けるかはその朝の海しだいなので、見たいものをお聞かせください。無理のない範囲をお伝えします。" },
+      transfer: { title: "島から島への送迎", body: "島のあいだと、Waisai のフェリー乗り場との行き来。そもそもここへ着くための足であり、乗合の舟では行かない場所へ届く足でもあります。" },
+      guide: { title: "一日のガイド", body: "水のことも鳥のことも、どの家を訪ねればよいかも知っている村の人。半日だけでも、滞在中ずっとでも。" },
+      camera: { title: "カメラの貸出", body: "持ってこられなかったお客さまへ。ご予約のときに家にあるものをお尋ねください。ご滞在の日程で空いているものをお伝えします。" },
+      package: { title: "旅程のおまかせ", body: "一日、あるいは数日を端から端まで組み立てます。舟、食事、ガイド、そして回る順番まで。日数と、これだけは外したくないものをお聞かせください。" },
+      diving: { title: "ダイビングのおまかせ", body: "同じ村にある姉妹のホームステイ、Turtle Dive が担当します。ライセンスをお持ちの方も、はじめて水に入る方も、二重に予約する必要なくここから手配します。" },
+    },
   },
+  stayLabel: "宿泊",
   message: (v) =>
     [
       `Eddo Homestay さま、${v.activity} について伺いたいです。`,
@@ -964,7 +1079,7 @@ const DE: EddoCopy = {
     description:
       "Fünf Familienhäuser am Ufer von Yenbuba, Pulau Mansuar, Raja Ampat. Ein Haus für euch allein, drei Mahlzeiten am Tag und Schnorcheln direkt vom Steg.",
   },
-  nav: { home: "Start", rooms: "Häuser", around: "Um uns herum", why: "Warum Eddo", faq: "Fragen" },
+  nav: { home: "Start", rooms: "Häuser", around: "Um uns herum", services: "Was wir organisieren", why: "Warum Eddo", faq: "Fragen" },
   openMenu: "Menü öffnen",
   currencyLabel: "Ungefähren Preis anzeigen in",
   langLabel: "Sprache",
@@ -1106,16 +1221,29 @@ const DE: EddoCopy = {
     needContact: "Bitte hinterlasst eine WhatsApp-Nummer oder eine E-Mail, damit wir antworten können.",
     failed: "Das ist nicht durchgegangen. Versucht es bitte noch einmal, oder schreibt uns über WhatsApp.",
   },
-  activities: {
-    stay: "ein Haus",
-    diving: "Tauchen",
-    motorbike: "Motorradmiete",
-    camera: "Kameramiete",
-    package: "das ganze Paket",
+  services: {
+    eyebrow: "Was wir sonst noch organisieren",
+    title: "Herkommen, herumkommen,",
+    script: "aufs Wasser kommen",
+    intro: "Das meiste an einem Aufenthalt in Raja Ampat ist nicht das Bett. Es ist das Boot, die Fahrt von der Fähre und jemand, der weiß, wo die Fische sind. Das alles organisiert die Familie, und man fragt danach wie nach einem Haus.",
+    cta: "Danach fragen",
+    note: "Nichts davon hat auf dieser Seite einen Preis. Ein Boot kostet, was der Treibstoff in jener Woche kostet, und eine Überfahrt dauert, was die Gezeiten an jenem Tag zulassen. Wir nennen den Preis, wenn ihr fragt, statt eine Zahl zu drucken, die wir zurücknehmen müssten.",
+    items: {
+      merch: { title: "T-Shirts vom Homestay", body: "Shirts mit dem eigenen Zeichen des Homestay. Fragt, welche Größen im Haus sind, und wir legen euch eines zurück." },
+      motorbike: { title: "Motorradmiete in Waisai", body: "In Waisai legt die Fähre an, und dort sind die Straßen. Sagt uns euren Ankunftstag, dann organisieren wir eines, und ihr sucht nicht am Hafen nach einem Motorrad." },
+      car: { title: "Autovermietung in Waisai", body: "Für eine Gruppe, für Gepäck, oder für einen Tag Fahren über Waigeo. Wie beim Motorrad: sagt uns wann, wir kümmern uns." },
+      boat: { title: "Schnellboot mieten", body: "Ein Boot und jemand, der es fährt, um weiter zu kommen als der Steg reicht. Wie weit, entscheidet die See an jenem Morgen, also sagt uns, was ihr sehen wollt, und wir sagen, was sinnvoll ist." },
+      transfer: { title: "Transfers zwischen den Inseln", body: "Zwischen den Inseln und von oder zur Fähre in Waisai. So kommt ihr überhaupt erst her, und so erreicht ihr die Orte, die eine geteilte Bootsfahrt nicht abdeckt." },
+      guide: { title: "Eine Begleitung für den Tag", body: "Jemand aus dem Dorf, der das Wasser kennt, die Vögel, und an welche Tür man klopft. Für einen Vormittag, oder für die ganze Zeit eures Aufenthalts." },
+      camera: { title: "Kameramiete", body: "Für Gäste, die keine mitgebracht haben. Fragt bei der Buchung, was im Haus ist, dann sagen wir euch, was an euren Tagen frei ist." },
+      package: { title: "Ausflugspakete", body: "Ein Tag oder mehrere, von vorne bis hinten zusammengestellt: das Boot, das Essen, die Begleitung und die Reihenfolge. Sagt uns, wie viel Zeit ihr habt und was ihr auf keinen Fall verpassen wollt." },
+      diving: { title: "Tauchpakete", body: "Geführt von Turtle Dive, unserem Schwester-Homestay im selben Dorf. Tauchgänge mit Brevet oder das erste Mal im Wasser, von hier aus organisiert, ohne dass ihr zweimal buchen müsst." },
+    },
   },
+  stayLabel: "ein Haus",
   message: (v) =>
     [
-      `Hallo Eddo Homestay, ich möchte gern nach ${v.activity.toLowerCase()} fragen.`,
+      `Hallo Eddo Homestay, ich möchte gern nach ${v.activity} fragen.`,
       v.when ? `Wann: ${v.when}` : "",
       v.people ? `Personen: ${v.people}` : "",
       v.nights ? `Nächte: ${v.nights}` : "",
@@ -1135,7 +1263,7 @@ const RU: EddoCopy = {
     description:
       "Пять семейных домов на берегу в Yenbuba, Pulau Mansuar, Raja Ampat. Отдельный дом только для вас, трёхразовое питание и снорклинг прямо с причала.",
   },
-  nav: { home: "Главная", rooms: "Дома", around: "Вокруг нас", why: "Почему Eddo", faq: "Вопросы" },
+  nav: { home: "Главная", rooms: "Дома", around: "Вокруг нас", services: "Что мы устраиваем", why: "Почему Eddo", faq: "Вопросы" },
   openMenu: "Открыть меню",
   currencyLabel: "Показать примерную цену в",
   langLabel: "Язык",
@@ -1277,16 +1405,29 @@ const RU: EddoCopy = {
     needContact: "Оставьте, пожалуйста, номер WhatsApp или почту, чтобы мы могли ответить.",
     failed: "Отправить не удалось. Попробуйте ещё раз или напишите нам в WhatsApp.",
   },
-  activities: {
-    stay: "дом",
-    diving: "дайвинг",
-    motorbike: "аренду мотоцикла",
-    camera: "аренду камеры",
-    package: "полный пакет",
+  services: {
+    eyebrow: "Что мы ещё устраиваем",
+    title: "Добраться, передвигаться,",
+    script: "выйти на воду",
+    intro: "Основное в поездке на Raja Ampat — не кровать. Это лодка, дорога от парома и человек, который знает, где рыба. Всё это устраивает семья, и просить об этом можно так же, как просить дом.",
+    cta: "Спросить об этом",
+    note: "Ни у чего из этого на странице нет цены. Лодка стоит столько, сколько на той неделе стоит топливо, а переход занимает столько, сколько позволит прилив в тот день. Мы называем цену, когда вы спрашиваете, вместо того чтобы печатать число, от которого потом пришлось бы отказаться.",
+    items: {
+      merch: { title: "Футболки гостевого дома", body: "Футболки со знаком самого гостевого дома. Спросите, какие размеры есть в доме, и мы отложим вам одну." },
+      motorbike: { title: "Аренда мотоцикла в Waisai", body: "Waisai — это там, где причаливает паром и где есть дороги. Напишите день приезда, и мы всё устроим, чтобы вам не искать мотоцикл в порту." },
+      car: { title: "Аренда машины в Waisai", body: "Для компании, для багажа или на день езды по Waigeo. Как и с мотоциклом: напишите когда, а мы устроим." },
+      boat: { title: "Аренда скоростной лодки", body: "Лодка и тот, кто ею управляет, чтобы уйти дальше, чем достаёт причал. Насколько далеко, решает море тем утром, так что напишите, что хотите увидеть, и мы скажем, что разумно." },
+      transfer: { title: "Переезды между островами", body: "Между островами и до парома в Waisai или от него. Именно так вы сюда и попадаете, и так добираетесь туда, куда общая лодка не идёт." },
+      guide: { title: "Проводник на день", body: "Человек из деревни, который знает воду, птиц и в какую дверь постучать. На утро или на всё время вашего пребывания." },
+      camera: { title: "Аренда камеры", body: "Для гостей, которые не взяли свою. Спросите при бронировании, что есть в доме, и мы скажем, что свободно на ваши даты." },
+      package: { title: "Пакеты поездок", body: "День или несколько, собранные от начала до конца: лодка, еда, проводник и порядок, в котором всё это делать. Напишите, сколько у вас времени и что не хотелось бы пропустить." },
+      diving: { title: "Пакеты для дайвинга", body: "Их ведёт Turtle Dive, наш соседний гостевой дом в этой же деревне. Погружения по сертификату или первый раз в воде, устраиваются отсюда, и бронировать дважды не нужно." },
+    },
   },
+  stayLabel: "дом",
   message: (v) =>
     [
-      `Здравствуйте, Eddo Homestay, хочу спросить про ${v.activity.toLowerCase()}.`,
+      `Здравствуйте, Eddo Homestay, хочу спросить про ${v.activity}.`,
       v.when ? `Когда: ${v.when}` : "",
       v.people ? `Человек: ${v.people}` : "",
       v.nights ? `Ночей: ${v.nights}` : "",
@@ -1306,7 +1447,7 @@ const ZH: EddoCopy = {
     description:
       "Raja Ampat, Pulau Mansuar 的 Yenbuba 海边五栋家庭民宿。整栋独享，一日三餐，从自家栈桥下水浮潜。",
   },
-  nav: { home: "首页", rooms: "房子", around: "周边", why: "为什么选 Eddo", faq: "常见问题" },
+  nav: { home: "首页", rooms: "房子", around: "周边", services: "我们能安排的", why: "为什么选 Eddo", faq: "常见问题" },
   openMenu: "打开菜单",
   currencyLabel: "以此货币显示大致价格",
   langLabel: "语言",
@@ -1448,13 +1589,26 @@ const ZH: EddoCopy = {
     needContact: "请留下 WhatsApp 号码或邮箱，我们才能回复。",
     failed: "没能发送出去。请再试一次，或者用 WhatsApp 联系我们。",
   },
-  activities: {
-    stay: "住宿",
-    diving: "潜水",
-    motorbike: "租摩托车",
-    camera: "租相机",
-    package: "整套安排",
+  services: {
+    eyebrow: "住宿之外我们也安排",
+    title: "过来、走动、",
+    script: "下海",
+    intro: "在 Raja Ampat 待几天，麻烦的不是床，是船、是从渡轮过来的那段路，还有一个知道鱼在哪里的人。这些都由这家人安排，开口的方式和订房子一样。",
+    cta: "问问这个",
+    note: "这页上什么都没有标价。船钱看那一周的油价，过海要多久看那天的潮水，所以你来问我们再报，而不是先写一个之后得收回的数字。",
+    items: {
+      merch: { title: "民宿 T 恤", body: "印着民宿自己标记的 T 恤。问问屋里还有哪些尺码，我们给你留一件。" },
+      motorbike: { title: "Waisai 租摩托车", body: "Waisai 是渡轮靠岸的地方，也是有路的地方。把到达日期告诉我们，我们来安排，你不用在码头到处找车。" },
+      car: { title: "Waisai 租汽车", body: "人多、行李多，或者想花一天绕 Waigeo 开一圈。跟摩托车一样：告诉我们时间，我们来安排。" },
+      boat: { title: "包快艇", body: "一条船，加上开船的人，去栈桥到不了的地方。能走多远看那天早上的海，所以把想看的说出来，我们告诉你哪些是合理的。" },
+      transfer: { title: "岛与岛之间的接送", body: "岛与岛之间，以及往返 Waisai 的渡轮码头。你最初就是这样到这里的，也是这样去到拼船不走的地方。" },
+      guide: { title: "包一天的向导", body: "村里的人，知道水情、知道鸟、也知道该敲哪一家的门。可以只要一个上午，也可以整个行程都陪着。" },
+      camera: { title: "租相机", body: "给没带相机的客人。订房时问一下屋里有什么，我们告诉你你那几天哪些是空的。" },
+      package: { title: "行程套餐", body: "一天，或者好几天，从头到尾排好：船、饭、向导，还有先后顺序。告诉我们你有多少时间，以及最舍不得错过的是什么。" },
+      diving: { title: "潜水套餐", body: "由同村的姊妹民宿 Turtle Dive 负责。有证的潜水，或者第一次下水，都从这里安排，不用订两次。" },
+    },
   },
+  stayLabel: "房子",
   message: (v) =>
     [
       `你好 Eddo Homestay，我想问一下${v.activity}。`,

@@ -32,6 +32,9 @@ import {
   EDDO,
   EDDO_COPY,
   EDDO_LANGS,
+  SERVICE_KEYS,
+  eddoActivityLabels,
+  type ServiceKey,
   EMAIL,
   EDDO_ACTIVITIES,
   INCLUDED_KEYS,
@@ -409,6 +412,64 @@ const INCLUDED_ICONS: Record<IncludedKey, React.ReactNode> = {
   nofee: <><path d="M20 12.5l-7.5 7.5-8.5-8.5V4h7.5l8.5 8.5z" /><path d="M8.2 8.2h.01" /></>,
 };
 
+/**
+ * A glyph for each thing the family arranges.
+ *
+ * Drawn rather than photographed because there are no photographs of a hired
+ * motorbike or a box of T-shirts, and a stock picture of somebody else's
+ * scooter is a worse answer than a line drawing: it says a little and implies
+ * a lot, and what it implies is not this place.
+ *
+ * Keyed rather than listed, for the reason the included-with-a-night lines are:
+ * a list matched by position comes apart the first time somebody reorders it,
+ * and a camera beside "speedboat hire" is the kind of wrong nobody reports.
+ *
+ * Sized in attributes, not left to the box. An `<svg>` carrying only a viewBox
+ * has no intrinsic size; Chromium gives it the room its parent has and Safari
+ * gives it none.
+ */
+const SVG = {
+  viewBox: "0 0 24 24",
+  width: 26,
+  height: 26,
+  fill: "none",
+  stroke: "currentColor",
+  strokeWidth: 1.6,
+  strokeLinecap: "round",
+  strokeLinejoin: "round",
+  "aria-hidden": true,
+} as const;
+
+const SERVICE_ICONS: Record<ServiceKey, React.ReactNode> = {
+  merch: (
+    <svg {...SVG}><path d="M8.6 3.6 4.2 5.8 2.8 9.3l3 1.2 1-1.7v11.6h10.4V8.8l1 1.7 3-1.2-1.4-3.5-4.4-2.2a3.5 3.5 0 0 1-6.8 0Z" /></svg>
+  ),
+  motorbike: (
+    <svg {...SVG}><circle cx="5.2" cy="16.6" r="3.4" /><circle cx="18.8" cy="16.6" r="3.4" /><path d="M5.2 16.6h3.4l4.2-5.8h3.6l2.4 5.8" /><path d="M12.8 10.8 11 7.4h2.8" /><path d="M16.4 7.4h3" /></svg>
+  ),
+  car: (
+    <svg {...SVG}><path d="M3 16.4v-3l1.9-4a2 2 0 0 1 1.8-1.2h10.6a2 2 0 0 1 1.8 1.2l1.9 4v3" /><path d="M3 16.4h18" /><circle cx="7.3" cy="16.8" r="1.7" /><circle cx="16.7" cy="16.8" r="1.7" /><path d="M5.4 12.2h13.2" /></svg>
+  ),
+  boat: (
+    <svg {...SVG}><path d="M2.8 15h18.4l-2.6 4.2H5.4z" /><path d="M7.4 15v-4.6h5.4L16.6 15" /><path d="M2.6 21.4c1.4.8 2.9.8 4.3 0s2.9-.8 4.3 0 2.9.8 4.3 0 2.9-.8 4.3 0" /></svg>
+  ),
+  transfer: (
+    <svg {...SVG}><path d="M5.6 2.8a2.9 2.9 0 0 1 2.9 2.9c0 2.1-2.9 5.2-2.9 5.2s-2.9-3.1-2.9-5.2a2.9 2.9 0 0 1 2.9-2.9Z" /><path d="M18.4 12.6a2.9 2.9 0 0 1 2.9 2.9c0 2.1-2.9 5.2-2.9 5.2s-2.9-3.1-2.9-5.2a2.9 2.9 0 0 1 2.9-2.9Z" /><path d="M9.4 8.6c3.4.4 5.2 2.4 5.6 5.4" /><path d="m12.6 14.6 2.4-.6.5 2.4" /></svg>
+  ),
+  guide: (
+    <svg {...SVG}><circle cx="8.4" cy="6.2" r="2.8" /><path d="M3.4 20.6v-1.8a5 5 0 0 1 5-5 5 5 0 0 1 5 5v1.8" /><path d="M17.6 3.2v17.4" /><path d="M17.6 4.4h4l-1.4 2.2 1.4 2.2h-4" /></svg>
+  ),
+  camera: (
+    <svg {...SVG}><rect x="2.6" y="7" width="18.8" height="13" rx="2.6" /><path d="M8.6 7 10 4.4h4L15.4 7" /><circle cx="12" cy="13.4" r="3.5" /></svg>
+  ),
+  package: (
+    <svg {...SVG}><path d="m2.8 6.4 5.8-2.2v13.4l-5.8 2.2z" /><path d="m8.6 4.2 6.8 2.2v13.4L8.6 17.6z" /><path d="m15.4 6.4 5.8-2.2v13.4l-5.8 2.2z" /></svg>
+  ),
+  diving: (
+    <svg {...SVG}><path d="M4.4 8.6h10.2a1.6 1.6 0 0 1 1.6 1.6v2.4a2.6 2.6 0 0 1-2.6 2.6h-1.8l-1.3-1.4H9.3L8 15.2H6.2a2.6 2.6 0 0 1-2.6-2.6v-2.4a1.6 1.6 0 0 1 .8-1.6Z" /><path d="M16.2 10.6h2.2a1.8 1.8 0 0 1 1.8 1.8v4.4a2.6 2.6 0 0 1-2.6 2.6h-1.4" /><path d="M18.4 5.4v5.2" /></svg>
+  ),
+};
+
 const BTN =
   "inline-flex cursor-pointer items-center justify-center gap-2 rounded-full border-none bg-eddo-deep px-[22px] py-[12px] text-[14px] font-medium text-white no-underline transition-colors hover:bg-eddo-dark hover:text-white hover:no-underline";
 const BTN_GHOST =
@@ -444,6 +505,9 @@ export function EddoSite({
      does not: the borrowed words came back in English while the page around
      them was in French. They live here now. */
   const monthsAhead = eddoMonthOptions(MONTH_ANCHOR, lang);
+  /* Built from the services rather than written beside them, so the dialog's
+     list and the section's headings are the same words by construction. */
+  const activityLabels = eddoActivityLabels(t);
   const rooms = eddoRooms();
 
   useEffect(() => {
@@ -452,6 +516,10 @@ export function EddoSite({
 
   useReveal();
   const heroRef = useHeroScroll<HTMLDivElement>();
+
+  /* Which of the nine is open. The first, because a panel with nothing in it
+     is a hole rather than an invitation to press something. */
+  const [service, setService] = useState<ServiceKey>(SERVICE_KEYS[0]);
 
   const [menuOpen, setMenuOpen] = useState(false);
   /* Both the button and the panel, because the button lives in the bar's top
@@ -539,7 +607,7 @@ export function EddoSite({
   };
 
   const message = t.message({
-    activity: t.activities[enquiry.activity as EddoActivity] ?? enquiry.activity,
+    activity: activityLabels[enquiry.activity as EddoActivity] ?? enquiry.activity,
     name: enquiry.name,
     phone: enquiry.phone,
     email: enquiry.email,
@@ -553,6 +621,7 @@ export function EddoSite({
     { id: "atas", label: t.nav.home },
     { id: "kamar", label: t.nav.rooms },
     { id: "sekitar", label: t.nav.around },
+    { id: "layanan", label: t.nav.services },
     { id: "kenapa", label: t.nav.why },
     { id: "tanya", label: t.nav.faq },
   ];
@@ -1229,6 +1298,103 @@ export function EddoSite({
         <p data-reveal className="mt-5 max-w-[720px] text-[13px] leading-[1.6] text-slate">{t.around.note}</p>
       </Section>
 
+      {/* ------------------------------------------------------- services */}
+      {/*
+       * Nine things the family arranges besides the house, one open at a time.
+       *
+       * The list and the panel rather than nine cards: nine cards is a wall,
+       * and a reader who wants a motorbike has to read about diving to find it.
+       * A list is scanned in a second and only the one thing asked for is read.
+       *
+       * Below 1024 the list turns on its side and scrolls. A column of nine on
+       * a phone would put the panel a whole screen below the thing that
+       * changes it, so pressing an item would move something the reader cannot
+       * see. Sideways keeps both in view, which is the only arrangement where
+       * pressing one of these means anything.
+       */}
+      <Section id="layanan" className="pt-20 md:pt-24">
+        <div data-reveal>
+          <Eyebrow>{t.services.eyebrow}</Eyebrow>
+          <Title
+            plain={t.services.title}
+            script={t.services.script}
+            className="mt-4 text-[clamp(30px,4.6vw,48px)]"
+          />
+          <p className="mt-5 max-w-[640px] text-[14.5px] leading-[1.7] text-slate">
+            {t.services.intro}
+          </p>
+        </div>
+
+        <div
+          data-reveal
+          style={step(1)}
+          className="mt-9 grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,320px)_1fr] lg:gap-8"
+        >
+          <div
+            role="tablist"
+            aria-label={t.services.eyebrow}
+            className="scrollbar-none -mx-5 flex gap-[8px] overflow-x-auto px-5 lg:mx-0 lg:flex-col lg:gap-[4px] lg:overflow-visible lg:px-0"
+          >
+            {SERVICE_KEYS.map((k) => {
+              const on = service === k;
+              return (
+                <button
+                  key={k}
+                  type="button"
+                  role="tab"
+                  aria-selected={on}
+                  onClick={() => setService(k)}
+                  className={`flex shrink-0 cursor-pointer items-center gap-[11px] rounded-full border-none px-[16px] py-[13px] text-left text-[14px] whitespace-nowrap transition-colors lg:w-full lg:rounded-[14px] lg:whitespace-normal ${
+                    on
+                      ? "bg-eddo-deep font-medium text-white"
+                      : "bg-eddo-tint text-eddo-ink hover:bg-eddo-line lg:bg-transparent lg:hover:bg-eddo-tint"
+                  }`}
+                >
+                  <span className="flex h-[20px] w-[20px] shrink-0 items-center justify-center">
+                    <span className="scale-[.78]">{SERVICE_ICONS[k]}</span>
+                  </span>
+                  {t.services.items[k].title}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Keyed on the open service so the panel is a new element each time
+              and the little settling animation runs again. Deliberately without
+              `data-reveal`: that is handed out once on mount, so an element
+              that appears later is never observed and would stay hidden. */}
+          <div
+            key={service}
+            role="tabpanel"
+            className="animate-pop-in rounded-[24px] border border-eddo-line bg-eddo-wash p-7 md:p-9"
+          >
+            <span className="flex h-[54px] w-[54px] items-center justify-center rounded-[17px] bg-surface text-eddo-deep ring-1 ring-eddo-line">
+              {SERVICE_ICONS[service]}
+            </span>
+            <h3 className="mt-6 mb-0 text-[clamp(19px,2.2vw,24px)] leading-[1.2] font-bold tracking-[-.02em] text-eddo-ink">
+              {t.services.items[service].title}
+            </h3>
+            <p className="mt-3 mb-0 max-w-[54ch] text-[14.5px] leading-[1.75] text-slate">
+              {t.services.items[service].body}
+            </p>
+            {/* Opens the enquiry already pointed at this service, so nobody has
+                to find it again in a list of ten. */}
+            <button
+              type="button"
+              onClick={() => ask(service, t.services.items[service].title)}
+              className={`${BTN} mt-7`}
+            >
+              {t.services.cta}
+              <span aria-hidden="true">→</span>
+            </button>
+          </div>
+        </div>
+
+        <p data-reveal className="mt-6 max-w-[760px] text-[13px] leading-[1.7] text-slate">
+          {t.services.note}
+        </p>
+      </Section>
+
       {/* ------------------------------------------------------------ why */}
       <Section id="kenapa" className="pt-20 md:pt-24">
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_1fr] lg:gap-12">
@@ -1356,7 +1522,7 @@ export function EddoSite({
         siteKey="eddo"
         open={enquiryOpen}
         onClose={() => setEnquiryOpen(false)}
-        t={t}
+        t={{ enquiry: t.enquiry, activities: activityLabels }}
         months={monthsAhead}
         value={enquiry}
         onChange={patch}

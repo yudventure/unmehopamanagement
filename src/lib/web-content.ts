@@ -162,6 +162,16 @@ export const ACTIVITY_KEYS = [
   "motorbike",
   "camera",
   "package",
+  /* The rest of what Eddo's family arranges, added when the site grew a
+     section listing it. They are here rather than in Eddo's own file because
+     this list is the shared vocabulary the enquiry dialog speaks, and a word
+     only one site uses is still a word. Turtle does not name them and does not
+     have to, which is what `activities` being partial below is for. */
+  "merch",
+  "car",
+  "boat",
+  "transfer",
+  "guide",
 ] as const;
 export type ActivityKey = (typeof ACTIVITY_KEYS)[number];
 
@@ -402,7 +412,17 @@ export interface SiteCopy {
       failed: string;
     };
   };
-  activities: Record<ActivityKey, string>;
+  /**
+   * What each thing a visitor can ask about is called, in this site's words.
+   *
+   * Partial, because the list above is the vocabulary and not the menu: Eddo
+   * arranges cars, boats and guides and names them, Turtle does not and should
+   * not have to invent words for a hire desk it has never had. The dialog only
+   * ever looks up the keys a site passed it, and falls back to the key itself
+   * if one is somehow missing, so a gap here is a plain label rather than an
+   * empty option nobody can choose.
+   */
+  activities: Partial<Record<ActivityKey, string>>;
   months: string[];
   /** The WhatsApp text, assembled from whatever the visitor filled in. */
   message: (v: {

@@ -337,7 +337,9 @@ export function TurtleSite() {
     setEnquiry((prev) => ({ ...prev, ...patch }));
 
   const message = t.message({
-    activity: t.activities[enquiry.activity],
+    /* Falls back to the key, the way the dialog does: a word this site never
+       wrote is better sent as `motorbike` than as nothing at all. */
+    activity: t.activities[enquiry.activity] ?? enquiry.activity,
     name: enquiry.name,
     phone: enquiry.phone,
     email: enquiry.email,

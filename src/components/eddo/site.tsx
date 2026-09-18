@@ -448,17 +448,34 @@ const SERVICE_ICONS: Record<ServiceKey, React.ReactNode> = {
     <svg {...SVG}><path d="M8.6 3.6 4.2 5.8 2.8 9.3l3 1.2 1-1.7v11.6h10.4V8.8l1 1.7 3-1.2-1.4-3.5-4.4-2.2a3.5 3.5 0 0 1-6.8 0Z" /></svg>
   ),
   motorbike: (
-    /* A scooter, not a motorcycle. The first attempt was two big wheels and a
-       diagonal frame, which at 26 pixels is a bicycle: the wheels were the
-       largest thing in it and there was nothing between them.
+    /* A scooter, and the one glyph here that is a silhouette rather than a
+       line drawing.
 
-       Five versions were drawn and looked at side by side at 26, 44 and 96
-       pixels before this one was picked, because an icon at 26 pixels is not
-       the icon you designed at 96. Outline alone kept reading as a frame at
-       every size; what fixed it was giving the rear body an actual fill, so
-       the eye meets a solid mass over the back wheel rather than a wire around
-       one. It is the only glyph here that is filled, and that is the reason. */
-    <svg {...SVG}><path fill="currentColor" fillOpacity=".22" stroke="none" d="M10.6 11.5h3.1c3.5 0 5.9 2.5 6 6.1h-2.3a3.6 3.6 0 0 0-7.2 0H5.5l1.4-2.9h2.7z" /><circle cx="6.2" cy="17.6" r="2.3" /><circle cx="17.8" cy="17.6" r="2.3" /><path d="M8.4 5.8h3.3" /><path d="M10.2 6.4 8.7 11.2" /><path d="M5.1 16 4.9 10.4c-.05-2.1 1.3-3.4 3.4-3.6" /><path d="M5.5 14.6h4.1l1-3.1h3.1c3.5 0 5.9 2.5 6 6.1h-2.1" /><path d="M10.9 11.5h5.4c1.3 0 2.1.6 2.4 1.9" /></svg>
+       Eight versions were drawn and looked at side by side at 26, 44 and 96
+       pixels, because an icon at 26 pixels is not the icon you designed at 96.
+       Every outline version read as a bicycle at the size it is actually used,
+       including one with a faint fill behind it: at 26 pixels a thin rear
+       body is just more line, and line is what a bicycle is made of. Filling
+       the body outright is what finally made it a motor, because the eye meets
+       a mass over the back wheel instead of a wire around one.
+
+       That costs consistency with the other eight, which was weighed and lost.
+       An icon nobody can name is not carrying its weight whatever it matches. */
+    <svg {...SVG}>
+      {/* Body as solid shapes rather than an outline of one: the leg shield
+          leaning back, the floorboard, the seat, and the cowl over the rear
+          wheel. Wheels stay outlined and small, which is the proportion that
+          separates a scooter from a bicycle more than any other single thing. */}
+      <g fill="currentColor" stroke="none">
+        <rect x="4.6" y="6.4" width="2.6" height="7.6" rx="1.3" transform="rotate(-9 5.9 10.2)" />
+        <rect x="5.6" y="12.6" width="7.6" height="1.9" rx=".95" />
+        <path d="M10.4 14.5v-3.1a1 1 0 0 1 1-1h4.2a5.4 5.4 0 0 1 5.4 5.4v.3H10.4z" />
+        <rect x="9.9" y="8.9" width="7.4" height="2" rx="1" />
+      </g>
+      <path d="M3.7 5.6h3.6" strokeWidth={1.8} />
+      <circle cx="6.6" cy="17.9" r="2.2" strokeWidth={1.8} />
+      <circle cx="17.6" cy="17.9" r="2.2" strokeWidth={1.8} />
+    </svg>
   ),
   car: (
     <svg {...SVG}><path d="M3 16.4v-3l1.9-4a2 2 0 0 1 1.8-1.2h10.6a2 2 0 0 1 1.8 1.2l1.9 4v3" /><path d="M3 16.4h18" /><circle cx="7.3" cy="16.8" r="1.7" /><circle cx="16.7" cy="16.8" r="1.7" /><path d="M5.4 12.2h13.2" /></svg>
@@ -1382,10 +1399,11 @@ export function EddoSite({
             role="tabpanel"
             className="animate-pop-in rounded-[24px] border border-eddo-line bg-eddo-wash p-7 md:p-9"
           >
-            <span className="flex h-[54px] w-[54px] items-center justify-center rounded-[17px] bg-surface text-eddo-deep ring-1 ring-eddo-line">
-              {SERVICE_ICONS[service]}
-            </span>
-            <h3 className="mt-6 mb-0 text-[clamp(19px,2.2vw,24px)] leading-[1.2] font-bold tracking-[-.02em] text-eddo-ink">
+            {/* No glyph above the title. The same drawing is in the list to
+                the left, on the row that is lit, and repeating it here said
+                nothing the reader did not just press. What it did do was push
+                the heading down by most of an inch. */}
+            <h3 className="m-0 text-[clamp(19px,2.2vw,24px)] leading-[1.2] font-bold tracking-[-.02em] text-eddo-ink">
               {t.services.items[service].title}
             </h3>
             <p className="mt-3 mb-0 max-w-[54ch] text-[14.5px] leading-[1.75] text-slate">

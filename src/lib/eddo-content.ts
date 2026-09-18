@@ -76,7 +76,6 @@ export interface EddoCopy {
   currencyLabel: string;
   langLabel: string;
   hero: {
-    eyebrow: string;
     title: string;
     /** The line set in the script face, under the title. */
     script: string;
@@ -186,7 +185,6 @@ const EN: EddoCopy = {
   currencyLabel: "Show an approximate price in",
   langLabel: "Language",
   hero: {
-    eyebrow: "Yenbuba · Pulau Mansuar · Raja Ampat",
     title: "A quiet corner of Raja\u00A0Ampat",
     script: "yours alone",
     sub: "Five houses on the shore at Yenbuba, kept by the family who lives here. Three meals a day, a jetty to snorkel from, and a deck you share with nobody.",
@@ -333,7 +331,6 @@ const ID: EddoCopy = {
   currencyLabel: "Tampilkan perkiraan harga dalam",
   langLabel: "Bahasa",
   hero: {
-    eyebrow: "Yenbuba · Pulau Mansuar · Raja Ampat",
     title: "Sudut tenang Raja\u00A0Ampat",
     script: "cuma untukmu",
     sub: "Lima rumah di tepi air Yenbuba, dijaga keluarga yang memang tinggal di sini. Tiga kali makan sehari, dermaga untuk snorkeling, dan teras yang tidak dibagi dengan siapa-siapa.",

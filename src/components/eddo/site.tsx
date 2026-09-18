@@ -683,13 +683,21 @@ export function EddoSite({
             className="relative max-w-[600px]"
           >
             <div className="relative">
-            <Eyebrow>{t.hero.eyebrow}</Eyebrow>
+            {/* The place line that used to stand above the headline is gone.
+                It read "Yenbuba · Pulau Mansuar · Raja Ampat", and the
+                sentence directly under the headline already says where this
+                is, so the pill was the same fact twice with the photograph
+                behind it saying it a third time.
+
+                No top margin on the headline any more: the margin existed to
+                hold it off the pill, and left in place it would open a gap
+                above the first thing on the page. */}
             {/* `text-balance` evens the lines out rather than filling each one
                 to the edge, which is what stops a three-line headline ending
                 on a single orphaned word. The place name carries a
                 non-breaking space of its own: balancing decides where lines
                 may break, not that "Raja Ampat" is one thing. */}
-            <h1 data-ink className="mt-5 mb-0 text-[clamp(38px,6vw,68px)] leading-[1.02] font-bold tracking-[-.035em] text-balance text-eddo-ink">
+            <h1 data-ink className="mt-0 mb-0 text-[clamp(38px,6vw,68px)] leading-[1.02] font-bold tracking-[-.035em] text-balance text-eddo-ink">
               {t.hero.title}
               <br />
               {/* A step darker than the teal the rest of the page uses for

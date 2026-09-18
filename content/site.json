@@ -54,7 +54,10 @@
     "merch": [
       {
         "id": "kaos-dewasa",
-        "name": "Kaos Eddo Homestay",
+        "name": {
+          "en": "Eddo Homestay T-shirt",
+          "id": "Kaos Eddo Homestay"
+        },
         "example": true,
         "price": 150000,
         "unit": "piece",
@@ -65,20 +68,29 @@
           },
           {
             "key": "notes",
-            "value": "Katun, sablon satu warna"
+            "value": {
+              "en": "Cotton, one-colour print",
+              "id": "Katun, sablon satu warna"
+            }
           }
         ]
       },
       {
         "id": "kaos-anak",
-        "name": "Kaos anak",
+        "name": {
+          "en": "Child's T-shirt",
+          "id": "Kaos anak"
+        },
         "example": true,
         "price": 120000,
         "unit": "piece",
         "specs": [
           {
             "key": "size",
-            "value": "2 sampai 10 tahun"
+            "value": {
+              "en": "2 to 10 years",
+              "id": "2 sampai 10 tahun"
+            }
           }
         ]
       }
@@ -93,7 +105,10 @@
         "specs": [
           {
             "key": "engine",
-            "value": "110cc, matic"
+            "value": {
+              "en": "110cc, automatic",
+              "id": "110cc, matic"
+            }
           },
           {
             "key": "seats",
@@ -101,7 +116,10 @@
           },
           {
             "key": "includes",
-            "value": "Helm 2, bensin awal"
+            "value": {
+              "en": "2 helmets, fuel to start",
+              "id": "Helm 2, bensin awal"
+            }
           }
         ]
       },
@@ -114,7 +132,10 @@
         "specs": [
           {
             "key": "engine",
-            "value": "125cc, matic"
+            "value": {
+              "en": "125cc, automatic",
+              "id": "125cc, matic"
+            }
           },
           {
             "key": "seats",
@@ -122,7 +143,10 @@
           },
           {
             "key": "includes",
-            "value": "Helm 2, bensin awal"
+            "value": {
+              "en": "2 helmets, fuel to start",
+              "id": "Helm 2, bensin awal"
+            }
           }
         ]
       },
@@ -135,7 +159,10 @@
         "specs": [
           {
             "key": "engine",
-            "value": "150cc, trail"
+            "value": {
+              "en": "150cc, trail",
+              "id": "150cc, trail"
+            }
           },
           {
             "key": "seats",
@@ -143,7 +170,10 @@
           },
           {
             "key": "notes",
-            "value": "Untuk jalan tanah"
+            "value": {
+              "en": "For the dirt roads",
+              "id": "Untuk jalan tanah"
+            }
           }
         ]
       }
@@ -158,11 +188,14 @@
         "specs": [
           {
             "key": "seats",
-            "value": "7 orang"
+            "value": "7"
           },
           {
             "key": "includes",
-            "value": "Sopir, bensin dalam kota"
+            "value": {
+              "en": "Driver, fuel around town",
+              "id": "Sopir, bensin dalam kota"
+            }
           }
         ]
       },
@@ -175,11 +208,14 @@
         "specs": [
           {
             "key": "seats",
-            "value": "4 orang"
+            "value": "4"
           },
           {
             "key": "notes",
-            "value": "Bak terbuka, untuk barang banyak"
+            "value": {
+              "en": "Open bed, for a lot of luggage",
+              "id": "Bak terbuka, untuk barang banyak"
+            }
           }
         ]
       }
@@ -187,14 +223,17 @@
     "boat": [
       {
         "id": "longboat-15",
-        "name": "Longboat 15 PK",
+        "name": {
+          "en": "Longboat, 15 hp",
+          "id": "Longboat 15 PK"
+        },
         "example": true,
         "price": 1500000,
         "unit": "day",
         "specs": [
           {
             "key": "seats",
-            "value": "6 orang"
+            "value": "6"
           },
           {
             "key": "power",
@@ -202,20 +241,26 @@
           },
           {
             "key": "includes",
-            "value": "Pengemudi, bensin"
+            "value": {
+              "en": "Driver, fuel",
+              "id": "Pengemudi, bensin"
+            }
           }
         ]
       },
       {
         "id": "speed-40",
-        "name": "Speed boat 40 PK",
+        "name": {
+          "en": "Speedboat, 40 hp",
+          "id": "Speed boat 40 PK"
+        },
         "example": true,
         "price": 2500000,
         "unit": "day",
         "specs": [
           {
             "key": "seats",
-            "value": "10 orang"
+            "value": "10"
           },
           {
             "key": "power",
@@ -223,7 +268,10 @@
           },
           {
             "key": "duration",
-            "value": "Setengah atau sehari penuh"
+            "value": {
+              "en": "Half day or full day",
+              "id": "Setengah atau sehari penuh"
+            }
           }
         ]
       }
@@ -231,34 +279,52 @@
     "transfer": [
       {
         "id": "waisai-yenbuba",
-        "name": "Waisai ke Yenbuba",
+        "name": {
+          "en": "Waisai to Yenbuba",
+          "id": "Waisai ke Yenbuba"
+        },
         "example": true,
         "price": 1800000,
         "unit": "trip",
         "specs": [
           {
             "key": "seats",
-            "value": "Sampai 6 orang"
+            "value": {
+              "en": "Up to 6",
+              "id": "Sampai 6 orang"
+            }
           },
           {
             "key": "duration",
-            "value": "Sekitar 1,5 jam"
+            "value": {
+              "en": "About 1.5 hours",
+              "id": "Sekitar 1,5 jam"
+            }
           },
           {
             "key": "notes",
-            "value": "Satu perahu, bukan per orang"
+            "value": {
+              "en": "One boat, not per person",
+              "id": "Satu perahu, bukan per orang"
+            }
           }
         ]
       },
       {
         "id": "antar-pulau",
-        "name": "Antar pulau terdekat",
+        "name": {
+          "en": "To a nearby island",
+          "id": "Antar pulau terdekat"
+        },
         "example": true,
         "unit": "trip",
         "specs": [
           {
             "key": "notes",
-            "value": "Tergantung tujuan dan pasang"
+            "value": {
+              "en": "Depends where, and on the tide",
+              "id": "Tergantung tujuan dan pasang"
+            }
           }
         ]
       }
@@ -266,35 +332,53 @@
     "guide": [
       {
         "id": "guide-harian",
-        "name": "Pemandu harian",
+        "name": {
+          "en": "Guide for the day",
+          "id": "Pemandu harian"
+        },
         "example": true,
         "price": 500000,
         "unit": "day",
         "specs": [
           {
             "key": "duration",
-            "value": "Setengah atau sehari penuh"
+            "value": {
+              "en": "Half day or full day",
+              "id": "Setengah atau sehari penuh"
+            }
           },
           {
             "key": "level",
-            "value": "Bahasa Indonesia, Inggris sederhana"
+            "value": {
+              "en": "Indonesian, simple English",
+              "id": "Bahasa Indonesia, Inggris sederhana"
+            }
           }
         ]
       },
       {
         "id": "guide-burung",
-        "name": "Pemandu burung",
+        "name": {
+          "en": "Birdwatching guide",
+          "id": "Pemandu burung"
+        },
         "example": true,
         "price": 600000,
         "unit": "trip",
         "specs": [
           {
             "key": "duration",
-            "value": "Subuh sampai pagi"
+            "value": {
+              "en": "Dawn until morning",
+              "id": "Subuh sampai pagi"
+            }
           },
           {
             "key": "notes",
-            "value": "Berangkat sebelum matahari terbit"
+            "value": {
+              "en": "Leaves before sunrise",
+              "id": "Berangkat sebelum matahari terbit"
+            }
           }
         ]
       }
@@ -309,24 +393,36 @@
         "specs": [
           {
             "key": "includes",
-            "value": "Housing, baterai cadangan, kartu memori"
+            "value": {
+              "en": "Housing, spare battery, memory card",
+              "id": "Housing, baterai cadangan, kartu memori"
+            }
           },
           {
             "key": "notes",
-            "value": "Tahan air"
+            "value": {
+              "en": "Waterproof",
+              "id": "Tahan air"
+            }
           }
         ]
       },
       {
         "id": "kamera-saku",
-        "name": "Kamera saku bawah air",
+        "name": {
+          "en": "Compact underwater camera",
+          "id": "Kamera saku bawah air"
+        },
         "example": true,
         "price": 200000,
         "unit": "day",
         "specs": [
           {
             "key": "includes",
-            "value": "Housing, kartu memori"
+            "value": {
+              "en": "Housing, memory card",
+              "id": "Housing, kartu memori"
+            }
           }
         ]
       }
@@ -334,38 +430,59 @@
     "package": [
       {
         "id": "piaynemo-1h",
-        "name": "Piaynemo, sehari",
+        "name": {
+          "en": "Piaynemo, one day",
+          "id": "Piaynemo, sehari"
+        },
         "example": true,
         "price": 3500000,
         "unit": "trip",
         "specs": [
           {
             "key": "duration",
-            "value": "Sehari penuh"
+            "value": {
+              "en": "Full day",
+              "id": "Sehari penuh"
+            }
           },
           {
             "key": "seats",
-            "value": "Sampai 6 orang"
+            "value": {
+              "en": "Up to 6",
+              "id": "Sampai 6 orang"
+            }
           },
           {
             "key": "includes",
-            "value": "Perahu, bensin, makan siang, pemandu"
+            "value": {
+              "en": "Boat, fuel, lunch, guide",
+              "id": "Perahu, bensin, makan siang, pemandu"
+            }
           }
         ]
       },
       {
         "id": "keliling-2h",
-        "name": "Keliling dua hari",
+        "name": {
+          "en": "Two days around",
+          "id": "Keliling dua hari"
+        },
         "example": true,
         "unit": "trip",
         "specs": [
           {
             "key": "duration",
-            "value": "2 hari"
+            "value": {
+              "en": "2 days",
+              "id": "2 hari"
+            }
           },
           {
             "key": "notes",
-            "value": "Disusun sesuai tempat yang mau dilihat"
+            "value": {
+              "en": "Built around what you want to see",
+              "id": "Disusun sesuai tempat yang mau dilihat"
+            }
           }
         ]
       }
@@ -373,39 +490,60 @@
     "diving": [
       {
         "id": "fun2",
-        "name": "Fun dive, 2 tabung",
+        "name": {
+          "en": "Fun dive, 2 tanks",
+          "id": "Fun dive, 2 tabung"
+        },
         "example": true,
         "price": 1400000,
         "unit": "person",
         "specs": [
           {
             "key": "level",
-            "value": "Open Water ke atas"
+            "value": {
+              "en": "Open Water and up",
+              "id": "Open Water ke atas"
+            }
           },
           {
             "key": "includes",
-            "value": "Pemandu, tabung, timbang, perahu"
+            "value": {
+              "en": "Guide, tank, weights, boat",
+              "id": "Pemandu, tabung, timbang, perahu"
+            }
           }
         ]
       },
       {
         "id": "fun3",
-        "name": "Fun dive, 3 tabung",
+        "name": {
+          "en": "Fun dive, 3 tanks",
+          "id": "Fun dive, 3 tabung"
+        },
         "example": true,
         "price": 1850000,
         "unit": "person",
         "specs": [
           {
             "key": "level",
-            "value": "Open Water ke atas"
+            "value": {
+              "en": "Open Water and up",
+              "id": "Open Water ke atas"
+            }
           },
           {
             "key": "duration",
-            "value": "Sehari penuh"
+            "value": {
+              "en": "Full day",
+              "id": "Sehari penuh"
+            }
           },
           {
             "key": "includes",
-            "value": "Pemandu, tabung, timbang, perahu, makan siang"
+            "value": {
+              "en": "Guide, tank, weights, boat, lunch",
+              "id": "Pemandu, tabung, timbang, perahu, makan siang"
+            }
           }
         ]
       },
@@ -418,11 +556,17 @@
         "specs": [
           {
             "key": "level",
-            "value": "Belum bersertifikat"
+            "value": {
+              "en": "No certificate needed",
+              "id": "Belum bersertifikat"
+            }
           },
           {
             "key": "notes",
-            "value": "Turun pertama kali, didampingi instruktur"
+            "value": {
+              "en": "First time in the water, with an instructor",
+              "id": "Turun pertama kali, didampingi instruktur"
+            }
           }
         ]
       }

@@ -2,15 +2,16 @@ import { randomUUID } from "node:crypto";
 
 import { NextResponse } from "next/server";
 
-import { eddoRooms } from "@/lib/eddo-content";
+import { eddoRooms, payableProduct, pickText } from "@/lib/eddo-content";
 import { createSnapToken, midtransConfigured, snapScript } from "@/lib/midtrans";
 
 /**
  * Starts a payment: takes who and when, answers with a Snap token.
  *
- * The amount is worked out here from the same room table the manager's
- * calendar reads, and nothing about money is taken from the request. A body
- * that carries its own total is a body that can carry Rp 1.
+ * The amount is worked out here, from the same room table the manager's
+ * calendar reads or from the service list in `content/site.json`, and nothing
+ * about money is taken from the request. A body that carries its own total is
+ * a body that can carry Rp 1.
  *
  * There is still no database. The order id is what ties this to the
  * notification that follows, and the notification is what reaches the owner.
@@ -23,6 +24,9 @@ export const runtime = "nodejs";
 
 const MAX_NIGHTS = 30;
 const MAX_GUESTS = 12;
+/* One order, not a wholesale run. Somebody hiring thirty motorbikes is having
+   a conversation, not pressing a button. */
+const MAX_QTY = 30;
 
 const clean = (v: unknown) => (typeof v === "string" ? v.trim().slice(0, 200) : "");
 const whole = (v: unknown, lo: number, hi: number) => {
@@ -60,26 +64,62 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "no-date" }, { status: 422 });
   }
 
-  const { rate } = eddoRooms();
-  if (!rate) return NextResponse.json({ error: "no-rate" }, { status: 500 });
+  /*
+   * Two things can be paid for: a house, and one of the services the family
+   * hires out. Both are priced here, from files, and neither reads a number
+   * out of the request.
+   *
+   * The service branch refuses anything still marked as an example, which is
+   * what `payableProduct` is for. Every price in that section is invented until
+   * an owner replaces it, and a figure that carries a warning label on the page
+   * must not be chargeable behind it.
+   */
+  const service = clean(body.service);
+  const productId = clean(body.productId);
 
-  const gross = rate * nights;
+  let gross: number;
+  let item: { id: string; price: number; quantity: number; name: string };
+  let tag: string;
+
+  if (service) {
+    const product = payableProduct(service, productId);
+    if (!product) {
+      return NextResponse.json({ error: "not-payable" }, { status: 422 });
+    }
+    const qty = whole(body.qty, 1, MAX_QTY);
+    const price = product.price as number;
+    gross = price * qty;
+    tag = service.toUpperCase().slice(0, 8);
+    item = {
+      id: `EDDO-${service}-${product.id}`.slice(0, 50),
+      price,
+      quantity: qty,
+      /* English, because this is read in the Midtrans dashboard by the family
+         and in the receipt by a guest who may be reading the site in any of
+         seven languages. One language beats a different one every time. */
+      name: `${pickText(product.name, "en")} x${qty}`.slice(0, 50),
+    };
+  } else {
+    const { rate } = eddoRooms();
+    if (!rate) return NextResponse.json({ error: "no-rate" }, { status: 500 });
+    gross = rate * nights;
+    tag = "EDDO";
+    item = {
+      id: "EDDO-HOUSE",
+      price: rate,
+      quantity: nights,
+      name: `Eddo Homestay, ${nights} malam, ${guests} tamu`.slice(0, 50),
+    };
+  }
   /* Dated and random: the date is what makes it readable in the dashboard, the
      random tail is what stops two people booking in the same second from
      colliding. Midtrans refuses an order id it has already seen. */
-  const orderId = `EDDO-${checkIn.replace(/-/g, "")}-${randomUUID().slice(0, 8).toUpperCase()}`;
+  const orderId = `${tag}-${checkIn.replace(/-/g, "")}-${randomUUID().slice(0, 8).toUpperCase()}`;
 
   const snap = await createSnapToken({
     orderId,
     gross,
-    items: [
-      {
-        id: "EDDO-HOUSE",
-        price: rate,
-        quantity: nights,
-        name: `Eddo Homestay, ${nights} malam, ${guests} tamu`.slice(0, 50),
-      },
-    ],
+    items: [item],
     customer: {
       first_name: name.slice(0, 50),
       ...(email ? { email } : {}),

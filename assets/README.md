@@ -495,6 +495,42 @@ Isinya diatur di `content/site.json` pada kunci `eddoServices`, bukan di kode:
 ]
 ```
 
+### Nilai yang berbeda antar bahasa
+
+`name` dan `specs[].value` boleh berupa satu teks, atau peta per bahasa:
+
+```json
+{ "key": "includes", "value": { "en": "2 helmets, fuel to start", "id": "Helm 2, bensin awal" } }
+```
+
+Satu teks berarti sama di semua bahasa, dan itu benar untuk sebagian besar
+isinya: "Honda Beat", "110cc", "15 PK", "S, M, L, XL". Peta untuk yang tidak.
+Tanpa ini situsnya punya cacat nyata: spek yang ditulis "Katun, sablon satu
+warna" muncul apa adanya di halaman berbahasa Inggris, jadi tamu yang membaca
+Inggris bertemu bahasa Indonesia tepat di tengah perbandingan harga.
+
+Bahasa yang tidak ditulis diisi dari `en`, bukan dari kunci pertama, supaya
+pembaca Perancis tidak mendapat bahasa Jepang atau Indonesia tergantung urutan
+mengetiknya.
+
+### Membayar langsung, bukan cuma bertanya
+
+Enam golongan bisa dibayar di tempat: `merch`, `motorbike`, `car`, `guide`,
+`camera`, `diving`. Perahu dan antar-jemput sengaja tidak, karena bagian itu
+sudah menulis bahwa harganya tidak bisa dipatok di depan, dan menerima uang
+untuk sesuatu yang baru saja diterangkan tidak bisa dipatok akan membuat
+kalimat itu bohong.
+
+Tombolnya baru menawarkan bayar kalau **keempatnya** terpenuhi: golongannya
+termasuk yang enam itu, barangnya punya harga di atas nol, kunci Midtrans
+terpasang, dan barangnya **tidak bertanda contoh**.
+
+Yang terakhir itu penjaga yang penting dan berlaku dua kali, di tombol dan di
+server. Harga bertanda contoh tidak boleh bisa ditagih dari belakang, dan
+`/api/pay` menolaknya dengan 422 walaupun permintaannya disusun tangan.
+Harganya sendiri selalu dibaca server dari berkas ini, tidak pernah dari
+permintaan browser.
+
 ### Menandai isian contoh
 
 Tambahkan `"example": true` pada sebuah barang dan kartunya memasang label

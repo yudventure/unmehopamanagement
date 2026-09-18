@@ -34,8 +34,10 @@ import {
   EDDO_LANGS,
   SERVICE_KEYS,
   eddoActivityLabels,
+  isPayableService,
   isPriceUnit,
   isSpecKey,
+  pickText,
   serviceProducts,
   type ServiceKey,
   EMAIL,
@@ -50,7 +52,7 @@ import {
   waLink,
   type EddoCopy,
 } from "@/lib/eddo-content";
-import { siteConfig } from "@/lib/site-config";
+import { siteConfig, type ServiceProduct } from "@/lib/site-config";
 import { type ActivityKey } from "@/lib/web-content";
 
 /**
@@ -554,7 +556,75 @@ export function EddoSite({
   /* Across the whole section, not just the open service: the notice is about
      the section, and a reader who lands on a real group first should still be
      told before they reach a made-up one. */
+  /* No client key, no Snap script, so nothing here can charge and every
+     button asks instead. Read once, up here, because both the room panel far
+     below and the service cards just under this need the same answer. */
+  const canPay = Boolean(MIDTRANS_CLIENT_KEY);
+
   const anyExample = SERVICE_KEYS.some((k) => serviceProducts(k).some((x) => x.example));
+
+  /* What the reader has filled into a card, keyed by product. One object rather
+     than state per card: the cards are drawn in a loop, and a hook cannot be. */
+  const [order, setOrder] = useState<Record<string, { when: string; qty: number }>>({});
+  const orderOf = (id: string) => order[id] ?? { when: "", qty: 1 };
+
+  /*
+   * Whether this card offers to charge rather than to ask.
+   *
+   * Four conditions, and the interesting one is the last. An example is never
+   * payable however everything else lines up, because every figure in this
+   * section is invented until an owner replaces it, and a price wearing a
+   * warning label on the front must not be chargeable from behind. The server
+   * refuses it too; this is only what the reader is offered.
+   */
+  const canBuy = (x: ServiceProduct) =>
+    canPay &&
+    isPayableService(service) &&
+    typeof x.price === "number" &&
+    x.price > 0 &&
+    !x.example;
+  const setOrderOf = (id: string, patch: Partial<{ when: string; qty: number }>) =>
+    setOrder((o) => ({ ...o, [id]: { ...orderOf(id), ...patch } }));
+
+  /*
+   * Pays for one thing off the service list.
+   *
+   * Sends what it is, not what it costs. The server looks the price up in the
+   * same file the card was drawn from, and refuses anything still flagged as an
+   * example, so a made-up figure cannot become a real charge however the button
+   * is pressed.
+   */
+  const payForProduct = async (key: ServiceKey, x: ServiceProduct) => {
+    if (paying) return;
+    setPaying(true);
+    const { when, qty } = orderOf(x.id);
+    try {
+      const res = await fetch("/api/pay", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          service: key,
+          productId: x.id,
+          qty,
+          /* The endpoint wants a date for its order id, and for a shirt there
+             is no day to name; today is the day it was bought. */
+          checkIn: when || new Date().toISOString().slice(0, 10),
+          name: pickText(x.name, lang),
+          phone: WHATSAPP,
+        }),
+      });
+      if (!res.ok) throw new Error(String(res.status));
+      const out = (await res.json()) as { token: string; snap: string };
+      await loadSnap(out.snap);
+      window.snap?.pay(out.token);
+    } catch {
+      /* Keys unset, order refused, script blocked: the reader still wants the
+         thing. Hand them the form with it already named. */
+      ask(key, `${t.services.items[key].title}, ${pickText(x.name, lang)}`);
+    } finally {
+      setPaying(false);
+    }
+  };
 
   const [menuOpen, setMenuOpen] = useState(false);
   /* Both the button and the panel, because the button lives in the bar's top
@@ -592,7 +662,6 @@ export function EddoSite({
   const [enquiry, setEnquiry] = useState<Enquiry>(EMPTY_ENQUIRY);
   const [enquiryOpen, setEnquiryOpen] = useState(false);
   const patch = (p: Partial<Enquiry>) => setEnquiry((prev) => ({ ...prev, ...p }));
-  const canPay = Boolean(MIDTRANS_CLIENT_KEY);
 
   /**
    * Opens Midtrans with an amount the server worked out.
@@ -1476,7 +1545,7 @@ export function EddoSite({
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
                           src={x.photo}
-                          alt={x.name}
+                          alt={pickText(x.name, lang)}
                           loading="lazy"
                           decoding="async"
                           className="h-full w-full object-cover"
@@ -1499,7 +1568,7 @@ export function EddoSite({
 
                     <div className="flex flex-1 flex-col p-[16px]">
                       <h4 className="m-0 text-[15px] leading-[1.25] font-bold text-eddo-ink">
-                        {x.name}
+                        {pickText(x.name, lang)}
                       </h4>
 
                       {x.specs && x.specs.length > 0 && (
@@ -1509,7 +1578,7 @@ export function EddoSite({
                               <dt className="text-slate-mute">
                                 {isSpecKey(sp.key) ? t.services.spec[sp.key] : sp.key}
                               </dt>
-                              <dd className="m-0 text-ink-soft">{sp.value}</dd>
+                              <dd className="m-0 text-ink-soft">{pickText(sp.value, lang)}</dd>
                             </Fragment>
                           ))}
                         </dl>
@@ -1536,15 +1605,61 @@ export function EddoSite({
                           </div>
                         ) : null}
 
-                        <button
-                          type="button"
-                          onClick={() =>
-                            ask(service, `${t.services.items[service].title}, ${x.name}`)
-                          }
-                          className={`${BTN_GHOST} mt-[12px] w-full px-[14px] py-[10px] text-[13px]`}
-                        >
-                          {typeof x.price === "number" ? t.services.ask : t.services.askPrice}
-                        </button>
+                        {canBuy(x) ? (
+                          <>
+                            {/* Two fields and no more. A shirt has no day to
+                                name, so it is not asked for one; everything
+                                else does, because a hire nobody has dated is a
+                                payment the family cannot act on. */}
+                            <div className="mt-[12px] flex gap-[8px]">
+                              {x.unit !== "piece" && (
+                                <label className="flex min-w-0 flex-1 flex-col gap-[4px] text-[11px] text-slate-mute">
+                                  {t.services.when}
+                                  <input
+                                    type="date"
+                                    value={orderOf(x.id).when}
+                                    min={new Date().toISOString().slice(0, 10)}
+                                    onChange={(e) => setOrderOf(x.id, { when: e.target.value })}
+                                    className="w-full min-w-0 rounded-[9px] border border-line-input bg-surface px-[9px] py-[7px] text-[13px] text-ink outline-none focus:border-eddo"
+                                  />
+                                </label>
+                              )}
+                              <label className="flex w-[66px] shrink-0 flex-col gap-[4px] text-[11px] text-slate-mute">
+                                {t.services.qty}
+                                <select
+                                  value={orderOf(x.id).qty}
+                                  onChange={(e) => setOrderOf(x.id, { qty: Number(e.target.value) })}
+                                  className="cursor-pointer rounded-[9px] border border-line-input bg-surface px-[9px] py-[7px] text-[13px] text-ink outline-none focus:border-eddo"
+                                >
+                                  {Array.from({ length: 14 }, (_, i) => i + 1).map((n) => (
+                                    <option key={n} value={n}>
+                                      {n}
+                                    </option>
+                                  ))}
+                                </select>
+                              </label>
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={() => payForProduct(service, x)}
+                              disabled={paying}
+                              className={`${BTN} mt-[12px] w-full px-[14px] py-[10px] text-[13px] disabled:cursor-wait disabled:opacity-70`}
+                            >
+                              {t.services.pay}
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              ask(service, `${t.services.items[service].title}, ${pickText(x.name, lang)}`)
+                            }
+                            className={`${BTN_GHOST} mt-[12px] w-full px-[14px] py-[10px] text-[13px]`}
+                          >
+                            {typeof x.price === "number" ? t.services.ask : t.services.askPrice}
+                          </button>
+                        )}
                       </div>
                     </div>
                   </article>

@@ -77,11 +77,26 @@ export interface SiteOverride {
  * owner publish a list on the day they have the photographs and fill the prices
  * in the week after, rather than waiting until they have all of it.
  */
+/**
+ * A piece of owner text that may or may not be the same in every language.
+ *
+ * A plain string is the same everywhere, which is true of most of what goes in
+ * here: "Honda Beat", "110cc", "15 PK", "S, M, L, XL". A map is for the ones
+ * that are not, and without it the site had a real fault: a spec written
+ * "Katun, sablon satu warna" appeared word for word on the English page, so a
+ * guest reading English met Indonesian in the middle of a price comparison.
+ *
+ * Keyed by the site's language codes. A language the owner has not written is
+ * filled from English rather than from whatever happens to be first, because a
+ * guest who cannot read the page can at least usually read that.
+ */
+export type Localised = string | Record<string, string>;
+
 export interface ServiceProduct {
   /** Stable, lowercase, used in the message a guest sends. */
   id: string;
-  /** As the owner writes it, in one language. Usually a proper noun anyway. */
-  name: string;
+  /** As the owner writes it. Usually a proper noun, so usually one string. */
+  name: Localised;
   /** A path under `public/`. Absent means the drawn glyph is shown. */
   photo?: string;
   /** Rupiah. Absent means the button asks the price rather than stating it. */
@@ -89,7 +104,7 @@ export interface ServiceProduct {
   /** A key from the copy's own small list: day, night, person, trip, piece, hour. */
   unit?: string;
   /** Label from that same small list, value in the owner's words. */
-  specs?: { key: string; value: string }[];
+  specs?: { key: string; value: Localised }[];
   /**
    * Made up, and saying so on the card.
    *
@@ -217,17 +232,23 @@ export function inheritsFrom(site: PublicSite): (keyof SiteContact)[] {
 const isStr = (v: unknown) => typeof v === "string";
 
 /** Shape, not presence: everything past the name is allowed to be missing. */
+function isLocalised(v: unknown): boolean {
+  if (isStr(v)) return true;
+  if (!v || typeof v !== "object" || Array.isArray(v)) return false;
+  return Object.values(v as Record<string, unknown>).every(isStr);
+}
+
 function isProduct(v: unknown): boolean {
   if (!v || typeof v !== "object") return false;
   const p = v as ServiceProduct;
-  if (!isStr(p.id) || !isStr(p.name)) return false;
+  if (!isStr(p.id) || !isLocalised(p.name)) return false;
   if (p.photo !== undefined && !isStr(p.photo)) return false;
   if (p.unit !== undefined && !isStr(p.unit)) return false;
   if (p.price !== undefined && (typeof p.price !== "number" || p.price < 0)) return false;
   if (p.example !== undefined && typeof p.example !== "boolean") return false;
   if (p.specs !== undefined) {
     if (!Array.isArray(p.specs)) return false;
-    if (!p.specs.every((x) => x && isStr(x.key) && isStr(x.value))) return false;
+    if (!p.specs.every((x) => x && isStr(x.key) && isLocalised(x.value))) return false;
   }
   return true;
 }

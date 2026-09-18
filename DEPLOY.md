@@ -261,6 +261,45 @@ kredensial server disimpan sebagai GitHub secret, dan cara di atas tidak butuh
 apa pun, jadi itu yang dikerjakan lebih dulu. Kalau integrasi Git Hostinger
 ternyata tidak bisa menarik sendiri, jalur SSH tinggal ditambahkan.
 
+## Memeriksa variabel tanpa menebak
+
+Setiap variabel di sini gagal diam-diam, dan itu memang dirancang begitu: tanpa
+kunci Resend formulirnya beralih ke WhatsApp, tanpa kunci Midtrans tombol
+bayarnya bertanya alih-alih menagih, tanpa token GitHub CMS-nya sekadar tidak
+bisa menyimpan. Bagus untuk pengunjung, menyiksa untuk yang memasang, karena
+situs yang tidak pernah mengeluh tidak bisa dibedakan dari situs yang sudah
+benar.
+
+Jadi ada satu tempat yang mengatakannya:
+
+```
+https://eddohomestay.com/api/health
+```
+
+Harus sudah masuk dashboard dulu. Tanpa sesi ia menjawab 404, bukan 401, karena
+401 sudah cukup untuk memberi tahu bahwa alamatnya ada.
+
+**Tidak pernah mengembalikan nilainya.** Cuma terisi atau tidak, berapa panjang,
+dan apakah bentuknya cocok dengan yang diakuinya. Halaman diagnosis yang
+mencetak rahasia adalah masalah yang lebih besar daripada yang dipecahkannya,
+dan alamat ini bisa dijangkau dari internet.
+
+Yang ditangkapnya, selain kolom kosong:
+
+- **Token GitHub yang terpotong saat disalin.** Panel menampilkan nilainya
+  terpangkas, mata tidak menyadarinya, dan token setengah tidak ditolak dengan
+  pesan yang jelas; CMS-nya cuma diam. Diperiksa lewat panjangnya.
+- **Kunci Midtrans yang tidak sepasang dengan modenya.** Kunci sandbox dengan
+  `MIDTRANS_IS_PRODUCTION=true`, atau kunci produksi dengan `false`, dua-duanya
+  ditolak Midtrans, dan yang kembali terbaca seperti aplikasinya yang rusak.
+- **`MIDTRANS_CLIENT_KEY` yang dipasang di panel server.** Nama itu tidak dibaca
+  aplikasi ini sama sekali. Yang dipakai `NEXT_PUBLIC_MIDTRANS_CLIENT_KEY`, dan
+  tempatnya di GitHub karena dibaca saat build.
+
+Variabel yang dibaca saat build ikut dilaporkan, berikut catatan bahwa
+memperbaikinya bukan di panel server. Tanpa itu, gejalanya mengirim orang
+mencari di sisi kawat yang salah.
+
 ## Masuk ke dashboard
 
 Sampai hari ini kata sandinya tidak pernah diperiksa. `doLogin` menguji kolom

@@ -23,6 +23,7 @@ import {
   ReefScene,
   SnorkelScene,
 } from "@/components/web/scenes";
+import { useActiveSection } from "@/hooks/use-active-section";
 import { useDismiss } from "@/hooks/use-dismiss";
 import { useHeroScroll } from "@/hooks/use-hero-scroll";
 import { useReveal } from "@/hooks/use-reveal";
@@ -549,12 +550,23 @@ export function EddoSite({
   });
 
   const nav = [
-    { href: "#atas", label: t.nav.home },
-    { href: "#kamar", label: t.nav.rooms },
-    { href: "#sekitar", label: t.nav.around },
-    { href: "#kenapa", label: t.nav.why },
-    { href: "#tanya", label: t.nav.faq },
+    { id: "atas", label: t.nav.home },
+    { id: "kamar", label: t.nav.rooms },
+    { id: "sekitar", label: t.nav.around },
+    { id: "kenapa", label: t.nav.why },
+    { id: "tanya", label: t.nav.faq },
   ];
+
+  /* Which link is lit. It used to be the first one, always, which is a fair
+     guess for as long as nobody scrolls: the nav said "Home" to a reader
+     halfway down the questions.
+
+     96 is the fixed bar plus a little: a heading still hidden behind the bar
+     has not been reached yet, whatever its coordinates say. */
+  const activeSection = useActiveSection(
+    nav.map((n) => n.id),
+    96,
+  );
 
   if (maintenance) {
     return (
@@ -611,18 +623,30 @@ export function EddoSite({
               nothing below it: between 768 and 1024 the nav is not rendered at
               all, and the switch below needs the push instead. */}
           <nav className="hidden items-center gap-[26px] lg:ml-auto lg:flex">
-            {nav.map((n, i) => (
-              <a
-                key={n.href}
-                href={n.href}
-                data-ink
-                className={`text-[13.5px] no-underline transition-colors hover:text-eddo-deep hover:no-underline ${
-                  i === 0 ? "font-medium text-eddo-deep" : "text-ink-soft"
-                }`}
-              >
-                {n.label}
-              </a>
-            ))}
+            {nav.map((n) => {
+              const here = activeSection === n.id;
+              return (
+                <a
+                  key={n.id}
+                  href={`#${n.id}`}
+                  /* Both of these turn the link white over the photograph,
+                     which every link needs or four of the five become dark
+                     type on a bright picture. They differ in how white: full
+                     for the one the reader is in, 86 per cent for the rest.
+                     That difference plus the weight is what carries "you are
+                     here" at the top of the page, where the teal cannot,
+                     because teal on a sunlit photograph is not a colour
+                     anybody can read. */
+                  {...(here ? { "data-ink": true } : { "data-ink-soft": true })}
+                  aria-current={here ? "location" : undefined}
+                  className={`text-[13.5px] no-underline transition-colors hover:text-eddo-deep hover:no-underline ${
+                    here ? "font-medium text-eddo-deep" : "text-ink-soft"
+                  }`}
+                >
+                  {n.label}
+                </a>
+              );
+            })}
           </nav>
 
           {/* The language and nothing else. Everything that was here before it
@@ -688,16 +712,25 @@ export function EddoSite({
 
         {menuOpen && (
           <nav ref={menuPanel} className="border-t border-line bg-surface px-5 py-3 md:hidden">
-            {nav.map((n) => (
-              <a
-                key={n.href}
-                href={n.href}
-                onClick={() => setMenuOpen(false)}
-                className="block py-[9px] text-[14px] text-ink-soft no-underline hover:no-underline"
-              >
-                {n.label}
-              </a>
-            ))}
+            {/* The same mark of place as the wide bar. The panel is opaque
+                white whenever it is open, so here the teal can do the work on
+                its own and no white variant is needed. */}
+            {nav.map((n) => {
+              const here = activeSection === n.id;
+              return (
+                <a
+                  key={n.id}
+                  href={`#${n.id}`}
+                  onClick={() => setMenuOpen(false)}
+                  aria-current={here ? "location" : undefined}
+                  className={`block py-[9px] text-[14px] no-underline hover:no-underline ${
+                    here ? "font-medium text-eddo-deep" : "text-ink-soft"
+                  }`}
+                >
+                  {n.label}
+                </a>
+              );
+            })}
             <div className="mt-2 flex items-center justify-between gap-3 border-t border-line pt-3">
               {/* The number with its own mark. It was a bare string of digits,
                   which on a phone reads as a fact about the homestay rather

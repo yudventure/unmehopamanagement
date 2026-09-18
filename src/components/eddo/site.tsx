@@ -16,6 +16,7 @@ import {
   WhatsAppIcon,
 } from "@/components/web/icons";
 import { RoomCarousel } from "@/components/eddo/room-carousel";
+import { ShoreScene } from "@/components/eddo/shore-scene";
 import { CurrencySwitch, Price } from "@/components/web/price";
 import {
   IsletScene,
@@ -749,8 +750,19 @@ export function EddoSite({
       </div>
 
 
+      {/* The band between the card and the price. Full width and flush, so it
+          reads as the view rather than as a picture pinned to the page, and
+          `-mt` pulls it up under the card's shadow instead of leaving a white
+          gutter above it. */}
+      <div
+        data-reveal
+        className="relative mt-14 h-[210px] w-full overflow-hidden sm:h-[260px] lg:h-[300px]"
+      >
+        <ShoreScene className="h-full w-full" />
+      </div>
+
       {/* ---------------------------------------------------------- rooms */}
-      <Section id="kamar" className="pt-20 md:pt-24">
+      <Section id="kamar" className="pt-16 md:pt-20">
         <div data-reveal className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
           <div>
             <Eyebrow>{t.rooms.eyebrow}</Eyebrow>

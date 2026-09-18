@@ -76,11 +76,25 @@ export function waLink(message: string) {
 }
 
 /**
- * Rupiah either way — the currency does not change with the reader — but the
- * grouping does: 450.000 to an Indonesian eye, 450,000 to everyone else.
+ * Rupiah either way, since the currency does not change with the reader, but
+ * the grouping does: 450.000 to an Indonesian eye, 450,000 to an English one,
+ * 450 000 to a Russian or a French one.
+ *
+ * Takes a language tag rather than this file's own two-value `Lang`. It used to
+ * be the union, mapped to one of two locales, which meant every reader who was
+ * neither English nor Indonesian silently got English grouping. That was true
+ * of nobody while there were two languages and is true of five of seven now
+ * that Eddo has more. A tag is also what the browser wants anyway, so the map
+ * in the middle was doing nothing but narrowing.
  */
-export function money(n: number, lang: Lang) {
-  return "Rp " + Math.round(n).toLocaleString(lang === "id" ? "id-ID" : "en-US");
+export function money(n: number, locale: string) {
+  /* An unknown tag makes `toLocaleString` throw, and a price is not worth a
+     blank page. */
+  try {
+    return "Rp " + Math.round(n).toLocaleString(locale || "en");
+  } catch {
+    return "Rp " + Math.round(n).toLocaleString("en");
+  }
 }
 
 export type RoomKey = "standard" | "family";

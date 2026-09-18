@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { DEFAULT_LANG, type Lang } from "@/lib/web-content";
+import { EDDO_DEFAULT_LANG, isEddoLang, type EddoLang } from "@/lib/eddo-content";
 import { BASE, isCurrency, type CurrencyCode, type Rates } from "@/lib/currency";
 
 /**
@@ -25,6 +26,30 @@ export function useLang() {
     if (saved === "en" || saved === "id") setLang(saved);
   }, []);
   const pickLang = (next: Lang) => {
+    setLang(next);
+    window.localStorage.setItem(LANG_KEY, next);
+  };
+  return { lang, pickLang };
+}
+
+/**
+ * The same choice, for the site that offers seven languages instead of two.
+ *
+ * Deliberately the same storage key. A reader who set Indonesian on one site
+ * and walks to the other should not have to set it again, and the two sites are
+ * linked from each other's footers, so that walk is a path people take. What
+ * the wider list adds is a value the narrower reader cannot understand, and
+ * `useLang` above already throws away anything that is not its own: a reader
+ * who chose Japanese here lands on Turtle in English, which is what Turtle is
+ * written in.
+ */
+export function useEddoLang() {
+  const [lang, setLang] = useState<EddoLang>(EDDO_DEFAULT_LANG);
+  useEffect(() => {
+    const saved = window.localStorage.getItem(LANG_KEY);
+    if (isEddoLang(saved)) setLang(saved);
+  }, []);
+  const pickLang = (next: EddoLang) => {
     setLang(next);
     window.localStorage.setItem(LANG_KEY, next);
   };

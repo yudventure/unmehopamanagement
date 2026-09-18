@@ -6,7 +6,7 @@ import {
   type CurrencyCode,
   type Rates,
 } from "@/lib/currency";
-import { money, type Lang } from "@/lib/web-content";
+import { money } from "@/lib/web-content";
 
 /**
  * A price: rupiah, and underneath it the same amount in whatever the reader
@@ -27,7 +27,8 @@ export function Price({
   tone = "dark",
 }: {
   rupiah: number;
-  lang: Lang;
+  /** A language tag, used only to group the digits. See `money`. */
+  lang: string;
   currency: CurrencyCode;
   rates: Rates | null;
   className?: string;

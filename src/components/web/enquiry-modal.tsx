@@ -9,6 +9,27 @@ import {
   waLink,
 } from "@/lib/web-content";
 
+/**
+ * The two parts of a site's copy this dialog reads.
+ *
+ * Narrower than `SiteCopy` on purpose. The prop used to be the whole thing,
+ * which meant anyone wanting this dialog had to hand over a complete Turtle
+ * copy object, all several hundred keys of it, to fill in twenty labels. That
+ * stopped being academic when Eddo grew languages Turtle does not have: with
+ * the wide prop, Eddo could only offer the dialog in the two Turtle happens to
+ * be written in. Asking for what is used lets any site supply its own.
+ */
+export type EnquiryCopy = Pick<SiteCopy, "enquiry"> & {
+  /**
+   * Labels for the activities a site offers. Partial because a site is allowed
+   * to offer fewer than all of them, and Eddo does: it has no dive centre of
+   * its own to hire gear from, so it never asks for a label it would never
+   * show. Read through `label` below, which falls back to the key rather than
+   * printing an empty option nobody can choose.
+   */
+  activities: Partial<Record<ActivityKey, string>>;
+};
+
 export interface Enquiry {
   name: string;
   /** The guest's own WhatsApp number, so a reply does not need a reply. */
@@ -65,7 +86,7 @@ export function EnquiryModal({
 }: {
   open: boolean;
   onClose: () => void;
-  t: SiteCopy;
+  t: EnquiryCopy;
   months: string[];
   value: Enquiry;
   onChange: (patch: Partial<Enquiry>) => void;
@@ -118,6 +139,13 @@ export function EnquiryModal({
 
   const stay = value.activity !== "diving" && value.activity !== "snorkeling";
 
+  /* A site names the activities it offers and no others, so an unnamed key
+     means a site is offering something it never wrote a word for. The key
+     itself is a poor label and a readable one; a blank option is neither, and
+     is the kind of thing that ships because an empty string looks like an
+     empty field rather than a bug. */
+  const label = (a: ActivityKey) => t.activities[a] ?? a;
+
   const send = async () => {
     if (!value.phone.trim() && !value.email.trim()) {
       setStatus("no-contact");
@@ -130,7 +158,7 @@ export function EnquiryModal({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...value,
-          activity: t.activities[value.activity],
+          activity: label(value.activity),
           when: months[value.monthIx] ?? months[0],
           nights: stay ? value.nights : "",
           lang,
@@ -243,7 +271,7 @@ export function EnquiryModal({
                 >
                   {activities.map((a) => (
                     <option key={a} value={a}>
-                      {t.activities[a]}
+                      {label(a)}
                     </option>
                   ))}
                 </select>

@@ -23,16 +23,20 @@ import {
   ReefScene,
   SnorkelScene,
 } from "@/components/web/scenes";
+import { useDismiss } from "@/hooks/use-dismiss";
 import { useHeroScroll } from "@/hooks/use-hero-scroll";
 import { useReveal } from "@/hooks/use-reveal";
-import { useCurrency, useLang, useRates } from "@/hooks/use-site-prefs";
+import { useCurrency, useEddoLang, useRates } from "@/hooks/use-site-prefs";
 import {
   EDDO,
   EDDO_COPY,
+  EDDO_LANGS,
   EMAIL,
   EDDO_ACTIVITIES,
   INCLUDED_KEYS,
+  eddoMonthOptions,
   type EddoActivity,
+  type EddoLang,
   type IncludedKey,
   WHATSAPP,
   eddoRooms,
@@ -40,13 +44,7 @@ import {
   type EddoCopy,
 } from "@/lib/eddo-content";
 import { siteConfig } from "@/lib/site-config";
-import {
-  COPY,
-  LANGS,
-  monthOptions,
-  type ActivityKey,
-  type Lang,
-} from "@/lib/web-content";
+import { type ActivityKey } from "@/lib/web-content";
 
 /**
  * Eddo Homestay's public site.
@@ -249,31 +247,109 @@ function Title({
   );
 }
 
-function LangSwitch({ lang, onPick, label }: { lang: Lang; onPick: (l: Lang) => void; label: string }) {
+/**
+ * The language picker.
+ *
+ * A dropdown rather than the row of pills it used to be. Two languages fit
+ * beside each other in a bar; seven do not, and the row that held EN and ID
+ * would have run past the width of a phone before it reached Russian. Past
+ * about three choices a list is also simply easier to read than a strip of
+ * two-letter codes, because each language gets to be named rather than
+ * abbreviated.
+ *
+ * Each one is named in itself. Someone hunting for their own language is
+ * looking for the shape of their own word, and a reader who needs the Japanese
+ * page cannot be expected to first find the English word "Japanese".
+ */
+function LangSwitch({
+  lang,
+  onPick,
+  label,
+  align = "right",
+}: {
+  lang: EddoLang;
+  onPick: (l: EddoLang) => void;
+  label: string;
+  /** Which edge the panel hangs from, so it cannot fall off a phone. */
+  align?: "left" | "right";
+}) {
+  const [open, setOpen] = useState(false);
+  const box = useRef<HTMLDivElement>(null);
+  useDismiss([box], () => setOpen(false), open);
+
+  const current = EDDO_LANGS.find((l) => l.key === lang) ?? EDDO_LANGS[0];
+
   return (
-    <div
-      data-ink-pill
-      className="flex items-center gap-[2px] rounded-full border border-line-strong p-[2px]"
-      aria-label={label}
-    >
-      {LANGS.map((l) => (
-        <button
-          key={l.key}
-          type="button"
-          lang={l.key}
-          onClick={() => onPick(l.key)}
-          aria-label={l.label}
-          aria-pressed={lang === l.key}
-          className={`cursor-pointer rounded-full border-none px-[10px] py-[5px] text-[12px] font-medium transition-colors ${
-            /* The unpicked language carries no background of its own, so at
-               1024 it is ink straight over the photograph: measured 3.91:1 in
-               `text-slate`. Darkened rather than given a wash to sit on. */
-            lang === l.key ? "bg-eddo-deep text-white" : "bg-transparent text-ink-soft hover:text-eddo-ink"
+    <div ref={box} className="relative">
+      <button
+        type="button"
+        /* `data-ink` so it goes white over the photograph with everything else
+           in the bar, `data-ink-pill` so its outline does too. */
+        data-ink
+        data-ink-pill
+        onClick={() => setOpen((v) => !v)}
+        aria-label={`${label}: ${current.label}`}
+        aria-expanded={open}
+        aria-haspopup="listbox"
+        className="flex cursor-pointer items-center gap-[6px] rounded-full border border-line-strong bg-transparent px-[11px] py-[6px] text-[12px] font-medium text-ink-soft transition-colors hover:text-eddo-ink"
+      >
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M3 12h18M12 3c2.5 2.6 2.5 15.4 0 18M12 3c-2.5 2.6-2.5 15.4 0 18" />
+        </svg>
+        {current.short}
+        <svg
+          viewBox="0 0 24 24"
+          width="12"
+          height="12"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.4"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+          className={`transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+        >
+          <path d="M6 9l6 6 6-6" />
+        </svg>
+      </button>
+
+      {open && (
+        <div
+          role="listbox"
+          aria-label={label}
+          /* Its own solid ground. The bar above may be transparent over a
+             photograph, but a list of seven things to read is not something to
+             put over moving water. */
+          className={`absolute top-[calc(100%+8px)] z-50 min-w-[178px] overflow-hidden rounded-[14px] border border-line bg-surface py-[5px] shadow-[0_22px_50px_-20px_rgba(18,52,58,.45)] ${
+            align === "right" ? "right-0" : "left-0"
           }`}
         >
-          {l.short}
-        </button>
-      ))}
+          {EDDO_LANGS.map((l) => (
+            <button
+              key={l.key}
+              type="button"
+              role="option"
+              lang={l.key}
+              aria-selected={lang === l.key}
+              onClick={() => {
+                onPick(l.key);
+                setOpen(false);
+              }}
+              className={`flex w-full cursor-pointer items-center gap-[10px] border-none px-[13px] py-[9px] text-left text-[13.5px] transition-colors ${
+                lang === l.key
+                  ? "bg-eddo-tint font-bold text-eddo-deep"
+                  : "bg-transparent text-ink-soft hover:bg-surface-tint"
+              }`}
+            >
+              <span className="w-[22px] shrink-0 font-mono text-[10.5px] tracking-[.06em] text-slate-mute">
+                {l.short}
+              </span>
+              <span>{l.label}</span>
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -345,14 +421,16 @@ export function EddoSite({
       the code would be one. */
   roomPhotos?: string[];
 }) {
-  const { lang, pickLang } = useLang();
+  const { lang, pickLang } = useEddoLang();
   const { currency, pickCurrency } = useCurrency();
   const rates = useRates();
   const t: EddoCopy = EDDO_COPY[lang];
-  /* The dialog's own labels come from the shared copy: "Name", "WhatsApp",
-     "When" are the same words whichever house is being asked about. */
-  const shared = COPY[lang];
-  const monthsAhead = monthOptions(MONTH_ANCHOR, lang);
+  /* The dialog's labels used to be borrowed from Turtle's copy, on the reading
+     that "Name" and "When" are the same words whichever house is being asked
+     about. True, and beside the point once this site had five languages Turtle
+     does not: the borrowed words came back in English while the page around
+     them was in French. They live here now. */
+  const monthsAhead = eddoMonthOptions(MONTH_ANCHOR, lang);
   const rooms = eddoRooms();
 
   useEffect(() => {
@@ -363,6 +441,13 @@ export function EddoSite({
   const heroRef = useHeroScroll<HTMLDivElement>();
 
   const [menuOpen, setMenuOpen] = useState(false);
+  /* Both the button and the panel, because the button lives in the bar's top
+     row and the panel hangs below it. Naming only the panel would make a press
+     on the button count as "outside", which closes the menu a moment before the
+     button's own handler opens it again. */
+  const menuButton = useRef<HTMLButtonElement>(null);
+  const menuPanel = useRef<HTMLElement>(null);
+  useDismiss([menuButton, menuPanel], () => setMenuOpen(false), menuOpen);
 
   /* The bar carries nothing of its own while the page is at the top, and
      frosts over once it starts covering content. It begins `false` rather than
@@ -441,7 +526,7 @@ export function EddoSite({
   };
 
   const message = t.message({
-    activity: t.activities[enquiry.activity as EddoActivity] ?? shared.activities[enquiry.activity],
+    activity: t.activities[enquiry.activity as EddoActivity] ?? enquiry.activity,
     name: enquiry.name,
     phone: enquiry.phone,
     email: enquiry.email,
@@ -533,22 +618,57 @@ export function EddoSite({
             <LangSwitch lang={lang} onPick={pickLang} label={t.langLabel} />
           </div>
 
+          {/* On a phone the language sits out here beside the menu rather than
+              inside it. It was one of the two things in the menu that is not a
+              destination, and burying a choice of language behind a button
+              labelled "open menu" asks the reader to already understand the
+              page in order to find the control that makes the page readable. */}
           <div className="ml-auto flex items-center gap-2 md:hidden">
+            <LangSwitch lang={lang} onPick={pickLang} label={t.langLabel} />
             <button
+              ref={menuButton}
               type="button"
               onClick={() => setMenuOpen((v) => !v)}
               aria-label={t.openMenu}
               aria-expanded={menuOpen}
-              className="flex h-[36px] w-[36px] cursor-pointer flex-col items-center justify-center gap-[5px] rounded-full border border-line-strong bg-surface"
+              /* `group` so the two bars can react to the button being hovered
+                 rather than to themselves: a pointer between them is not over
+                 either one, and without this the cross would come apart under
+                 a steady cursor. */
+              className="group relative flex h-[36px] w-[36px] shrink-0 cursor-pointer items-center justify-center rounded-full border border-line-strong bg-surface"
             >
-              <span className="block h-[1.5px] w-[15px] bg-eddo-ink" />
-              <span className="block h-[1.5px] w-[15px] bg-eddo-ink" />
+              {/* Two bars that become a cross. Both are centred and moved apart
+                  by a translation rather than stacked with a gap, so closing
+                  the cross is that translation going to zero and the rotation
+                  turning: one motion, no reflow, and nothing to keep in step.
+
+                  Open is the state that matters, because a menu showing a
+                  hamburger while it is already open is telling the reader the
+                  wrong thing about what pressing it will do. Hover does the
+                  same thing early, and only where hovering exists at all: this
+                  button is hidden above 768, so on most of the devices that
+                  reach it there is no pointer to hover with and the open state
+                  is the whole animation. */}
+              <span
+                className={`absolute block h-[1.5px] w-[15px] bg-eddo-ink transition-transform duration-300 ${
+                  menuOpen
+                    ? "translate-y-0 rotate-45"
+                    : "-translate-y-[3.5px] group-hover:translate-y-0 group-hover:rotate-45"
+                }`}
+              />
+              <span
+                className={`absolute block h-[1.5px] w-[15px] bg-eddo-ink transition-transform duration-300 ${
+                  menuOpen
+                    ? "translate-y-0 -rotate-45"
+                    : "translate-y-[3.5px] group-hover:translate-y-0 group-hover:-rotate-45"
+                }`}
+              />
             </button>
           </div>
         </div>
 
         {menuOpen && (
-          <nav className="border-t border-line bg-surface px-5 py-3 md:hidden">
+          <nav ref={menuPanel} className="border-t border-line bg-surface px-5 py-3 md:hidden">
             {nav.map((n) => (
               <a
                 key={n.href}
@@ -559,11 +679,44 @@ export function EddoSite({
                 {n.label}
               </a>
             ))}
-            <div className="mt-2 flex items-center justify-between border-t border-line pt-3">
-              <a href={waLink("Halo Eddo Homestay")} target="_blank" rel="noreferrer" className="font-mono text-[12.5px] text-eddo-ink no-underline">
+            <div className="mt-2 flex items-center justify-between gap-3 border-t border-line pt-3">
+              {/* The number with its own mark. It was a bare string of digits,
+                  which on a phone reads as a fact about the homestay rather
+                  than as something to press. The logo says which app opens. */}
+              <a
+                href={waLink("Halo Eddo Homestay")}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-[7px] font-mono text-[12.5px] text-eddo-ink no-underline"
+              >
+                <span className="h-[15px] w-[15px] shrink-0 text-eddo-deep">
+                  <WhatsAppIcon />
+                </span>
                 +{WHATSAPP}
               </a>
-              <LangSwitch lang={lang} onPick={pickLang} label={t.langLabel} />
+
+              {/* Where the language used to be, now that it lives out in the
+                  bar. Only the accounts that have actually been filled in are
+                  drawn: an icon that leads nowhere is a promise the site
+                  cannot keep, and a row of them says the family is somewhere
+                  they are not. With none filled in this renders nothing, and
+                  the number simply has the row to itself. */}
+              {SOCIALS.some((s) => s.href) && (
+                <div className="flex shrink-0 items-center gap-[6px]">
+                  {SOCIALS.filter((s) => s.href).map((s) => (
+                    <a
+                      key={s.name}
+                      href={s.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      aria-label={s.name}
+                      className="flex h-[32px] w-[32px] items-center justify-center rounded-full border border-line p-[8px] text-eddo-deep no-underline transition-colors hover:bg-eddo-tint hover:no-underline"
+                    >
+                      {s.icon}
+                    </a>
+                  ))}
+                </div>
+              )}
             </div>
           </nav>
         )}
@@ -875,7 +1028,7 @@ export function EddoSite({
             <div className="mt-6 flex flex-wrap items-end justify-between gap-3 border-t border-line pt-5">
               <Price
                 rupiah={rooms.rate}
-                lang={lang}
+                lang={t.htmlLang}
                 currency={currency}
                 rates={rates}
                 size="xl"
@@ -945,7 +1098,7 @@ export function EddoSite({
               <span className="text-[13px] text-slate">{t.rooms.total}</span>
               <Price
                 rupiah={rooms.rate * nights}
-                lang={lang}
+                lang={t.htmlLang}
                 currency={currency}
                 rates={rates}
                 className="text-right text-eddo-ink"
@@ -1132,7 +1285,7 @@ export function EddoSite({
         siteKey="eddo"
         open={enquiryOpen}
         onClose={() => setEnquiryOpen(false)}
-        t={shared}
+        t={t}
         months={monthsAhead}
         value={enquiry}
         onChange={patch}

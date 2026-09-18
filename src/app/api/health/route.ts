@@ -89,14 +89,22 @@ export async function GET() {
         : { nama: "GITHUB_TOKEN", keadaan: "ok", catatan: `terisi, ${token.length} karakter` },
   );
 
-  /* The one that is worth this whole endpoint. Midtrans rejects a sandbox key
-     used in production and a production key used in sandbox, and what comes
-     back reads like the application is broken rather than like the keys are in
-     the wrong pair. */
+  /*
+   * Midtrans rejects a key used in the wrong environment, and what comes back
+   * reads like the application is broken rather than like the keys are in the
+   * wrong pair. So this looks, but only as far as it honestly can.
+   *
+   * An `SB-` prefix means sandbox and nothing else, so that one direction is
+   * safe to call. The absence of it means nothing at all: checked against a
+   * real account on 18 September 2026, the Sandbox dashboard issued keys named
+   * plain `Mid-server-…`, with no prefix. An earlier version of this file
+   * treated the missing prefix as proof of a production key and would have told
+   * somebody their perfectly good sandbox key was wrong, which is worse than
+   * not checking.
+   */
   const server = (env.MIDTRANS_SERVER_KEY ?? "").trim();
   const produksi = env.MIDTRANS_IS_PRODUCTION === "true";
-  const sandboxKey = server.startsWith("SB-Mid-server-");
-  const prodKey = server.startsWith("Mid-server-");
+  const bertandaSandbox = server.startsWith("SB-");
 
   if (!server) {
     checks.push({
@@ -104,29 +112,25 @@ export async function GET() {
       keadaan: "kosong",
       catatan: "tombol bayar bertanya lewat formulir, bukan menagih",
     });
-  } else if (!sandboxKey && !prodKey) {
+  } else if (!server.includes("Mid-server-")) {
     checks.push({
       nama: "MIDTRANS_SERVER_KEY",
       keadaan: "curiga",
-      catatan: "bentuknya bukan Mid-server- maupun SB-Mid-server-",
+      catatan: "bentuknya tidak memuat Mid-server-, mungkin tersalin sebagian",
     });
-  } else if (produksi && sandboxKey) {
+  } else if (produksi && bertandaSandbox) {
     checks.push({
       nama: "MIDTRANS_SERVER_KEY",
       keadaan: "curiga",
-      catatan: "kunci sandbox dipakai dengan MIDTRANS_IS_PRODUCTION=true, akan ditolak Midtrans",
-    });
-  } else if (!produksi && prodKey) {
-    checks.push({
-      nama: "MIDTRANS_SERVER_KEY",
-      keadaan: "curiga",
-      catatan: "kunci produksi dipakai dengan MIDTRANS_IS_PRODUCTION=false, akan ditolak Midtrans",
+      catatan: "kunci bertanda SB- dipakai dengan MIDTRANS_IS_PRODUCTION=true, akan ditolak Midtrans",
     });
   } else {
     checks.push({
       nama: "MIDTRANS_SERVER_KEY",
       keadaan: "ok",
-      catatan: produksi ? "kunci produksi, mode produksi" : "kunci sandbox, mode sandbox",
+      catatan: produksi
+        ? "terisi, mode produksi; cocokkan sendiri dengan lingkungan di dashboard Midtrans"
+        : "terisi, mode sandbox; cocokkan sendiri dengan lingkungan di dashboard Midtrans",
     });
   }
 

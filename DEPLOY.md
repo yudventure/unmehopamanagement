@@ -289,9 +289,17 @@ Yang ditangkapnya, selain kolom kosong:
 - **Token GitHub yang terpotong saat disalin.** Panel menampilkan nilainya
   terpangkas, mata tidak menyadarinya, dan token setengah tidak ditolak dengan
   pesan yang jelas; CMS-nya cuma diam. Diperiksa lewat panjangnya.
-- **Kunci Midtrans yang tidak sepasang dengan modenya.** Kunci sandbox dengan
-  `MIDTRANS_IS_PRODUCTION=true`, atau kunci produksi dengan `false`, dua-duanya
-  ditolak Midtrans, dan yang kembali terbaca seperti aplikasinya yang rusak.
+- **Kunci Midtrans bertanda `SB-` yang dipakai dengan
+  `MIDTRANS_IS_PRODUCTION=true`.** Awalan `SB-` berarti sandbox dan tidak ada
+  arti lain, jadi arah yang satu itu aman disimpulkan.
+
+  **Arah sebaliknya tidak bisa disimpulkan, dan itu pelajaran mahal.** Diperiksa
+  langsung di akun sungguhan pada 18 September 2026: dashboard **Sandbox**
+  mengeluarkan kunci bernama `Mid-server-…` polos, tanpa awalan apa pun. Versi
+  pertama pemeriksa ini menganggap tidak adanya awalan sebagai bukti kunci
+  produksi, dan akan memberi tahu pemiliknya bahwa kunci sandbox yang sudah
+  benar itu salah. Pemeriksa yang salah lebih buruk daripada tidak ada
+  pemeriksa, karena yang salah dipercaya.
 - **`MIDTRANS_CLIENT_KEY` yang dipasang di panel server.** Nama itu tidak dibaca
   aplikasi ini sama sekali. Yang dipakai `NEXT_PUBLIC_MIDTRANS_CLIENT_KEY`, dan
   tempatnya di GitHub karena dibaca saat build.

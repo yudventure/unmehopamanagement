@@ -495,6 +495,17 @@ Isinya diatur di `content/site.json` pada kunci `eddoServices`, bukan di kode:
 ]
 ```
 
+### Menandai isian contoh
+
+Tambahkan `"example": true` pada sebuah barang dan kartunya memasang label
+kuning **CONTOH** di atas fotonya, dan satu kotak peringatan muncul di atas
+seluruh daftar selama masih ada satu saja yang bertanda.
+
+Itu bukan komentar di berkas ini melainkan tanda yang dilihat tamu, karena
+situs ini hidup dan menerima uang: angka tanpa tanda apa pun akan dibaca
+sebagai angka yang berlaku. Hapus barisnya begitu angka aslinya masuk, tidak
+ada lagi yang perlu diubah.
+
 `id` dan `name` wajib, sisanya boleh kosong. Tanpa `photo` yang tampil gambar
 garisnya; tanpa `price` tombolnya berubah jadi "tanya harga" alih-alih
 mengarang angka. Itu yang memungkinkan daftarnya terbit di hari fotonya jadi

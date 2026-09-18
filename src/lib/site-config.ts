@@ -90,6 +90,18 @@ export interface ServiceProduct {
   unit?: string;
   /** Label from that same small list, value in the owner's words. */
   specs?: { key: string; value: string }[];
+  /**
+   * Made up, and saying so on the card.
+   *
+   * There to let an owner show somebody the shape of the page before the real
+   * photographs and prices exist, which is a reasonable thing to want and a
+   * dangerous thing to do quietly: this site is live and takes money, and a
+   * number with nothing beside it is read as a number that holds. So the flag
+   * is not a comment in this file, it is a mark the guest sees.
+   *
+   * Delete the line when the real figure goes in. Nothing else has to change.
+   */
+  example?: boolean;
 }
 
 export interface SiteConfig {
@@ -212,6 +224,7 @@ function isProduct(v: unknown): boolean {
   if (p.photo !== undefined && !isStr(p.photo)) return false;
   if (p.unit !== undefined && !isStr(p.unit)) return false;
   if (p.price !== undefined && (typeof p.price !== "number" || p.price < 0)) return false;
+  if (p.example !== undefined && typeof p.example !== "boolean") return false;
   if (p.specs !== undefined) {
     if (!Array.isArray(p.specs)) return false;
     if (!p.specs.every((x) => x && isStr(x.key) && isStr(x.value))) return false;

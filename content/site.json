@@ -51,15 +51,382 @@
     }
   },
   "eddoServices": {
-    "merch": [],
-    "motorbike": [],
-    "car": [],
-    "boat": [],
-    "transfer": [],
-    "guide": [],
-    "camera": [],
-    "package": [],
-    "diving": []
+    "merch": [
+      {
+        "id": "kaos-dewasa",
+        "name": "Kaos Eddo Homestay",
+        "example": true,
+        "price": 150000,
+        "unit": "piece",
+        "specs": [
+          {
+            "key": "size",
+            "value": "S, M, L, XL"
+          },
+          {
+            "key": "notes",
+            "value": "Katun, sablon satu warna"
+          }
+        ]
+      },
+      {
+        "id": "kaos-anak",
+        "name": "Kaos anak",
+        "example": true,
+        "price": 120000,
+        "unit": "piece",
+        "specs": [
+          {
+            "key": "size",
+            "value": "2 sampai 10 tahun"
+          }
+        ]
+      }
+    ],
+    "motorbike": [
+      {
+        "id": "beat",
+        "name": "Honda Beat",
+        "example": true,
+        "price": 100000,
+        "unit": "day",
+        "specs": [
+          {
+            "key": "engine",
+            "value": "110cc, matic"
+          },
+          {
+            "key": "seats",
+            "value": "2"
+          },
+          {
+            "key": "includes",
+            "value": "Helm 2, bensin awal"
+          }
+        ]
+      },
+      {
+        "id": "vario",
+        "name": "Honda Vario",
+        "example": true,
+        "price": 125000,
+        "unit": "day",
+        "specs": [
+          {
+            "key": "engine",
+            "value": "125cc, matic"
+          },
+          {
+            "key": "seats",
+            "value": "2"
+          },
+          {
+            "key": "includes",
+            "value": "Helm 2, bensin awal"
+          }
+        ]
+      },
+      {
+        "id": "klx",
+        "name": "Kawasaki KLX",
+        "example": true,
+        "price": 175000,
+        "unit": "day",
+        "specs": [
+          {
+            "key": "engine",
+            "value": "150cc, trail"
+          },
+          {
+            "key": "seats",
+            "value": "2"
+          },
+          {
+            "key": "notes",
+            "value": "Untuk jalan tanah"
+          }
+        ]
+      }
+    ],
+    "car": [
+      {
+        "id": "avanza",
+        "name": "Toyota Avanza",
+        "example": true,
+        "price": 700000,
+        "unit": "day",
+        "specs": [
+          {
+            "key": "seats",
+            "value": "7 orang"
+          },
+          {
+            "key": "includes",
+            "value": "Sopir, bensin dalam kota"
+          }
+        ]
+      },
+      {
+        "id": "hilux",
+        "name": "Toyota Hilux",
+        "example": true,
+        "price": 850000,
+        "unit": "day",
+        "specs": [
+          {
+            "key": "seats",
+            "value": "4 orang"
+          },
+          {
+            "key": "notes",
+            "value": "Bak terbuka, untuk barang banyak"
+          }
+        ]
+      }
+    ],
+    "boat": [
+      {
+        "id": "longboat-15",
+        "name": "Longboat 15 PK",
+        "example": true,
+        "price": 1500000,
+        "unit": "day",
+        "specs": [
+          {
+            "key": "seats",
+            "value": "6 orang"
+          },
+          {
+            "key": "power",
+            "value": "15 PK"
+          },
+          {
+            "key": "includes",
+            "value": "Pengemudi, bensin"
+          }
+        ]
+      },
+      {
+        "id": "speed-40",
+        "name": "Speed boat 40 PK",
+        "example": true,
+        "price": 2500000,
+        "unit": "day",
+        "specs": [
+          {
+            "key": "seats",
+            "value": "10 orang"
+          },
+          {
+            "key": "power",
+            "value": "40 PK"
+          },
+          {
+            "key": "duration",
+            "value": "Setengah atau sehari penuh"
+          }
+        ]
+      }
+    ],
+    "transfer": [
+      {
+        "id": "waisai-yenbuba",
+        "name": "Waisai ke Yenbuba",
+        "example": true,
+        "price": 1800000,
+        "unit": "trip",
+        "specs": [
+          {
+            "key": "seats",
+            "value": "Sampai 6 orang"
+          },
+          {
+            "key": "duration",
+            "value": "Sekitar 1,5 jam"
+          },
+          {
+            "key": "notes",
+            "value": "Satu perahu, bukan per orang"
+          }
+        ]
+      },
+      {
+        "id": "antar-pulau",
+        "name": "Antar pulau terdekat",
+        "example": true,
+        "unit": "trip",
+        "specs": [
+          {
+            "key": "notes",
+            "value": "Tergantung tujuan dan pasang"
+          }
+        ]
+      }
+    ],
+    "guide": [
+      {
+        "id": "guide-harian",
+        "name": "Pemandu harian",
+        "example": true,
+        "price": 500000,
+        "unit": "day",
+        "specs": [
+          {
+            "key": "duration",
+            "value": "Setengah atau sehari penuh"
+          },
+          {
+            "key": "level",
+            "value": "Bahasa Indonesia, Inggris sederhana"
+          }
+        ]
+      },
+      {
+        "id": "guide-burung",
+        "name": "Pemandu burung",
+        "example": true,
+        "price": 600000,
+        "unit": "trip",
+        "specs": [
+          {
+            "key": "duration",
+            "value": "Subuh sampai pagi"
+          },
+          {
+            "key": "notes",
+            "value": "Berangkat sebelum matahari terbit"
+          }
+        ]
+      }
+    ],
+    "camera": [
+      {
+        "id": "gopro",
+        "name": "GoPro",
+        "example": true,
+        "price": 150000,
+        "unit": "day",
+        "specs": [
+          {
+            "key": "includes",
+            "value": "Housing, baterai cadangan, kartu memori"
+          },
+          {
+            "key": "notes",
+            "value": "Tahan air"
+          }
+        ]
+      },
+      {
+        "id": "kamera-saku",
+        "name": "Kamera saku bawah air",
+        "example": true,
+        "price": 200000,
+        "unit": "day",
+        "specs": [
+          {
+            "key": "includes",
+            "value": "Housing, kartu memori"
+          }
+        ]
+      }
+    ],
+    "package": [
+      {
+        "id": "piaynemo-1h",
+        "name": "Piaynemo, sehari",
+        "example": true,
+        "price": 3500000,
+        "unit": "trip",
+        "specs": [
+          {
+            "key": "duration",
+            "value": "Sehari penuh"
+          },
+          {
+            "key": "seats",
+            "value": "Sampai 6 orang"
+          },
+          {
+            "key": "includes",
+            "value": "Perahu, bensin, makan siang, pemandu"
+          }
+        ]
+      },
+      {
+        "id": "keliling-2h",
+        "name": "Keliling dua hari",
+        "example": true,
+        "unit": "trip",
+        "specs": [
+          {
+            "key": "duration",
+            "value": "2 hari"
+          },
+          {
+            "key": "notes",
+            "value": "Disusun sesuai tempat yang mau dilihat"
+          }
+        ]
+      }
+    ],
+    "diving": [
+      {
+        "id": "fun2",
+        "name": "Fun dive, 2 tabung",
+        "example": true,
+        "price": 1400000,
+        "unit": "person",
+        "specs": [
+          {
+            "key": "level",
+            "value": "Open Water ke atas"
+          },
+          {
+            "key": "includes",
+            "value": "Pemandu, tabung, timbang, perahu"
+          }
+        ]
+      },
+      {
+        "id": "fun3",
+        "name": "Fun dive, 3 tabung",
+        "example": true,
+        "price": 1850000,
+        "unit": "person",
+        "specs": [
+          {
+            "key": "level",
+            "value": "Open Water ke atas"
+          },
+          {
+            "key": "duration",
+            "value": "Sehari penuh"
+          },
+          {
+            "key": "includes",
+            "value": "Pemandu, tabung, timbang, perahu, makan siang"
+          }
+        ]
+      },
+      {
+        "id": "dsd",
+        "name": "Discover Scuba",
+        "example": true,
+        "price": 1600000,
+        "unit": "person",
+        "specs": [
+          {
+            "key": "level",
+            "value": "Belum bersertifikat"
+          },
+          {
+            "key": "notes",
+            "value": "Turun pertama kali, didampingi instruktur"
+          }
+        ]
+      }
+    ]
   },
   "updatedAt": "",
   "updatedBy": ""

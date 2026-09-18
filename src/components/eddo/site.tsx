@@ -551,6 +551,10 @@ export function EddoSite({
      is a hole rather than an invitation to press something. */
   const [service, setService] = useState<ServiceKey>(SERVICE_KEYS[0]);
   const products = serviceProducts(service);
+  /* Across the whole section, not just the open service: the notice is about
+     the section, and a reader who lands on a real group first should still be
+     told before they reach a made-up one. */
+  const anyExample = SERVICE_KEYS.some((k) => serviceProducts(k).some((x) => x.example));
 
   const [menuOpen, setMenuOpen] = useState(false);
   /* Both the button and the panel, because the button lives in the bar's top
@@ -1356,6 +1360,22 @@ export function EddoSite({
           </p>
         </div>
 
+        {/* Only while there is something made up to warn about, and above the
+            list rather than under it: a caveat a reader meets after they have
+            already read the prices is a caveat that arrived too late. */}
+        {anyExample && (
+          <p
+            data-reveal
+            className="mt-7 flex max-w-[760px] items-start gap-[10px] rounded-[14px] border border-amber bg-amber-soft px-[16px] py-[13px] text-[13px] leading-[1.65] text-amber-deep"
+          >
+            <span className="mt-[3px] shrink-0 font-mono text-[10px] tracking-[.08em] text-amber-ink uppercase">
+              {t.services.example}
+            </span>
+            <span>{t.services.exampleNote}</span>
+          </p>
+        )}
+
+
         <div
           data-reveal
           style={step(1)}
@@ -1442,6 +1462,16 @@ export function EddoSite({
                     className="flex flex-col overflow-hidden rounded-[18px] border border-eddo-line bg-surface"
                   >
                     <div className="relative flex aspect-[4/3] items-center justify-center bg-eddo-tint">
+                      {/* On the picture rather than beside the price, because
+                          the picture is where the eye lands first and the price
+                          is the thing the mark exists to qualify. Amber, which
+                          is the one warm colour on this page and is not used
+                          for anything a reader is meant to press. */}
+                      {x.example && (
+                        <span className="absolute top-[10px] left-[10px] z-10 rounded-full bg-amber-shade px-[9px] py-[3px] font-mono text-[10px] tracking-[.08em] text-white uppercase">
+                          {t.services.example}
+                        </span>
+                      )}
                       {x.photo ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img

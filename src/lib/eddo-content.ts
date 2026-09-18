@@ -1,5 +1,5 @@
 import { seedRooms } from "@/lib/data";
-import { siteConfig } from "@/lib/site-config";
+import { SITE_CONFIG as SITE, siteConfig, type ServiceProduct } from "@/lib/site-config";
 
 /**
  * The languages this site is written in.
@@ -117,6 +117,35 @@ export const SERVICE_KEYS = [
   "diving",
 ] as const;
 export type ServiceKey = (typeof SERVICE_KEYS)[number];
+
+/**
+ * The only labels a spec line may carry, and the only units a price may be
+ * per.
+ *
+ * Fixed lists rather than free text, because the values come from the owner in
+ * one language and the labels have to come from the copy in seven. Left open,
+ * a French reader would be shown "Mesin" beside "110cc" and the page would be
+ * half translated in the one place a guest is comparing things.
+ */
+export const SPEC_KEYS = ["duration", "level", "engine", "power", "seats", "size", "includes", "notes"] as const;
+export type SpecKey = (typeof SPEC_KEYS)[number];
+
+export const PRICE_UNITS = ["day", "night", "person", "trip", "piece", "hour"] as const;
+export type PriceUnit = (typeof PRICE_UNITS)[number];
+
+export const isSpecKey = (v: string): v is SpecKey => (SPEC_KEYS as readonly string[]).includes(v);
+export const isPriceUnit = (v: string): v is PriceUnit => (PRICE_UNITS as readonly string[]).includes(v);
+
+/**
+ * What the owner has listed under one service, or nothing.
+ *
+ * Nothing is a normal answer. The section was written to stand up without any
+ * of this, and it still does: a service with no products shows what it is and
+ * offers to answer, which is the whole page's manner anyway.
+ */
+export function serviceProducts(key: ServiceKey): ServiceProduct[] {
+  return SITE.eddoServices?.[key] ?? [];
+}
 
 export const EDDO_ACTIVITIES = ["stay", ...SERVICE_KEYS] as const;
 export type EddoActivity = (typeof EDDO_ACTIVITIES)[number];
@@ -300,6 +329,15 @@ export interface EddoCopy {
     /** Said once under the whole list, about prices and availability. */
     note: string;
     items: Record<ServiceKey, { title: string; body: string }>;
+    /** The button on a product whose price the owner has published. */
+    ask: string;
+    /** And on one whose price nobody has filled in yet. */
+    askPrice: string;
+    /** Under a product with no photograph, so the drawn glyph is explained. */
+    noPhoto: string;
+    /** What a spec line is called, and what a price is per. */
+    spec: Record<SpecKey, string>;
+    per: Record<PriceUnit, string>;
   };
   /**
    * The one thing on the enquiry list that is not one of the services above.
@@ -474,7 +512,7 @@ const EN: EddoCopy = {
     script: "getting on the water",
     intro: "Most of what a stay in Raja Ampat takes is not the bed. It is the boat, the ride from the ferry, and somebody who knows where the fish are. The family arranges all of it, and you ask for it the same way you ask for a house.",
     cta: "Ask about this",
-    note: "Nothing here carries a price on this page. A boat costs what the fuel costs that week and a crossing takes what the tide allows that day, so we quote when you ask rather than print a number we would have to take back.",
+    note: "The prices shown are the ones that hold. Where there is none, it is because there is none to fix: a boat costs what the fuel costs that week and a crossing takes what the tide allows that day, so we quote when you ask rather than print a number we would have to take back. Asking here is asking whether it is free, not booking it.",
     items: {
       merch: { title: "Homestay T-shirts", body: "Shirts with the homestay's own mark on them. Ask which sizes are in the house and we will put one aside for you." },
       motorbike: { title: "Motorbike hire in Waisai", body: "Waisai is where the ferry lands and where the roads are. Tell us the day you arrive and we will arrange one, so you are not looking for a bike at the harbour." },
@@ -486,6 +524,11 @@ const EN: EddoCopy = {
       package: { title: "Trip packages", body: "A day, or several, put together end to end: the boat, the food, the guide, and the order to do them in. Tell us how long you have and what you would rather not miss." },
       diving: { title: "Diving packages", body: "Run by Turtle Dive, our sister homestay in this same village. Certified dives or your first time in the water, arranged from here without you having to book twice." },
     },
+    ask: "Ask if it is free",
+    askPrice: "Ask the price",
+    noPhoto: "Photograph still to come",
+    spec: { duration: "Takes", level: "Level", engine: "Engine", power: "Engine size", seats: "Seats", size: "Sizes", includes: "Includes", notes: "Note" },
+    per: { day: "per day", night: "per night", person: "per person", trip: "per trip", piece: "each", hour: "per hour" },
   },
   stayLabel: "a house",
   message: (v) =>
@@ -658,7 +701,7 @@ const ID: EddoCopy = {
     script: "dan turun ke air",
     intro: "Sebagian besar urusan menginap di Raja Ampat bukan soal kasurnya. Yang repot itu perahunya, jemputan dari kapal, dan orang yang tahu ikannya ada di mana. Semua itu kami yang urus, dan cara mintanya sama seperti minta rumah.",
     cta: "Tanya soal ini",
-    note: "Tidak ada harga yang kami tulis di halaman ini. Ongkos perahu ikut harga bahan bakar minggu itu dan lama menyeberang ikut pasang hari itu, jadi kami sebutkan saat kamu tanya daripada mencantumkan angka yang nanti harus kami tarik lagi.",
+    note: "Harga yang tercantum adalah harga yang berlaku. Yang tidak tercantum memang belum bisa dipatok: ongkos perahu ikut harga bahan bakar minggu itu dan lama menyeberang ikut pasang hari itu, jadi kami sebutkan saat kamu tanya daripada menulis angka yang nanti harus kami tarik lagi. Menekan tombolnya berarti menanyakan ketersediaan, bukan memesan.",
     items: {
       merch: { title: "Kaos homestay", body: "Kaos dengan lambang homestay-nya sendiri. Tanya ukuran apa saja yang ada di rumah, nanti kami sisihkan satu untukmu." },
       motorbike: { title: "Sewa motor di Waisai", body: "Waisai itu tempat kapal merapat dan tempat jalannya ada. Kabari tanggal kedatanganmu, kami yang aturkan, supaya kamu tidak mencari-cari motor di pelabuhan." },
@@ -670,6 +713,11 @@ const ID: EddoCopy = {
       package: { title: "Paket trip", body: "Sehari, atau beberapa hari, disusun dari ujung ke ujung: perahunya, makannya, pemandunya, dan urutan mengerjakannya. Bilang berapa lama waktumu dan apa yang paling sayang dilewatkan." },
       diving: { title: "Paket diving", body: "Dijalankan Turtle Dive, homestay saudara kami di kampung yang sama. Selam bersertifikat, atau pertama kali turun ke air, diatur dari sini tanpa kamu perlu memesan dua kali." },
     },
+    ask: "Tanya ketersediaan",
+    askPrice: "Tanya harga",
+    noPhoto: "Fotonya menyusul",
+    spec: { duration: "Lama", level: "Level", engine: "Mesin", power: "Tenaga mesin", seats: "Muat", size: "Ukuran", includes: "Termasuk", notes: "Catatan" },
+    per: { day: "per hari", night: "per malam", person: "per orang", trip: "per trip", piece: "per potong", hour: "per jam" },
   },
   stayLabel: "rumah",
   message: (v) =>
@@ -859,7 +907,7 @@ const FR: EddoCopy = {
     script: "prendre la mer",
     intro: "L'essentiel d'un séjour à Raja Ampat n'est pas le lit. C'est le bateau, le trajet depuis le ferry, et quelqu'un qui sait où sont les poissons. La famille organise tout cela, et cela se demande comme on demande une maison.",
     cta: "Se renseigner",
-    note: "Rien ici n'a de prix sur cette page. Un bateau coûte ce que coûte le carburant cette semaine-là, et une traversée prend ce que la marée permet ce jour-là, alors nous chiffrons quand vous demandez plutôt que d'afficher un nombre que nous devrions reprendre.",
+    note: "Les prix affichés sont ceux qui tiennent. Là où il n'y en a pas, c'est qu'il n'y en a pas à fixer : un bateau coûte ce que coûte le carburant cette semaine-là, et une traversée prend ce que la marée permet ce jour-là, alors nous chiffrons quand vous demandez. Le bouton sert à savoir si c'est libre, pas à réserver.",
     items: {
       merch: { title: "T-shirts du homestay", body: "Des t-shirts portant la marque du homestay. Demandez quelles tailles sont à la maison et nous vous en mettrons un de côté." },
       motorbike: { title: "Location de moto à Waisai", body: "Waisai, c'est là qu'accoste le ferry et là que sont les routes. Dites-nous le jour de votre arrivée et nous nous en occupons, pour que vous ne cherchiez pas une moto sur le port." },
@@ -871,6 +919,11 @@ const FR: EddoCopy = {
       package: { title: "Formules de sortie", body: "Une journée, ou plusieurs, montées d'un bout à l'autre : le bateau, les repas, le guide, et l'ordre dans lequel les faire. Dites-nous de combien de temps vous disposez et ce que vous ne voudriez pas manquer." },
       diving: { title: "Formules de plongée", body: "Tenues par Turtle Dive, notre homestay jumeau dans ce même village. Plongées avec brevet ou première fois dans l'eau, organisées d'ici sans que vous ayez à réserver deux fois." },
     },
+    ask: "Demander s'il est libre",
+    askPrice: "Demander le prix",
+    noPhoto: "Photo à venir",
+    spec: { duration: "Durée", level: "Niveau", engine: "Moteur", power: "Cylindrée", seats: "Places", size: "Tailles", includes: "Comprend", notes: "Remarque" },
+    per: { day: "par jour", night: "par nuit", person: "par personne", trip: "par sortie", piece: "pièce", hour: "par heure" },
   },
   stayLabel: "une maison",
   message: (v) =>
@@ -1043,7 +1096,7 @@ const JA: EddoCopy = {
     script: "海に出る",
     intro: "Raja Ampat の滞在で手のかかるところは、寝る場所ではありません。舟、フェリーからの足、そして魚がどこにいるかを知っている人です。そのすべてを家族が手配します。頼み方は、お部屋を頼むときと同じです。",
     cta: "これについて聞く",
-    note: "このページには値段をひとつも書いていません。舟代はその週の燃料しだい、渡る時間はその日の潮しだいだからです。あとで取り消すことになる数字を並べるより、お尋ねいただいたときにお見積りします。",
+    note: "表示している料金はそのまま通る料金です。書いていないものは、決めようがないからです。舟代はその週の燃料しだい、渡る時間はその日の潮しだいなので、あとで取り消す数字を並べるよりお尋ねいただいたときにお見積りします。ボタンは空きを尋ねるためのもので、予約ではありません。",
     items: {
       merch: { title: "ホームステイの T シャツ", body: "ホームステイの印が入った T シャツです。どのサイズが家にあるかお尋ねください。お取り置きします。" },
       motorbike: { title: "Waisai でのバイクの貸出", body: "Waisai はフェリーが着く町で、道があるのもここです。到着日をお知らせいただければ手配しますので、港でバイクを探し回らずにすみます。" },
@@ -1055,6 +1108,11 @@ const JA: EddoCopy = {
       package: { title: "旅程のおまかせ", body: "一日、あるいは数日を端から端まで組み立てます。舟、食事、ガイド、そして回る順番まで。日数と、これだけは外したくないものをお聞かせください。" },
       diving: { title: "ダイビングのおまかせ", body: "同じ村にある姉妹のホームステイ、Turtle Dive が担当します。ライセンスをお持ちの方も、はじめて水に入る方も、二重に予約する必要なくここから手配します。" },
     },
+    ask: "空きを聞く",
+    askPrice: "料金を聞く",
+    noPhoto: "写真は準備中です",
+    spec: { duration: "所要", level: "レベル", engine: "エンジン", power: "排気量", seats: "定員", size: "サイズ", includes: "含まれるもの", notes: "備考" },
+    per: { day: "1 日あたり", night: "1 泊あたり", person: "1 名あたり", trip: "1 回あたり", piece: "1 点あたり", hour: "1 時間あたり" },
   },
   stayLabel: "宿泊",
   message: (v) =>
@@ -1227,7 +1285,7 @@ const DE: EddoCopy = {
     script: "aufs Wasser kommen",
     intro: "Das meiste an einem Aufenthalt in Raja Ampat ist nicht das Bett. Es ist das Boot, die Fahrt von der Fähre und jemand, der weiß, wo die Fische sind. Das alles organisiert die Familie, und man fragt danach wie nach einem Haus.",
     cta: "Danach fragen",
-    note: "Nichts davon hat auf dieser Seite einen Preis. Ein Boot kostet, was der Treibstoff in jener Woche kostet, und eine Überfahrt dauert, was die Gezeiten an jenem Tag zulassen. Wir nennen den Preis, wenn ihr fragt, statt eine Zahl zu drucken, die wir zurücknehmen müssten.",
+    note: "Die angegebenen Preise sind die, die gelten. Wo keiner steht, gibt es keinen festzulegen: ein Boot kostet, was der Treibstoff in jener Woche kostet, und eine Überfahrt dauert, was die Gezeiten an jenem Tag zulassen. Wir nennen den Preis, wenn ihr fragt. Der Knopf fragt nach, ob es frei ist, und bucht nicht.",
     items: {
       merch: { title: "T-Shirts vom Homestay", body: "Shirts mit dem eigenen Zeichen des Homestay. Fragt, welche Größen im Haus sind, und wir legen euch eines zurück." },
       motorbike: { title: "Motorradmiete in Waisai", body: "In Waisai legt die Fähre an, und dort sind die Straßen. Sagt uns euren Ankunftstag, dann organisieren wir eines, und ihr sucht nicht am Hafen nach einem Motorrad." },
@@ -1239,6 +1297,11 @@ const DE: EddoCopy = {
       package: { title: "Ausflugspakete", body: "Ein Tag oder mehrere, von vorne bis hinten zusammengestellt: das Boot, das Essen, die Begleitung und die Reihenfolge. Sagt uns, wie viel Zeit ihr habt und was ihr auf keinen Fall verpassen wollt." },
       diving: { title: "Tauchpakete", body: "Geführt von Turtle Dive, unserem Schwester-Homestay im selben Dorf. Tauchgänge mit Brevet oder das erste Mal im Wasser, von hier aus organisiert, ohne dass ihr zweimal buchen müsst." },
     },
+    ask: "Nach Verfügbarkeit fragen",
+    askPrice: "Nach dem Preis fragen",
+    noPhoto: "Foto folgt noch",
+    spec: { duration: "Dauer", level: "Stufe", engine: "Motor", power: "Hubraum", seats: "Plätze", size: "Größen", includes: "Enthält", notes: "Hinweis" },
+    per: { day: "pro Tag", night: "pro Nacht", person: "pro Person", trip: "pro Fahrt", piece: "pro Stück", hour: "pro Stunde" },
   },
   stayLabel: "ein Haus",
   message: (v) =>
@@ -1411,7 +1474,7 @@ const RU: EddoCopy = {
     script: "выйти на воду",
     intro: "Основное в поездке на Raja Ampat — не кровать. Это лодка, дорога от парома и человек, который знает, где рыба. Всё это устраивает семья, и просить об этом можно так же, как просить дом.",
     cta: "Спросить об этом",
-    note: "Ни у чего из этого на странице нет цены. Лодка стоит столько, сколько на той неделе стоит топливо, а переход занимает столько, сколько позволит прилив в тот день. Мы называем цену, когда вы спрашиваете, вместо того чтобы печатать число, от которого потом пришлось бы отказаться.",
+    note: "Указанные цены — те, что держатся. Где цены нет, её и нельзя закрепить: лодка стоит столько, сколько на той неделе стоит топливо, а переход занимает столько, сколько позволит прилив в тот день. Мы называем цену, когда вы спрашиваете. Кнопка спрашивает о наличии, а не бронирует.",
     items: {
       merch: { title: "Футболки гостевого дома", body: "Футболки со знаком самого гостевого дома. Спросите, какие размеры есть в доме, и мы отложим вам одну." },
       motorbike: { title: "Аренда мотоцикла в Waisai", body: "Waisai — это там, где причаливает паром и где есть дороги. Напишите день приезда, и мы всё устроим, чтобы вам не искать мотоцикл в порту." },
@@ -1423,6 +1486,11 @@ const RU: EddoCopy = {
       package: { title: "Пакеты поездок", body: "День или несколько, собранные от начала до конца: лодка, еда, проводник и порядок, в котором всё это делать. Напишите, сколько у вас времени и что не хотелось бы пропустить." },
       diving: { title: "Пакеты для дайвинга", body: "Их ведёт Turtle Dive, наш соседний гостевой дом в этой же деревне. Погружения по сертификату или первый раз в воде, устраиваются отсюда, и бронировать дважды не нужно." },
     },
+    ask: "Спросить о наличии",
+    askPrice: "Спросить цену",
+    noPhoto: "Фотография будет позже",
+    spec: { duration: "Занимает", level: "Уровень", engine: "Двигатель", power: "Объём", seats: "Мест", size: "Размеры", includes: "Входит", notes: "Примечание" },
+    per: { day: "за день", night: "за ночь", person: "с человека", trip: "за поездку", piece: "за штуку", hour: "за час" },
   },
   stayLabel: "дом",
   message: (v) =>
@@ -1595,7 +1663,7 @@ const ZH: EddoCopy = {
     script: "下海",
     intro: "在 Raja Ampat 待几天，麻烦的不是床，是船、是从渡轮过来的那段路，还有一个知道鱼在哪里的人。这些都由这家人安排，开口的方式和订房子一样。",
     cta: "问问这个",
-    note: "这页上什么都没有标价。船钱看那一周的油价，过海要多久看那天的潮水，所以你来问我们再报，而不是先写一个之后得收回的数字。",
+    note: "写出来的价格就是作数的价格。没写的是因为定不下来：船钱看那一周的油价，过海要多久看那天的潮水，所以你来问我们再报，而不是先写一个之后得收回的数字。按钮是问有没有空，不是下单。",
     items: {
       merch: { title: "民宿 T 恤", body: "印着民宿自己标记的 T 恤。问问屋里还有哪些尺码，我们给你留一件。" },
       motorbike: { title: "Waisai 租摩托车", body: "Waisai 是渡轮靠岸的地方，也是有路的地方。把到达日期告诉我们，我们来安排，你不用在码头到处找车。" },
@@ -1607,6 +1675,11 @@ const ZH: EddoCopy = {
       package: { title: "行程套餐", body: "一天，或者好几天，从头到尾排好：船、饭、向导，还有先后顺序。告诉我们你有多少时间，以及最舍不得错过的是什么。" },
       diving: { title: "潜水套餐", body: "由同村的姊妹民宿 Turtle Dive 负责。有证的潜水，或者第一次下水，都从这里安排，不用订两次。" },
     },
+    ask: "问问有没有空",
+    askPrice: "问价格",
+    noPhoto: "照片稍后补上",
+    spec: { duration: "时长", level: "等级", engine: "发动机", power: "排量", seats: "座位", size: "尺码", includes: "包含", notes: "备注" },
+    per: { day: "每天", night: "每晚", person: "每人", trip: "每趟", piece: "每件", hour: "每小时" },
   },
   stayLabel: "房子",
   message: (v) =>

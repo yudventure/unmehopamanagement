@@ -50,6 +50,17 @@
       "maintenance": false
     }
   },
+  "eddoServices": {
+    "merch": [],
+    "motorbike": [],
+    "car": [],
+    "boat": [],
+    "transfer": [],
+    "guide": [],
+    "camera": [],
+    "package": [],
+    "diving": []
+  },
   "updatedAt": "",
   "updatedBy": ""
 }

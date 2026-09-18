@@ -469,3 +469,43 @@ dilepas, warna tulisan di bar harus ikut diurus, bukan dibiarkan.
 Kontak dan tautan media sosialnya **masih memakai isian yang sama dengan
 Turtle** (tab Website di dashboard). Kalau Eddo perlu nomor WhatsApp atau
 akun Instagram sendiri, itu perlu kolom baru di tab Website; belum ada.
+
+## Foto layanan: `eddo-layanan-*.webp`
+
+Belum ada satu pun. Bagian **Layanan** di situs Eddo menampilkan kartu produk
+untuk tiap motor, mobil, perahu, kamera, dan paket, dan tiap kartu punya slot
+foto sendiri. Yang belum berfoto menampilkan gambar garis jenisnya beserta
+tulisan "fotonya menyusul", bukan kotak kosong.
+
+Isinya diatur di `content/site.json` pada kunci `eddoServices`, bukan di kode:
+
+```json
+"motorbike": [
+  {
+    "id": "beat",
+    "name": "Honda Beat",
+    "photo": "/eddo-layanan-beat.webp",
+    "price": 100000,
+    "unit": "day",
+    "specs": [
+      { "key": "engine", "value": "110cc, matic" },
+      { "key": "seats", "value": "2" }
+    ]
+  }
+]
+```
+
+`id` dan `name` wajib, sisanya boleh kosong. Tanpa `photo` yang tampil gambar
+garisnya; tanpa `price` tombolnya berubah jadi "tanya harga" alih-alih
+mengarang angka. Itu yang memungkinkan daftarnya terbit di hari fotonya jadi
+dan harganya menyusul minggu depan.
+
+`unit` hanya boleh salah satu dari: `day`, `night`, `person`, `trip`, `piece`,
+`hour`. `specs[].key` hanya boleh: `duration`, `level`, `engine`, `power`,
+`seats`, `size`, `includes`, `notes`. Keduanya daftar tertutup karena labelnya
+diterjemahkan ke tujuh bahasa sementara nilainya ditulis pemiliknya dalam satu
+bahasa; dibiarkan bebas, pembaca Perancis akan melihat "Mesin" di sebelah
+"110cc".
+
+Ukuran fotonya sama seperti foto kamar: 4:3, lebar 1200, WebP, dan sediakan
+juga versi `-720` kalau mau ringan di HP.

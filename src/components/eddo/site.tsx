@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 
 import {
   EMPTY_ENQUIRY,
@@ -34,6 +34,9 @@ import {
   EDDO_LANGS,
   SERVICE_KEYS,
   eddoActivityLabels,
+  isPriceUnit,
+  isSpecKey,
+  serviceProducts,
   type ServiceKey,
   EMAIL,
   EDDO_ACTIVITIES,
@@ -520,6 +523,7 @@ export function EddoSite({
   /* Which of the nine is open. The first, because a panel with nothing in it
      is a hole rather than an invitation to press something. */
   const [service, setService] = useState<ServiceKey>(SERVICE_KEYS[0]);
+  const products = serviceProducts(service);
 
   const [menuOpen, setMenuOpen] = useState(false);
   /* Both the button and the panel, because the button lives in the bar's top
@@ -1387,6 +1391,101 @@ export function EddoSite({
               {t.services.cta}
               <span aria-hidden="true">→</span>
             </button>
+
+            {/* What the owner has actually listed under this service.
+ 
+                Nothing is a normal answer and the commonest one today: the
+                description above was written to stand on its own, and a service
+                with no products simply ends there. What is not done is invent a
+                card, because a price on a page is a promise and a stock photo
+                of somebody else's scooter is a different promise. */}
+            {products.length > 0 && (
+              <div className="mt-8 grid grid-cols-1 gap-4 border-t border-eddo-line pt-7 sm:grid-cols-2 xl:grid-cols-3">
+                {products.map((x) => (
+                  <article
+                    key={x.id}
+                    className="flex flex-col overflow-hidden rounded-[18px] border border-eddo-line bg-surface"
+                  >
+                    <div className="relative flex aspect-[4/3] items-center justify-center bg-eddo-tint">
+                      {x.photo ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={x.photo}
+                          alt={x.name}
+                          loading="lazy"
+                          decoding="async"
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        /* The glyph for its kind, at size, rather than an empty
+                           grey box. A card with a hole in it reads as broken;
+                           a card with a drawing reads as one whose photograph
+                           has not been taken, which is the truth. */
+                        <span className="flex flex-col items-center gap-[10px] px-3 text-center">
+                          <span className="flex scale-[1.7] items-center justify-center text-eddo-deep/70">
+                            {SERVICE_ICONS[service]}
+                          </span>
+                          <span className="text-[11.5px] leading-[1.35] text-eddo-deep/70">
+                            {t.services.noPhoto}
+                          </span>
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex flex-1 flex-col p-[16px]">
+                      <h4 className="m-0 text-[15px] leading-[1.25] font-bold text-eddo-ink">
+                        {x.name}
+                      </h4>
+
+                      {x.specs && x.specs.length > 0 && (
+                        <dl className="mt-[10px] mb-0 grid grid-cols-[auto_1fr] gap-x-3 gap-y-[5px] text-[12.5px] leading-[1.45]">
+                          {x.specs.map((sp, i) => (
+                            <Fragment key={i}>
+                              <dt className="text-slate-mute">
+                                {isSpecKey(sp.key) ? t.services.spec[sp.key] : sp.key}
+                              </dt>
+                              <dd className="m-0 text-ink-soft">{sp.value}</dd>
+                            </Fragment>
+                          ))}
+                        </dl>
+                      )}
+
+                      {/* Pushed to the foot so the prices line up across a row
+                          whatever length the spec lists happen to be. */}
+                      <div className="mt-auto pt-[14px]">
+                        {typeof x.price === "number" ? (
+                          <div className="flex items-baseline gap-[6px]">
+                            <Price
+                              rupiah={x.price}
+                              lang={t.htmlLang}
+                              currency={currency}
+                              rates={rates}
+                              size="sm"
+                              className="text-eddo-deep"
+                            />
+                            {x.unit && isPriceUnit(x.unit) && (
+                              <span className="text-[12px] text-slate-mute">
+                                {t.services.per[x.unit]}
+                              </span>
+                            )}
+                          </div>
+                        ) : null}
+
+                        <button
+                          type="button"
+                          onClick={() =>
+                            ask(service, `${t.services.items[service].title} — ${x.name}`)
+                          }
+                          className={`${BTN_GHOST} mt-[12px] w-full px-[14px] py-[10px] text-[13px]`}
+                        >
+                          {typeof x.price === "number" ? t.services.ask : t.services.askPrice}
+                        </button>
+                      </div>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 

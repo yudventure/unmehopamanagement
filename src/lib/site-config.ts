@@ -62,12 +62,49 @@ export interface SiteOverride {
   maintenance?: boolean;
 }
 
+/**
+ * One thing a guest can look at, weigh up and ask about: a motorbike, a boat,
+ * a camera, a trip.
+ *
+ * Owner data, not copy. It lives in `content/site.json` rather than in the
+ * language files because a price is a number, a photograph is a filename, and
+ * "Honda Beat" is the same four syllables in every language on the site. The
+ * words around it, which are the ones that do change, stay in the copy.
+ *
+ * Everything but the name and the id is optional, and a missing field is drawn
+ * as missing rather than guessed at: no photograph shows the drawn glyph for
+ * its kind, and no price asks instead of inventing one. That is what lets an
+ * owner publish a list on the day they have the photographs and fill the prices
+ * in the week after, rather than waiting until they have all of it.
+ */
+export interface ServiceProduct {
+  /** Stable, lowercase, used in the message a guest sends. */
+  id: string;
+  /** As the owner writes it, in one language. Usually a proper noun anyway. */
+  name: string;
+  /** A path under `public/`. Absent means the drawn glyph is shown. */
+  photo?: string;
+  /** Rupiah. Absent means the button asks the price rather than stating it. */
+  price?: number;
+  /** A key from the copy's own small list: day, night, person, trip, piece, hour. */
+  unit?: string;
+  /** Label from that same small list, value in the owner's words. */
+  specs?: { key: string; value: string }[];
+}
+
 export interface SiteConfig {
   /** The shared values, and what Turtle used before there was a second site. */
   contact: SiteContact;
   social: SiteSocial;
   /** Rupiah, per the unit named in the copy for that package. Turtle only. */
   divePrices: Record<string, number>;
+  /**
+   * What Eddo's family hires out and arranges, keyed by the service it belongs
+   * to. Absent or empty is a normal state and not a broken one: the section
+   * then shows what each service is and offers to answer, which is what it did
+   * before anybody had photographed a motorbike.
+   */
+  eddoServices?: Record<string, ServiceProduct[]>;
   /**
    * Puts every public page behind a holding page. The manager at `/` is not
    * touched: the owner has to keep working while the site is down.
@@ -167,6 +204,21 @@ export function inheritsFrom(site: PublicSite): (keyof SiteContact)[] {
 
 const isStr = (v: unknown) => typeof v === "string";
 
+/** Shape, not presence: everything past the name is allowed to be missing. */
+function isProduct(v: unknown): boolean {
+  if (!v || typeof v !== "object") return false;
+  const p = v as ServiceProduct;
+  if (!isStr(p.id) || !isStr(p.name)) return false;
+  if (p.photo !== undefined && !isStr(p.photo)) return false;
+  if (p.unit !== undefined && !isStr(p.unit)) return false;
+  if (p.price !== undefined && (typeof p.price !== "number" || p.price < 0)) return false;
+  if (p.specs !== undefined) {
+    if (!Array.isArray(p.specs)) return false;
+    if (!p.specs.every((x) => x && isStr(x.key) && isStr(x.value))) return false;
+  }
+  return true;
+}
+
 /** Per-site overrides are all optional, so this checks shape, not presence. */
 function isOverride(v: unknown): boolean {
   if (v === undefined) return true;
@@ -206,6 +258,12 @@ export function isSiteConfig(v: unknown): v is SiteConfig {
       (typeof c.sites === "object" &&
         c.sites !== null &&
         Object.values(c.sites).every(isOverride))) &&
+    (c.eddoServices === undefined ||
+      (typeof c.eddoServices === "object" &&
+        c.eddoServices !== null &&
+        Object.values(c.eddoServices).every(
+          (list) => Array.isArray(list) && list.every(isProduct),
+        ))) &&
     (c.founded === undefined ||
       (typeof c.founded === "object" &&
         c.founded !== null &&

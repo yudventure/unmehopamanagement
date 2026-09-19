@@ -218,31 +218,43 @@ tertutup penuh dan perubahan dari CMS tayang tanpa ada yang menyentuh Hostinger.
 Kalau tidak menawarkan, deploy-nya jadi satu klik di hPanel, bukan lagi unduh
 dan unggah.
 
-### Menutup klik terakhir: satu secret, sekali seumur hidup
+### Menutup klik terakhir
 
-Selama belum diisi, tetap ada satu tombol Deploy yang harus ditekan orang. Yang
-menghapusnya:
+Hostinger punya dua produk yang beda cara kerjanya, dan situs ini ada di yang
+kedua. Perhatikan sidebar hPanel untuk tahu yang mana:
 
-1. Di hPanel buka **Advanced → Git**. Di sana ada **webhook URL** milik aplikasi
-   ini. Salin.
-2. Di GitHub buka **Settings → Secrets and variables → Actions → New repository
-   secret**, namanya `DEPLOY_HOOK_URL`, isinya URL tadi.
+**Node.js Web Apps** (sidebarnya memuat **Penempatan**, **Variabel
+environment**, **Log runtime**). Ini yang dipakai eddohomestay.com.
+Penyambungannya lewat **GitHub App**, bukan webhook yang ditempel sendiri, dan
+**deploy otomatis menyala sendiri begitu aplikasinya dibuat dari Git**. Tiap
+push ke branch yang tersambung: GitHub memberi tahu Hostinger, Hostinger menarik
+commit itu, memasang dependensi, menjalankan build, lalu me-restart. Tidak ada
+`DEPLOY_HOOK_URL` yang perlu diisi, dan memang tidak ada **Tingkat lanjut → Git**
+di panel ini.
 
-Selesai. Sejak itu Actions sendiri yang memanggil URL itu tepat setelah branch
-`deploy` diperbarui, dan Hostinger yang menarik serta me-restart.
+Yang wajib benar cuma dua, dan dua-duanya di halaman **Penempatan**:
 
-**Kenapa dipanggil dari Actions, bukan dipasang sebagai webhook GitHub.**
-Hostinger menawarkannya untuk ditempel di Settings → Webhooks, dan itu jalan.
-Tapi webhook repositori berbunyi begitu ada push, sedangkan push yang penting di
-sini adalah push ke `deploy` yang dibuat workflow ini beberapa menit *setelah*
-push ke `main` yang memulainya. Lewat GitHub, urutannya terserah keduanya; lewat
-sini, host baru diberi tahu setelah ada yang baru untuk ditarik.
+```
+Branch        : deploy          <- bukan main
+Build command : kosong          <- penting, tidak ada yang perlu dibangun
+```
 
-Kalau ternyata webhook-nya menolak panggilan polos dan menuntut payload push
-asli dari GitHub, pasang saja cara aslinya: **Settings → Webhooks**, tempel
-URL-nya, content type `application/x-www-form-urlencoded`, pilih **Just the push
-event**. Push ke `deploy` tetap membunyikannya, dan push ke `main` diabaikan
-karena branch-nya bukan yang tersambung.
+Kalau branch-nya `main`, Hostinger menarik **kode sumber** lalu mencoba
+membangunnya di server. Itu persis yang seluruh susunan ini hindari: `next build`
+memuncak di sekitar 1,4 GB, dan di hosting bersama plafonnya milik paket, bukan
+milik mesin. Branch `deploy` isinya hasil build yang sudah jadi, jadi tidak ada
+yang perlu dibangun di sana.
+
+**Hosting web biasa** (sidebarnya memuat **Tingkat lanjut → Git**). Di sini
+webhook URL-nya ditempel sendiri. Salin URL itu, lalu simpan di GitHub sebagai
+secret `DEPLOY_HOOK_URL` (**Settings → Secrets and variables → Actions**), dan
+Actions yang memanggilnya tepat sesudah branch `deploy` diperbarui.
+
+Dipanggil dari Actions, bukan ditempel di Settings → Webhooks, karena webhook
+repositori berbunyi begitu ada push, sedangkan push yang penting di sini adalah
+push ke `deploy` yang dibuat workflow ini beberapa menit *setelah* push ke `main`
+yang memulainya. Lewat GitHub, urutannya terserah keduanya; lewat sini, host baru
+diberi tahu setelah ada yang baru untuk ditarik.
 
 ### Membuktikan deploy-nya benar-benar tayang
 
@@ -264,10 +276,23 @@ menit. Jadi hijau berarti benar-benar tayang, dan kalau host diam-diam tidak
 menarik apa pun, runnya merah dengan alasannya tertulis. Sebelum ada ini,
 "deployed" adalah asumsi.
 
-Langkah tunggu ini tidur selama `DEPLOY_HOOK_URL` maupun `SSH_HOST` dua-duanya
-kosong, supaya yang masih deploy manual tidak dapat run merah tiap kali push.
-Alamat yang dipantau diambil dari variable `SITE_URL` kalau ada, kalau tidak
-diturunkan dari `SITE_DOMAIN_EDDO`.
+Menyalakannya cukup satu repository variable:
+
+```
+SITE_URL = https://eddohomestay.com
+```
+
+**Settings → Secrets and variables → Actions → Variables → New repository
+variable.** Variable, bukan secret: alamat situs itu tertulis di setiap kartu
+nama.
+
+Itu saja yang dibutuhkan pada hosting Node.js, karena di sana deploy-nya sudah
+otomatis dan yang kurang cuma buktinya. `DEPLOY_HOOK_URL` dan `SSH_HOST` juga
+menyalakannya, untuk susunan yang memakai salah satu jalur itu.
+
+Selama ketiganya kosong, langkah ini tidur, supaya yang masih deploy manual
+tidak dapat run merah tiap kali push. Alamat yang dipantau diambil dari
+`SITE_URL`, dan kalau kosong diturunkan dari `SITE_DOMAIN_EDDO`.
 
 ### Satu tindakan yang tidak bisa diotomatiskan dari sini
 

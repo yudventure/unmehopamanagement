@@ -134,9 +134,12 @@ jobs:
 
       # Tells the host to pull the branch that was just pushed.
       #
-      # Hostinger's Git tool (Advanced -> Git) hands out a webhook URL and
-      # offers it as something to paste into GitHub's own Settings -> Webhooks.
-      # That works, and it is called from here instead for one reason: a
+      # This is for a host that hands out a "pull now" URL to paste into
+      # GitHub's own Settings -> Webhooks, which Hostinger's shared-hosting
+      # Git tool does. Their Node.js hosting does not: it deploys through a
+      # GitHub App, watches the connected branch itself, and needs none of
+      # this. Kept for the hosts that do, and called from here rather than
+      # registered as a repository webhook for one reason: a
       # repository webhook fires the moment a push lands, and the push that
       # matters is the one this workflow makes to `deploy` several minutes after
       # the push to `main` that started it. Wired through GitHub, the ordering
@@ -163,17 +166,20 @@ jobs:
             *) echo "::error::webhook deploy menjawab $code"; exit 1 ;;
           esac
 
-      # Waits until the address actually serves this build, so "deployed" is
-      # something observed rather than something assumed.
+      # The other way to close the last hop: push the build to the server
+      # instead of waiting for the server to pull it.
       #
-      # `/version.json` is written by scripts/package.mjs and carries the commit
-      # the folder was built from. Polling it turns the last hop from a button
-      # somebody has to remember into a step that either goes green or says out
-      # loud that the site is still serving the old build.
+      # Dormant until `SSH_HOST` exists, so the workflow behaves exactly as
+      # before for anyone who has not set it up. Preferred order is still the
+      # `deploy` branch above, because Hostinger's own Git integration handles
+      # the restart and this cannot: what a panel-managed Node process needs in
+      # order to pick up new files is the one part of this that has never been
+      # tested against the real server.
       #
-      # Only runs once one of the two automatic paths is configured. Without
-      # that it would fail on every push for anyone still deploying by hand,
-      # and a workflow that is always red is a workflow nobody reads.
+      # Extracts into a staging directory and only then swaps, so a transfer cut
+      # halfway leaves the running site alone rather than half-replaced. The
+      # previous release is kept as `.prev` for exactly one deploy, which is the
+      # difference between a bad deploy costing a minute and costing an evening.
       - name: Deploy over SSH
         if: github.ref == 'refs/heads/main' && env.SSH_HOST != ''
         run: |
@@ -213,8 +219,27 @@ jobs:
 
           echo "terkirim ke $SSH_HOST:$DEPLOY_PATH"
 
+      # Waits until the address actually serves this build, so "deployed" is
+      # something observed rather than something assumed.
+      #
+      # `/version.json` is written by scripts/package.mjs and carries the commit
+      # the folder was built from. Polling it turns the last hop from a button
+      # somebody has to remember into a step that either goes green or says out
+      # loud that the site is still serving the old build.
+      #
+      # `SITE_URL` alone is enough to switch this on, and that is the case that
+      # matters most. Hostinger's Node.js hosting deploys through a GitHub App
+      # rather than a pasted webhook, so a site can already be deploying on
+      # every push with neither DEPLOY_HOOK_URL nor SSH_HOST ever set. Gated on
+      # those two alone, this would stay asleep for exactly the setup it exists
+      # to reassure, and "it should be automatic by now" would go on being a
+      # belief rather than a fact.
+      #
+      # Still opt-in rather than on by default: otherwise the run goes red on
+      # every push for anyone deploying by hand, and a workflow that is always
+      # red is a workflow nobody reads.
       - name: Wait for the site to serve it
-        if: github.ref == 'refs/heads/main' && (env.DEPLOY_HOOK_URL != '' || env.SSH_HOST != '')
+        if: github.ref == 'refs/heads/main' && (env.DEPLOY_HOOK_URL != '' || env.SSH_HOST != '' || env.SITE_URL != '')
         run: |
           set -euo pipefail
           BASE="${SITE_URL:-}"
@@ -242,18 +267,3 @@ jobs:
 
           echo "::error::sepuluh menit dan $BASE masih belum menyajikan ${GITHUB_SHA:0:7}"
           exit 1
-
-      # The other way to close the last hop: push the build to the server
-      # instead of waiting for the server to pull it.
-      #
-      # Dormant until `SSH_HOST` exists, so the workflow behaves exactly as
-      # before for anyone who has not set it up. Preferred order is still the
-      # `deploy` branch above, because Hostinger's own Git integration handles
-      # the restart and this cannot: what a panel-managed Node process needs in
-      # order to pick up new files is the one part of this that has never been
-      # tested against the real server.
-      #
-      # Extracts into a staging directory and only then swaps, so a transfer cut
-      # halfway leaves the running site alone rather than half-replaced. The
-      # previous release is kept as `.prev` for exactly one deploy, which is the
-      # difference between a bad deploy costing a minute and costing an evening.

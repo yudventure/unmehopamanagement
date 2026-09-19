@@ -460,11 +460,14 @@ input[type="search"]::-webkit-search-decoration {
  * without anybody measuring a path first.
  *
  * Behind `[data-anim]` like everything else that moves here, and that gate is
- * what makes the hiding safe: with no JavaScript, with a bundle that failed,
- * or under `prefers-reduced-motion`, the attribute is never set, the dash
- * never applies, and the drawings are simply drawings. The animation waits for
- * the section's own `[data-shown]` so the line is laid down while somebody is
- * looking at it rather than three screens above them.
+ * what makes the hiding safe: with no JavaScript, or with a bundle that
+ * failed, the attribute is dropped, the dash never applies, and the drawings
+ * are simply drawings. The animation waits for the section's own `[data-shown]`
+ * so the line is laid down while somebody is looking at it rather than three
+ * screens above them.
+ *
+ * These keep going under `prefers-reduced-motion`, and they are the only thing
+ * on the site that does. See the note where that block used to be, below.
  */
 [data-anim] [data-art] [data-draw] {
   stroke-dasharray: 1;
@@ -579,22 +582,27 @@ input[type="search"]::-webkit-search-decoration {
 }
 
 /*
- * Asked for less motion: the scenes are there, finished, and still.
+ * The drawings keep moving even when the machine has asked for less motion,
+ * and this is the note explaining why there is no rule here any more.
  *
- * `!important` for the same reason as the sea above — the rules it has to beat
- * carry an extra `[data-anim]`, so they win on specificity otherwise, and a
- * drawing left at full dash offset is a drawing nobody can see.
+ * There was one. It stopped every drawing dead, which is what the setting
+ * seemed to ask for, and the result was a whole class of machine getting a site
+ * with nothing alive on it. On a Mac, "Reduce motion" is an accessibility
+ * switch nobody turns on by accident. On Windows the same signal comes from
+ * "Animation effects", which is off on anything set to "adjust for best
+ * performance" and on plenty of laptops as they come out of the box. The web
+ * hands both to the stylesheet under one name, so the site could not tell a
+ * reader who gets motion sick from a machine that had been tuned for speed,
+ * and it assumed the first about every one of the second.
+ *
+ * What the setting is actually for is motion that crosses the screen, follows
+ * the scroll, or arrives without being asked. All of that still stops: the
+ * hero, the arriving sections, the full-width scenes. This is a line drawing
+ * inside a box about as wide as a postcard, and the largest thing in it moves
+ * two and a half pixels. Freezing that bought no reader anything, and cost
+ * every Windows visitor the difference between a site that is alive and a site
+ * that looks broken.
  */
-@media (prefers-reduced-motion: reduce) {
-  [data-art] [data-draw] {
-    stroke-dasharray: none !important;
-    stroke-dashoffset: 0 !important;
-  }
-
-  [data-art] * {
-    animation: none !important;
-  }
-}
 
 /* ============================================================ scroll motion */
 
@@ -603,9 +611,12 @@ input[type="search"]::-webkit-search-decoration {
  *
  * The hiding rule is behind `html[data-anim]`, which the root layout's inline
  * script sets before the first paint and drops again if the reveal hook never
- * takes charge. That gate is the whole safety story: with no JavaScript, with
- * a bundle that failed, or under `prefers-reduced-motion`, the attribute is
- * absent, none of this applies, and the page is simply the page.
+ * takes charge. That gate is the safety story for a bundle that failed: the
+ * attribute goes, none of this applies, and the page is simply the page.
+ *
+ * Under `prefers-reduced-motion` the flag is still set, and the block at the
+ * end of this section lands all of these at once instead. A reader who asked
+ * for calm gets the finished page rather than a page that assembles itself.
  *
  * Only opacity and transform move. Neither reflows, so a marked section cannot
  * shift what is under it, and an anchor still lands where it said it would.
@@ -805,10 +816,18 @@ input[type="search"]::-webkit-search-decoration {
 }
 
 /*
- * The belt to the inline script's braces. If the attribute is somehow set on a
- * machine that has since been told to reduce motion — the media query can
- * change inside a session, the script only reads it once — everything lands in
- * place at once instead of moving there.
+ * What asking for less motion actually switches off.
+ *
+ * This was once a belt to the inline script's braces, back when that script
+ * never armed anything at all for such a reader. It is now the decision itself,
+ * made one animation at a time rather than for the lot of them.
+ *
+ * The hero moves with the scroll across the whole screen. The sections slide
+ * twenty-two pixels as they arrive. Neither was asked for and neither can be
+ * outrun by looking somewhere else, which is the definition of the motion this
+ * setting exists to stop. So both land finished and at rest.
+ *
+ * The line drawings do not stop, for the reasons written where they live.
  */
 @media (prefers-reduced-motion: reduce) {
   [data-anim] [data-reveal],

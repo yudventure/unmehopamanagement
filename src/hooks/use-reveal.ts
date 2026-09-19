@@ -17,9 +17,15 @@ import { useEffect } from "react";
  * **Nothing is hidden until the browser has proved it can show it again.** The
  * rule that hides is behind `html[data-anim]`, which the root layout's inline
  * script sets before the first paint and drops again if this hook never
- * arrives. So the failure mode of every part of this — no JavaScript, no
- * IntersectionObserver, a bundle that never loaded, a reader who asked for
- * less motion — is the plain page, never a blank one.
+ * arrives. So the failure mode of every part of this, whether no JavaScript, no
+ * IntersectionObserver or a bundle that never loaded, is the plain page and
+ * never a blank one.
+ *
+ * A reader who has asked for less motion is no longer one of those cases. The
+ * hook still runs for them and still marks each section as it arrives; the
+ * stylesheet is what decides that the marking lands instantly instead of
+ * sliding. Deciding it here meant deciding it for every animation at once,
+ * which froze the line drawings on every Windows machine tuned for speed.
  *
  * **Revealing is one-way.** An element that has arrived is left alone and
  * unobserved. Fading things back out as they leave sounds tidier and is not:
@@ -30,8 +36,8 @@ export function useReveal() {
   useEffect(() => {
     const root = document.documentElement;
 
-    /* Not armed: reduced motion, or the layout's failsafe has already given
-       up. Either way the page is showing everything, so leave it be. */
+    /* Not armed: the layout's failsafe has already given up, so the page is
+       showing everything and there is nothing left to reveal. */
     if (!("anim" in root.dataset)) return;
 
     /* Claims the flag, which is what stops the failsafe from firing. */

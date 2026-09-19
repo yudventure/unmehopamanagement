@@ -63,25 +63,39 @@ export const viewport: Viewport = {
  *
  * Things that animate in start invisible, and the rule that hides them is
  * behind `html[data-anim]`. Setting the flag here means the page is drawn with
- * them already hidden, so nothing appears and then jumps back out. Leaving the
- * flag unset means a browser with no JavaScript, or a reader who has asked for
- * less motion, gets the whole page at rest and fully readable.
+ * them already hidden, so nothing appears and then jumps back out.
  *
  * The timer is the part worth keeping. `useReveal` upgrades the flag to "on"
- * when it takes charge; if it never does — the bundle failed, hydration threw,
- * an extension ate it — the flag is dropped and everything becomes visible.
- * Without that, one failed request turns the site into a blank page, which is
- * a far worse bargain than losing an animation.
+ * when it takes charge; if it never does, because the bundle failed, hydration
+ * threw or an extension ate it, the flag is dropped and everything becomes
+ * visible. Without that, one failed request turns the site into a blank page,
+ * which is a far worse bargain than losing an animation.
+ *
+ * ## Why this no longer reads `prefers-reduced-motion`
+ *
+ * It used to, and the effect was that a whole class of machine got a site with
+ * nothing moving on it at all. On a Mac "Reduce motion" is an accessibility
+ * switch that is off unless somebody turned it on. On Windows the same signal
+ * comes from "Animation effects", which is off on any machine set to "Adjust
+ * for best performance" and on a good deal of what ships from a shop. The web
+ * gives both the same name, so the site could not tell a reader who gets motion
+ * sick from a laptop that was tuned for speed, and it treated every Windows
+ * machine as the first.
+ *
+ * So the decision moved from this script into the stylesheet, where it can be
+ * made per animation rather than for all of them at once. What still stops
+ * under `prefers-reduced-motion` is everything the setting exists for: the
+ * hero that moves with the scroll, the sections that slide up as they arrive,
+ * the full-width scenes. What keeps going is the line drawings, which are a few
+ * pixels of drift inside a box the size of a postcard.
  */
 const START_AT_TOP = `
 if ("scrollRestoration" in history) history.scrollRestoration = "manual";
 if (location.hash) history.replaceState(null, "", location.pathname + location.search);
 try {
-  if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
-    var r = document.documentElement;
-    r.dataset.anim = "";
-    setTimeout(function () { if (r.dataset.anim !== "on") delete r.dataset.anim; }, 3000);
-  }
+  var r = document.documentElement;
+  r.dataset.anim = "";
+  setTimeout(function () { if (r.dataset.anim !== "on") delete r.dataset.anim; }, 3000);
 } catch (e) {}
 `;
 

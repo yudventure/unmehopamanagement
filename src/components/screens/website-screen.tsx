@@ -509,9 +509,10 @@ export function WebsiteScreen({ editor }: WebsiteScreenProps) {
               bisa bekerja.
               <br />
               <br />
-              Yang mengerjakan situsnya tetap bisa melihat aslinya lewat{" "}
-              <code className="font-mono">/preview?token=…</code>, jadi menutup
-              situs tidak berarti ikut mengunci diri sendiri.
+              Menutup situs tidak berarti ikut mengunci diri sendiri. Kamu
+              tinggal menekan tombol di bawah. Untuk orang lain yang tidak punya
+              akses dashboard ini, kirimkan{" "}
+              <code className="font-mono">/preview?token=…</code>.
             </div>
 
             <label className="flex cursor-pointer items-start gap-3 rounded-[14px] border border-line bg-surface-mute px-4 py-[13px]">
@@ -530,6 +531,41 @@ export function WebsiteScreen({ editor }: WebsiteScreenProps) {
                 </span>
               </span>
             </label>
+
+            {/* The way in, for the person already signed in here.
+                `/preview?token=…` is still what you send to somebody who is
+                not, but nobody standing in the dashboard should have to go and
+                look a token up. The route reads it on the server and hands the
+                browser the cookie; the token itself never reaches this page,
+                which is why this is a link to a route rather than a link this
+                screen builds.
+
+                `target="_blank"` on purpose: the dashboard is where the switch
+                is, and sending somebody away from it to look at the result
+                means a trip back to change their mind. */}
+            <a
+              href={`/api/preview?site=${tab}`}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-3 inline-flex items-center gap-2 rounded-[12px] border border-line bg-surface px-4 py-[11px] text-[13px] font-medium text-ink no-underline transition-colors hover:border-line-strong hover:bg-surface-hover hover:no-underline"
+            >
+              <span aria-hidden="true">↗</span>
+              Lihat {LABEL_OF[tab]}
+              {siteClosed(tab) && (
+                <span className="text-[12px] font-normal text-slate-soft">
+                  walau sedang ditutup
+                </span>
+              )}
+            </a>
+
+            {siteClosed(tab) && (
+              <div className="mt-2 text-[12px] leading-[1.55] text-slate-soft">
+                Butuh <code className="font-mono">PREVIEW_TOKEN</code> terpasang
+                di server. Belum terpasang, tombol ini tetap membawa ke halaman
+                tunggu, dan <code className="font-mono">/api/health</code>{" "}
+                menyebutnya kosong.
+              </div>
+            )}
 
             <div className="mt-4 flex items-start gap-3 rounded-[14px] border border-amber-soft bg-amber-soft/40 px-4 py-[13px]">
               <span className="mt-[5px] h-[9px] w-[9px] shrink-0 rounded-full bg-amber-shade" />

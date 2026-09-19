@@ -449,6 +449,153 @@ input[type="search"]::-webkit-search-decoration {
   }
 }
 
+/* =================================================== eddo section drawings */
+
+/*
+ * The line scenes beside Eddo's section headings, in `section-art.tsx`.
+ *
+ * They arrive by being drawn. Each stroke carries `pathLength="1"`, which
+ * renormalises it to a single unit however long it really is, so one dash of
+ * 1 covers any of them exactly and the offset can go from hidden to laid down
+ * without anybody measuring a path first.
+ *
+ * Behind `[data-anim]` like everything else that moves here, and that gate is
+ * what makes the hiding safe: with no JavaScript, with a bundle that failed,
+ * or under `prefers-reduced-motion`, the attribute is never set, the dash
+ * never applies, and the drawings are simply drawings. The animation waits for
+ * the section's own `[data-shown]` so the line is laid down while somebody is
+ * looking at it rather than three screens above them.
+ */
+[data-anim] [data-art] [data-draw] {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+
+[data-anim] [data-reveal][data-shown] [data-art] [data-draw] {
+  animation: artDraw 900ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes artDraw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/*
+ * And then a few parts keep going.
+ *
+ * All transforms, so none of it costs a layout, and all delayed past the draw
+ * so nothing slides about while it is still being drawn. The sea shifts by
+ * exactly one wave period, which is why the wave paths start off the left edge
+ * and run past the right: the loop has no seam to see.
+ */
+[data-art] [data-drift] {
+  animation: artDrift 9s linear infinite 900ms;
+}
+
+[data-art] [data-drift="slow"] {
+  animation-duration: 14s;
+}
+
+@keyframes artDrift {
+  to {
+    transform: translateX(-48px);
+  }
+}
+
+[data-art] [data-bob] {
+  animation: artBob 4.5s ease-in-out infinite 900ms;
+}
+
+@keyframes artBob {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-2.5px) rotate(-1.1deg);
+  }
+}
+
+[data-art] [data-swim] {
+  animation: artSwim 13s linear infinite 900ms;
+}
+
+@keyframes artSwim {
+  from {
+    transform: translateX(10px);
+  }
+  to {
+    transform: translateX(-160px);
+  }
+}
+
+[data-art] [data-glide] {
+  animation: artGlide 15s linear infinite 900ms;
+}
+
+@keyframes artGlide {
+  0% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(95px, -7px);
+  }
+  100% {
+    transform: translate(190px, 0);
+  }
+}
+
+/* The one stroke here that is dashed on purpose rather than to be drawn: a
+   wake is a broken line, and moving the break along it is what says the boat
+   is under power. It carries no `pathLength`, so these are real units. */
+[data-art] [data-wake] {
+  stroke-dasharray: 8 10;
+  animation: artWake 1.6s linear infinite;
+}
+
+@keyframes artWake {
+  to {
+    stroke-dashoffset: -18;
+  }
+}
+
+[data-art] [data-rise] {
+  animation: artRise 3.6s ease-in infinite;
+}
+
+@keyframes artRise {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  25% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-24px);
+    opacity: 0;
+  }
+}
+
+/*
+ * Asked for less motion: the scenes are there, finished, and still.
+ *
+ * `!important` for the same reason as the sea above — the rules it has to beat
+ * carry an extra `[data-anim]`, so they win on specificity otherwise, and a
+ * drawing left at full dash offset is a drawing nobody can see.
+ */
+@media (prefers-reduced-motion: reduce) {
+  [data-art] [data-draw] {
+    stroke-dasharray: none !important;
+    stroke-dashoffset: 0 !important;
+  }
+
+  [data-art] * {
+    animation: none !important;
+  }
+}
+
 /* ============================================================ scroll motion */
 
 /*

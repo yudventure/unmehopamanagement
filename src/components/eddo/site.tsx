@@ -16,6 +16,13 @@ import {
   WhatsAppIcon,
 } from "@/components/web/icons";
 import { RoomCarousel, type RoomPhoto } from "@/components/eddo/room-carousel";
+import {
+  ART_BOX,
+  BoatArt,
+  HouseArt,
+  IslandArt,
+  TurtleArt,
+} from "@/components/eddo/section-art";
 import { CurrencySwitch, Price } from "@/components/web/price";
 import {
   IsletScene,
@@ -553,15 +560,10 @@ export function EddoSite({
      is a hole rather than an invitation to press something. */
   const [service, setService] = useState<ServiceKey>(SERVICE_KEYS[0]);
   const products = serviceProducts(service);
-  /* Across the whole section, not just the open service: the notice is about
-     the section, and a reader who lands on a real group first should still be
-     told before they reach a made-up one. */
   /* No client key, no Snap script, so nothing here can charge and every
      button asks instead. Read once, up here, because both the room panel far
      below and the service cards just under this need the same answer. */
   const canPay = Boolean(MIDTRANS_CLIENT_KEY);
-
-  const anyExample = SERVICE_KEYS.some((k) => serviceProducts(k).some((x) => x.example));
 
   /* What the reader has filled into a card, keyed by product. One object rather
      than state per card: the cards are drawn in a loop, and a hook cannot be. */
@@ -571,10 +573,13 @@ export function EddoSite({
   /*
    * Whether this card offers to charge rather than to ask.
    *
-   * Four conditions, and the interesting one is the last. An example is never
-   * payable however everything else lines up, because every figure in this
-   * section is invented until an owner replaces it, and a price wearing a
-   * warning label on the front must not be chargeable from behind. The server
+   * Four conditions, and the interesting one is the last. A product still
+   * flagged `example` is never payable however everything else lines up. The
+   * flag no longer shows the reader anything — the site is open and the notice
+   * that used to sit over these cards has gone — so all it does now is hold
+   * the money back: a figure nobody has confirmed can be looked at and asked
+   * about, and cannot be charged. The card falls back to its ask button, which
+   * is the one place a made-up number gets corrected by a person. The server
    * refuses it too; this is only what the reader is offered.
    */
   const canBuy = (x: ServiceProduct) =>
@@ -1179,6 +1184,13 @@ export function EddoSite({
             <Title plain={t.rooms.title} script={t.rooms.script} className="mt-4 text-[clamp(30px,4.6vw,48px)]" />
           </div>
           <div className="max-w-[380px]">
+            {/* Inside the right-hand block rather than as a third thing in the
+                row. A row of three has the heading, the drawing and the price
+                note all competing for the same width, and the heading is forty
+                eight pixels tall in seven languages: German would have pushed
+                one of them onto its own line at every size between the phone
+                and the desktop. Here it only ever adds height. */}
+            <HouseArt className={`${ART_BOX} mb-4 w-[200px] lg:w-[240px]`} />
             <p className="m-0 text-[14px] leading-[1.6] text-slate">{t.rooms.intro}</p>
             <div className="mt-3">
               <CurrencySwitch currency={currency} onPick={pickCurrency} srLabel={t.currencyLabel} tone="dark" />
@@ -1371,6 +1383,7 @@ export function EddoSite({
             <Eyebrow>{t.around.eyebrow}</Eyebrow>
             <h2 className="mt-4 mb-0 text-[clamp(30px,4.6vw,48px)] leading-[1.05] font-bold tracking-[-.03em] text-eddo-ink">{t.around.title}</h2>
           </div>
+          <IslandArt className={`${ART_BOX} w-[210px] lg:w-[290px]`} />
           {/* Not "snorkeling": that key left this site's list when the list
               became the five the enquiry card offers, and an activity the
               dialog cannot show is an activity the reader cannot correct.
@@ -1424,26 +1437,17 @@ export function EddoSite({
             script={t.services.script}
             className="mt-4 text-[clamp(30px,4.6vw,48px)]"
           />
-          <p className="mt-5 max-w-[640px] text-[14.5px] leading-[1.7] text-slate">
-            {t.services.intro}
-          </p>
+          {/* The drawing beside the opening paragraph rather than under the
+              heading. This heading runs the whole width on a wide screen and
+              the paragraph stops at 640, which left a bare quarter of the page
+              to the right of it. */}
+          <div className="mt-5 flex flex-col items-start gap-6 md:flex-row md:items-end md:justify-between md:gap-10">
+            <p className="m-0 max-w-[640px] text-[14.5px] leading-[1.7] text-slate">
+              {t.services.intro}
+            </p>
+            <BoatArt className={`${ART_BOX} w-[220px] lg:w-[300px]`} />
+          </div>
         </div>
-
-        {/* Only while there is something made up to warn about, and above the
-            list rather than under it: a caveat a reader meets after they have
-            already read the prices is a caveat that arrived too late. */}
-        {anyExample && (
-          <p
-            data-reveal
-            className="mt-7 flex max-w-[760px] items-start gap-[10px] rounded-[14px] border border-amber bg-amber-soft px-[16px] py-[13px] text-[13px] leading-[1.65] text-amber-deep"
-          >
-            <span className="mt-[3px] shrink-0 font-mono text-[10px] tracking-[.08em] text-amber-ink uppercase">
-              {t.services.example}
-            </span>
-            <span>{t.services.exampleNote}</span>
-          </p>
-        )}
-
 
         <div
           data-reveal
@@ -1531,16 +1535,6 @@ export function EddoSite({
                     className="flex flex-col overflow-hidden rounded-[18px] border border-eddo-line bg-surface"
                   >
                     <div className="relative flex aspect-[4/3] items-center justify-center bg-eddo-tint">
-                      {/* On the picture rather than beside the price, because
-                          the picture is where the eye lands first and the price
-                          is the thing the mark exists to qualify. Amber, which
-                          is the one warm colour on this page and is not used
-                          for anything a reader is meant to press. */}
-                      {x.example && (
-                        <span className="absolute top-[10px] left-[10px] z-10 rounded-full bg-amber-shade px-[9px] py-[3px] font-mono text-[10px] tracking-[.08em] text-white uppercase">
-                          {t.services.example}
-                        </span>
-                      )}
                       {x.photo ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
@@ -1724,6 +1718,10 @@ export function EddoSite({
           <div data-reveal>
             <Eyebrow>{t.faq.eyebrow}</Eyebrow>
             <h2 className="mt-4 mb-0 text-[clamp(28px,4vw,42px)] leading-[1.08] font-bold tracking-[-.025em] text-eddo-ink">{t.faq.title}</h2>
+            {/* This column holds a heading and nothing else while the answers
+                run down the far side of the page, so on anything wider than a
+                phone it is the emptiest space on the site. */}
+            <TurtleArt className={`${ART_BOX} mt-8 w-[220px] lg:w-[270px]`} />
           </div>
           <div className="border-t border-line-strong">
             {t.faq.items.map((f, i) => (

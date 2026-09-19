@@ -108,11 +108,12 @@ export interface ServiceProduct {
   /**
    * Made up, and saying so on the card.
    *
-   * There to let an owner show somebody the shape of the page before the real
-   * photographs and prices exist, which is a reasonable thing to want and a
-   * dangerous thing to do quietly: this site is live and takes money, and a
-   * number with nothing beside it is read as a number that holds. So the flag
-   * is not a comment in this file, it is a mark the guest sees.
+   * There to let an owner fill the shape of the page before the real
+   * photographs and prices exist. It used to print a label on the card as
+   * well; the site is open now and the owner asked for the labels off, so what
+   * is left is the half that matters and cannot be seen: a flagged product is
+   * not chargeable. Its card offers to be asked about instead, which puts a
+   * person between an invented number and somebody's money.
    *
    * Delete the line when the real figure goes in. Nothing else has to change.
    */

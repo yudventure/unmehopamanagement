@@ -533,14 +533,21 @@ permintaan browser.
 
 ### Menandai isian contoh
 
-Tambahkan `"example": true` pada sebuah barang dan kartunya memasang label
-kuning **CONTOH** di atas fotonya, dan satu kotak peringatan muncul di atas
-seluruh daftar selama masih ada satu saja yang bertanda.
+Tambahkan `"example": true` pada sebuah barang dan barang itu tidak bisa
+dibayar. Kartunya tetap tampil utuh, dengan foto, spek dan harganya, hanya
+tombolnya berubah jadi "tanya ketersediaan" alih-alih "pesan dan bayar".
 
-Itu bukan komentar di berkas ini melainkan tanda yang dilihat tamu, karena
-situs ini hidup dan menerima uang: angka tanpa tanda apa pun akan dibaca
-sebagai angka yang berlaku. Hapus barisnya begitu angka aslinya masuk, tidak
-ada lagi yang perlu diubah.
+Dulu tanda ini juga memasang label kuning **CONTOH** di kartunya dan satu
+kotak peringatan di atas daftar. Situs ini sudah dibuka untuk umum dan
+labelnya diminta dilepas, jadi yang tersisa tinggal separuh yang tidak
+kelihatan, dan justru separuh itu yang penting: angka yang belum dipastikan
+boleh dilihat dan ditanyakan, tidak boleh ditagih.
+
+Ada harganya yang perlu disadari. Tamu tidak lagi diberi tahu angka mana yang
+belum pasti, jadi angka contoh terbaca sebagai angka yang berlaku sampai ada
+orang yang menjawab. Yang menjaga di situ cuma satu: tombolnya menanyakan,
+bukan menagih. Hapus barisnya begitu angka aslinya masuk, tidak ada lagi yang
+perlu diubah.
 
 `id` dan `name` wajib, sisanya boleh kosong. Tanpa `photo` yang tampil gambar
 garisnya; tanpa `price` tombolnya berubah jadi "tanya harga" alih-alih
@@ -556,6 +563,36 @@ bahasa; dibiarkan bebas, pembaca Perancis akan melihat "Mesin" di sebelah
 
 Ukuran fotonya sama seperti foto kamar: 4:3, lebar 1200, WebP, dan sediakan
 juga versi `-720` kalau mau ringan di HP.
+
+## Gambar garis di sebelah judul seksi
+
+Empat gambar, satu warna, tanpa isian, di `src/components/eddo/section-art.tsx`.
+Bukan berkas foto, jadi tidak ada yang perlu diunggah dan tidak ada yang perlu
+diganti nanti: ini hiasan, bukan tempat kosong yang menunggu foto.
+
+| Seksi | Gambarnya |
+| --- | --- |
+| Kamar | rumah panggung, pohon kelapa, tangga turun ke air |
+| Sekitar kami | pulau berpohon, burung di atasnya, ikan di bawah |
+| Layanan | perahu panjang bermesin dengan buih di belakangnya |
+| Tanya | penyu |
+
+Semuanya kotak 300x96 dengan garis air di ketinggian yang kira-kira sama, biar
+keempatnya terbaca satu set walau letaknya berjauhan. Warnanya `text-eddo-deep`
+di opasitas 35 persen supaya judulnya tetap yang pertama dibaca.
+
+Geraknya dua macam. Pertama garisnya ditarik satu per satu waktu seksinya
+sampai di layar; itu jalan sekali. Sesudah itu airnya bergeser, perahunya
+bergoyang, ikannya lewat, gelembungnya naik, terus selama halamannya dibuka.
+Semuanya `transform` saja, jadi tidak ada satu frame pun yang memicu layout,
+dan seluruhnya berhenti kalau peramban bilang pembacanya minta gerak
+dikurangi. Gambarnya tetap utuh, cuma diam. Aturannya di `globals.css`, bagian
+"eddo section drawings".
+
+Seluruhnya 1,5 KB sesudah gzip dari total 1,3 MB halaman itu.
+
+Mau melepas salah satunya: hapus satu baris `<HouseArt …>` dan kawan-kawannya
+di `site.tsx`. Tidak ada yang lain yang bergantung padanya.
 
 ## Ikon situs: favicon, tab, dan layar utama
 

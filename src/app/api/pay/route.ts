@@ -71,8 +71,8 @@ export async function POST(req: Request) {
    *
    * The service branch refuses anything still marked as an example, which is
    * what `payableProduct` is for. Every price in that section is invented until
-   * an owner replaces it, and a figure that carries a warning label on the page
-   * must not be chargeable behind it.
+   * an owner replaces it, and the page no longer says which ones those are, so
+   * this refusal is the whole of the guard rather than the second half of it.
    */
   const service = clean(body.service);
   const productId = clean(body.productId);

@@ -185,9 +185,11 @@ export const isPayableService = (k: string): k is ServiceKey =>
  *
  * It refuses an example outright. Every figure in the section is made up until
  * somebody replaces it, and a made-up number that can be charged is worse than
- * no number at all: the flag is there so nobody is misled, and charging against
- * it would be being misled with extra steps. Delete `"example": true` and the
- * same product becomes payable with nothing else changed.
+ * no number at all. Nothing on the page says so any more, which makes this the
+ * only thing standing between an invented price and a real card payment: the
+ * flagged card offers to be asked about, and a person answers with the figure
+ * that holds. Delete `"example": true` and the same product becomes payable
+ * with nothing else changed.
  */
 export function payableProduct(service: string, id: string): ServiceProduct | null {
   if (!isPayableService(service)) return null;
@@ -385,10 +387,6 @@ export interface EddoCopy {
     askPrice: string;
     /** Under a product with no photograph, so the drawn glyph is explained. */
     noPhoto: string;
-    /** On a card whose figures are made up. Short, because it sits on a chip. */
-    example: string;
-    /** Said once above the list, but only while any made-up card is showing. */
-    exampleNote: string;
     /** On a card that can be paid for outright, and the two fields it needs. */
     pay: string;
     when: string;
@@ -585,11 +583,9 @@ const EN: EddoCopy = {
     ask: "Ask if it is free",
     askPrice: "Ask the price",
     noPhoto: "Photograph still to come",
-    example: "Example",
     pay: "Book and pay",
     when: "Which day",
     qty: "How many",
-    exampleNote: "Some of what is below is filled in as an example, so the family can see the shape of the page before the real photographs and prices exist. Every card that is made up says so on itself. Ask us for anything you see here and we will answer with the figure that actually holds.",
     spec: { duration: "Takes", level: "Level", engine: "Engine", power: "Engine size", seats: "Seats", size: "Sizes", includes: "Includes", notes: "Note" },
     per: { day: "per day", night: "per night", person: "per person", trip: "per trip", piece: "each", hour: "per hour" },
   },
@@ -779,11 +775,9 @@ const ID: EddoCopy = {
     ask: "Tanya ketersediaan",
     askPrice: "Tanya harga",
     noPhoto: "Fotonya menyusul",
-    example: "Contoh",
     pay: "Pesan dan bayar",
     when: "Hari apa",
     qty: "Berapa",
-    exampleNote: "Sebagian yang di bawah ini masih isian contoh, supaya bentuk halamannya bisa dilihat sebelum foto dan harga yang sebenarnya ada. Tiap kartu yang dikarang menyebutkannya sendiri. Tanyakan saja yang mana pun di sini, kami jawab dengan angka yang benar-benar berlaku.",
     spec: { duration: "Lama", level: "Level", engine: "Mesin", power: "Tenaga mesin", seats: "Muat", size: "Ukuran", includes: "Termasuk", notes: "Catatan" },
     per: { day: "per hari", night: "per malam", person: "per orang", trip: "per trip", piece: "per potong", hour: "per jam" },
   },
@@ -990,11 +984,9 @@ const FR: EddoCopy = {
     ask: "Demander s'il est libre",
     askPrice: "Demander le prix",
     noPhoto: "Photo à venir",
-    example: "Exemple",
     pay: "Réserver et payer",
     when: "Quel jour",
     qty: "Combien",
-    exampleNote: "Une partie de ce qui suit est remplie à titre d'exemple, le temps que les vraies photos et les vrais prix existent. Chaque fiche inventée le dit sur elle-même. Demandez-nous n'importe laquelle et nous répondrons avec le chiffre qui tient vraiment.",
     spec: { duration: "Durée", level: "Niveau", engine: "Moteur", power: "Cylindrée", seats: "Places", size: "Tailles", includes: "Comprend", notes: "Remarque" },
     per: { day: "par jour", night: "par nuit", person: "par personne", trip: "par sortie", piece: "pièce", hour: "par heure" },
   },
@@ -1184,11 +1176,9 @@ const JA: EddoCopy = {
     ask: "空きを聞く",
     askPrice: "料金を聞く",
     noPhoto: "写真は準備中です",
-    example: "見本",
     pay: "予約して支払う",
     when: "いつ",
     qty: "いくつ",
-    exampleNote: "以下の一部は見本として入れてあります。実際の写真と料金がそろうまでのあいだ、ページの形をご覧いただくためのものです。作り物のカードにはその旨が書いてあります。気になるものはお尋ねください。実際に通る数字でお答えします。",
     spec: { duration: "所要", level: "レベル", engine: "エンジン", power: "排気量", seats: "定員", size: "サイズ", includes: "含まれるもの", notes: "備考" },
     per: { day: "1 日あたり", night: "1 泊あたり", person: "1 名あたり", trip: "1 回あたり", piece: "1 点あたり", hour: "1 時間あたり" },
   },
@@ -1379,11 +1369,9 @@ const DE: EddoCopy = {
     ask: "Nach Verfügbarkeit fragen",
     askPrice: "Nach dem Preis fragen",
     noPhoto: "Foto folgt noch",
-    example: "Beispiel",
     pay: "Buchen und bezahlen",
     when: "An welchem Tag",
     qty: "Wie viele",
-    exampleNote: "Ein Teil des Folgenden ist als Beispiel eingetragen, damit die Form der Seite zu sehen ist, bevor die echten Fotos und Preise vorliegen. Jede erfundene Karte sagt das auf sich selbst. Fragt uns nach irgendeiner davon, und wir antworten mit der Zahl, die wirklich gilt.",
     spec: { duration: "Dauer", level: "Stufe", engine: "Motor", power: "Hubraum", seats: "Plätze", size: "Größen", includes: "Enthält", notes: "Hinweis" },
     per: { day: "pro Tag", night: "pro Nacht", person: "pro Person", trip: "pro Fahrt", piece: "pro Stück", hour: "pro Stunde" },
   },
@@ -1573,11 +1561,9 @@ const RU: EddoCopy = {
     ask: "Спросить о наличии",
     askPrice: "Спросить цену",
     noPhoto: "Фотография будет позже",
-    example: "Пример",
     pay: "Забронировать и оплатить",
     when: "В какой день",
     qty: "Сколько",
-    exampleNote: "Часть того, что ниже, заполнена для примера, пока нет настоящих фотографий и цен. Каждая выдуманная карточка говорит об этом на себе. Спросите про любую из них, и мы ответим цифрой, которая действительно держится.",
     spec: { duration: "Занимает", level: "Уровень", engine: "Двигатель", power: "Объём", seats: "Мест", size: "Размеры", includes: "Входит", notes: "Примечание" },
     per: { day: "за день", night: "за ночь", person: "с человека", trip: "за поездку", piece: "за штуку", hour: "за час" },
   },
@@ -1767,11 +1753,9 @@ const ZH: EddoCopy = {
     ask: "问问有没有空",
     askPrice: "问价格",
     noPhoto: "照片稍后补上",
-    example: "示例",
     pay: "预订并付款",
     when: "哪一天",
     qty: "几个",
-    exampleNote: "下面有一部分是先填的示例，好在真实照片和价格到位之前看看页面的样子。凡是编的卡片都会自己标出来。看到哪一项想问就问，我们会用真正作数的数字回答。",
     spec: { duration: "时长", level: "等级", engine: "发动机", power: "排量", seats: "座位", size: "尺码", includes: "包含", notes: "备注" },
     per: { day: "每天", night: "每晚", person: "每人", trip: "每趟", piece: "每件", hour: "每小时" },
   },

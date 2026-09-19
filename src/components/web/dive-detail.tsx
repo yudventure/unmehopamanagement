@@ -11,6 +11,7 @@ import {
   EnquiryModal,
   type Enquiry,
 } from "@/components/web/enquiry-modal";
+import { LangSwitch } from "@/components/web/lang-switch";
 import { CurrencySwitch, Price } from "@/components/web/price";
 import { useReveal } from "@/hooks/use-reveal";
 import { useCurrency, useLang, useRates } from "@/hooks/use-site-prefs";
@@ -21,11 +22,9 @@ import {
   COPY,
   DIVE_PER,
   DIVE_PRICE,
-  LANGS,
   MAX_DIVERS,
   monthOptions,
   type DiveKey,
-  type Lang,
 } from "@/lib/web-content";
 
 /**
@@ -169,25 +168,7 @@ export function DiveDetail({
                 onPick={pickCurrency}
                 srLabel={t.currencyLabel}
               />
-              <div className="flex items-center gap-[2px] rounded-full border border-white/25 p-[2px]">
-                {LANGS.map((l) => (
-                  <button
-                    key={l.key}
-                    type="button"
-                    lang={l.key}
-                    onClick={() => pickLang(l.key as Lang)}
-                    aria-label={l.label}
-                    aria-pressed={lang === l.key}
-                    className={`cursor-pointer rounded-full border-none px-[10px] py-[5px] text-[12px] font-medium ${
-                      lang === l.key
-                        ? "bg-white text-ink"
-                        : "bg-transparent text-white/70 hover:text-white"
-                    }`}
-                  >
-                    {l.short}
-                  </button>
-                ))}
-              </div>
+              <LangSwitch lang={lang} onPick={pickLang} label={t.langLabel} />
             </div>
           </div>
 

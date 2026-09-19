@@ -3,7 +3,8 @@
 import { HeroScene } from "@/components/web/scenes";
 import { MailIcon, WhatsAppIcon } from "@/components/web/icons";
 import { useLang } from "@/hooks/use-site-prefs";
-import { COPY, EMAIL, LANGS, PROPERTY, WHATSAPP, waLink } from "@/lib/web-content";
+import { LangSwitch } from "@/components/web/lang-switch";
+import { COPY, EMAIL, PROPERTY, WHATSAPP, waLink } from "@/lib/web-content";
 
 /**
  * What stands in for every public page while the switch in the CMS is on.
@@ -96,26 +97,11 @@ export function Maintenance() {
           +{WHATSAPP} · {EMAIL}
         </div>
 
-        {/* Same control as the site's, rebuilt small: this page does not load
-            the header it normally lives in. */}
-        <div className="mt-9 flex items-center gap-[2px] rounded-full border border-white/25 p-[2px]">
-          {LANGS.map((l) => (
-            <button
-              key={l.key}
-              type="button"
-              lang={l.key}
-              onClick={() => pickLang(l.key)}
-              aria-label={l.label}
-              aria-pressed={lang === l.key}
-              className={`cursor-pointer rounded-full border-none px-[11px] py-[5px] text-[12px] font-medium transition-colors ${
-                lang === l.key
-                  ? "bg-white text-ink"
-                  : "bg-transparent text-white/70 hover:text-white"
-              }`}
-            >
-              {l.short}
-            </button>
-          ))}
+        {/* The same control the site's header carries. It used to be a copy
+            of it, rebuilt small, which is how this page kept two languages for
+            a while after the site had seven. */}
+        <div className="mt-9">
+          <LangSwitch lang={lang} onPick={pickLang} label={t.langLabel} align="left" />
         </div>
       </div>
     </main>

@@ -24,6 +24,7 @@ import {
   TikTokIcon,
   WhatsAppIcon,
 } from "@/components/web/icons";
+import { LangSwitch } from "@/components/web/lang-switch";
 import { CurrencySwitch, Price } from "@/components/web/price";
 import { SiteLogo } from "@/components/web/site-logo";
 import { JourneyMap } from "@/components/web/journey-map";
@@ -44,14 +45,12 @@ import {
   DIVE_PER,
   DIVE_PRICE,
   EMAIL,
-  LANGS,
   MAX_DIVERS,
   PROPERTY,
   ROOM_SLEEPS,
   WHATSAPP,
   type ActivityKey,
   type DiveKey,
-  type Lang,
   type RoomKey,
   money,
   monthOptions,
@@ -139,42 +138,6 @@ const SOCIALS = [
   { name: "Facebook", href: TURTLE_SOCIAL.facebook, icon: <FacebookIcon /> },
   { name: "TikTok", href: TURTLE_SOCIAL.tiktok, icon: <TikTokIcon /> },
 ];
-
-/**
- * Two languages, both always visible — a dropdown would hide the fact that
- * the other one exists, which is the only thing this control has to say.
- * `lang` on each button lets a browser pronounce "Bahasa Indonesia"
- * correctly while the rest of the page is in English.
- */
-function LangSwitch({
-  lang,
-  onPick,
-}: {
-  lang: Lang;
-  onPick: (next: Lang) => void;
-}) {
-  return (
-    <div className="flex items-center gap-[2px] rounded-full border border-white/25 p-[2px]">
-      {LANGS.map((l) => (
-        <button
-          key={l.key}
-          type="button"
-          lang={l.key}
-          onClick={() => onPick(l.key)}
-          aria-label={l.label}
-          aria-pressed={lang === l.key}
-          className={`cursor-pointer rounded-full border-none px-[10px] py-[5px] text-[12px] font-medium transition-colors ${
-            lang === l.key
-              ? "bg-white text-ink"
-              : "bg-transparent text-white/70 hover:text-white"
-          }`}
-        >
-          {l.short}
-        </button>
-      ))}
-    </div>
-  );
-}
 
 const PILL_DARK =
   "inline-flex items-center justify-center rounded-full bg-ink px-6 py-[13px] text-[14px] font-medium text-white transition-colors hover:bg-ink-soft";
@@ -470,7 +433,7 @@ export function TurtleSite({ payable = false }: { payable?: boolean }) {
             >
               {t.book}
             </button>
-            <LangSwitch lang={lang} onPick={pickLang} />
+            <LangSwitch lang={lang} onPick={pickLang} label={t.langLabel} />
           </nav>
 
           {/* Below the nav's breakpoint the row is the two controls, still
@@ -483,7 +446,7 @@ export function TurtleSite({ payable = false }: { payable?: boolean }) {
             >
               {t.book}
             </button>
-            <LangSwitch lang={lang} onPick={pickLang} />
+            <LangSwitch lang={lang} onPick={pickLang} label={t.langLabel} />
             <button
               type="button"
               onClick={() => setMenuOpen((v) => !v)}

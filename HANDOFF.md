@@ -217,7 +217,7 @@ src/
     pricing.ts                satu-satunya tempat nilai booking dihitung
     derive.ts                 sel kalender, statistik bulan, tren, deteksi bentrok
     report-export.ts          penyusun CSV + penggambar PDF laporan
-    web-content.ts            ★ seluruh teks website publik, dua bahasa
+    web-content.ts            ★ seluruh teks website publik, tujuh bahasa
     site-config.ts            pembaca content/site.json + penjaga bentuknya
     currency.ts               daftar mata uang, konversi, pembulatan
     dive-detail.ts            bentuk hari & kedalaman tiap paket (lihat catatannya)
@@ -617,7 +617,13 @@ domain ke situs sekarang ada di `next.config.ts`, mati kalau tidak diisi, dan
 caranya ada di `DEPLOY.md`.
 
 Isinya: hero foto, bagian nilai, kamar, dive center, musim, cara sampai, FAQ,
-footer. Dua bahasa, default Inggris, tombol ID/EN di header.
+footer. **Tujuh bahasa** — Inggris, Indonesia, Prancis, Jepang, Jerman, Rusia,
+Mandarin — dengan Inggris sebagai default, dipilih lewat satu dropdown di
+header. Daftarnya sama persis dengan Eddo dan berbagi satu kunci penyimpanan,
+jadi tamu yang memilih bahasanya di satu situs lalu menyeberang ke situs
+satunya tidak perlu memilih lagi. Tiap bahasa disebut dengan namanya sendiri
+(`Français`, `日本語`, `Русский`), karena orang mencari bentuk katanya sendiri,
+bukan kata Inggrisnya.
 
 **Ada dua pintu, dan keduanya pintu depan.** Tombol tanya membuka popup
 (`web/enquiry-modal.tsx`) berisi nama, WhatsApp, email, mau apa, rencana bulan,
@@ -811,7 +817,7 @@ menyamakan keduanya itulah yang menghapus titik-titiknya.
 
 Saklar di sub-tab **Status situs**. Menyala berarti `/turtle`, `/turtle/about`,
 dan keenam halaman paket selam diganti satu halaman tunggu berisi lencana
-homestay, judul dua bahasa, nomor WhatsApp, dan email. Dashboard `/` **tidak**
+homestay, judulnya dalam bahasa yang dipilih pembaca, nomor WhatsApp, dan email. Dashboard `/` **tidak**
 ikut mati, jadi pemiliknya tetap bisa bekerja selagi situsnya ditutup.
 
 Halaman tunggunya membawa nomor dan email, dan itu inti dari halamannya.
@@ -829,10 +835,10 @@ var, bukan di berkas ini.
 Selama menyala, ketiga rute itu juga menambahkan `robots: noindex, nofollow`
 supaya mesin pencari tidak mencatat "sedang diperbaiki" sebagai isi situs ini.
 
-Tulisannya ada di `web-content.ts` kunci `maintenance`, dua bahasa dan
-bertipe, jadi tidak mungkin ada versi yang cuma terisi satu bahasa. Sengaja
+Tulisannya ada di `web-content.ts` kunci `maintenance`, tujuh bahasa dan
+bertipe, jadi tidak mungkin ada versi yang cuma terisi sebagian. Sengaja
 tidak ada kolom teks bebas di CMS untuk ini: satu kotak teks berarti satu
-bahasa, dan situs ini dua bahasa.
+bahasa, dan situs ini tujuh bahasa.
 
 `maintenance` yang tidak ada di berkas dianggap **mati**. Berkas yang ditulis
 sebelum kolom ini ada tidak boleh mematikan situs pada deploy berikutnya.
@@ -857,7 +863,7 @@ browser. Itu yang membuat tab lama tidak bisa menimpa perubahan yang disimpan
 orang lain semenit sebelumnya: kalau berkasnya sudah bergerak, SHA-nya salah
 dan GitHub menolak.
 
-Teks situs tidak ada di CMS. Salinan dua bahasa, dengan pemenggalan baris dan
+Teks situs tidak ada di CMS. Salinan tujuh bahasa, dengan pemenggalan baris dan
 nadanya, jauh lebih baik disunting lewat code review daripada lewat textarea.
 Menaruhnya di form berarti memilih antara setengah terjemahan tayang atau
 pekerjaan penerjemah di dalam formulir.

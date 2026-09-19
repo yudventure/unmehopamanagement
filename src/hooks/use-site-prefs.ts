@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-import { DEFAULT_LANG, type Lang } from "@/lib/web-content";
+import { DEFAULT_LANG, isLang, type Lang } from "@/lib/web-content";
 import { EDDO_DEFAULT_LANG, isEddoLang, type EddoLang } from "@/lib/eddo-content";
 import { BASE, isCurrency, type CurrencyCode, type Rates } from "@/lib/currency";
 
@@ -23,7 +23,11 @@ export function useLang() {
   const [lang, setLang] = useState<Lang>(DEFAULT_LANG);
   useEffect(() => {
     const saved = window.localStorage.getItem(LANG_KEY);
-    if (saved === "en" || saved === "id") setLang(saved);
+    /* Checked against the list rather than against two literals. It used to
+       read `saved === "en" || saved === "id"`, which was right while those were
+       the only two Turtle had written and which silently dropped every other
+       language the day it grew five more. */
+    if (isLang(saved)) setLang(saved);
   }, []);
   const pickLang = (next: Lang) => {
     setLang(next);
@@ -33,15 +37,18 @@ export function useLang() {
 }
 
 /**
- * The same choice, for the site that offers seven languages instead of two.
+ * The same choice, on the other site.
  *
- * Deliberately the same storage key. A reader who set Indonesian on one site
- * and walks to the other should not have to set it again, and the two sites are
- * linked from each other's footers, so that walk is a path people take. What
- * the wider list adds is a value the narrower reader cannot understand, and
- * `useLang` above already throws away anything that is not its own: a reader
- * who chose Japanese here lands on Turtle in English, which is what Turtle is
- * written in.
+ * Deliberately the same storage key, and now the same seven languages on both
+ * sides of it. A reader who set Japanese on one site and walks to the other
+ * should not have to set it again, and the two are linked from each other's
+ * footers, so that walk is a path people take.
+ *
+ * This used to be the wide list and `useLang` the narrow one: Turtle was
+ * written in two languages, so a reader who chose Japanese at Eddo landed on
+ * Turtle in English. Turtle is written in all seven now, so there is nothing
+ * left to narrow — the two hooks differ only in which site's `Lang` type they
+ * hand back, and each still throws away a value it does not recognise.
  */
 export function useEddoLang() {
   const [lang, setLang] = useState<EddoLang>(EDDO_DEFAULT_LANG);

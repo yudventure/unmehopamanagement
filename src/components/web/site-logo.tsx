@@ -11,7 +11,7 @@ import { PROPERTY } from "@/lib/web-content";
  *
  * Its own file rather than a function inside the front page, because the
  * checkout page wants it too and importing it from there would pull the whole
- * site — every scene, every map, both languages of copy — into a page that
+ * site — every scene, every map, seven languages of copy — into a page that
  * shows one card.
  */
 export function SiteLogo({ size }: { size: number }) {

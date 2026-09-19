@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 
 import { AboutPage } from "@/components/web/about";
 import { Maintenance } from "@/components/web/maintenance";
-import { isClosedFor } from "@/lib/preview";
+import { PreviewBadge } from "@/components/preview-badge";
+import { isClosedFor, isPreviewing } from "@/lib/preview";
 import { siteConfig } from "@/lib/site-config";
 import { COPY, DEFAULT_LANG, PROPERTY } from "@/lib/web-content";
 
@@ -23,5 +24,10 @@ export const metadata: Metadata = {
 
 export default async function Page() {
   if (await isClosedFor("turtle")) return <Maintenance />;
-  return <AboutPage />;
+  return (
+    <>
+      <AboutPage />
+      {(await isPreviewing("turtle")) && <PreviewBadge site="turtle" />}
+    </>
+  );
 }

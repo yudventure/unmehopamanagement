@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 
 import { Maintenance } from "@/components/web/maintenance";
 import { TurtleSite } from "@/components/web/site";
+import { PreviewBadge } from "@/components/preview-badge";
 import { midtransConfigured } from "@/lib/midtrans";
-import { isClosedFor } from "@/lib/preview";
+import { isClosedFor, isPreviewing } from "@/lib/preview";
 import { canonical } from "@/lib/site-domains";
 import { siteConfig } from "@/lib/site-config";
 import { COPY, DEFAULT_LANG, EMAIL, PROPERTY } from "@/lib/web-content";
@@ -56,5 +57,10 @@ export default async function TurtlePage() {
    * package still asks, and nothing offers a button that would open a broken
    * payment window.
    */
-  return <TurtleSite payable={midtransConfigured()} />;
+  return (
+    <>
+      <TurtleSite payable={midtransConfigured()} />
+      {(await isPreviewing("turtle")) && <PreviewBadge site="turtle" />}
+    </>
+  );
 }

@@ -32,7 +32,139 @@ import type { PublicSite } from "@/lib/site-domains";
 const FIELD =
   "w-full rounded-[10px] border border-line-input bg-surface px-[12px] py-[9px] text-[13.5px] outline-none focus:border-teal";
 const LABEL = "flex flex-col gap-[6px] text-[12.5px] text-slate";
-const NOTE = "mb-4 text-[12.5px] leading-[1.5] text-slate-soft";
+
+/**
+ * The paragraph that explains a control, folded until someone wants it.
+ *
+ * Every card here opened with its explanation and reached its fields
+ * underneath, which turned the screen into a document with inputs in it: five
+ * paragraphs stood between the top of the page and the first thing that could
+ * be typed into. The prose is good and none of it is being deleted — it is
+ * simply read once, on the first visit, while the fields are what the second
+ * visit and every one after it came for.
+ *
+ * `<details>` rather than a state flag, because the browser already has this
+ * control: it opens on click, it opens on Enter, it is announced as expandable
+ * without any `aria-` of ours, and Ctrl+F opens it to reach the text inside —
+ * which is the one behaviour a hand-rolled version reliably loses, and the one
+ * that matters most for a paragraph that names an environment variable
+ * somebody is searching for.
+ */
+function Explain({ children }: { children: React.ReactNode }) {
+  return (
+    <details className="group mb-4">
+      <summary className="inline-flex cursor-pointer list-none items-center gap-[6px] text-[12.5px] text-slate-mute hover:text-slate [&::-webkit-details-marker]:hidden">
+        <svg
+          aria-hidden="true"
+          viewBox="0 0 12 12"
+          className="h-3 w-3 shrink-0 group-open:rotate-180"
+        >
+          <path
+            d="M2.5 4.5 6 8l3.5-3.5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+        Penjelasan
+      </summary>
+      <div className="mt-[10px] max-w-[760px] text-[12.5px] leading-[1.55] text-slate-soft">
+        {children}
+      </div>
+    </details>
+  );
+}
+
+/**
+ * The address to send to whoever is waiting to see the work.
+ *
+ * A site closed for work is closed to the person it belongs to as well, and
+ * that is backwards — the changes are theirs to look at and sign off. The way
+ * through already existed; what did not was any way to get hold of it without
+ * opening the server panel and reading an environment variable, which is not
+ * a thing to ask of somebody standing on a jetty with a phone.
+ *
+ * ## What it hands over, said plainly
+ *
+ * The link carries the token itself, so it is a key and not an invitation:
+ * anyone it is forwarded to gets in too, and there is no way to withdraw it
+ * from one person. Taking it back means changing `PREVIEW_TOKEN` on the
+ * server, which locks out everybody at once, the owner included. That is worth
+ * a sentence on the screen rather than a surprise later, because the natural
+ * thing to do with a link is paste it into a group chat.
+ *
+ * The full address is shown rather than masked. A button that copies something
+ * different from what is on screen is a small lie, and the one moment it
+ * matters is the moment somebody is checking whether they are about to send
+ * the right thing to a guest.
+ */
+function ShareLink({
+  url,
+  configured,
+  siteLabel,
+  closed,
+}: {
+  url?: string;
+  configured: boolean;
+  siteLabel: string;
+  closed: boolean;
+}) {
+  const [copied, setCopied] = useState(false);
+
+  if (!configured || !url) {
+    return (
+      <div className="mt-4 rounded-[14px] border border-line bg-surface-mute px-4 py-[13px] text-[12.5px] leading-[1.55] text-slate-soft">
+        <strong className="font-semibold text-ink">
+          Belum ada link untuk klien.
+        </strong>{" "}
+        Tanpa <code className="font-mono">PREVIEW_TOKEN</code> tidak ada link
+        yang bisa dikirim, dan tidak ada siapa pun yang bisa melewati halaman
+        tunggu. Pasang tokennya, muat ulang halaman ini, dan linknya muncul di
+        sini.
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-4 rounded-[14px] border border-line bg-surface-mute px-4 py-[13px]">
+      <div className="mb-[2px] text-[13.5px] font-medium text-ink">
+        Link untuk klien
+      </div>
+      <div className="mb-[10px] text-[12.5px] leading-[1.5] text-slate-soft">
+        {closed
+          ? `Kirimkan ini supaya klien bisa melihat ${siteLabel} yang sedang ditutup. Yang membukanya melihat situs aslinya, bukan halaman tunggu.`
+          : `${siteLabel} sedang terbuka untuk umum, jadi klien belum butuh ini. Linknya tetap bekerja nanti kalau situsnya ditutup lagi.`}
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2">
+        <code className="min-w-0 flex-1 overflow-hidden rounded-[9px] border border-line-input bg-surface px-[11px] py-[7px] font-mono text-[11.5px] text-ellipsis whitespace-nowrap text-ink-soft">
+          {url}
+        </code>
+        <button
+          type="button"
+          onClick={() => {
+            navigator.clipboard?.writeText(url);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 1600);
+          }}
+          className="cursor-pointer rounded-[9px] border border-line-strong bg-surface px-[13px] py-[7px] text-[12.5px] font-medium hover:bg-surface-hover"
+        >
+          {copied ? "Tersalin" : "Salin"}
+        </button>
+      </div>
+
+      <div className="mt-[10px] text-[12px] leading-[1.5] text-slate-soft">
+        Link ini adalah kuncinya, bukan undangan: siapa pun yang diteruskan
+        link ini ikut bisa masuk, dan tidak ada cara mencabutnya dari satu orang
+        saja. Menariknya kembali berarti mengganti{" "}
+        <code className="font-mono">PREVIEW_TOKEN</code> di panel server, dan
+        itu mengunci semua orang sekaligus, Anda termasuk.
+      </div>
+    </div>
+  );
+}
 
 type Status =
   | { kind: "idle" }
@@ -98,6 +230,14 @@ export function WebsiteScreen({ editor }: WebsiteScreenProps) {
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState<Status>({ kind: "idle" });
   const [tab, setTab] = useState<TabKey>("eddo");
+  /* The share links, per site. Null until the answer arrives; an object with
+     `configured: false` once it has and there is no token on the server. Kept
+     apart from `config` because it comes from somewhere else and for a
+     different reason: that file is public, and this is not. */
+  const [preview, setPreview] = useState<{
+    configured: boolean;
+    links: Partial<Record<PublicSite, string>>;
+  } | null>(null);
 
   useEffect(() => {
     fetch("/api/content")
@@ -110,6 +250,17 @@ export function WebsiteScreen({ editor }: WebsiteScreenProps) {
       .catch(() =>
         setStatus({ kind: "error", message: "Gagal memuat pengaturan." }),
       );
+  }, []);
+
+  /* Its own request, on its own endpoint, because the token in it must never
+     ride along in a response anyone can ask for. A 401 lands here as "not
+     configured", which is the right thing to show: either way there is no link
+     to hand out. */
+  useEffect(() => {
+    fetch("/api/preview-link")
+      .then((r) => (r.ok ? r.json() : { configured: false, links: {} }))
+      .then(setPreview)
+      .catch(() => setPreview({ configured: false, links: {} }));
   }, []);
 
   /* Compared as JSON rather than field by field: the shapes are small, and a
@@ -233,11 +384,15 @@ export function WebsiteScreen({ editor }: WebsiteScreenProps) {
   return (
     <div>
       <div className="mb-1 text-[22px] font-bold">Website</div>
-      <div className="mb-5 max-w-[760px] text-[13.5px] leading-[1.55] text-slate-soft">
-        Pengaturan situs publik, satu tab per properti. Menyimpan menulis ulang
-        berkas isi website di GitHub, lalu server membangun ulang situsnya.
-        Perubahan biasanya terlihat sekitar satu menit setelah disimpan, bukan
-        seketika.
+      <div className="mb-3 max-w-[760px] text-[13.5px] leading-[1.55] text-slate-soft">
+        Pengaturan situs publik, satu tab per properti.
+      </div>
+      <div className="mb-5">
+        <Explain>
+          Menyimpan menulis ulang berkas isi website di GitHub, lalu server
+          membangun ulang situsnya. Perubahan biasanya terlihat sekitar satu
+          menit setelah disimpan, bukan seketika.
+        </Explain>
       </div>
 
       {!writable && (
@@ -317,11 +472,11 @@ export function WebsiteScreen({ editor }: WebsiteScreenProps) {
         <>
           <section className={card}>
             <div className="mb-1 text-[15px] font-bold">Kontak</div>
-            <div className={NOTE}>
+            <Explain>
               Nomor WhatsApp dipakai tombol Kirim di website {LABEL_OF[tab]}.
               Email publik tampil di footernya. Email owner tidak tampil di mana
               pun; ke alamat itulah pesan dari website ini dikirim.
-            </div>
+            </Explain>
             <div className="grid grid-cols-1 gap-[14px] sm:grid-cols-3">
               {(
                 [
@@ -356,10 +511,15 @@ export function WebsiteScreen({ editor }: WebsiteScreenProps) {
             <div className="mb-2 text-[15px] font-bold">
               Pesan dari website masuk ke email
             </div>
-            <div className="max-w-[760px] text-[13px] leading-[1.6] text-slate">
-              Setiap pesan dari tombol Kirim di website {LABEL_OF[tab]} dikirim
-              ke <strong>{siteContact(tab).ownerEmail || "(belum diisi)"}</strong>,
-              lengkap dengan nama, WhatsApp, email, rencana tanggal, jumlah
+            {/* The address is the whole point of the card and the only part of
+                it that changes, so it stays out where it can be checked at a
+                glance. The rest is how it works, which is read once. */}
+            <div className="mb-3 max-w-[760px] text-[13px] leading-[1.6] text-slate">
+              Pesan dari tombol Kirim di website {LABEL_OF[tab]} dikirim ke{" "}
+              <strong>{siteContact(tab).ownerEmail || "(belum diisi)"}</strong>.
+            </div>
+            <Explain>
+              Isinya lengkap: nama, WhatsApp, email, rencana tanggal, jumlah
               orang, dan catatan tamu. Tombol balas di email langsung tertuju ke
               alamat tamunya.
               <br />
@@ -372,19 +532,19 @@ export function WebsiteScreen({ editor }: WebsiteScreenProps) {
               pengirim di domain yang sudah diverifikasi di sana. Selama
               keduanya belum ada, tombol Kirim di website otomatis beralih
               membuka WhatsApp, jadi tidak ada pesan yang hilang.
-            </div>
+            </Explain>
           </section>
         </>
 
         {(
           <section className={card}>
             <div className="mb-1 text-[15px] font-bold">Media sosial</div>
-            <div className={NOTE}>
+            <Explain>
               Tempel URL lengkap profil {LABEL_OF[tab]}, mis.{" "}
               <code className="font-mono">https://instagram.com/namaakun</code>.
               Dikosongkan pun tidak apa-apa: ikonnya tetap tampil, cuma jadi
               penanda redup yang tidak bisa diklik.
-            </div>
+            </Explain>
             <div className="grid grid-cols-1 gap-[14px] sm:grid-cols-3">
               {(
                 [
@@ -412,7 +572,7 @@ export function WebsiteScreen({ editor }: WebsiteScreenProps) {
         {HAS_DIVING[tab] && (
           <section className={card}>
             <div className="mb-1 text-[15px] font-bold">Tahun berdiri</div>
-            <div className={NOTE}>
+            <Explain>
               Dipakai di halaman profil{" "}
               <code className="font-mono">/turtle/about</code>, untuk kalimat
               &ldquo;dive center berdiri sekian tahun setelah homestay&rdquo;,
@@ -421,7 +581,7 @@ export function WebsiteScreen({ editor }: WebsiteScreenProps) {
               dive center-nya berdiri belakangan tanpa menyebut tahun, dan
               footernya cuma menulis &ldquo;Raja Ampat&rdquo;. Itu disengaja:
               tahun yang dikarang akan bertahan bertahun-tahun di sana.
-            </div>
+            </Explain>
             <div className="grid grid-cols-1 gap-[14px] sm:grid-cols-2">
               {(
                 [
@@ -458,12 +618,12 @@ export function WebsiteScreen({ editor }: WebsiteScreenProps) {
         {HAS_DIVING[tab] && (
           <section className={card}>
             <div className="mb-1 text-[15px] font-bold">Harga paket selam</div>
-            <div className={NOTE}>
+            <Explain>
               Nama dan keterangan tiap paket ada di kode; yang bisa diubah di
               sini angkanya. Harga kamar tidak ada di halaman ini karena
               diambil langsung dari Properti &amp; Kamar, supaya website dan
               dashboard tidak pernah berbeda.
-            </div>
+            </Explain>
             <div className="grid grid-cols-1 gap-[14px] sm:grid-cols-2 lg:grid-cols-3">
               {DIVE_KEYS.map((key) => (
                 <label key={key} className={LABEL}>
@@ -500,21 +660,6 @@ export function WebsiteScreen({ editor }: WebsiteScreenProps) {
         {(
           <section className={card}>
             <div className="mb-1 text-[15px] font-bold">Mode perbaikan</div>
-            <div className={NOTE}>
-              Saklar ini cuma menutup {LABEL_OF[tab]}. Keduanya dikerjakan
-              bergantian, jadi menutup yang satu untuk diperbaiki tidak boleh
-              ikut menutup yang sedang menerima tamu. Halaman yang ditutup
-              diganti halaman tunggu berisi nama homestay, nomor WhatsApp, dan
-              email, dua bahasa. Dashboard ini tidak ikut mati, jadi kamu tetap
-              bisa bekerja.
-              <br />
-              <br />
-              Menutup situs tidak berarti ikut mengunci diri sendiri. Kamu
-              tinggal menekan tombol di bawah. Untuk orang lain yang tidak punya
-              akses dashboard ini, kirimkan{" "}
-              <code className="font-mono">/preview?token=…</code>.
-            </div>
-
             <label className="flex cursor-pointer items-start gap-3 rounded-[14px] border border-line bg-surface-mute px-4 py-[13px]">
               <input
                 type="checkbox"
@@ -567,6 +712,18 @@ export function WebsiteScreen({ editor }: WebsiteScreenProps) {
               </div>
             )}
 
+            {/* Beside the button, not somewhere else in the card. Both answer
+                the same question — how does anyone see this while it is shut —
+                and they differ only in who is asking: the button is for
+                whoever is signed in here, this is for whoever is not. Split
+                apart, the second one reads as a repeat of the first. */}
+            <ShareLink
+              url={preview?.links[tab]}
+              configured={Boolean(preview?.configured)}
+              siteLabel={LABEL_OF[tab]}
+              closed={siteClosed(tab)}
+            />
+
             <div className="mt-4 flex items-start gap-3 rounded-[14px] border border-amber-soft bg-amber-soft/40 px-4 py-[13px]">
               <span className="mt-[5px] h-[9px] w-[9px] shrink-0 rounded-full bg-amber-shade" />
               <div className="text-[12.5px] leading-[1.55] text-amber-ink">
@@ -579,12 +736,34 @@ export function WebsiteScreen({ editor }: WebsiteScreenProps) {
               </div>
             </div>
 
-            <div className="mt-4 text-[12.5px] leading-[1.55] text-slate-soft">
-              Tulisan di halaman tunggunya ada di kode (
-              <code className="font-mono">web-content.ts</code>, kunci{" "}
-              <code className="font-mono">maintenance</code>), dua bahasa,
-              supaya tidak ada versi yang cuma terisi satu bahasa. Nomor dan
-              email yang tampil di sana diambil dari Kontak di atas.
+            {/* Below the switch and the warning, because by the time this
+                matters the switch has already been found. */}
+            <div className="mt-4">
+              <Explain>
+                Saklar ini cuma menutup {LABEL_OF[tab]}. Keduanya dikerjakan
+                bergantian, jadi menutup yang satu untuk diperbaiki tidak boleh
+                ikut menutup yang sedang menerima tamu. Dashboard ini tidak ikut
+                mati, jadi kamu tetap bisa bekerja.
+                <br />
+                <br />
+                Menutup situs tidak berarti ikut mengunci diri sendiri. Kamu
+                tinggal menekan tombol Lihat di atas; tokennya dibaca di server
+                dan tidak pernah sampai ke halaman ini. Untuk orang lain yang
+                tidak punya akses dashboard, salin link di bawah tombol itu.
+                <br />
+                <br />
+                Halaman yang ditutup diganti halaman tunggu berisi nama
+                homestay, nomor WhatsApp, dan email, dua bahasa. Tulisannya ada
+                di kode (<code className="font-mono">web-content.ts</code>,
+                kunci <code className="font-mono">maintenance</code>), supaya
+                tidak ada versi yang cuma terisi satu bahasa. Nomor dan email
+                yang tampil di sana diambil dari Kontak di atas.
+                <br />
+                <br />
+                Yang mengerjakan situsnya tetap bisa melihat aslinya lewat{" "}
+                <code className="font-mono">/preview?token=…</code>, jadi
+                menutup situs tidak berarti ikut mengunci diri sendiri.
+              </Explain>
             </div>
           </section>
         )}

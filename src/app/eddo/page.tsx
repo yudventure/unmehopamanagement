@@ -6,7 +6,8 @@ import type { Metadata, Viewport } from "next";
 import { EddoSite } from "@/components/eddo/site";
 import { EDDO, EDDO_COPY } from "@/lib/eddo-content";
 import { canonical, siteDomain } from "@/lib/site-domains";
-import { isClosedFor } from "@/lib/preview";
+import { PreviewBadge } from "@/components/preview-badge";
+import { isClosedFor, isPreviewing } from "@/lib/preview";
 import { siteConfig } from "@/lib/site-config";
 import { DEFAULT_LANG } from "@/lib/web-content";
 
@@ -77,11 +78,14 @@ export default async function EddoPage() {
       return { src: `/${f}`, narrow: files.includes(narrow) ? `/${narrow}` : null };
     });
   return (
-    <EddoSite
-      maintenance={await isClosedFor("eddo")}
-      sisterHref={turtle ? `https://${turtle}/` : "/turtle"}
-      hasHeroPhoto={hasHeroPhoto}
-      roomPhotos={roomPhotos}
-    />
+    <>
+      <EddoSite
+        maintenance={await isClosedFor("eddo")}
+        sisterHref={turtle ? `https://${turtle}/` : "/turtle"}
+        hasHeroPhoto={hasHeroPhoto}
+        roomPhotos={roomPhotos}
+      />
+      {(await isPreviewing("eddo")) && <PreviewBadge site="eddo" />}
+    </>
   );
 }

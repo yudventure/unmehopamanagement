@@ -3,8 +3,9 @@ import { notFound } from "next/navigation";
 
 import { DiveDetail } from "@/components/web/dive-detail";
 import { Maintenance } from "@/components/web/maintenance";
+import { PreviewBadge } from "@/components/preview-badge";
 import { midtransConfigured } from "@/lib/midtrans";
-import { isClosedFor } from "@/lib/preview";
+import { isClosedFor, isPreviewing } from "@/lib/preview";
 import { siteConfig } from "@/lib/site-config";
 import { COPY, DEFAULT_LANG, DIVE_KEYS, PROPERTY, type DiveKey } from "@/lib/web-content";
 
@@ -52,5 +53,10 @@ export default async function DivePackagePage({ params }: Props) {
   if (await isClosedFor("turtle")) return <Maintenance />;
   /* The server key is server-only, so whether this page may sell is decided
      here and handed down. Read at build, like the front page's. */
-  return <DiveDetail pack={pack} payable={midtransConfigured()} />;
+  return (
+    <>
+      <DiveDetail pack={pack} payable={midtransConfigured()} />
+      {(await isPreviewing("turtle")) && <PreviewBadge site="turtle" />}
+    </>
+  );
 }

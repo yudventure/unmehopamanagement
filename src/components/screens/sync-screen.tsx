@@ -199,6 +199,122 @@ function ImportBlock({
 }
 
 /**
+ * One room, folded down to a line until there is a reason to open it.
+ *
+ * Laid out flat, each room took a heading, two labelled sections, a select, a
+ * text field and three buttons — about 350px of screen. Fifteen of those ran
+ * to roughly 6,800px, so reaching the last room of the second property meant
+ * scrolling past fourteen copies of a form identical to the one being looked
+ * for. The work itself is occasional: a URL is pasted once per room per
+ * channel and then not touched again for months.
+ *
+ * So the line carries the state and the form stays behind it. What matters at
+ * a glance is which rooms are already wired up and which are not, and that is
+ * exactly what the summary says — a count rather than a tick, because two
+ * channels connected out of three is the common half-done case and a tick
+ * would call it finished.
+ */
+function RoomRow({
+  room,
+  feeds,
+  token,
+  origin,
+  onAddFeed,
+  onRemoveFeed,
+  onIssueToken,
+  onResetToken,
+}: {
+  room: Room;
+  feeds: IcalFeed[];
+  token?: ExportToken;
+  origin: string;
+  onAddFeed: (channel: ChannelKey, url: string) => string | null;
+  onRemoveFeed: (id: string) => void;
+  onIssueToken: () => void;
+  onResetToken: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+
+  const importState = feeds.length
+    ? `${feeds.length} feed impor`
+    : "impor belum diatur";
+  const exportState = token ? "URL ekspor siap" : "ekspor belum dibuat";
+  /* Configured rooms read in ink and unconfigured ones in the muted grey, so
+     the eye can pick the remaining work out of the column without reading. */
+  const wired = feeds.length > 0 || !!token;
+
+  return (
+    <div className="border-t border-line-row first:border-t-0">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className="flex w-full cursor-pointer flex-wrap items-center gap-x-[10px] gap-y-1 border-none bg-transparent px-5 py-[13px] text-left hover:bg-surface-mute"
+      >
+        <span className="text-[14px] font-bold">{room.name}</span>
+        {!room.active && (
+          <span className="rounded-full bg-amber-soft px-[8px] py-[2px] text-[11px] text-amber-ink">
+            Renovasi
+          </span>
+        )}
+        <span
+          className={`ml-auto text-[12.5px] ${
+            wired ? "text-ink-soft" : "text-slate-mute"
+          }`}
+        >
+          {importState} · {exportState}
+        </span>
+        <svg
+          aria-hidden="true"
+          viewBox="0 0 12 12"
+          className={`h-3 w-3 shrink-0 text-slate ${open ? "rotate-180" : ""}`}
+        >
+          <path
+            d="M2.5 4.5 6 8l3.5-3.5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </button>
+
+      {/*
+        Hidden rather than unmounted. The field below holds a URL that was
+        pasted from an OTA extranet in another tab, and unmounting throws it
+        away — so a mistaken tap on the header would mean going back for it. It
+        costs a form in the document per room and no height at all, which is
+        the whole point of folding this.
+      */}
+      <div
+        hidden={!open}
+        className="flex flex-col gap-[14px] px-5 pt-1 pb-[18px]"
+      >
+        <Section title="Impor dari OTA">
+          <ImportBlock
+            room={room}
+            feeds={feeds}
+            onAdd={onAddFeed}
+            onRemove={onRemoveFeed}
+          />
+        </Section>
+
+        <Section title="Ekspor ke OTA">
+          <ExportRow
+            room={room}
+            token={token}
+            origin={origin}
+            onIssue={onIssueToken}
+            onReset={onResetToken}
+          />
+        </Section>
+      </div>
+    </div>
+  );
+}
+
+/**
  * Where the owner collects the iCal URLs on both directions. Nothing here
  * fetches or serves anything yet — there is no backend — so every feed reads
  * "belum pernah ditarik" rather than inventing a sync time, and the export URL
@@ -263,38 +379,17 @@ export function SyncScreen({
               {rooms
                 .filter((r) => r.prop === p.key)
                 .map((room) => (
-                  <div
+                  <RoomRow
                     key={room.id}
-                    className="flex flex-col gap-[14px] border-t border-line-row px-5 py-[18px] first:border-t-0"
-                  >
-                    <div className="flex items-center gap-[10px]">
-                      <div className="text-[14px] font-bold">{room.name}</div>
-                      {!room.active && (
-                        <span className="rounded-full bg-amber-soft px-[8px] py-[2px] text-[11px] text-amber-ink">
-                          Renovasi
-                        </span>
-                      )}
-                    </div>
-
-                    <Section title="Impor dari OTA">
-                      <ImportBlock
-                        room={room}
-                        feeds={feedsFor(room.id)}
-                        onAdd={(c, u) => onAddFeed(room.id, c, u)}
-                        onRemove={onRemoveFeed}
-                      />
-                    </Section>
-
-                    <Section title="Ekspor ke OTA">
-                      <ExportRow
-                        room={room}
-                        token={tokenFor.get(room.id)}
-                        origin={origin}
-                        onIssue={() => onIssueToken(room.id)}
-                        onReset={() => onResetToken(room.id)}
-                      />
-                    </Section>
-                  </div>
+                    room={room}
+                    feeds={feedsFor(room.id)}
+                    token={tokenFor.get(room.id)}
+                    origin={origin}
+                    onAddFeed={(c, u) => onAddFeed(room.id, c, u)}
+                    onRemoveFeed={onRemoveFeed}
+                    onIssueToken={() => onIssueToken(room.id)}
+                    onResetToken={() => onResetToken(room.id)}
+                  />
                 ))}
             </div>
           </div>

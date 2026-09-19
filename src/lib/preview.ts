@@ -52,3 +52,30 @@ export async function isClosedFor(site: PublicSite): Promise<boolean> {
   const jar = await cookies();
   return !tokenOk(jar.get(PREVIEW_COOKIE)?.value);
 }
+
+/**
+ * Whether the reader is being let past a holding page the rest of the world is
+ * still hitting.
+ *
+ * `isClosedFor` answers false in two situations that look identical from the
+ * page's side and are not: the site is open to everyone, or the site is shut
+ * and this particular browser is carrying the token. The second one is a
+ * person looking at something nobody else can reach, and until now nothing on
+ * the screen said so.
+ *
+ * It matters because the mistake it invites is quiet and expensive. The site
+ * looks live, so it is easy to believe it is — to check a price, see it on the
+ * page, and tell a guest the site is back up while every visitor is still
+ * getting the holding page. The preview cookie lasts a year, so the belief can
+ * outlive the session that created it by months.
+ *
+ * The maintenance switch is read first, exactly as above, and the cookie only
+ * after it. That ordering is what keeps a live site prerendered: `cookies()`
+ * is what makes a page render per request, and on an open site this returns
+ * before reaching it.
+ */
+export async function isPreviewing(site: PublicSite): Promise<boolean> {
+  if (!siteConfig(site).maintenance) return false;
+  const jar = await cookies();
+  return tokenOk(jar.get(PREVIEW_COOKIE)?.value);
+}

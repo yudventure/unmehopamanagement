@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 
 import { EddoCheckout } from "@/components/eddo/checkout-page";
+import { PreviewBadge } from "@/components/preview-badge";
+import { isPreviewing } from "@/lib/preview";
 
 /**
  * Where an order is looked over before it is paid for.
@@ -28,6 +30,11 @@ export const viewport: Viewport = {
   themeColor: "#06777d",
 };
 
-export default function EddoCheckoutPage() {
-  return <EddoCheckout />;
+export default async function EddoCheckoutPage() {
+  return (
+    <>
+      <EddoCheckout />
+      {(await isPreviewing("eddo")) && <PreviewBadge site="eddo" />}
+    </>
+  );
 }

@@ -271,6 +271,37 @@ export function findConflicts(bookings: Booking[]): ConflictPair[] {
   return pairs;
 }
 
+/**
+ * Splits the overlaps into the ones still worth interrupting someone over and
+ * the ones that are only a record now.
+ *
+ * `to` is the morning the overlap ends and is exclusive, so an overlap whose
+ * `to` has arrived has no contested night left in it. Everything from that
+ * point on is history: the guests have been and gone, and whatever was done
+ * about it was done. Before this split the banner treated the two the same,
+ * which meant a double booking from last month sat at the top of the calendar
+ * in the same red as one arriving tomorrow, every day, with no way to put it
+ * down — and an alarm that cannot be answered is an alarm people stop reading.
+ *
+ * Neither list is thrown away. A past overlap still shades its nights on the
+ * grid and still draws both bookings in the danger palette, because it did
+ * happen and someone may still be owed an explanation for it. It just stops
+ * being the loudest thing on the screen.
+ */
+export function splitConflicts(
+  pairs: ConflictPair[],
+  today: string,
+): { live: ConflictPair[]; past: ConflictPair[] } {
+  const live: ConflictPair[] = [];
+  const past: ConflictPair[] = [];
+  for (const pair of pairs) (pair.to > today ? live : past).push(pair);
+  /* Soonest first, so "Terdekat" in the banner is the one it names. Past runs
+     the other way: the most recent is the one still worth asking about. */
+  live.sort((a, b) => a.from.localeCompare(b.from));
+  past.sort((a, b) => b.from.localeCompare(a.from));
+  return { live, past };
+}
+
 /** Nights covered by any overlap, for shading those days on the grid. */
 export function conflictDates(pairs: ConflictPair[]): Set<string> {
   const out = new Set<string>();

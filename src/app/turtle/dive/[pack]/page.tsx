@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 
 import { DiveDetail } from "@/components/web/dive-detail";
 import { Maintenance } from "@/components/web/maintenance";
-import { isClosedFor } from "@/lib/preview";
+import { PreviewBadge } from "@/components/preview-badge";
+import { isClosedFor, isPreviewing } from "@/lib/preview";
 import { siteConfig } from "@/lib/site-config";
 import { COPY, DEFAULT_LANG, DIVE_KEYS, PROPERTY, type DiveKey } from "@/lib/web-content";
 
@@ -49,5 +50,10 @@ export default async function DivePackagePage({ params }: Props) {
   /* After the 404 check, not before: a bad package name is still a bad
      package name while the site is down. */
   if (await isClosedFor("turtle")) return <Maintenance />;
-  return <DiveDetail pack={pack} />;
+  return (
+    <>
+      <DiveDetail pack={pack} />
+      {(await isPreviewing("turtle")) && <PreviewBadge site="turtle" />}
+    </>
+  );
 }

@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 
 import { Maintenance } from "@/components/web/maintenance";
 import { TurtleSite } from "@/components/web/site";
-import { isClosedFor } from "@/lib/preview";
+import { PreviewBadge } from "@/components/preview-badge";
+import { isClosedFor, isPreviewing } from "@/lib/preview";
 import { canonical } from "@/lib/site-domains";
 import { siteConfig } from "@/lib/site-config";
 import { COPY, DEFAULT_LANG, EMAIL, PROPERTY } from "@/lib/web-content";
@@ -41,5 +42,10 @@ export const metadata: Metadata = {
 
 export default async function TurtlePage() {
   if (await isClosedFor("turtle")) return <Maintenance />;
-  return <TurtleSite />;
+  return (
+    <>
+      <TurtleSite />
+      {(await isPreviewing("turtle")) && <PreviewBadge site="turtle" />}
+    </>
+  );
 }

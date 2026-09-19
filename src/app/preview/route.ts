@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { PREVIEW_COOKIE, tokenOk } from "@/lib/preview";
+import { redirectTo } from "@/lib/redirect";
 
 /**
  * The door into a site that is closed for work.
@@ -19,6 +20,10 @@ import { PREVIEW_COOKIE, tokenOk } from "@/lib/preview";
  * It works on whichever host it is opened on: this is a real route, and route
  * files are matched before the host rewrites that would otherwise bury it
  * under `/eddo`. So `eddohomestay.com/preview?token=…` reaches it.
+ *
+ * And it lands back on that same host, which it did not always: the redirect
+ * used to be built from `req.url` and so pointed at whatever address the server
+ * had bound to. See `redirectTo`.
  */
 
 export const runtime = "nodejs";
@@ -29,7 +34,7 @@ export async function GET(req: Request) {
   const url = new URL(req.url);
 
   if (url.searchParams.get("clear")) {
-    const res = NextResponse.redirect(new URL("/", url));
+    const res = redirectTo("/");
     res.cookies.delete(PREVIEW_COOKIE);
     return res;
   }
@@ -43,7 +48,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "no" }, { status: 404 });
   }
 
-  const res = NextResponse.redirect(new URL("/", url));
+  const res = redirectTo("/");
   res.cookies.set(PREVIEW_COOKIE, token, {
     httpOnly: true,
     sameSite: "lax",

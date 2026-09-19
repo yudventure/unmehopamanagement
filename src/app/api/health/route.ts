@@ -32,7 +32,18 @@ import { SESSION_COOKIE, valid } from "@/lib/session";
 
 export const runtime = "nodejs";
 
-type State = "ok" | "kosong" | "curiga";
+/**
+ * `info` is not a grade, it is an exemption.
+ *
+ * A build-time variable is set where the build runs and cannot be seen from
+ * the server at all, so its absence here says nothing about whether it was
+ * set. Grading it `kosong` made this page report "1 perlu diperiksa" on a
+ * correctly configured site every single time it was opened, with a note
+ * underneath explaining that the problem was not a problem. A summary that
+ * cries wolf is a summary people stop reading, which costs more than the one
+ * line it was trying to save.
+ */
+type State = "ok" | "kosong" | "curiga" | "info";
 
 interface Check {
   nama: string;
@@ -157,15 +168,26 @@ export async function GET() {
     });
   }
 
+  /*
+   * Read only by `next.config.ts`, so the server never sees it and its absence
+   * here is the normal case rather than a fault.
+   *
+   * There is a better test than the variable anyway, and the reader is already
+   * performing it: if this page was reached at eddohomestay.com then the host
+   * rewrite is working, and the host rewrite only exists when this was set at
+   * build. A site that served the booking dashboard at `/` instead of the
+   * homestay would be the real symptom.
+   */
   checks.push({
     nama: "SITE_DOMAIN_EDDO",
-    keadaan: set(env.SITE_DOMAIN_EDDO) ? "ok" : "kosong",
+    keadaan: set(env.SITE_DOMAIN_EDDO) ? "ok" : "info",
     catatan: set(env.SITE_DOMAIN_EDDO)
       ? "tertanam saat build"
-      : "dibaca saat build; kalau domainnya tetap menyajikan situs yang benar, ini memang wajar dan bukan masalah",
+      : "dibaca saat build dan tidak terlihat dari server; buktinya domainnya menyajikan situs homestay di /, bukan dashboard",
   });
 
-  const bermasalah = checks.filter((c) => c.keadaan !== "ok");
+  /* `info` is exempt: see the type. */
+  const bermasalah = checks.filter((c) => c.keadaan !== "ok" && c.keadaan !== "info");
 
   return NextResponse.json(
     {

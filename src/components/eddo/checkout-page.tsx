@@ -173,10 +173,12 @@ export function EddoCheckout() {
               phone: draft.phone,
               email: draft.email,
             };
+      /* The language this reader chose, sent with either kind of order, so the
+         confirmation that follows is written in it. */
       const res = await fetch("/api/pay", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
+        body: JSON.stringify({ ...body, lang }),
       });
       if (!res.ok) throw new Error(String(res.status));
       const out = (await res.json()) as { token: string; snap: string };

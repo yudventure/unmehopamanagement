@@ -144,10 +144,14 @@ export function TurtleCheckout() {
               phone: draft.phone,
               email: draft.email,
             };
+      /* The language this reader chose, sent with either kind of order, the
+         same way Eddo's page sends it: it rides in the custom field beside the
+         name and the number, so the family knows which language to answer in
+         when the notification reaches them. */
       const res = await fetch("/api/pay", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
+        body: JSON.stringify({ ...body, lang }),
       });
       if (!res.ok) throw new Error(String(res.status));
       const out = (await res.json()) as { token: string; snap: string };

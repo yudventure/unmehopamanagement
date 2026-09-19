@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 
 import { daysBetween } from "@/lib/days";
 import { eddoRooms, pickText, priceService } from "@/lib/eddo-content";
+import { guestLang } from "@/lib/eddo-mail";
 import { createSnapToken, midtransConfigured, snapScript } from "@/lib/midtrans";
 import {
   DIVE_PER,
@@ -40,6 +41,9 @@ const MAX_GUESTS = 12;
 const MAX_QTY = 30;
 
 const clean = (v: unknown) => (typeof v === "string" ? v.trim().slice(0, 200) : "");
+/* "2 nights", never "2 night(s)". This line is copied into the note the guest
+   receives, and somebody reading "night(s)" is reading a database. */
+const many = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`;
 const whole = (v: unknown, lo: number, hi: number) => {
   const n = Math.floor(Number(v));
   return Number.isFinite(n) ? Math.min(hi, Math.max(lo, n)) : lo;
@@ -66,6 +70,10 @@ export async function POST(req: Request) {
   const checkIn = clean(body.checkIn);
   /* The second date: when a hire comes back, or when a return crossing does. */
   const until = clean(body.until);
+  /* Which language the guest read the site in. It travels with the order so the
+     confirmation that follows is written in it, rather than handing a reader who
+     spent an hour on the French pages back to English at the last step. */
+  const lang = guestLang(clean(body.lang));
   const nights = whole(body.nights, 1, MAX_NIGHTS);
   const guests = whole(body.guests, 1, MAX_GUESTS);
 
@@ -181,10 +189,10 @@ export async function POST(req: Request) {
       PROPERTY.name,
       sale.name,
       kind === "room"
-        ? `check-in ${checkIn}, check-out ${until}, ${sale.count} night(s), ${guests} guest(s)`
+        ? `check-in ${checkIn}, check-out ${until}, ${many(sale.count, "night")}, ${many(guests, "guest")}`
         : sale.per === "day"
-          ? `${checkIn} to ${until}, ${sale.count} day(s)`
-          : `on ${checkIn}, ${sale.count} diver(s)`,
+          ? `${checkIn} to ${until}, ${many(sale.count, "day")}`
+          : `on ${checkIn}, ${many(sale.count, "diver")}`,
     ].join(", ");
   } else if (service) {
     /*
@@ -265,7 +273,9 @@ export async function POST(req: Request) {
       quantity: nights,
       name: `Eddo Homestay, ${nights} malam, ${guests} tamu`.slice(0, 50),
     };
-    detail = `Eddo Homestay, check-in ${checkIn}, ${nights} night(s), ${guests} guest(s)`;
+    detail =
+      `Eddo Homestay, check-in ${checkIn}, ` +
+      `${many(nights, "night")}, ${many(guests, "guest")}`;
   }
   /* Dated and random: the date is what makes it readable in the dashboard, the
      random tail is what stops two people booking in the same second from
@@ -284,7 +294,7 @@ export async function POST(req: Request) {
     /* Three short lines, because three is all Midtrans gives back. What was
        booked, who booked it, and how to answer them: exactly what somebody
        reading "LUNAS" at six in the morning needs in front of them. */
-    fields: [detail, `${name} / ${phone}`, email],
+    fields: [detail, `${name} / ${phone} / ${lang.toUpperCase()}`, email],
   });
 
   if (!snap.ok) {

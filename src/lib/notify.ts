@@ -48,8 +48,53 @@ export function rowsToHtml(lead: string, rows: Row[], footer = "") {
 </div>`;
 }
 
+/**
+ * Sends one email through Resend, to whoever is named.
+ *
+ * Split out of `mailOwner` when the payment webhook grew a second recipient:
+ * the guest gets a word from the family once their payment lands, and that is
+ * the same key, the same sender and the same call, to a different inbox.
+ * Whose inbox is the only thing that ever differed.
+ */
+async function send({
+  to,
+  subject,
+  html,
+  text,
+  replyTo,
+}: {
+  to: string;
+  subject: string;
+  html: string;
+  text: string;
+  replyTo?: string;
+}): Promise<string | null> {
+  const key = process.env.RESEND_API_KEY;
+  const from = process.env.ENQUIRY_FROM;
+  if (!key || !from) return "not-configured";
+  if (!to.trim()) return "no-recipient";
+
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${key}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      from,
+      to: [to],
+      reply_to: replyTo || undefined,
+      subject: oneLine(subject),
+      html,
+      text,
+    }),
+  });
+
+  return res.ok ? null : `send-failed: ${(await res.text()).slice(0, 300)}`;
+}
+
 /** Resolves to null on success, or a short reason the send failed. */
-export async function mailOwner({
+export function mailOwner({
   site,
   subject,
   html,
@@ -64,25 +109,29 @@ export async function mailOwner({
   text: string;
   replyTo?: string;
 }): Promise<string | null> {
-  const key = process.env.RESEND_API_KEY;
-  const from = process.env.ENQUIRY_FROM;
-  if (!key || !from) return "not-configured";
+  return send({ to: siteConfig(site).contact.ownerEmail, subject, html, text, replyTo });
+}
 
-  const res = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${key}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from,
-      to: [siteConfig(site).contact.ownerEmail],
-      reply_to: replyTo || undefined,
-      subject: oneLine(subject),
-      html,
-      text,
-    }),
-  });
-
-  return res.ok ? null : `send-failed: ${(await res.text()).slice(0, 300)}`;
+/**
+ * The same, to a guest, with replies pointed at the family rather than at the
+ * no-reply address the site sends from.
+ *
+ * A guest who answers a booking confirmation is asking a question, and a
+ * question that lands in `noreply@` is a question nobody hears. `reply_to` is
+ * one field and it is the difference between an email and a conversation.
+ */
+export function mailGuest({
+  site,
+  to,
+  subject,
+  html,
+  text,
+}: {
+  site: PublicSite;
+  to: string;
+  subject: string;
+  html: string;
+  text: string;
+}): Promise<string | null> {
+  return send({ to, subject, html, text, replyTo: siteConfig(site).contact.ownerEmail });
 }

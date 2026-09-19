@@ -658,6 +658,42 @@ Baris ini cuma muncul kalau ada isinya, supaya pembayaran lama yang dibuat
 sebelum ini ada tetap menghasilkan email yang masuk akal, bukan tiga baris
 kosong.
 
+Email ini untuk **keluarganya**, jadi bahasanya Indonesia.
+
+### Email yang diterima tamunya
+
+Midtrans sudah mengirim kuitansi ke pembeli, dan kuitansi itu memang kuitansi:
+jumlah, status, nomor pesanan, dari perusahaan yang belum pernah mereka dengar.
+Yang tidak ada di situ adalah sepatah kata dari orang yang rumahnya akan mereka
+tinggali, dan satu hal yang harus mereka lakukan dengan kuitansi itu: menyimpannya.
+
+Jadi begitu pembayarannya benar-benar masuk, tamunya menerima satu email lagi:
+terima kasih, simpan kuitansi Midtrans-nya, tombol WhatsApp kalau ada yang mau
+ditanyakan sebelum berangkat, dan ditunggu kedatangannya.
+
+**Bahasanya mengikuti bahasa yang dipakai tamunya waktu membaca situs.** Tujuh
+bahasa, jatuh ke Inggris kalau kodenya tidak dikenal. Tamu yang membaca seluruh
+halaman dalam bahasa Perancis lalu menerima konfirmasi berbahasa Inggris sudah
+diserahkan kembali ke orang asing di langkah terakhir. Bahasanya ikut di
+`custom_field2` bersama nama dan nomor, jadi keluarganya juga tahu harus
+menjawab dalam bahasa apa.
+
+Teksnya ada di `src/lib/eddo-mail.ts`, terpisah dari `eddo-content.ts` karena
+yang ini cuma dibaca server dan tidak perlu ikut diunduh setiap pembaca.
+
+Tiga hal yang dijaga:
+
+- **Cuma waktu lunas.** Transfer bank yang masih menunggu bukan hal yang perlu
+  diterimakasihi, dan kartu yang gagal sudah mereka ketahui sendiri.
+- **Sekali saja.** Kartu kredit memberi tahu dua kali, `capture` lalu
+  `settlement`, dan dua-duanya berarti lunas. Keluarganya boleh dapat dua email;
+  tamu yang diterimakasihi dua kali untuk satu pembayaran mulai menghitung ulang
+  rekeningnya. Penjaganya ada di memori, jadi hilang kalau server di-restart:
+  menutup kejadian yang lazim, bukan semuanya.
+- **Balasannya ke keluarga.** `reply_to` diarahkan ke alamat pemilik, bukan ke
+  `noreply@`. Tamu yang membalas email konfirmasi sedang bertanya, dan pertanyaan
+  yang mendarat di `noreply@` adalah pertanyaan yang tidak didengar siapa pun.
+
 ### Ada harganya berarti bisa dibayar
 
 Satu aturan, bukan dua. Dulu ada daftar terpisah yang menyebut golongan mana

@@ -96,8 +96,13 @@ export async function POST(req: Request) {
       quantity: qty,
       /* English, because this is read in the Midtrans dashboard by the family
          and in the receipt by a guest who may be reading the site in any of
-         seven languages. One language beats a different one every time. */
-      name: `${pickText(product.name, "en")} x${qty}`.slice(0, 50),
+         seven languages. One language beats a different one every time.
+
+         The name is the name and nothing else. It used to have the quantity
+         stuck on the end of it as well, beside the `quantity` field two lines
+         up, so an order for two shirts arrived as "Eddo Homestay T-shirt x2",
+         quantity 2, and the receipt read as four. */
+      name: pickText(product.name, "en").slice(0, 50),
     };
   } else {
     const { rate } = eddoRooms();

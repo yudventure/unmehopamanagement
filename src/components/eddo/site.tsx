@@ -16,6 +16,7 @@ import {
   WhatsAppIcon,
 } from "@/components/web/icons";
 import { RoomCarousel, type RoomPhoto } from "@/components/eddo/room-carousel";
+import { CheckoutModal, type CheckoutOrder } from "@/components/eddo/checkout-modal";
 import {
   ART_BOX,
   BoatArt,
@@ -41,7 +42,6 @@ import {
   EDDO_LANGS,
   SERVICE_KEYS,
   eddoActivityLabels,
-  isPayableService,
   isPriceUnit,
   isSpecKey,
   pickText,
@@ -616,10 +616,12 @@ export function EddoSite({
      below and the service cards just under this need the same answer. */
   const canPay = Boolean(MIDTRANS_CLIENT_KEY);
 
-  /* What the reader has filled into a card, keyed by product. One object rather
-     than state per card: the cards are drawn in a loop, and a hook cannot be. */
-  const [order, setOrder] = useState<Record<string, { when: string; qty: number }>>({});
-  const orderOf = (id: string) => order[id] ?? { when: "", qty: 1 };
+  /* Which product the checkout dialog is open on, or nothing. One piece of
+     state for the whole section rather than a set of fields per card: the
+     cards are drawn in a loop, and a hook cannot be. */
+  const [buying, setBuying] = useState<{ service: ServiceKey; product: ServiceProduct } | null>(null);
+  /* What went wrong with the room payment, shown under its button. */
+  const [stayError, setStayError] = useState<"need" | "failed" | null>(null);
 
   /*
    * Whether this card offers to charge rather than to ask.
@@ -634,13 +636,7 @@ export function EddoSite({
    * refuses it too; this is only what the reader is offered.
    */
   const canBuy = (x: ServiceProduct) =>
-    canPay &&
-    isPayableService(service) &&
-    typeof x.price === "number" &&
-    x.price > 0 &&
-    !x.example;
-  const setOrderOf = (id: string, patch: Partial<{ when: string; qty: number }>) =>
-    setOrder((o) => ({ ...o, [id]: { ...orderOf(id), ...patch } }));
+    canPay && typeof x.price === "number" && x.price > 0 && !x.example;
 
   /*
    * Pays for one thing off the service list.
@@ -650,10 +646,11 @@ export function EddoSite({
    * example, so a made-up figure cannot become a real charge however the button
    * is pressed.
    */
-  const payForProduct = async (key: ServiceKey, x: ServiceProduct) => {
-    if (paying) return;
-    setPaying(true);
-    const { when, qty } = orderOf(x.id);
+  const payForProduct = async (
+    key: ServiceKey,
+    x: ServiceProduct,
+    o: CheckoutOrder,
+  ): Promise<boolean> => {
     try {
       const res = await fetch("/api/pay", {
         method: "POST",
@@ -661,24 +658,26 @@ export function EddoSite({
         body: JSON.stringify({
           service: key,
           productId: x.id,
-          qty,
+          qty: o.qty,
           /* The endpoint wants a date for its order id, and for a shirt there
              is no day to name; today is the day it was bought. */
-          checkIn: when || new Date().toISOString().slice(0, 10),
-          name: pickText(x.name, lang),
-          phone: WHATSAPP,
+          checkIn: o.when || new Date().toISOString().slice(0, 10),
+          name: o.name,
+          /* An at sign is the whole of the guess, and it is enough: the server
+             only needs one of the two to be able to answer. */
+          ...(o.contact.includes("@") ? { email: o.contact } : { phone: o.contact }),
         }),
       });
       if (!res.ok) throw new Error(String(res.status));
       const out = (await res.json()) as { token: string; snap: string };
       await loadSnap(out.snap);
       window.snap?.pay(out.token);
+      return true;
     } catch {
-      /* Keys unset, order refused, script blocked: the reader still wants the
-         thing. Hand them the form with it already named. */
-      ask(key, `${t.services.items[key].title}, ${pickText(x.name, lang)}`);
-    } finally {
-      setPaying(false);
+      /* Keys unset, order refused, script blocked. The dialog says so and
+         stays open with everything they typed still in it, rather than
+         throwing them into a different form and losing the lot. */
+      return false;
     }
   };
 
@@ -727,8 +726,26 @@ export function EddoSite({
    * and the reader gets the enquiry form instead of an error, which is the
    * same fallback every other optional service on this site has.
    */
+  /*
+   * The house, paid for.
+   *
+   * No enquiry behind it any more. It used to drop a reader into the message
+   * form whenever anything went wrong, which meant a reader who had filled in
+   * their name, their dates and their number was handed a second form to fill
+   * in again, and the owner asked for the asking to stop. So this checks what
+   * it needs before it starts, and says so on the spot when something fails,
+   * with everything they typed still where they typed it.
+   *
+   * What it does not do is check the calendar. Nothing here holds a night:
+   * paying sends money and a message, and two people can pay for the same week.
+   */
   const startPayment = async () => {
     if (paying) return;
+    if (!payName.trim() || !payContact.trim() || !stayFrom) {
+      setStayError("need");
+      return;
+    }
+    setStayError(null);
     setPaying(true);
     try {
       const looksEmail = payContact.includes("@");
@@ -739,8 +756,8 @@ export function EddoSite({
           checkIn: stayFrom,
           nights,
           guests,
-          name: payName,
-          ...(looksEmail ? { email: payContact } : { phone: payContact }),
+          name: payName.trim(),
+          ...(looksEmail ? { email: payContact.trim() } : { phone: payContact.trim() }),
         }),
       });
       if (!res.ok) throw new Error(String(res.status));
@@ -748,14 +765,7 @@ export function EddoSite({
       await loadSnap(out.snap);
       window.snap?.pay(out.token);
     } catch {
-      /* A missing key, a refused order, a blocked script: whatever went wrong,
-         the reader still wants the house. Hand them the form. */
-      ask("stay", t.rooms.ctaNote(t.rooms.name), {
-        name: payName,
-        ...(payContact.includes("@") ? { email: payContact } : { phone: payContact }),
-        people: String(guests),
-        nights: String(nights),
-      });
+      setStayError("failed");
     } finally {
       setPaying(false);
     }
@@ -1408,8 +1418,11 @@ export function EddoSite({
             </div>
 
             {/* One button, and which one it is depends on whether the keys are
-                there. Without them it asks instead of charging, which is what
-                this section did before Midtrans existed on it. */}
+                there. Without them there is nothing to pay through, so it asks
+                — not as an alternative anybody chose, but because a button
+                that can do nothing is worse than a button that does the other
+                thing. With the keys set, which is how the site is deployed,
+                this is only ever the pay button. */}
             <button
               type="button"
               onClick={() => (canPay ? startPayment() : ask("stay", t.rooms.ctaNote(t.rooms.name)))}
@@ -1418,6 +1431,11 @@ export function EddoSite({
             >
               {canPay ? t.rooms.pay : t.rooms.cta}
             </button>
+            {stayError && (
+              <p className="mt-3 mb-0 rounded-[10px] bg-amber-soft px-[13px] py-[10px] text-[12.5px] leading-[1.5] text-amber-deep">
+                {stayError === "need" ? t.services.checkoutNeed : t.services.checkoutFailed}
+              </p>
+            )}
             {/* The line under the button describes the button that is there,
                 not the one that would be there with keys set. */}
             <p className="mt-3 mb-0 text-center text-[12px] leading-[1.5] text-slate-soft">
@@ -1672,61 +1690,31 @@ export function EddoSite({
                           </div>
                         ) : null}
 
-                        {canBuy(x) ? (
-                          <>
-                            {/* Two fields and no more. A shirt has no day to
-                                name, so it is not asked for one; everything
-                                else does, because a hire nobody has dated is a
-                                payment the family cannot act on. */}
-                            <div className="mt-[12px] flex gap-[8px]">
-                              {x.unit !== "piece" && (
-                                <label className="flex min-w-0 flex-1 flex-col gap-[4px] text-[11px] text-slate-mute">
-                                  {t.services.when}
-                                  <input
-                                    type="date"
-                                    value={orderOf(x.id).when}
-                                    min={new Date().toISOString().slice(0, 10)}
-                                    onChange={(e) => setOrderOf(x.id, { when: e.target.value })}
-                                    className="w-full min-w-0 rounded-[9px] border border-line-input bg-surface px-[9px] py-[7px] text-[13px] text-ink outline-none focus:border-eddo"
-                                  />
-                                </label>
-                              )}
-                              <label className="flex w-[66px] shrink-0 flex-col gap-[4px] text-[11px] text-slate-mute">
-                                {t.services.qty}
-                                <select
-                                  value={orderOf(x.id).qty}
-                                  onChange={(e) => setOrderOf(x.id, { qty: Number(e.target.value) })}
-                                  className="cursor-pointer rounded-[9px] border border-line-input bg-surface px-[9px] py-[7px] text-[13px] text-ink outline-none focus:border-eddo"
-                                >
-                                  {Array.from({ length: 14 }, (_, i) => i + 1).map((n) => (
-                                    <option key={n} value={n}>
-                                      {n}
-                                    </option>
-                                  ))}
-                                </select>
-                              </label>
-                            </div>
-
-                            <button
-                              type="button"
-                              onClick={() => payForProduct(service, x)}
-                              disabled={paying}
-                              className={`${BTN} mt-[12px] w-full px-[14px] py-[10px] text-[13px] disabled:cursor-wait disabled:opacity-70`}
-                            >
-                              {t.services.pay}
-                            </button>
-                          </>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() =>
-                              ask(service, `${t.services.items[service].title}, ${pickText(x.name, lang)}`)
-                            }
-                            className={`${BTN_GHOST} mt-[12px] w-full px-[14px] py-[10px] text-[13px]`}
-                          >
-                            {typeof x.price === "number" ? t.services.ask : t.services.askPrice}
-                          </button>
-                        )}
+                        {/* One button either way. With a price it opens the
+                            checkout and asks for the day and the name; without
+                            one it opens the enquiry, because there is nothing
+                            to charge yet. The fields that used to sit here
+                            moved into the dialog: a card two hundred pixels
+                            across is a poor place to fill in a date, and they
+                            never asked who was buying. */}
+                        <button
+                          type="button"
+                          onClick={() =>
+                            canBuy(x)
+                              ? setBuying({ service, product: x })
+                              : ask(
+                                  service,
+                                  `${t.services.items[service].title}, ${pickText(x.name, lang)}`,
+                                )
+                          }
+                          className={`${canBuy(x) ? BTN : BTN_GHOST} mt-[12px] w-full px-[14px] py-[10px] text-[13px]`}
+                        >
+                          {canBuy(x)
+                            ? t.services.pay
+                            : typeof x.price === "number"
+                              ? t.services.ask
+                              : t.services.askPrice}
+                        </button>
                       </div>
                     </div>
                   </article>
@@ -1867,6 +1855,38 @@ export function EddoSite({
           </div>
         </div>
       </footer>
+
+      {/* The checkout, which only exists while something is being bought. Its
+          labels are the ones already on the page rather than a second set: the
+          button that opened it, the fields the room panel uses, and the word
+          the card put beside the price. Three strings are its own. */}
+      {buying && (
+        <CheckoutModal
+          open
+          onClose={() => setBuying(null)}
+          t={{
+            title: t.services.pay,
+            intro: t.services.checkoutIntro,
+            what: t.services.eyebrow,
+            when: t.services.when,
+            qty: t.services.qty,
+            name: t.rooms.yourName,
+            contact: t.rooms.contact,
+            total: t.rooms.total,
+            pay: t.services.pay,
+            need: t.services.checkoutNeed,
+            failed: t.services.checkoutFailed,
+            close: t.enquiry.close,
+          }}
+          what={`${t.services.items[buying.service].title} · ${pickText(buying.product.name, lang)}`}
+          price={buying.product.price as number}
+          needsDay={buying.product.unit !== "piece"}
+          lang={t.htmlLang}
+          currency={currency}
+          rates={rates}
+          onPay={(o) => payForProduct(buying.service, buying.product, o)}
+        />
+      )}
 
       <EnquiryModal
         siteKey="eddo"

@@ -537,56 +537,59 @@ Bahasa yang tidak ditulis diisi dari `en`, bukan dari kunci pertama, supaya
 pembaca Perancis tidak mendapat bahasa Jepang atau Indonesia tergantung urutan
 mengetiknya.
 
-### Membayar langsung, bukan cuma bertanya
+### Ada harganya berarti bisa dibayar
 
-Lima golongan bisa dibayar di tempat: `diving`, `camera`, `motorbike`, `car`,
-`merch`. Yang naik perahu sengaja tidak, yaitu `snorkeling`, `excursion`, dan
-`transfer`, karena bagian itu sudah menulis bahwa harganya tidak bisa dipatok
-di depan, dan menerima uang untuk sesuatu yang baru saja diterangkan tidak bisa
-dipatok akan membuat kalimat itu bohong.
+Satu aturan, bukan dua. Dulu ada daftar terpisah yang menyebut golongan mana
+saja yang boleh ditagih, jadi trip perahu tidak pernah bisa dibayar walaupun
+harganya diisi. Daftar itu dilepas: **harga yang tertulis di kartu adalah harga
+yang berlaku**, dan yang tidak berlaku tidak usah ditulis.
 
-Tombolnya baru menawarkan bayar kalau **keempatnya** terpenuhi: golongannya
-termasuk yang lima itu, barangnya punya harga di atas nol, kunci Midtrans
-terpasang, dan barangnya **tidak bertanda contoh**.
+Jadi sekarang: ada `price` di atas nol, kunci Midtrans terpasang, dan barangnya
+tidak bertanda contoh, maka tombolnya "pesan dan bayar". Tidak ada `price`,
+tombolnya "tanya harga" dan yang menjawab orang.
 
-Yang terakhir itu penjaga yang penting dan berlaku dua kali, di tombol dan di
-server. Harga bertanda contoh tidak boleh bisa ditagih dari belakang, dan
-`/api/pay` menolaknya dengan 422 walaupun permintaannya disusun tangan.
-Harganya sendiri selalu dibaca server dari berkas ini, tidak pernah dari
-permintaan browser.
+Menekan tombol bayar membuka kotak checkout, bukan langsung ke Midtrans. Di
+situ ditanya tanggalnya (kecuali satuannya `piece`, karena kaos tidak punya
+hari), jumlahnya, nama, dan WhatsApp atau email. Sebelum ini kartunya
+mengirim nama **barangnya** sebagai nama pembeli dan nomor WhatsApp
+**homestay** sebagai nomor pembeli, jadi keluarganya menerima pembayaran yang
+tidak bisa dicocokkan dengan tamu mana pun. Sudah diuji: yang sampai ke
+Midtrans sekarang nama dan kontak tamunya.
+
+Harganya sendiri **selalu** dihitung server dari berkas ini. Diuji dengan
+permintaan yang menitipkan `price: 1` dan `gross_amount: 1`: yang terkirim
+tetap Rp 300.000 untuk dua kaos.
+
+### Kamar: bayar itu pesan
+
+Tombol kamar langsung ke Midtrans, dan kalimat "tanggalnya kami cek di kalender
+lalu kami kabari" sudah dilepas atas permintaan pemiliknya. Yang perlu
+disadari: **tidak ada satu pun kode di sini yang menahan kamar**. Membayar
+mengirim uang dan pesan, tidak menandai kalender, jadi dua orang bisa membayar
+untuk minggu yang sama dan keduanya berhasil. Kalendernya tetap harus dilihat
+manual di dashboard.
 
 ### Menandai isian contoh
 
-Tambahkan `"example": true` pada sebuah barang dan barang itu tidak bisa
-dibayar. Kartunya tetap tampil utuh, dengan foto, spek dan harganya, hanya
-tombolnya berubah jadi "tanya ketersediaan" alih-alih "pesan dan bayar".
+`"example": true` pada sebuah barang berarti barang itu tidak bisa dibayar,
+apa pun harganya. Kartunya tetap tampil utuh; tombolnya cuma berubah jadi
+bertanya.
 
-Dulu tanda ini juga memasang label kuning **CONTOH** di kartunya dan satu
-kotak peringatan di atas daftar. Situs ini sudah dibuka untuk umum dan
-labelnya diminta dilepas, jadi yang tersisa tinggal separuh yang tidak
-kelihatan, dan justru separuh itu yang penting: angka yang belum dipastikan
-boleh dilihat dan ditanyakan, tidak boleh ditagih.
+Per 19 September 2026 tandanya sudah dilepas dari ketiga belas barang yang ada
+harganya, atas permintaan pemiliknya, dengan alasan Midtrans-nya masih sandbox
+jadi tidak ada uang sungguhan yang berpindah. **Angka-angka itu masih angka
+contoh yang dikarang, bukan angka yang pernah dipastikan pemiliknya.** Sebelum
+Midtrans dipindah ke produksi, ketiga belasnya wajib dicocokkan satu per satu.
 
-Ada harganya yang perlu disadari. Tamu tidak lagi diberi tahu angka mana yang
-belum pasti, jadi angka contoh terbaca sebagai angka yang berlaku sampai ada
-orang yang menjawab. Yang menjaga di situ cuma satu: tombolnya menanyakan,
-bukan menagih. Hapus barisnya begitu angka aslinya masuk, tidak ada lagi yang
-perlu diubah.
+Cara memastikan Midtrans-nya masih sandbox: buka `/api/health` sambil login
+dashboard. Ada baris `midtrans.mode` di atas yang menyebut `sandbox` atau
+`produksi`, dibaca dari fungsi yang sama dengan yang dipakai jalur
+pembayarannya, jadi tidak bisa berbeda dengannya. Jangan menebak dari awalan
+kuncinya: dashboard Sandbox pun mengeluarkan kunci bernama `Mid-…` tanpa
+awalan `SB-`.
 
-`id` dan `name` wajib, sisanya boleh kosong. Tanpa `photo` yang tampil gambar
-garisnya; tanpa `price` tombolnya berubah jadi "tanya harga" alih-alih
-mengarang angka. Itu yang memungkinkan daftarnya terbit di hari fotonya jadi
-dan harganya menyusul minggu depan.
-
-`unit` hanya boleh salah satu dari: `day`, `night`, `person`, `trip`, `piece`,
-`hour`. `specs[].key` hanya boleh: `duration`, `level`, `engine`, `power`,
-`seats`, `size`, `includes`, `notes`. Keduanya daftar tertutup karena labelnya
-diterjemahkan ke tujuh bahasa sementara nilainya ditulis pemiliknya dalam satu
-bahasa; dibiarkan bebas, pembaca Perancis akan melihat "Mesin" di sebelah
-"110cc".
-
-Ukuran fotonya sama seperti foto kamar: 4:3, lebar 1200, WebP, dan sediakan
-juga versi `-720` kalau mau ringan di HP.
+Pasang lagi tandanya kalau ada harga yang belum pasti. Hapus barisnya kalau
+sudah.
 
 ## Gambar garis di sebelah judul seksi
 

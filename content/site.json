@@ -80,8 +80,7 @@
               "id": "Harganya tergantung bahan bakar dan sejauh apa perginya"
             }
           }
-        ],
-        "example": true
+        ]
       }
     ],
     "diving": [
@@ -91,7 +90,6 @@
           "en": "Fun dive, 2 tanks",
           "id": "Fun dive, 2 tabung"
         },
-        "example": true,
         "price": 1400000,
         "unit": "person",
         "specs": [
@@ -117,7 +115,6 @@
           "en": "Fun dive, 3 tanks",
           "id": "Fun dive, 3 tabung"
         },
-        "example": true,
         "price": 1850000,
         "unit": "person",
         "specs": [
@@ -147,7 +144,6 @@
       {
         "id": "dsd",
         "name": "Discover Scuba",
-        "example": true,
         "price": 1600000,
         "unit": "person",
         "specs": [
@@ -190,8 +186,7 @@
               "id": "Perahu dan awaknya untuk seharian"
             }
           }
-        ],
-        "example": true
+        ]
       },
       {
         "id": "keliling-sehari",
@@ -214,8 +209,7 @@
               "id": "Ke mana saja tergantung pasang hari itu"
             }
           }
-        ],
-        "example": true
+        ]
       }
     ],
     "transfer": [
@@ -225,7 +219,6 @@
           "en": "Waisai to Yenbuba",
           "id": "Waisai ke Yenbuba"
         },
-        "example": true,
         "price": 1800000,
         "unit": "trip",
         "specs": [
@@ -258,7 +251,6 @@
           "en": "To a nearby island",
           "id": "Antar pulau terdekat"
         },
-        "example": true,
         "unit": "trip",
         "specs": [
           {
@@ -275,7 +267,6 @@
       {
         "id": "gopro",
         "name": "GoPro",
-        "example": true,
         "price": 150000,
         "unit": "day",
         "specs": [
@@ -301,7 +292,6 @@
           "en": "Compact underwater camera",
           "id": "Kamera saku bawah air"
         },
-        "example": true,
         "price": 200000,
         "unit": "day",
         "specs": [
@@ -319,7 +309,6 @@
       {
         "id": "beat",
         "name": "Honda Beat",
-        "example": true,
         "price": 100000,
         "unit": "day",
         "specs": [
@@ -346,7 +335,6 @@
       {
         "id": "vario",
         "name": "Honda Vario",
-        "example": true,
         "price": 125000,
         "unit": "day",
         "specs": [
@@ -373,7 +361,6 @@
       {
         "id": "klx",
         "name": "Kawasaki KLX",
-        "example": true,
         "price": 175000,
         "unit": "day",
         "specs": [
@@ -402,7 +389,6 @@
       {
         "id": "avanza",
         "name": "Toyota Avanza",
-        "example": true,
         "price": 700000,
         "unit": "day",
         "specs": [
@@ -422,7 +408,6 @@
       {
         "id": "hilux",
         "name": "Toyota Hilux",
-        "example": true,
         "price": 850000,
         "unit": "day",
         "specs": [
@@ -447,7 +432,6 @@
           "en": "Eddo Homestay T-shirt",
           "id": "Kaos Eddo Homestay"
         },
-        "example": true,
         "price": 150000,
         "unit": "piece",
         "specs": [
@@ -470,7 +454,6 @@
           "en": "Child's T-shirt",
           "id": "Kaos anak"
         },
-        "example": true,
         "price": 120000,
         "unit": "piece",
         "specs": [

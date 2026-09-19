@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
+import { isProduction, snapScript } from "@/lib/midtrans";
 import { SESSION_COOKIE, valid } from "@/lib/session";
 
 /**
@@ -171,6 +172,24 @@ export async function GET() {
       ringkas: bermasalah.length
         ? `${bermasalah.length} perlu diperiksa`
         : "semua terisi dan konsisten",
+      /*
+       * Which Midtrans the buttons are actually wired to, said plainly and at
+       * the top rather than in a footnote under a key check.
+       *
+       * It matters more than any single variable here: whether a price on this
+       * site can take somebody's money comes down to this one line, and the
+       * name of the key cannot answer it. Checked against a real account, the
+       * Sandbox dashboard hands out keys named plain `Mid-…` with no `SB-`
+       * prefix, so reading the mode off the key is guesswork. Read from the
+       * same function the payment path uses, so it cannot disagree with it.
+       */
+      midtrans: {
+        mode: isProduction() ? "produksi" : "sandbox",
+        snap: snapScript(),
+        catatan: isProduction()
+          ? "uang sungguhan: tiap tombol bayar menagih kartu yang benar-benar ada"
+          : "uang mainan: tidak ada yang tertagih, pakai kartu uji dari dokumentasi Midtrans",
+      },
       perluDiperiksa: bermasalah,
       semua: checks,
     },

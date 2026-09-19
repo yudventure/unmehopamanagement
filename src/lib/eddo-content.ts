@@ -162,20 +162,17 @@ export function pickText(v: Localised, lang: EddoLang): string {
 /**
  * The services a guest can pay for up front rather than only ask about.
  *
- * A short list on purpose, and the short part is the boats. A shirt, a
- * motorbike, a car, a camera and a dive have a price that holds before anybody
- * looks at the sea; a boat's does not, and the section says so in writing.
- * Taking money for something whose cost we have just explained cannot be fixed
- * in advance would make that sentence a lie. That is why the snorkelling trip,
- * the whole-day excursion and the transfer are not on this list: all three are
- * a boat with fuel in it, whatever else they are called.
+ * There used to be a second list here naming which services could be paid for
+ * at all, so that a boat trip could never be charged however it was priced.
+ * The owner has taken that decision back: a price on a card is a price that
+ * holds, whatever the card is for, and one that does not hold is left off.
  *
- * Paying still needs a price on the product and a real one: see
- * `payableProduct` below, which refuses anything still marked as an example.
+ * So the rule is now one thing rather than two, which is also the rule the
+ * section's own closing line has always described. A figure means you can pay
+ * it. No figure means you ask, and the answer comes from a person.
  */
-export const PAYABLE_SERVICES = ["diving", "camera", "motorbike", "car", "merch"] as const;
-export const isPayableService = (k: string): k is ServiceKey =>
-  (PAYABLE_SERVICES as readonly string[]).includes(k);
+export const isServiceKey = (k: string): k is ServiceKey =>
+  (SERVICE_KEYS as readonly string[]).includes(k);
 
 /**
  * The product a payment may be priced from, or nothing.
@@ -193,7 +190,7 @@ export const isPayableService = (k: string): k is ServiceKey =>
  * with nothing else changed.
  */
 export function payableProduct(service: string, id: string): ServiceProduct | null {
-  if (!isPayableService(service)) return null;
+  if (!isServiceKey(service)) return null;
   const found = serviceProducts(service).find((p) => p.id === id);
   if (!found || found.example) return null;
   if (typeof found.price !== "number" || found.price <= 0) return null;
@@ -388,6 +385,11 @@ export interface EddoCopy {
     askPrice: string;
     /** Under a product with no photograph, so the drawn glyph is explained. */
     noPhoto: string;
+    /** The checkout dialog. The rest of its labels it borrows from the room
+        panel and from this block, because they are the same words. */
+    checkoutIntro: string;
+    checkoutNeed: string;
+    checkoutFailed: string;
     /** On a card that can be paid for outright, and the two fields it needs. */
     pay: string;
     when: string;
@@ -470,7 +472,7 @@ const EN: EddoCopy = {
     pay: "Book and pay",
     cta: "Ask about a house",
     ctaNote: (room) => `I would like to ask about ${room}.`,
-    payNote: "Payment goes through Midtrans. We check the dates against the calendar and message you the same day.",
+    payNote: "Payment goes through Midtrans. Your receipt comes straight away, and the booking reaches the family at the same moment.",
     askNote: "Your message reaches the family directly, on WhatsApp or email.",
   },
   season: {
@@ -583,6 +585,9 @@ const EN: EddoCopy = {
     ask: "Ask if it is free",
     askPrice: "Ask the price",
     noPhoto: "Photograph still to come",
+    checkoutIntro: "Fill in the day and who it is for, then pay through Midtrans.",
+    checkoutNeed: "Please put in your name and a WhatsApp number or an email.",
+    checkoutFailed: "That did not go through. Please try again, or message us on WhatsApp.",
     pay: "Book and pay",
     when: "Which day",
     qty: "How many",
@@ -661,7 +666,7 @@ const ID: EddoCopy = {
     pay: "Pesan dan bayar",
     cta: "Tanya soal rumahnya",
     ctaNote: (room) => `Saya mau tanya soal ${room}.`,
-    payNote: "Pembayaran lewat Midtrans. Tanggalnya kami cek di kalender lalu kami kabari di hari yang sama.",
+    payNote: "Pembayaran lewat Midtrans. Buktinya langsung keluar, dan pesanannya sampai ke keluarganya saat itu juga.",
     askNote: "Pesanmu langsung sampai ke keluarganya, lewat WhatsApp atau email.",
   },
   season: {
@@ -774,6 +779,9 @@ const ID: EddoCopy = {
     ask: "Tanya ketersediaan",
     askPrice: "Tanya harga",
     noPhoto: "Fotonya menyusul",
+    checkoutIntro: "Isi harinya dan atas nama siapa, lalu bayar lewat Midtrans.",
+    checkoutNeed: "Tolong isi namamu dan nomor WhatsApp atau email.",
+    checkoutFailed: "Belum berhasil. Coba lagi, atau hubungi kami lewat WhatsApp.",
     pay: "Pesan dan bayar",
     when: "Hari apa",
     qty: "Berapa",
@@ -869,7 +877,7 @@ const FR: EddoCopy = {
     pay: "Réserver et payer",
     cta: "Demander une maison",
     ctaNote: (room) => `Je voudrais des renseignements sur : ${room}.`,
-    payNote: "Le paiement passe par Midtrans. Nous vérifions les dates sur le calendrier et nous vous répondons le jour même.",
+    payNote: "Le paiement passe par Midtrans. Votre reçu arrive aussitôt, et la réservation parvient à la famille au même instant.",
     askNote: "Votre message arrive directement à la famille, sur WhatsApp ou par e-mail.",
   },
   season: {
@@ -982,6 +990,9 @@ const FR: EddoCopy = {
     ask: "Demander s'il est libre",
     askPrice: "Demander le prix",
     noPhoto: "Photo à venir",
+    checkoutIntro: "Indiquez le jour et à quel nom, puis payez via Midtrans.",
+    checkoutNeed: "Merci d'indiquer votre nom et un numéro WhatsApp ou un e-mail.",
+    checkoutFailed: "Cela n'a pas abouti. Réessayez, ou écrivez-nous sur WhatsApp.",
     pay: "Réserver et payer",
     when: "Quel jour",
     qty: "Combien",
@@ -1060,7 +1071,7 @@ const JA: EddoCopy = {
     pay: "予約して支払う",
     cta: "空きを問い合わせる",
     ctaNote: (room) => `${room} について伺いたいです。`,
-    payNote: "お支払いは Midtrans を通します。カレンダーで日程を確認し、その日のうちにご連絡します。",
+    payNote: "お支払いは Midtrans を通します。控えはその場で届き、ご予約も同じ瞬間に家族へ届きます。",
     askNote: "メッセージは WhatsApp かメールで、family に直接届きます。",
   },
   season: {
@@ -1173,6 +1184,9 @@ const JA: EddoCopy = {
     ask: "空きを聞く",
     askPrice: "料金を聞く",
     noPhoto: "写真は準備中です",
+    checkoutIntro: "日にちとお名前をご記入のうえ、Midtrans でお支払いください。",
+    checkoutNeed: "お名前と、WhatsApp 番号かメールアドレスをご記入ください。",
+    checkoutFailed: "通りませんでした。もう一度お試しいただくか、WhatsApp でご連絡ください。",
     pay: "予約して支払う",
     when: "いつ",
     qty: "いくつ",
@@ -1252,7 +1266,7 @@ const DE: EddoCopy = {
     pay: "Buchen und bezahlen",
     cta: "Nach einem Haus fragen",
     ctaNote: (room) => `Ich möchte gern nach ${room} fragen.`,
-    payNote: "Die Zahlung läuft über Midtrans. Wir prüfen die Daten im Kalender und melden uns noch am selben Tag.",
+    payNote: "Die Zahlung läuft über Midtrans. Der Beleg kommt sofort, und die Buchung erreicht die Familie im selben Moment.",
     askNote: "Eure Nachricht erreicht die Familie direkt, über WhatsApp oder E-Mail.",
   },
   season: {
@@ -1365,6 +1379,9 @@ const DE: EddoCopy = {
     ask: "Nach Verfügbarkeit fragen",
     askPrice: "Nach dem Preis fragen",
     noPhoto: "Foto folgt noch",
+    checkoutIntro: "Tragt den Tag ein und auf wen es läuft, dann zahlt über Midtrans.",
+    checkoutNeed: "Bitte tragt euren Namen und eine WhatsApp-Nummer oder eine E-Mail ein.",
+    checkoutFailed: "Das ist nicht durchgegangen. Versucht es noch einmal, oder schreibt uns auf WhatsApp.",
     pay: "Buchen und bezahlen",
     when: "An welchem Tag",
     qty: "Wie viele",
@@ -1443,7 +1460,7 @@ const RU: EddoCopy = {
     pay: "Забронировать и оплатить",
     cta: "Спросить про дом",
     ctaNote: (room) => `Хочу спросить про: ${room}.`,
-    payNote: "Оплата проходит через Midtrans. Мы сверим даты по календарю и напишем вам в тот же день.",
+    payNote: "Оплата проходит через Midtrans. Квитанция приходит сразу, и бронь попадает к семье в тот же момент.",
     askNote: "Ваше сообщение попадает напрямую к семье, в WhatsApp или на почту.",
   },
   season: {
@@ -1556,6 +1573,9 @@ const RU: EddoCopy = {
     ask: "Спросить о наличии",
     askPrice: "Спросить цену",
     noPhoto: "Фотография будет позже",
+    checkoutIntro: "Укажите день и на чьё имя, затем оплатите через Midtrans.",
+    checkoutNeed: "Пожалуйста, укажите имя и номер WhatsApp или адрес почты.",
+    checkoutFailed: "Не прошло. Попробуйте ещё раз или напишите нам в WhatsApp.",
     pay: "Забронировать и оплатить",
     when: "В какой день",
     qty: "Сколько",
@@ -1634,7 +1654,7 @@ const ZH: EddoCopy = {
     pay: "预订并付款",
     cta: "问问房子",
     ctaNote: (room) => `我想问一下：${room}。`,
-    payNote: "付款通过 Midtrans 完成。我们会对照日历确认日期，当天就回复你。",
+    payNote: "付款通过 Midtrans 完成。收据当场就有，订单同一刻送到这家人手里。",
     askNote: "消息直接送到主人家，通过 WhatsApp 或邮箱。",
   },
   season: {
@@ -1747,6 +1767,9 @@ const ZH: EddoCopy = {
     ask: "问问有没有空",
     askPrice: "问价格",
     noPhoto: "照片稍后补上",
+    checkoutIntro: "填好日期和用谁的名字，然后用 Midtrans 付款。",
+    checkoutNeed: "请填写你的名字，以及 WhatsApp 号码或邮箱。",
+    checkoutFailed: "没有成功。再试一次，或者用 WhatsApp 联系我们。",
     pay: "预订并付款",
     when: "哪一天",
     qty: "几个",

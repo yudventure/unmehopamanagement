@@ -2014,6 +2014,8 @@ export function EddoSite({
             way: t.services.way,
             oneWay: t.services.oneWay,
             roundTrip: t.services.roundTrip,
+            goDay: t.services.goDay,
+            backDay: t.services.backDay,
             fromDay: t.services.fromDay,
             untilDay: t.services.untilDay,
             days: t.services.days,

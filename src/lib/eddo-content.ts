@@ -498,6 +498,9 @@ export interface EddoCopy {
     way: string;
     oneWay: string;
     roundTrip: string;
+    /** The two dates of a journey, once it is a journey that comes back. */
+    goDay: string;
+    backDay: string;
     /** Something hired by the day: when it is collected, when it comes back. */
     fromDay: string;
     untilDay: string;
@@ -720,6 +723,8 @@ const EN: EddoCopy = {
     way: "Trip",
     oneWay: "One way",
     roundTrip: "Return",
+    goDay: "Going",
+    backDay: "Coming back",
     fromDay: "From",
     untilDay: "Until",
     days: "Days",
@@ -937,6 +942,8 @@ const ID: EddoCopy = {
     way: "Perjalanan",
     oneWay: "Sekali jalan",
     roundTrip: "Pulang pergi",
+    goDay: "Berangkat",
+    backDay: "Kembali",
     fromDay: "Mulai",
     untilDay: "Sampai",
     days: "Lama",
@@ -1171,6 +1178,8 @@ const FR: EddoCopy = {
     way: "Trajet",
     oneWay: "Aller simple",
     roundTrip: "Aller-retour",
+    goDay: "Aller",
+    backDay: "Retour",
     fromDay: "Du",
     untilDay: "Au",
     days: "Durée",
@@ -1388,6 +1397,8 @@ const JA: EddoCopy = {
     way: "行程",
     oneWay: "片道",
     roundTrip: "往復",
+    goDay: "行き",
+    backDay: "帰り",
     fromDay: "開始",
     untilDay: "終了",
     days: "日数",
@@ -1606,6 +1617,8 @@ const DE: EddoCopy = {
     way: "Fahrt",
     oneWay: "Einfach",
     roundTrip: "Hin und zurück",
+    goDay: "Hinfahrt",
+    backDay: "Rückfahrt",
     fromDay: "Von",
     untilDay: "Bis",
     days: "Tage",
@@ -1823,6 +1836,8 @@ const RU: EddoCopy = {
     way: "Поездка",
     oneWay: "В одну сторону",
     roundTrip: "Туда и обратно",
+    goDay: "Туда",
+    backDay: "Обратно",
     fromDay: "С",
     untilDay: "По",
     days: "Срок",
@@ -2040,6 +2055,8 @@ const ZH: EddoCopy = {
     way: "行程",
     oneWay: "单程",
     roundTrip: "往返",
+    goDay: "去程",
+    backDay: "回程",
     fromDay: "起",
     untilDay: "至",
     days: "天数",

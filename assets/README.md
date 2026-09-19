@@ -572,6 +572,28 @@ Angkanya berdiri sendiri, bukan dua kali harga di atasnya. Perahu yang menunggu
 dan mengantar balik bukan penjualan yang sama dengan perahu yang sekadar
 menurunkan, dan cuma pemiliknya yang tahu punyanya yang mana.
 
+**Memilih pulang pergi memunculkan kotak tanggal balik**, persis seperti
+pencarian tiket pesawat. Polanya diambil dari sana: kotaknya tidak ada untuk
+sekali jalan, memilih pulang pergi yang memunculkannya, paling awal tanggal
+baliknya adalah hari berangkatnya sendiri, dan kembali ke sekali jalan
+menghilangkannya lagi beserta isinya, bukan menyembunyikannya. Tanggal yang
+tidak kelihatan adalah tanggal yang tidak disetujui siapa pun, dan itu akan
+tetap sampai ke keluarganya sebagai perahu yang harus dikirim.
+
+Satu hal yang **tidak** ditiru: OTA mengisi tanggal otomatis, dan di sini tidak.
+Layar pertama OTA adalah pencarian, tebakan yang salah cuma berarti mencari
+ulang. Yang ini halaman bayar, dan tanggal yang diisikan halaman adalah tanggal
+yang dibayar tanpa pernah dipilih.
+
+Paling awal tanggal baliknya hari yang sama, bukan besoknya, karena penyeberangan
+bukan menginap: berangkat pagi lalu balik sore itu hari jalan biasa. Berbeda dari
+sewa, yang minimalnya memang satu hari.
+
+Servernya menolak pulang pergi tanpa tanggal balik, atau dengan tanggal balik
+sebelum berangkat, bukan cuma browsernya. Pesanan yang tertulis pulang pergi
+tapi tidak membawa harinya lebih buruk daripada sekali jalan: sudah dibayar dan
+tidak bisa dipenuhi.
+
 > **Angka `returnPrice` yang ada sekarang masih tempelan**, diisi dua kali tarif
 > sekali jalan supaya bentuknya bisa dilihat. Ganti dengan tarif yang sebenarnya
 > sebelum Midtrans dipindah ke produksi.
@@ -613,6 +635,28 @@ punya.
 > **Angka stok belum ada sama sekali** karena belum ada yang menghitungnya, dan
 > mengarang stok di halaman jual bukan hal yang pantas dikarang. Isi `stock` per
 > ukuran dan angkanya langsung tampil.
+
+### Email yang datang waktu ada yang membayar
+
+Dulu isinya cuma nomor order, jumlah, cara bayar dan status. Jadi yang sampai ke
+keluarganya kira-kira: "LUNAS, TRANSFER-20261104-A1B2C3D4, Rp 3.600.000". Siapa
+yang datang, hari apa, ukuran berapa, perahunya harus berlayar sekali atau dua
+kali, semuanya ada di dashboard Midtrans, di balik login, di tab lain, pada jam
+berapa pun pembayarannya mendarat.
+
+Sebabnya: pemberitahuan dari Midtrans memang cuma membawa itu. Yang dikembalikan
+apa adanya cuma `custom_field1` sampai `3`, jadi pesanannya sekarang ditulis ke
+situ waktu pembayaran dibuat, dan emailnya membacanya kembali:
+
+```
+Pesanan     Waisai to Yenbuba, return, going 2026-11-04, back 2026-11-08
+Tamu        Siti Rahma / 6281234567890
+Email tamu  siti@contoh.id
+```
+
+Baris ini cuma muncul kalau ada isinya, supaya pembayaran lama yang dibuat
+sebelum ini ada tetap menghasilkan email yang masuk akal, bukan tiga baris
+kosong.
 
 ### Ada harganya berarti bisa dibayar
 

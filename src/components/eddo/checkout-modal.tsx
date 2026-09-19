@@ -66,6 +66,8 @@ export interface CheckoutCopy {
   way: string;
   oneWay: string;
   roundTrip: string;
+  goDay: string;
+  backDay: string;
   /** Something hired by the day. */
   fromDay: string;
   untilDay: string;
@@ -92,7 +94,7 @@ export interface CheckoutOrder {
   qty: number;
   /** The day, or the day a hire starts. Empty for a thing with no day to it. */
   when: string;
-  /** The day a hire ends. Empty otherwise. */
+  /** The second date: when a hire ends, or when a journey comes back. */
   until: string;
   /** The size chosen, when the thing comes in sizes. */
   size: string;
@@ -233,8 +235,12 @@ export function CheckoutModal({
       /* The second date is the one marked when the span itself is wrong, since
          that is the one the reader would change. */
       if (!until || !days) gaps.add("until");
-    } else if (shape === "dated" && !when) {
-      gaps.add("when");
+    } else if (shape === "dated") {
+      if (!when) gaps.add("when");
+      /* A return that was chosen but never dated is a boat nobody knows to
+         send. Same rule a flight search enforces: pick round trip and the
+         second date stops being optional. */
+      if (way === "return" && (!until || until < when)) gaps.add("until");
     }
     if (pickSize && !size) gaps.add("size");
     if (!name.trim()) gaps.add("name");
@@ -248,7 +254,7 @@ export function CheckoutModal({
     const done = await onPay({
       qty: count,
       when,
-      until: rental ? until : "",
+      until: rental || way === "return" ? until : "",
       size,
       way: offersReturn ? way : "one",
       name: name.trim(),
@@ -325,7 +331,14 @@ export function CheckoutModal({
                     key={o.key}
                     type="button"
                     aria-pressed={way === o.key}
-                    onClick={() => edit("way", setWay)(o.key)}
+                    onClick={() => {
+                      edit("way", setWay)(o.key);
+                      /* Going back to one way drops the return date rather
+                         than keeping it out of sight. A date that is not on
+                         screen is a date nobody agreed to, and it would ride
+                         along to the family as a boat to send. */
+                      if (o.key === "one") edit("until", setUntil)("");
+                    }}
                     className={`${CHIP} ${way === o.key ? CHIP_ON : CHIP_OFF} text-left`}
                   >
                     {o.label}
@@ -426,7 +439,9 @@ export function CheckoutModal({
               <>
                 {shape === "dated" && (
                   <label className={LABEL}>
-                    {t.when}
+                    {/* Named as the outward leg once there is an inward one to
+                        tell it from, the way a flight search does. */}
+                    {offersReturn ? t.goDay : t.when}
                     <input
                       type="date"
                       value={when}
@@ -437,10 +452,44 @@ export function CheckoutModal({
                     {note("when")}
                   </label>
                 )}
-                {/* Beside the day when there is one; across the row when there
-                    is not, because half a row of fields with the other half
-                    blank reads as something that failed to appear. */}
-                <label className={`${LABEL} ${shape === "dated" ? "" : "sm:col-span-2"}`}>
+                {/* The return date, which exists only once a return has been
+                    chosen. Every flight search does this: the field is not
+                    there for a one way, and choosing a return is what puts it
+                    there.
+
+                    Unlike those, nothing is prefilled. An airline prefills
+                    because its first screen is a search and a wrong guess
+                    costs a second look; this is the checkout, and a date
+                    filled in by the page is a date somebody pays for without
+                    having chosen it.
+
+                    `min` is the outward day itself rather than the day after,
+                    because a crossing is not a stay: leaving in the morning
+                    and coming back that afternoon is an ordinary day out. */}
+                {shape === "dated" && way === "return" && (
+                  <label className={LABEL}>
+                    {t.backDay}
+                    <input
+                      type="date"
+                      value={until}
+                      min={when || todayISO()}
+                      max={when ? shiftDay(when, MAX_SPAN) : undefined}
+                      onChange={(e) => edit("until", setUntil)(e.target.value)}
+                      className={`${FIELD} ${mark("until")}`}
+                    />
+                    {note("until")}
+                  </label>
+                )}
+                {/* Beside the day when that leaves the row full, across the
+                    row when it would not. A return puts two dates on the line
+                    above, so the count would otherwise sit in half a row with
+                    the other half blank, which reads as something that failed
+                    to appear rather than as something that is not there. */}
+                <label
+                  className={`${LABEL} ${
+                    shape === "dated" && way !== "return" ? "" : "sm:col-span-2"
+                  }`}
+                >
                   {t.qty}
                   <select
                     value={qty}

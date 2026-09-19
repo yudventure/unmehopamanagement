@@ -38,8 +38,31 @@ export async function POST(req: Request) {
     failed: "gagal atau dibatalkan",
   };
 
+  /*
+   * The three lines `/api/pay` wrote into the custom fields, read back out.
+   *
+   * Without them this email said that money had arrived for order
+   * TRANSFER-20261104-A1B2C3D4 and nothing more: not who is coming, not which
+   * days, not which size, not whether the boat has to sail twice. Everything
+   * that matters for actually doing the thing was in the dashboard, behind a
+   * login, in another tab, at whatever hour the payment landed.
+   *
+   * Only shown when present, so a payment made before this existed still
+   * produces a sensible email rather than three empty rows.
+   */
+  const booked: Row[] = (
+    [
+      ["Pesanan", body.custom_field1],
+      ["Tamu", body.custom_field2],
+      ["Email tamu", body.custom_field3],
+    ] as const
+  )
+    .filter(([, v]) => v && v.trim())
+    .map(([k, v]) => [k, v] as Row);
+
   const rows: Row[] = [
     ["Status", label[state]],
+    ...booked,
     ["Order", body.order_id ?? "—"],
     ["Jumlah", body.gross_amount ? `Rp ${body.gross_amount}` : "—"],
     ["Cara bayar", body.payment_type ?? "—"],

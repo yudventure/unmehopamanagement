@@ -44,6 +44,18 @@ export interface SnapOrder {
   gross: number;
   items: { id: string; price: number; quantity: number; name: string }[];
   customer: { first_name: string; email?: string; phone?: string };
+  /**
+   * Up to three short lines Midtrans stores and hands back untouched.
+   *
+   * Its notification carries the order id, the amount and the status and
+   * nothing else, so without these the email that says a payment arrived
+   * cannot say what it was for. These are the only part of the request that
+   * comes back, so they are where the booking itself is written.
+   *
+   * Anything past the third is dropped rather than quietly merged, and each is
+   * cut to 255 characters, which is what the API accepts.
+   */
+  fields?: string[];
 }
 
 /**
@@ -72,6 +84,12 @@ export async function createSnapToken(order: SnapOrder): Promise<
       item_details: order.items,
       customer_details: order.customer,
       credit_card: { secure: true },
+      ...Object.fromEntries(
+        (order.fields ?? [])
+          .slice(0, 3)
+          .map((v, i) => [`custom_field${i + 1}`, String(v).slice(0, 255)])
+          .filter(([, v]) => v),
+      ),
     }),
   });
 

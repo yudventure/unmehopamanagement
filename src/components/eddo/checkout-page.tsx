@@ -157,6 +157,15 @@ export function EddoCheckout() {
       ...(priced && hasReturn(priced.product)
         ? [{ k: t.services.way, v: priced.way === "return" ? t.services.roundTrip : t.services.oneWay }]
         : []),
+      /* A journey that comes back is shown as two days rather than one day
+         and a word, because the day it comes back is the part somebody has to
+         be at the jetty for. */
+      ...(priced?.way === "return" && draft.until
+        ? [
+            { k: t.services.goDay, v: niceDay(draft.when, t.htmlLang) },
+            { k: t.services.backDay, v: niceDay(draft.until, t.htmlLang) },
+          ]
+        : []),
       /* A hire reads as a span and a length, the way a stay does. Everything
          else keeps the one day and the count it always had. */
       ...(rental
@@ -166,7 +175,10 @@ export function EddoCheckout() {
             { k: t.services.days, v: t.services.daysValue(draft.qty) },
           ]
         : [
-            ...(draft.when ? [{ k: t.services.when, v: niceDay(draft.when, t.htmlLang) }] : []),
+            /* Not repeated when the two rows above already said it. */
+            ...(draft.when && priced?.way !== "return"
+              ? [{ k: t.services.when, v: niceDay(draft.when, t.htmlLang) }]
+              : []),
             { k: t.services.qty, v: String(draft.qty) },
           ]),
     ];
@@ -196,6 +208,7 @@ export function EddoCheckout() {
               qty: draft.qty,
               way: draft.way,
               size: draft.size,
+              until: draft.until,
               checkIn: draft.when || todayISO(),
               name: draft.name,
               phone: draft.phone,

@@ -53,6 +53,8 @@ export async function POST(req: Request) {
   const phone = clean(body.phone);
   const email = clean(body.email);
   const checkIn = clean(body.checkIn);
+  /* The second date: when a hire comes back, or when a return crossing does. */
+  const until = clean(body.until);
   const nights = whole(body.nights, 1, MAX_NIGHTS);
   const guests = whole(body.guests, 1, MAX_GUESTS);
 
@@ -89,6 +91,18 @@ export async function POST(req: Request) {
   let gross: number;
   let item: { id: string; price: number; quantity: number; name: string };
   let tag: string;
+  /*
+   * What was booked, in words, for the family.
+   *
+   * Midtrans's notification carries the order id, the amount and the status,
+   * and nothing else: not the guest, not the dates, not the size. So the email
+   * that reaches the family when somebody pays could say that Rp 3,600,000 had
+   * arrived for order TRANSFER-20261104-A1B2C3D4 and leave them to go and look
+   * the rest up. Custom fields are the one part of the payload Midtrans sends
+   * back verbatim, so the booking is written into them and the notification
+   * can read it out.
+   */
+  let detail = "";
 
   if (service) {
     /*
@@ -111,6 +125,19 @@ export async function POST(req: Request) {
     });
     if (!priced) {
       return NextResponse.json({ error: "not-payable" }, { status: 422 });
+    }
+    /*
+     * A return that was never dated is refused here, not only in the dialog.
+     *
+     * The boat has to be sent twice, and the second sailing is a fact the
+     * family learns from this order or not at all. An order that says "return"
+     * and carries no day for it is worse than a one way: it has been paid for
+     * and cannot be honoured.
+     */
+    if (priced.way === "return") {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(until) || until < checkIn) {
+        return NextResponse.json({ error: "no-return-date" }, { status: 422 });
+      }
     }
     const { product, unitPrice: price, qty } = priced;
     gross = priced.total;
@@ -136,6 +163,15 @@ export async function POST(req: Request) {
         .join(", ")
         .slice(0, 50),
     };
+    detail = [
+      pickText(product.name, "en"),
+      priced.size && `size ${priced.size}`,
+      priced.way === "return" ? `return, going ${checkIn}, back ${until}` : `on ${checkIn}`,
+      until && priced.way !== "return" ? `until ${until}` : "",
+      qty > 1 && `x${qty}`,
+    ]
+      .filter(Boolean)
+      .join(", ");
   } else {
     const { rate } = eddoRooms();
     if (!rate) return NextResponse.json({ error: "no-rate" }, { status: 500 });
@@ -147,6 +183,7 @@ export async function POST(req: Request) {
       quantity: nights,
       name: `Eddo Homestay, ${nights} malam, ${guests} tamu`.slice(0, 50),
     };
+    detail = `Eddo Homestay, check-in ${checkIn}, ${nights} night(s), ${guests} guest(s)`;
   }
   /* Dated and random: the date is what makes it readable in the dashboard, the
      random tail is what stops two people booking in the same second from
@@ -162,6 +199,10 @@ export async function POST(req: Request) {
       ...(email ? { email } : {}),
       ...(phone ? { phone } : {}),
     },
+    /* Three short lines, because three is all Midtrans gives back. What was
+       booked, who booked it, and how to answer them: exactly what somebody
+       reading "LUNAS" at six in the morning needs in front of them. */
+    fields: [detail, `${name} / ${phone}`, email],
   });
 
   if (!snap.ok) {

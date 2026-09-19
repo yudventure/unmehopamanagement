@@ -77,6 +77,95 @@ function Explain({ children }: { children: React.ReactNode }) {
   );
 }
 
+/**
+ * The address to send to whoever is waiting to see the work.
+ *
+ * A site closed for work is closed to the person it belongs to as well, and
+ * that is backwards — the changes are theirs to look at and sign off. The way
+ * through already existed; what did not was any way to get hold of it without
+ * opening the server panel and reading an environment variable, which is not
+ * a thing to ask of somebody standing on a jetty with a phone.
+ *
+ * ## What it hands over, said plainly
+ *
+ * The link carries the token itself, so it is a key and not an invitation:
+ * anyone it is forwarded to gets in too, and there is no way to withdraw it
+ * from one person. Taking it back means changing `PREVIEW_TOKEN` on the
+ * server, which locks out everybody at once, the owner included. That is worth
+ * a sentence on the screen rather than a surprise later, because the natural
+ * thing to do with a link is paste it into a group chat.
+ *
+ * The full address is shown rather than masked. A button that copies something
+ * different from what is on screen is a small lie, and the one moment it
+ * matters is the moment somebody is checking whether they are about to send
+ * the right thing to a guest.
+ */
+function ShareLink({
+  url,
+  configured,
+  siteLabel,
+  closed,
+}: {
+  url?: string;
+  configured: boolean;
+  siteLabel: string;
+  closed: boolean;
+}) {
+  const [copied, setCopied] = useState(false);
+
+  if (!configured || !url) {
+    return (
+      <div className="mt-4 rounded-[14px] border border-line bg-surface-mute px-4 py-[13px] text-[12.5px] leading-[1.55] text-slate-soft">
+        <strong className="font-semibold text-ink">
+          Belum ada link untuk klien.
+        </strong>{" "}
+        Server belum punya <code className="font-mono">PREVIEW_TOKEN</code>.
+        Isi dengan teks apa pun yang sulit ditebak di panel server, lalu muat
+        ulang halaman ini dan linknya muncul di sini. Selama kosong, tidak ada
+        siapa pun yang bisa melewati halaman tunggu — termasuk Anda.
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-4 rounded-[14px] border border-line bg-surface-mute px-4 py-[13px]">
+      <div className="mb-[2px] text-[13.5px] font-medium text-ink">
+        Link untuk klien
+      </div>
+      <div className="mb-[10px] text-[12.5px] leading-[1.5] text-slate-soft">
+        {closed
+          ? `Kirimkan ini supaya klien bisa melihat ${siteLabel} yang sedang ditutup. Yang membukanya melihat situs aslinya, bukan halaman tunggu.`
+          : `${siteLabel} sedang terbuka untuk umum, jadi klien belum butuh ini. Linknya tetap bekerja nanti kalau situsnya ditutup lagi.`}
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2">
+        <code className="min-w-0 flex-1 overflow-hidden rounded-[9px] border border-line-input bg-surface px-[11px] py-[7px] font-mono text-[11.5px] text-ellipsis whitespace-nowrap text-ink-soft">
+          {url}
+        </code>
+        <button
+          type="button"
+          onClick={() => {
+            navigator.clipboard?.writeText(url);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 1600);
+          }}
+          className="cursor-pointer rounded-[9px] border border-line-strong bg-surface px-[13px] py-[7px] text-[12.5px] font-medium hover:bg-surface-hover"
+        >
+          {copied ? "Tersalin" : "Salin"}
+        </button>
+      </div>
+
+      <div className="mt-[10px] text-[12px] leading-[1.5] text-slate-soft">
+        Link ini adalah kuncinya, bukan undangan: siapa pun yang diteruskan
+        link ini ikut bisa masuk, dan tidak ada cara mencabutnya dari satu orang
+        saja. Menariknya kembali berarti mengganti{" "}
+        <code className="font-mono">PREVIEW_TOKEN</code> di panel server, dan
+        itu mengunci semua orang sekaligus, Anda termasuk.
+      </div>
+    </div>
+  );
+}
+
 type Status =
   | { kind: "idle" }
   | { kind: "saving" }
@@ -141,6 +230,14 @@ export function WebsiteScreen({ editor }: WebsiteScreenProps) {
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState<Status>({ kind: "idle" });
   const [tab, setTab] = useState<TabKey>("eddo");
+  /* The share links, per site. Null until the answer arrives; an object with
+     `configured: false` once it has and there is no token on the server. Kept
+     apart from `config` because it comes from somewhere else and for a
+     different reason: that file is public, and this is not. */
+  const [preview, setPreview] = useState<{
+    configured: boolean;
+    links: Partial<Record<PublicSite, string>>;
+  } | null>(null);
 
   useEffect(() => {
     fetch("/api/content")
@@ -153,6 +250,17 @@ export function WebsiteScreen({ editor }: WebsiteScreenProps) {
       .catch(() =>
         setStatus({ kind: "error", message: "Gagal memuat pengaturan." }),
       );
+  }, []);
+
+  /* Its own request, on its own endpoint, because the token in it must never
+     ride along in a response anyone can ask for. A 401 lands here as "not
+     configured", which is the right thing to show: either way there is no link
+     to hand out. */
+  useEffect(() => {
+    fetch("/api/preview-link")
+      .then((r) => (r.ok ? r.json() : { configured: false, links: {} }))
+      .then(setPreview)
+      .catch(() => setPreview({ configured: false, links: {} }));
   }, []);
 
   /* Compared as JSON rather than field by field: the shapes are small, and a
@@ -580,6 +688,16 @@ export function WebsiteScreen({ editor }: WebsiteScreenProps) {
                 nyalakan sesudah siap mengerjakan, bukan sebelumnya.
               </div>
             </div>
+
+            {/* Right after the switch and its warning: closing the site is
+                what creates the need for this, so the answer to "and how does
+                the owner see it now?" is in the same card as the question. */}
+            <ShareLink
+              url={preview?.links[tab]}
+              configured={Boolean(preview?.configured)}
+              siteLabel={LABEL_OF[tab]}
+              closed={siteClosed(tab)}
+            />
 
             {/* Below the switch and the warning, because by the time this
                 matters the switch has already been found. */}

@@ -473,9 +473,33 @@ akun Instagram sendiri, itu perlu kolom baru di tab Website; belum ada.
 ## Foto layanan: `eddo-layanan-*.webp`
 
 Belum ada satu pun. Bagian **Layanan** di situs Eddo menampilkan kartu produk
-untuk tiap motor, mobil, perahu, kamera, dan paket, dan tiap kartu punya slot
-foto sendiri. Yang belum berfoto menampilkan gambar garis jenisnya beserta
-tulisan "fotonya menyusul", bukan kotak kosong.
+dan tiap kartu punya slot foto sendiri. Yang belum berfoto menampilkan gambar
+garis jenisnya beserta tulisan "fotonya menyusul", bukan kotak kosong.
+
+Delapan golongannya, urutannya seperti yang tampil:
+
+| Kunci | Judulnya |
+| --- | --- |
+| `snorkeling` | Trip snorkeling |
+| `diving` | Trip diving |
+| `excursion` | Trip sehari penuh, diving atau snorkeling |
+| `transfer` | Antar-jemput perahu antar pulau |
+| `camera` | Sewa kamera |
+| `motorbike` | Sewa motor di Waisai |
+| `car` | Sewa mobil di Waisai |
+| `merch` | Merch Eddo |
+
+Kuncinya dipakai di tiga tempat sekaligus: judul di daftar, isian di
+`content/site.json`, dan pilihan di dialog tanya-jawab. Jadi menambah atau
+melepas satu golongan cuma perlu diubah di `SERVICE_KEYS`, dan yang lain ikut.
+
+### Kartunya mengisi barisnya sendiri
+
+Jumlah kolomnya mengikuti jumlah barangnya, tidak dipatok tiga. Dua barang di
+grid tiga kolom menyisakan satu kartu penuh ruang kosong di kanan, dan itu
+kelihatan sekali. Aturannya: satu barang dibaringkan, fotonya di kiri dan
+keterangannya di sebelahnya; dua jadi dua kolom; empat jadi dua kali dua; sisanya
+tiga kolom. Sudah diukur, tiap barisnya menyentuh tepi kanan panel dalam 1 piksel.
 
 Isinya diatur di `content/site.json` pada kunci `eddoServices`, bukan di kode:
 
@@ -515,14 +539,14 @@ mengetiknya.
 
 ### Membayar langsung, bukan cuma bertanya
 
-Enam golongan bisa dibayar di tempat: `merch`, `motorbike`, `car`, `guide`,
-`camera`, `diving`. Perahu dan antar-jemput sengaja tidak, karena bagian itu
-sudah menulis bahwa harganya tidak bisa dipatok di depan, dan menerima uang
-untuk sesuatu yang baru saja diterangkan tidak bisa dipatok akan membuat
-kalimat itu bohong.
+Lima golongan bisa dibayar di tempat: `diving`, `camera`, `motorbike`, `car`,
+`merch`. Yang naik perahu sengaja tidak, yaitu `snorkeling`, `excursion`, dan
+`transfer`, karena bagian itu sudah menulis bahwa harganya tidak bisa dipatok
+di depan, dan menerima uang untuk sesuatu yang baru saja diterangkan tidak bisa
+dipatok akan membuat kalimat itu bohong.
 
 Tombolnya baru menawarkan bayar kalau **keempatnya** terpenuhi: golongannya
-termasuk yang enam itu, barangnya punya harga di atas nol, kunci Midtrans
+termasuk yang lima itu, barangnya punya harga di atas nol, kunci Midtrans
 terpasang, dan barangnya **tidak bertanda contoh**.
 
 Yang terakhir itu penjaga yang penting dan berlaku dua kali, di tombol dan di

@@ -167,11 +167,10 @@ export const ACTIVITY_KEYS = [
      this list is the shared vocabulary the enquiry dialog speaks, and a word
      only one site uses is still a word. Turtle does not name them and does not
      have to, which is what `activities` being partial below is for. */
+  "excursion",
   "merch",
   "car",
-  "boat",
   "transfer",
-  "guide",
 ] as const;
 export type ActivityKey = (typeof ACTIVITY_KEYS)[number];
 

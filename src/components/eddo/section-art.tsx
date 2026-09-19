@@ -11,11 +11,12 @@
  *
  * ## Why they are all built the same way
  *
- * Every scene is a 300 by 96 box with the water across the bottom at roughly
- * the same height, so the four read as one set however far apart on the page
- * they land. Everything is a `<path>`, including the circles, because the
- * draw-on below needs `pathLength` and Safari has been late to that on the
- * basic shapes.
+ * Every scene is 96 tall with the water across the bottom at roughly the same
+ * height, and drawn at the same units per pixel, so the four read as one set
+ * however far apart on the page they land. Only the width varies with the room
+ * a section has: three are 300 wide and the islands are 460. Everything is a
+ * `<path>`, including the circles, because the draw-on below needs
+ * `pathLength` and Safari has been late to that on the basic shapes.
  *
  * ## The two kinds of movement
  *
@@ -56,18 +57,19 @@ import type React from "react";
  * viewBox has no intrinsic size, and while Chromium hands it the parent's box,
  * Safari hands it nothing at all.
  */
-const ART = {
-  viewBox: "0 0 300 96",
-  width: 300,
-  height: 96,
-  fill: "none",
-  stroke: "currentColor",
-  strokeWidth: 1.6,
-  strokeLinecap: "round",
-  strokeLinejoin: "round",
-  "aria-hidden": true,
-  "data-art": "",
-} as const;
+const ART = (w = 300) =>
+  ({
+    viewBox: `0 0 ${w} 96`,
+    width: w,
+    height: 96,
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: 1.6,
+    strokeLinecap: "round",
+    strokeLinejoin: "round",
+    "aria-hidden": true,
+    "data-art": "",
+  }) as const;
 
 /**
  * One drawn stroke, and `at` is when it starts.
@@ -80,10 +82,18 @@ function S({ d, at = 0 }: { d: string; at?: number }) {
   return <path d={d} pathLength={1} data-draw style={{ animationDelay: `${at}ms` }} />;
 }
 
-/** A wave across the box and beyond it, so drifting it cannot show an end. */
-function sea(y: number, amp: number) {
+/**
+ * A wave across the box and beyond it, so drifting it cannot show an end.
+ *
+ * It starts a whole period off the left edge and runs a period past the right,
+ * and the drift shifts it by exactly one period, which is what makes the loop
+ * seamless. Widen the box and this has to grow with it, or the sea stops short
+ * of the frame.
+ */
+function sea(y: number, amp: number, w = 300) {
+  const n = Math.ceil((w + 144) / 24);
   let d = `M-48 ${y}q12 ${-amp} 24 0`;
-  for (let i = 0; i < 14; i += 1) d += "t24 0";
+  for (let i = 1; i < n; i += 1) d += "t24 0";
   return d;
 }
 
@@ -92,7 +102,7 @@ function sea(y: number, amp: number) {
 /** Rooms: a house on stilts over the water, with the ladder guests go in by. */
 export function HouseArt({ className }: { className?: string }) {
   return (
-    <svg {...ART} className={className}>
+    <svg {...ART()} className={className}>
       {/* the shore, so the palm is standing on something */}
       <S d="M0 74c16-4 34-5 54-3" />
       <S d="M46 73C44 61 40 49 33 40" at={40} />
@@ -126,10 +136,19 @@ export function HouseArt({ className }: { className?: string }) {
   );
 }
 
-/** Around us: the islands a day out goes to, birds over them, a fish under. */
+/**
+ * Around us: the islands a day out goes to, birds over them, a fish under.
+ *
+ * The long one, 460 wide rather than 300. It has the top-right corner of its
+ * section to itself since the button moved to the foot, and the same three
+ * shapes stretched to fill that would have been three shapes with gaps; so it
+ * gained a fourth island instead. The extra islands are the same drawings
+ * moved sideways rather than new ones, which keeps every trunk on the ridge
+ * point it was solved for.
+ */
 export function IslandArt({ className }: { className?: string }) {
   return (
-    <svg {...ART} className={className}>
+    <svg {...ART(460)} className={className}>
       {/* A ridge meeting the water at both ends rather than a free-standing
           karst rock: the rock is the more truthful shape for Raja Ampat and
           the one that would not stop reading as fruit at this size.
@@ -137,28 +156,37 @@ export function IslandArt({ className }: { className?: string }) {
           Every trunk starts at a point solved on the ridge curve, so no tree
           floats above the ground it stands on, and each crown is a pair of
           scallops rather than a disc, which at eight pixels was a map pin. */}
-      <S d="M92 77C104 74 112 66 122 58c8-6 16-6 24 0 10 8 18 16 32 19" />
-      <S d="M113 65v-6" at={170} />
-      <S d="M107 60q3-5 6 0 3-5 6 0" at={185} />
-      <S d="M129 55v-8" at={215} />
-      <S d="M122 48q3.5-6 7 0 3.5-6 7 0" at={230} />
-      <S d="M155 65v-6" at={260} />
-      <S d="M149.5 60q2.75-4.5 5.5 0 2.75-4.5 5.5 0" at={275} />
-      <S d="M196 77c10-2 16-7 22-13 4-4 8-4 11 0 5 6 11 11 19 13" at={320} />
-      <S d="M222 62v-6" at={400} />
-      <S d="M217 57q2.5-4.5 5 0 2.5-4.5 5 0" at={415} />
+      <g transform="translate(66 0)">
+        <S d="M92 77C104 74 112 66 122 58c8-6 16-6 24 0 10 8 18 16 32 19" />
+        <S d="M113 65v-6" at={170} />
+        <S d="M107 60q3-5 6 0 3-5 6 0" at={185} />
+        <S d="M129 55v-8" at={215} />
+        <S d="M122 48q3.5-6 7 0 3.5-6 7 0" at={230} />
+        <S d="M155 65v-6" at={260} />
+        <S d="M149.5 60q2.75-4.5 5.5 0 2.75-4.5 5.5 0" at={275} />
+      </g>
+      <g transform="translate(128 0)">
+        <S d="M196 77c10-2 16-7 22-13 4-4 8-4 11 0 5 6 11 11 19 13" at={320} />
+        <S d="M222 62v-6" at={400} />
+        <S d="M217 57q2.5-4.5 5 0 2.5-4.5 5 0" at={415} />
+      </g>
       <S d="M40 77c7-1 11-4 15-8 3-3 5-3 8 0 4 4 8 7 13 8" at={445} />
+      <g transform="translate(378 0)">
+        <S d="M40 77c7-1 11-4 15-8 3-3 5-3 8 0 4 4 8 7 13 8" at={470} />
+        <S d="M55 69v-5" at={490} />
+        <S d="M50.5 64.5q2.25-4 4.5 0 2.25-4 4.5 0" at={505} />
+      </g>
       <g data-glide>
         <S d="M22 20q6-5 11 0" at={520} />
         <S d="M33 20q6-5 11 0" at={545} />
         <S d="M29 29q4-4 8 0" at={570} />
       </g>
       <g data-drift>
-        <S d={sea(77, 5)} at={600} />
+        <S d={sea(77, 5, 460)} at={600} />
       </g>
       <g data-swim>
-        <S d="M264 88c5-5 15-5 20 0-5 5-15 5-20 0z" at={660} />
-        <S d="M264 88l-6-4v8z" at={690} />
+        <S d="M296 88c5-5 15-5 20 0-5 5-15 5-20 0z" at={660} />
+        <S d="M296 88l-6-4v8z" at={690} />
       </g>
     </svg>
   );
@@ -167,7 +195,7 @@ export function IslandArt({ className }: { className?: string }) {
 /** What we arrange: the longboat, which is how everything here happens. */
 export function BoatArt({ className }: { className?: string }) {
   return (
-    <svg {...ART} className={className}>
+    <svg {...ART()} className={className}>
       <g data-bob>
         <S d="M38 56h174" />
         <S d="M44 56c10 16 38 21 78 21s68-5 78-21" at={70} />
@@ -199,7 +227,7 @@ export function BoatArt({ className }: { className?: string }) {
  *  centre next door is called. */
 export function TurtleArt({ className }: { className?: string }) {
   return (
-    <svg {...ART} className={className}>
+    <svg {...ART()} className={className}>
       <g data-bob>
         <S d="M116 54c0-13 15-22 34-22s34 9 34 22-15 22-34 22-34-9-34-22z" />
         <S d="M128 44c13-5 31-5 44 0" at={220} />

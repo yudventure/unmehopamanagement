@@ -106,15 +106,14 @@ export function eddoRooms(): { rate: number; count: number } {
  * same thing rather than two things that agree today.
  */
 export const SERVICE_KEYS = [
-  "merch",
+  "snorkeling",
+  "diving",
+  "excursion",
+  "transfer",
+  "camera",
   "motorbike",
   "car",
-  "boat",
-  "transfer",
-  "guide",
-  "camera",
-  "package",
-  "diving",
+  "merch",
 ] as const;
 export type ServiceKey = (typeof SERVICE_KEYS)[number];
 
@@ -164,15 +163,17 @@ export function pickText(v: Localised, lang: EddoLang): string {
  * The services a guest can pay for up front rather than only ask about.
  *
  * A short list on purpose, and the short part is the boats. A shirt, a
- * motorbike, a camera, a guide and a dive have a price that holds before
- * anybody looks at the sea; a boat's does not, and the section says so in
- * writing. Taking money for something whose cost we have just explained cannot
- * be fixed in advance would make that sentence a lie.
+ * motorbike, a car, a camera and a dive have a price that holds before anybody
+ * looks at the sea; a boat's does not, and the section says so in writing.
+ * Taking money for something whose cost we have just explained cannot be fixed
+ * in advance would make that sentence a lie. That is why the snorkelling trip,
+ * the whole-day excursion and the transfer are not on this list: all three are
+ * a boat with fuel in it, whatever else they are called.
  *
  * Paying still needs a price on the product and a real one: see
  * `payableProduct` below, which refuses anything still marked as an example.
  */
-export const PAYABLE_SERVICES = ["merch", "motorbike", "car", "guide", "camera", "diving"] as const;
+export const PAYABLE_SERVICES = ["diving", "camera", "motorbike", "car", "merch"] as const;
 export const isPayableService = (k: string): k is ServiceKey =>
   (PAYABLE_SERVICES as readonly string[]).includes(k);
 
@@ -570,15 +571,14 @@ const EN: EddoCopy = {
     cta: "Ask about this",
     note: "The prices shown are the ones that hold. Where there is none, it is because there is none to fix: a boat costs what the fuel costs that week and a crossing takes what the tide allows that day, so we quote when you ask rather than print a number we would have to take back. Asking here is asking whether it is free, not booking it.",
     items: {
-      merch: { title: "Homestay T-shirts", body: "Shirts with the homestay's own mark on them. Ask which sizes are in the house and we will put one aside for you." },
+      snorkeling: { title: "Snorkelling trip", body: "Out past the jetty by boat, to the reefs a swim will not reach. How far you get depends on the tide that morning, so tell us what you would like to see and we will say what works." },
+      diving: { title: "Diving trip", body: "Run by Turtle Dive, our sister homestay in this same village. Certified dives or your first time in the water, arranged from here without you having to book twice." },
+      excursion: { title: "Whole day excursion, diving or snorkelling", body: "A day on the water rather than a morning: several places in one trip, with the boat and the crew for the whole of it. Tell us which of the two you want and how many of you there are." },
+      transfer: { title: "Boat transfer between islands", body: "Between the islands, and to and from the ferry at Waisai. This is how you get here in the first place, and how you reach the places a shared boat trip does not cover." },
+      camera: { title: "Rent a camera", body: "For guests who did not bring one. Ask what is in the house when you book and we will tell you what is free for your dates." },
       motorbike: { title: "Rent a motorbike in Waisai", body: "Waisai is where the ferry lands and where the roads are. Tell us the day you arrive and we will arrange one, so you are not looking for a bike at the harbour." },
       car: { title: "Rent a car in Waisai", body: "For a group, for luggage, or for a day of driving around Waigeo. Same as the bike: tell us when, and we arrange it." },
-      boat: { title: "Rent a speedboat", body: "A boat and somebody to drive it, for going further than the jetty reaches. How far you can get depends on the sea that morning, so tell us what you want to see and we will say what is sensible." },
-      transfer: { title: "Boat transfer between islands", body: "Between the islands, and to and from the ferry at Waisai. This is how you get here in the first place, and how you reach the places a shared boat trip does not cover." },
-      guide: { title: "Hire a local guide", body: "Somebody from the village who knows the water, the birds, and which house to knock on. For a morning, or for the length of your stay." },
-      camera: { title: "Rent a camera", body: "For guests who did not bring one. Ask what is in the house when you book and we will tell you what is free for your dates." },
-      package: { title: "Trip packages", body: "A day, or several, put together end to end: the boat, the food, the guide, and the order to do them in. Tell us how long you have and what you would rather not miss." },
-      diving: { title: "Diving packages", body: "Run by Turtle Dive, our sister homestay in this same village. Certified dives or your first time in the water, arranged from here without you having to book twice." },
+      merch: { title: "Eddo's merch", body: "Shirts with the homestay's own mark on them. Ask which sizes are in the house and we will put one aside for you." },
     },
     ask: "Ask if it is free",
     askPrice: "Ask the price",
@@ -762,15 +762,14 @@ const ID: EddoCopy = {
     cta: "Tanya soal ini",
     note: "Harga yang tercantum adalah harga yang berlaku. Yang tidak tercantum memang belum bisa dipatok: ongkos perahu ikut harga bahan bakar minggu itu dan lama menyeberang ikut pasang hari itu, jadi kami sebutkan saat kamu tanya daripada menulis angka yang nanti harus kami tarik lagi. Menekan tombolnya berarti menanyakan ketersediaan, bukan memesan.",
     items: {
-      merch: { title: "Kaos homestay", body: "Kaos dengan lambang homestay-nya sendiri. Tanya ukuran apa saja yang ada di rumah, nanti kami sisihkan satu untukmu." },
+      snorkeling: { title: "Trip snorkeling", body: "Naik perahu melewati dermaga, ke karang yang tidak terjangkau kalau berenang saja. Sampai mana bisanya tergantung pasang pagi itu, jadi bilang saja mau lihat apa, nanti kami sebutkan mana yang masuk akal." },
+      diving: { title: "Trip diving", body: "Dijalankan Turtle Dive, homestay saudara kami di kampung yang sama. Selam bersertifikat, atau pertama kali turun ke air, diatur dari sini tanpa kamu perlu memesan dua kali." },
+      excursion: { title: "Trip sehari penuh, diving atau snorkeling", body: "Sehari di laut, bukan cuma sepagi: beberapa tempat dalam satu trip, dengan perahu dan awaknya untuk seharian. Bilang mau yang mana dari dua itu dan berapa orang." },
+      transfer: { title: "Antar-jemput perahu antar pulau", body: "Antar pulau, dan dari atau ke kapal di Waisai. Ini juga cara kamu sampai ke sini pertama kali, dan cara mencapai tempat yang tidak masuk trip perahu bersama." },
+      camera: { title: "Sewa kamera", body: "Untuk tamu yang tidak membawa. Tanya apa yang ada di rumah saat memesan, nanti kami kabari mana yang kosong di tanggalmu." },
       motorbike: { title: "Sewa motor di Waisai", body: "Waisai itu tempat kapal merapat dan tempat jalannya ada. Kabari tanggal kedatanganmu, kami yang aturkan, supaya kamu tidak mencari-cari motor di pelabuhan." },
       car: { title: "Sewa mobil di Waisai", body: "Untuk rombongan, untuk barang bawaan, atau untuk sehari berkeliling Waigeo. Sama seperti motor: kabari kapan, kami aturkan." },
-      boat: { title: "Sewa speed boat", body: "Perahu beserta yang mengemudikan, untuk pergi lebih jauh dari jangkauan dermaga. Sampai mana bisanya tergantung laut pagi itu, jadi bilang saja mau lihat apa, nanti kami sebutkan mana yang masuk akal." },
-      transfer: { title: "Antar-jemput perahu antar pulau", body: "Antar pulau, dan dari atau ke kapal di Waisai. Ini juga cara kamu sampai ke sini pertama kali, dan cara mencapai tempat yang tidak masuk trip perahu bersama." },
-      guide: { title: "Sewa pemandu lokal", body: "Orang kampung yang tahu airnya, burungnya, dan rumah mana yang harus diketuk. Untuk sepagi saja, atau untuk selama kamu menginap." },
-      camera: { title: "Sewa kamera", body: "Untuk tamu yang tidak membawa. Tanya apa yang ada di rumah saat memesan, nanti kami kabari mana yang kosong di tanggalmu." },
-      package: { title: "Paket trip", body: "Sehari, atau beberapa hari, disusun dari ujung ke ujung: perahunya, makannya, pemandunya, dan urutan mengerjakannya. Bilang berapa lama waktumu dan apa yang paling sayang dilewatkan." },
-      diving: { title: "Paket diving", body: "Dijalankan Turtle Dive, homestay saudara kami di kampung yang sama. Selam bersertifikat, atau pertama kali turun ke air, diatur dari sini tanpa kamu perlu memesan dua kali." },
+      merch: { title: "Merch Eddo", body: "Kaos dengan lambang homestay-nya sendiri. Tanya ukuran apa saja yang ada di rumah, nanti kami sisihkan satu untukmu." },
     },
     ask: "Tanya ketersediaan",
     askPrice: "Tanya harga",
@@ -971,15 +970,14 @@ const FR: EddoCopy = {
     cta: "Se renseigner",
     note: "Les prix affichés sont ceux qui tiennent. Là où il n'y en a pas, c'est qu'il n'y en a pas à fixer : un bateau coûte ce que coûte le carburant cette semaine-là, et une traversée prend ce que la marée permet ce jour-là, alors nous chiffrons quand vous demandez. Le bouton sert à savoir si c'est libre, pas à réserver.",
     items: {
-      merch: { title: "T-shirts du homestay", body: "Des t-shirts portant la marque du homestay. Demandez quelles tailles sont à la maison et nous vous en mettrons un de côté." },
+      snorkeling: { title: "Sortie snorkeling", body: "En bateau au-delà du ponton, vers les récifs qu'on n'atteint pas à la nage. Jusqu'où vous allez dépend de la marée ce matin-là, alors dites-nous ce que vous voulez voir et nous vous dirons ce qui est raisonnable." },
+      diving: { title: "Sortie plongée", body: "Tenues par Turtle Dive, notre homestay jumeau dans ce même village. Plongées avec brevet ou première fois dans l'eau, organisées d'ici sans que vous ayez à réserver deux fois." },
+      excursion: { title: "Journée entière, plongée ou snorkeling", body: "Une journée sur l'eau plutôt qu'une matinée : plusieurs endroits en une seule sortie, avec le bateau et l'équipage pour la journée. Dites-nous laquelle des deux et combien vous êtes." },
+      transfer: { title: "Transfert en bateau entre les îles", body: "Entre les îles, et depuis ou vers le ferry à Waisai. C'est ainsi que vous arrivez ici, et ainsi que vous atteignez les endroits qu'une sortie partagée ne couvre pas." },
+      camera: { title: "Louer un appareil photo", body: "Pour les hôtes qui n'en ont pas apporté. Demandez ce qu'il y a à la maison au moment de réserver et nous vous dirons ce qui est libre à vos dates." },
       motorbike: { title: "Louer une moto à Waisai", body: "Waisai, c'est là qu'accoste le ferry et là que sont les routes. Dites-nous le jour de votre arrivée et nous nous en occupons, pour que vous ne cherchiez pas une moto sur le port." },
       car: { title: "Louer une voiture à Waisai", body: "Pour un groupe, pour les bagages, ou pour une journée à sillonner Waigeo. Comme pour la moto : dites-nous quand, et nous organisons." },
-      boat: { title: "Louer un bateau rapide", body: "Un bateau et quelqu'un pour le mener, pour aller plus loin que le ponton. Jusqu'où vous pouvez aller dépend de la mer ce matin-là, alors dites-nous ce que vous voulez voir et nous vous dirons ce qui est raisonnable." },
-      transfer: { title: "Transfert en bateau entre les îles", body: "Entre les îles, et depuis ou vers le ferry à Waisai. C'est ainsi que vous arrivez ici, et ainsi que vous atteignez les endroits qu'une sortie partagée ne couvre pas." },
-      guide: { title: "Engager un guide local", body: "Quelqu'un du village qui connaît l'eau, les oiseaux, et à quelle porte frapper. Pour une matinée, ou pour toute la durée de votre séjour." },
-      camera: { title: "Louer un appareil photo", body: "Pour les hôtes qui n'en ont pas apporté. Demandez ce qu'il y a à la maison au moment de réserver et nous vous dirons ce qui est libre à vos dates." },
-      package: { title: "Formules de sortie", body: "Une journée, ou plusieurs, montées d'un bout à l'autre : le bateau, les repas, le guide, et l'ordre dans lequel les faire. Dites-nous de combien de temps vous disposez et ce que vous ne voudriez pas manquer." },
-      diving: { title: "Formules de plongée", body: "Tenues par Turtle Dive, notre homestay jumeau dans ce même village. Plongées avec brevet ou première fois dans l'eau, organisées d'ici sans que vous ayez à réserver deux fois." },
+      merch: { title: "La boutique d'Eddo", body: "Des t-shirts portant la marque du homestay. Demandez quelles tailles sont à la maison et nous vous en mettrons un de côté." },
     },
     ask: "Demander s'il est libre",
     askPrice: "Demander le prix",
@@ -1163,15 +1161,14 @@ const JA: EddoCopy = {
     cta: "これについて聞く",
     note: "表示している料金はそのまま通る料金です。書いていないものは、決めようがないからです。舟代はその週の燃料しだい、渡る時間はその日の潮しだいなので、あとで取り消す数字を並べるよりお尋ねいただいたときにお見積りします。ボタンは空きを尋ねるためのもので、予約ではありません。",
     items: {
-      merch: { title: "ホームステイの T シャツ", body: "ホームステイの印が入った T シャツです。どのサイズが家にあるかお尋ねください。お取り置きします。" },
+      snorkeling: { title: "シュノーケリングの舟", body: "桟橋の先まで舟で出て、泳いでは届かない珊瑚まで。どこまで行けるかはその朝の潮しだいなので、見たいものをお聞かせください。無理のない範囲をお伝えします。" },
+      diving: { title: "ダイビングの舟", body: "同じ村にある姉妹のホームステイ、Turtle Dive が担当します。ライセンスをお持ちの方も、はじめて水に入る方も、二重に予約する必要なくここから手配します。" },
+      excursion: { title: "一日がかりの舟、ダイビングかシュノーケリング", body: "半日ではなく一日を海で。一度の舟で何か所かをまわり、舟と船頭はその日ずっとご一緒します。どちらになさるかと、何名さまかをお聞かせください。" },
+      transfer: { title: "島から島への船の送迎", body: "島のあいだと、Waisai のフェリー乗り場との行き来。そもそもここへ着くための足であり、乗合の舟では行かない場所へ届く足でもあります。" },
+      camera: { title: "カメラを借りる", body: "持ってこられなかったお客さまへ。ご予約のときに家にあるものをお尋ねください。ご滞在の日程で空いているものをお伝えします。" },
       motorbike: { title: "Waisai でバイクを借りる", body: "Waisai はフェリーが着く町で、道があるのもここです。到着日をお知らせいただければ手配しますので、港でバイクを探し回らずにすみます。" },
       car: { title: "Waisai で車を借りる", body: "人数が多いとき、荷物が多いとき、あるいは一日 Waigeo を走ってみたいときに。バイクと同じで、いつかをお知らせいただければ手配します。" },
-      boat: { title: "スピードボートを借りる", body: "桟橋の先まで行くための、舟と操る人。どこまで行けるかはその朝の海しだいなので、見たいものをお聞かせください。無理のない範囲をお伝えします。" },
-      transfer: { title: "島から島への船の送迎", body: "島のあいだと、Waisai のフェリー乗り場との行き来。そもそもここへ着くための足であり、乗合の舟では行かない場所へ届く足でもあります。" },
-      guide: { title: "地元のガイドを頼む", body: "水のことも鳥のことも、どの家を訪ねればよいかも知っている村の人。半日だけでも、滞在中ずっとでも。" },
-      camera: { title: "カメラを借りる", body: "持ってこられなかったお客さまへ。ご予約のときに家にあるものをお尋ねください。ご滞在の日程で空いているものをお伝えします。" },
-      package: { title: "旅程のおまかせ", body: "一日、あるいは数日を端から端まで組み立てます。舟、食事、ガイド、そして回る順番まで。日数と、これだけは外したくないものをお聞かせください。" },
-      diving: { title: "ダイビングのおまかせ", body: "同じ村にある姉妹のホームステイ、Turtle Dive が担当します。ライセンスをお持ちの方も、はじめて水に入る方も、二重に予約する必要なくここから手配します。" },
+      merch: { title: "Eddo のグッズ", body: "ホームステイの印が入った T シャツです。どのサイズが家にあるかお尋ねください。お取り置きします。" },
     },
     ask: "空きを聞く",
     askPrice: "料金を聞く",
@@ -1356,15 +1353,14 @@ const DE: EddoCopy = {
     cta: "Danach fragen",
     note: "Die angegebenen Preise sind die, die gelten. Wo keiner steht, gibt es keinen festzulegen: ein Boot kostet, was der Treibstoff in jener Woche kostet, und eine Überfahrt dauert, was die Gezeiten an jenem Tag zulassen. Wir nennen den Preis, wenn ihr fragt. Der Knopf fragt nach, ob es frei ist, und bucht nicht.",
     items: {
-      merch: { title: "T-Shirts vom Homestay", body: "Shirts mit dem eigenen Zeichen des Homestay. Fragt, welche Größen im Haus sind, und wir legen euch eines zurück." },
+      snorkeling: { title: "Schnorcheltour", body: "Mit dem Boot über den Steg hinaus, zu den Riffen, die man schwimmend nicht erreicht. Wie weit ihr kommt, entscheidet die Tide an jenem Morgen, also sagt uns, was ihr sehen wollt, und wir sagen, was sinnvoll ist." },
+      diving: { title: "Tauchtour", body: "Geführt von Turtle Dive, unserem Schwester-Homestay im selben Dorf. Tauchgänge mit Brevet oder das erste Mal im Wasser, von hier aus organisiert, ohne dass ihr zweimal buchen müsst." },
+      excursion: { title: "Ganzer Tag, tauchen oder schnorcheln", body: "Ein Tag auf dem Wasser statt eines Vormittags: mehrere Stellen in einer Fahrt, mit dem Boot und der Crew für den ganzen Tag. Sagt uns, welches von beiden, und wie viele ihr seid." },
+      transfer: { title: "Bootstransfer zwischen den Inseln", body: "Zwischen den Inseln und von oder zur Fähre in Waisai. So kommt ihr überhaupt erst her, und so erreicht ihr die Orte, die eine geteilte Bootsfahrt nicht abdeckt." },
+      camera: { title: "Eine Kamera mieten", body: "Für Gäste, die keine mitgebracht haben. Fragt bei der Buchung, was im Haus ist, dann sagen wir euch, was an euren Tagen frei ist." },
       motorbike: { title: "Ein Motorrad mieten in Waisai", body: "In Waisai legt die Fähre an, und dort sind die Straßen. Sagt uns euren Ankunftstag, dann organisieren wir eines, und ihr sucht nicht am Hafen nach einem Motorrad." },
       car: { title: "Ein Auto mieten in Waisai", body: "Für eine Gruppe, für Gepäck, oder für einen Tag Fahren über Waigeo. Wie beim Motorrad: sagt uns wann, wir kümmern uns." },
-      boat: { title: "Ein Schnellboot mieten", body: "Ein Boot und jemand, der es fährt, um weiter zu kommen als der Steg reicht. Wie weit, entscheidet die See an jenem Morgen, also sagt uns, was ihr sehen wollt, und wir sagen, was sinnvoll ist." },
-      transfer: { title: "Bootstransfer zwischen den Inseln", body: "Zwischen den Inseln und von oder zur Fähre in Waisai. So kommt ihr überhaupt erst her, und so erreicht ihr die Orte, die eine geteilte Bootsfahrt nicht abdeckt." },
-      guide: { title: "Eine Begleitung buchen", body: "Jemand aus dem Dorf, der das Wasser kennt, die Vögel, und an welche Tür man klopft. Für einen Vormittag, oder für die ganze Zeit eures Aufenthalts." },
-      camera: { title: "Eine Kamera mieten", body: "Für Gäste, die keine mitgebracht haben. Fragt bei der Buchung, was im Haus ist, dann sagen wir euch, was an euren Tagen frei ist." },
-      package: { title: "Ausflugspakete", body: "Ein Tag oder mehrere, von vorne bis hinten zusammengestellt: das Boot, das Essen, die Begleitung und die Reihenfolge. Sagt uns, wie viel Zeit ihr habt und was ihr auf keinen Fall verpassen wollt." },
-      diving: { title: "Tauchpakete", body: "Geführt von Turtle Dive, unserem Schwester-Homestay im selben Dorf. Tauchgänge mit Brevet oder das erste Mal im Wasser, von hier aus organisiert, ohne dass ihr zweimal buchen müsst." },
+      merch: { title: "Eddos Merch", body: "Shirts mit dem eigenen Zeichen des Homestay. Fragt, welche Größen im Haus sind, und wir legen euch eines zurück." },
     },
     ask: "Nach Verfügbarkeit fragen",
     askPrice: "Nach dem Preis fragen",
@@ -1548,15 +1544,14 @@ const RU: EddoCopy = {
     cta: "Спросить об этом",
     note: "Указанные цены — те, что держатся. Где цены нет, её и нельзя закрепить: лодка стоит столько, сколько на той неделе стоит топливо, а переход занимает столько, сколько позволит прилив в тот день. Мы называем цену, когда вы спрашиваете. Кнопка спрашивает о наличии, а не бронирует.",
     items: {
-      merch: { title: "Футболки гостевого дома", body: "Футболки со знаком самого гостевого дома. Спросите, какие размеры есть в доме, и мы отложим вам одну." },
+      snorkeling: { title: "Выход на снорклинг", body: "На лодке дальше причала, к рифам, до которых вплавь не добраться. Насколько далеко, решает прилив тем утром, так что напишите, что хотите увидеть, и мы скажем, что разумно." },
+      diving: { title: "Выход на дайвинг", body: "Их ведёт Turtle Dive, наш соседний гостевой дом в этой же деревне. Погружения по сертификату или первый раз в воде, устраиваются отсюда, и бронировать дважды не нужно." },
+      excursion: { title: "Целый день, дайвинг или снорклинг", body: "День на воде, а не утро: несколько мест за один выход, с лодкой и командой на весь день. Напишите, что из двух и сколько вас." },
+      transfer: { title: "Переезд на лодке между островами", body: "Между островами и до парома в Waisai или от него. Именно так вы сюда и попадаете, и так добираетесь туда, куда общая лодка не идёт." },
+      camera: { title: "Взять камеру", body: "Для гостей, которые не взяли свою. Спросите при бронировании, что есть в доме, и мы скажем, что свободно на ваши даты." },
       motorbike: { title: "Взять мотоцикл в Waisai", body: "Waisai — это там, где причаливает паром и где есть дороги. Напишите день приезда, и мы всё устроим, чтобы вам не искать мотоцикл в порту." },
       car: { title: "Взять машину в Waisai", body: "Для компании, для багажа или на день езды по Waigeo. Как и с мотоциклом: напишите когда, а мы устроим." },
-      boat: { title: "Взять быстроходную лодку", body: "Лодка и тот, кто ею управляет, чтобы уйти дальше, чем достаёт причал. Насколько далеко, решает море тем утром, так что напишите, что хотите увидеть, и мы скажем, что разумно." },
-      transfer: { title: "Переезд на лодке между островами", body: "Между островами и до парома в Waisai или от него. Именно так вы сюда и попадаете, и так добираетесь туда, куда общая лодка не идёт." },
-      guide: { title: "Нанять местного проводника", body: "Человек из деревни, который знает воду, птиц и в какую дверь постучать. На утро или на всё время вашего пребывания." },
-      camera: { title: "Взять камеру", body: "Для гостей, которые не взяли свою. Спросите при бронировании, что есть в доме, и мы скажем, что свободно на ваши даты." },
-      package: { title: "Пакеты поездок", body: "День или несколько, собранные от начала до конца: лодка, еда, проводник и порядок, в котором всё это делать. Напишите, сколько у вас времени и что не хотелось бы пропустить." },
-      diving: { title: "Пакеты для дайвинга", body: "Их ведёт Turtle Dive, наш соседний гостевой дом в этой же деревне. Погружения по сертификату или первый раз в воде, устраиваются отсюда, и бронировать дважды не нужно." },
+      merch: { title: "Мерч Eddo", body: "Футболки со знаком самого гостевого дома. Спросите, какие размеры есть в доме, и мы отложим вам одну." },
     },
     ask: "Спросить о наличии",
     askPrice: "Спросить цену",
@@ -1740,15 +1735,14 @@ const ZH: EddoCopy = {
     cta: "问问这个",
     note: "写出来的价格就是作数的价格。没写的是因为定不下来：船钱看那一周的油价，过海要多久看那天的潮水，所以你来问我们再报，而不是先写一个之后得收回的数字。按钮是问有没有空，不是下单。",
     items: {
-      merch: { title: "民宿 T 恤", body: "印着民宿自己标记的 T 恤。问问屋里还有哪些尺码，我们给你留一件。" },
+      snorkeling: { title: "浮潜出海", body: "坐船出到栈桥以外，去游泳到不了的珊瑚。能走多远看那天早上的潮水，所以把想看的说出来，我们告诉你哪些是合理的。" },
+      diving: { title: "潜水出海", body: "由同村的姊妹民宿 Turtle Dive 负责。有证的潜水，或者第一次下水，都从这里安排，不用订两次。" },
+      excursion: { title: "整天出海，潜水或浮潜", body: "在海上待一整天，而不是一个上午：一趟船跑好几个地方，船和船家整天都陪着。告诉我们两样选哪样，以及你们几个人。" },
+      transfer: { title: "岛与岛之间的船接送", body: "岛与岛之间，以及往返 Waisai 的渡轮码头。你最初就是这样到这里的，也是这样去到拼船不走的地方。" },
+      camera: { title: "租相机", body: "给没带相机的客人。订房时问一下屋里有什么，我们告诉你你那几天哪些是空的。" },
       motorbike: { title: "在 Waisai 租摩托车", body: "Waisai 是渡轮靠岸的地方，也是有路的地方。把到达日期告诉我们，我们来安排，你不用在码头到处找车。" },
       car: { title: "在 Waisai 租汽车", body: "人多、行李多，或者想花一天绕 Waigeo 开一圈。跟摩托车一样：告诉我们时间，我们来安排。" },
-      boat: { title: "租快艇", body: "一条船，加上开船的人，去栈桥到不了的地方。能走多远看那天早上的海，所以把想看的说出来，我们告诉你哪些是合理的。" },
-      transfer: { title: "岛与岛之间的船接送", body: "岛与岛之间，以及往返 Waisai 的渡轮码头。你最初就是这样到这里的，也是这样去到拼船不走的地方。" },
-      guide: { title: "请一位本地向导", body: "村里的人，知道水情、知道鸟、也知道该敲哪一家的门。可以只要一个上午，也可以整个行程都陪着。" },
-      camera: { title: "租相机", body: "给没带相机的客人。订房时问一下屋里有什么，我们告诉你你那几天哪些是空的。" },
-      package: { title: "行程套餐", body: "一天，或者好几天，从头到尾排好：船、饭、向导，还有先后顺序。告诉我们你有多少时间，以及最舍不得错过的是什么。" },
-      diving: { title: "潜水套餐", body: "由同村的姊妹民宿 Turtle Dive 负责。有证的潜水，或者第一次下水，都从这里安排，不用订两次。" },
+      merch: { title: "Eddo 周边", body: "印着民宿自己标记的 T 恤。问问屋里还有哪些尺码，我们给你留一件。" },
     },
     ask: "问问有没有空",
     askPrice: "问价格",

@@ -453,8 +453,49 @@ const SVG = {
 } as const;
 
 const SERVICE_ICONS: Record<ServiceKey, React.ReactNode> = {
-  merch: (
-    <svg {...SVG}><path d="M8.6 3.6 4.2 5.8 2.8 9.3l3 1.2 1-1.7v11.6h10.4V8.8l1 1.7 3-1.2-1.4-3.5-4.4-2.2a3.5 3.5 0 0 1-6.8 0Z" /></svg>
+  snorkeling: (
+    /* A mask with the tube standing up beside it. It sits next to diving in
+       the list now, so the two have to be told apart at twenty-six pixels:
+       what separates them is the shape of the air. A snorkel goes up into the
+       sky, a tank is carried. Both used to be a mask with a hose, which was
+       the same icon drawn twice. */
+    <svg {...SVG}>
+      <path d="M2.8 8.6h10.4a1.8 1.8 0 0 1 1.8 1.8v2.2a3 3 0 0 1-3 3h-1.5l-1.3-1.5H8.3L7 15.6H5.8a3 3 0 0 1-3-3v-2.2a1.8 1.8 0 0 1 0-1.8Z" />
+      <path d="M18.6 4.2v9.4a3.2 3.2 0 0 1-3.2 3.2h-1.2" />
+    </svg>
+  ),
+  diving: (
+    <svg {...SVG}>
+      {/* The tank, its valve, and its band. */}
+      <rect x="6.2" y="7.2" width="8.6" height="13.4" rx="3.2" />
+      <path d="M9 7.2V4.9h3v2.3" />
+      <path d="M12 5.8h2.4" />
+      <path d="M6.2 11.4h8.6" />
+      {/* Two bubbles, which is what says the tank is underwater rather than
+          standing in a shed. */}
+      <circle cx="18.6" cy="8.8" r="1.5" />
+      <circle cx="20.6" cy="5" r="1" />
+    </svg>
+  ),
+  excursion: (
+    /* A whole day, which is a sun with the water under it. Rays only above
+       the horizon, because the two below would have run into the waves. */
+    <svg {...SVG}>
+      <circle cx="12" cy="9.4" r="3.6" />
+      <path d="M12 2.2v1.6" />
+      <path d="M4.4 9.4H2.8" />
+      <path d="M21.2 9.4h-1.6" />
+      <path d="m6.2 3.6 1.2 1.2" />
+      <path d="m17.8 3.6-1.2 1.2" />
+      <path d="M2.8 17.2c1.5.9 3.1.9 4.6 0s3.1-.9 4.6 0 3.1.9 4.6 0 3.1-.9 4.6 0" />
+      <path d="M2.8 20.6c1.5.9 3.1.9 4.6 0s3.1-.9 4.6 0 3.1.9 4.6 0 3.1-.9 4.6 0" />
+    </svg>
+  ),
+  transfer: (
+    <svg {...SVG}><path d="M5.6 2.8a2.9 2.9 0 0 1 2.9 2.9c0 2.1-2.9 5.2-2.9 5.2s-2.9-3.1-2.9-5.2a2.9 2.9 0 0 1 2.9-2.9Z" /><path d="M18.4 12.6a2.9 2.9 0 0 1 2.9 2.9c0 2.1-2.9 5.2-2.9 5.2s-2.9-3.1-2.9-5.2a2.9 2.9 0 0 1 2.9-2.9Z" /><path d="M9.4 8.6c3.4.4 5.2 2.4 5.6 5.4" /><path d="m12.6 14.6 2.4-.6.5 2.4" /></svg>
+  ),
+  camera: (
+    <svg {...SVG}><rect x="2.6" y="7" width="18.8" height="13" rx="2.6" /><path d="M8.6 7 10 4.4h4L15.4 7" /><circle cx="12" cy="13.4" r="3.5" /></svg>
   ),
   motorbike: (
     /* A scooter, and the one glyph here that is a silhouette rather than a
@@ -468,7 +509,7 @@ const SERVICE_ICONS: Record<ServiceKey, React.ReactNode> = {
        the body outright is what finally made it a motor, because the eye meets
        a mass over the back wheel instead of a wire around one.
 
-       That costs consistency with the other eight, which was weighed and lost.
+       That costs consistency with the other seven, which was weighed and lost.
        An icon nobody can name is not carrying its weight whatever it matches. */
     <svg {...SVG}>
       {/* Body as solid shapes rather than an outline of one: the leg shield
@@ -489,23 +530,8 @@ const SERVICE_ICONS: Record<ServiceKey, React.ReactNode> = {
   car: (
     <svg {...SVG}><path d="M3 16.4v-3l1.9-4a2 2 0 0 1 1.8-1.2h10.6a2 2 0 0 1 1.8 1.2l1.9 4v3" /><path d="M3 16.4h18" /><circle cx="7.3" cy="16.8" r="1.7" /><circle cx="16.7" cy="16.8" r="1.7" /><path d="M5.4 12.2h13.2" /></svg>
   ),
-  boat: (
-    <svg {...SVG}><path d="M2.8 15h18.4l-2.6 4.2H5.4z" /><path d="M7.4 15v-4.6h5.4L16.6 15" /><path d="M2.6 21.4c1.4.8 2.9.8 4.3 0s2.9-.8 4.3 0 2.9.8 4.3 0 2.9-.8 4.3 0" /></svg>
-  ),
-  transfer: (
-    <svg {...SVG}><path d="M5.6 2.8a2.9 2.9 0 0 1 2.9 2.9c0 2.1-2.9 5.2-2.9 5.2s-2.9-3.1-2.9-5.2a2.9 2.9 0 0 1 2.9-2.9Z" /><path d="M18.4 12.6a2.9 2.9 0 0 1 2.9 2.9c0 2.1-2.9 5.2-2.9 5.2s-2.9-3.1-2.9-5.2a2.9 2.9 0 0 1 2.9-2.9Z" /><path d="M9.4 8.6c3.4.4 5.2 2.4 5.6 5.4" /><path d="m12.6 14.6 2.4-.6.5 2.4" /></svg>
-  ),
-  guide: (
-    <svg {...SVG}><circle cx="8.4" cy="6.2" r="2.8" /><path d="M3.4 20.6v-1.8a5 5 0 0 1 5-5 5 5 0 0 1 5 5v1.8" /><path d="M17.6 3.2v17.4" /><path d="M17.6 4.4h4l-1.4 2.2 1.4 2.2h-4" /></svg>
-  ),
-  camera: (
-    <svg {...SVG}><rect x="2.6" y="7" width="18.8" height="13" rx="2.6" /><path d="M8.6 7 10 4.4h4L15.4 7" /><circle cx="12" cy="13.4" r="3.5" /></svg>
-  ),
-  package: (
-    <svg {...SVG}><path d="m2.8 6.4 5.8-2.2v13.4l-5.8 2.2z" /><path d="m8.6 4.2 6.8 2.2v13.4L8.6 17.6z" /><path d="m15.4 6.4 5.8-2.2v13.4l-5.8 2.2z" /></svg>
-  ),
-  diving: (
-    <svg {...SVG}><path d="M4.4 8.6h10.2a1.6 1.6 0 0 1 1.6 1.6v2.4a2.6 2.6 0 0 1-2.6 2.6h-1.8l-1.3-1.4H9.3L8 15.2H6.2a2.6 2.6 0 0 1-2.6-2.6v-2.4a1.6 1.6 0 0 1 .8-1.6Z" /><path d="M16.2 10.6h2.2a1.8 1.8 0 0 1 1.8 1.8v4.4a2.6 2.6 0 0 1-2.6 2.6h-1.4" /><path d="M18.4 5.4v5.2" /></svg>
+  merch: (
+    <svg {...SVG}><path d="M8.6 3.6 4.2 5.8 2.8 9.3l3 1.2 1-1.7v11.6h10.4V8.8l1 1.7 3-1.2-1.4-3.5-4.4-2.2a3.5 3.5 0 0 1-6.8 0Z" /></svg>
   ),
 };
 
@@ -560,6 +586,31 @@ export function EddoSite({
      is a hole rather than an invitation to press something. */
   const [service, setService] = useState<ServiceKey>(SERVICE_KEYS[0]);
   const products = serviceProducts(service);
+
+  /*
+   * How wide to lay the cards out, decided by how many there are.
+   *
+   * Three across is right for a long list and wrong for a short one: two cards
+   * in a three-column grid is a whole card's worth of nothing on the right,
+   * which is exactly what it looked like. So the grid never offers more
+   * columns than there are things to put in them, and four goes two-by-two
+   * rather than three-and-a-stray.
+   *
+   * Written as whole class strings rather than built from a number, because
+   * Tailwind reads this file as text: a class assembled at runtime is a class
+   * that was never compiled.
+   */
+  const cols = products.length <= 2 ? products.length : products.length === 4 ? 2 : 3;
+  const productGrid =
+    cols <= 1
+      ? "grid-cols-1"
+      : cols === 2
+        ? "grid-cols-1 sm:grid-cols-2"
+        : "grid-cols-1 sm:grid-cols-2 xl:grid-cols-3";
+  /* One card gets the panel to itself, and a card the width of the panel with
+     a 4:3 photograph on top of it is half a screen of one T-shirt. Laid on its
+     side instead: picture on the left, everything else beside it. */
+  const solo = products.length === 1;
   /* No client key, no Snap script, so nothing here can charge and every
      button asks instead. Read once, up here, because both the room panel far
      below and the service cards just under this need the same answer. */
@@ -1383,16 +1434,9 @@ export function EddoSite({
             <Eyebrow>{t.around.eyebrow}</Eyebrow>
             <h2 className="mt-4 mb-0 text-[clamp(30px,4.6vw,48px)] leading-[1.05] font-bold tracking-[-.03em] text-eddo-ink">{t.around.title}</h2>
           </div>
-          <IslandArt className={`${ART_BOX} w-[210px] lg:w-[290px]`} />
-          {/* Not "snorkeling": that key left this site's list when the list
-              became the five the enquiry card offers, and an activity the
-              dialog cannot show is an activity the reader cannot correct.
-              "Everything together" is the nearest of the five to a day
-              arranged from the house. */}
-          <button type="button" onClick={() => ask("package", t.around.all)} className={BTN_GHOST}>
-            {t.around.all}
-            <span aria-hidden="true">→</span>
-          </button>
+          {/* Where the button used to be, and longer for having the corner to
+              itself: three islands and a headland instead of two islands. */}
+          <IslandArt className={`${ART_BOX} w-[280px] lg:w-[440px]`} />
         </div>
 
         <div className="mt-9 grid grid-cols-2 gap-4 lg:grid-cols-4 md:gap-5">
@@ -1412,7 +1456,28 @@ export function EddoSite({
             </article>
           ))}
         </div>
-        <p data-reveal className="mt-5 max-w-[720px] text-[13px] leading-[1.6] text-slate">{t.around.note}</p>
+        {/* The note and the way to ask, on one line at the foot of the
+            section. The button was at the top beside the heading, where it
+            asked the reader to decide before they had seen anything; down here
+            it comes after the four places, which is when somebody actually
+            wants it. */}
+        <div
+          data-reveal
+          className="mt-5 flex flex-col items-start gap-5 sm:flex-row sm:items-end sm:justify-between sm:gap-8"
+        >
+          <p className="m-0 max-w-[720px] text-[13px] leading-[1.6] text-slate">{t.around.note}</p>
+          {/* Not "snorkeling": the button is about a day arranged from the
+              house rather than one activity, and the whole-day excursion is
+              the nearest thing on the list to that. */}
+          <button
+            type="button"
+            onClick={() => ask("excursion", t.around.all)}
+            className={`${BTN_GHOST} shrink-0`}
+          >
+            {t.around.all}
+            <span aria-hidden="true">→</span>
+          </button>
+        </div>
       </Section>
 
       {/* ------------------------------------------------------- services */}
@@ -1528,13 +1593,21 @@ export function EddoSite({
                 card, because a price on a page is a promise and a stock photo
                 of somebody else's scooter is a different promise. */}
             {products.length > 0 && (
-              <div className="mt-7 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              <div className={`mt-7 grid gap-4 ${productGrid}`}>
                 {products.map((x) => (
                   <article
                     key={x.id}
-                    className="flex flex-col overflow-hidden rounded-[18px] border border-eddo-line bg-surface"
+                    className={`flex overflow-hidden rounded-[18px] border border-eddo-line bg-surface ${
+                      solo ? "flex-col sm:flex-row" : "flex-col"
+                    }`}
                   >
-                    <div className="relative flex aspect-[4/3] items-center justify-center bg-eddo-tint">
+                    <div
+                      className={`relative flex items-center justify-center bg-eddo-tint ${
+                        solo
+                          ? "aspect-[4/3] sm:aspect-auto sm:min-h-[230px] sm:w-[40%] sm:shrink-0"
+                          : "aspect-[4/3]"
+                      }`}
+                    >
                       {x.photo ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
@@ -1560,7 +1633,7 @@ export function EddoSite({
                       )}
                     </div>
 
-                    <div className="flex flex-1 flex-col p-[16px]">
+                    <div className={`flex flex-1 flex-col p-[16px] ${solo ? "sm:p-[22px]" : ""}`}>
                       <h4 className="m-0 text-[15px] leading-[1.25] font-bold text-eddo-ink">
                         {pickText(x.name, lang)}
                       </h4>

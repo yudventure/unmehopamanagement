@@ -51,45 +51,265 @@
     }
   },
   "eddoServices": {
-    "merch": [
+    "snorkeling": [
       {
-        "id": "kaos-dewasa",
+        "id": "snorkeling-setengah-hari",
         "name": {
-          "en": "Eddo Homestay T-shirt",
-          "id": "Kaos Eddo Homestay"
+          "en": "Snorkelling trip, half a day",
+          "id": "Trip snorkeling setengah hari"
         },
-        "example": true,
-        "price": 150000,
-        "unit": "piece",
         "specs": [
           {
-            "key": "size",
-            "value": "S, M, L, XL"
+            "key": "duration",
+            "value": {
+              "en": "Half a day",
+              "id": "Setengah hari"
+            }
+          },
+          {
+            "key": "includes",
+            "value": {
+              "en": "Boat, crew and gear",
+              "id": "Perahu, awak, dan alatnya"
+            }
           },
           {
             "key": "notes",
             "value": {
-              "en": "Cotton, one-colour print",
-              "id": "Katun, sablon satu warna"
+              "en": "Price depends on the fuel and how far you go",
+              "id": "Harganya tergantung bahan bakar dan sejauh apa perginya"
+            }
+          }
+        ],
+        "example": true
+      }
+    ],
+    "diving": [
+      {
+        "id": "fun2",
+        "name": {
+          "en": "Fun dive, 2 tanks",
+          "id": "Fun dive, 2 tabung"
+        },
+        "example": true,
+        "price": 1400000,
+        "unit": "person",
+        "specs": [
+          {
+            "key": "level",
+            "value": {
+              "en": "Open Water and up",
+              "id": "Open Water ke atas"
+            }
+          },
+          {
+            "key": "includes",
+            "value": {
+              "en": "Guide, tank, weights, boat",
+              "id": "Pemandu, tabung, timbang, perahu"
             }
           }
         ]
       },
       {
-        "id": "kaos-anak",
+        "id": "fun3",
         "name": {
-          "en": "Child's T-shirt",
-          "id": "Kaos anak"
+          "en": "Fun dive, 3 tanks",
+          "id": "Fun dive, 3 tabung"
         },
         "example": true,
-        "price": 120000,
-        "unit": "piece",
+        "price": 1850000,
+        "unit": "person",
         "specs": [
           {
-            "key": "size",
+            "key": "level",
             "value": {
-              "en": "2 to 10 years",
-              "id": "2 sampai 10 tahun"
+              "en": "Open Water and up",
+              "id": "Open Water ke atas"
+            }
+          },
+          {
+            "key": "duration",
+            "value": {
+              "en": "Full day",
+              "id": "Sehari penuh"
+            }
+          },
+          {
+            "key": "includes",
+            "value": {
+              "en": "Guide, tank, weights, boat, lunch",
+              "id": "Pemandu, tabung, timbang, perahu, makan siang"
+            }
+          }
+        ]
+      },
+      {
+        "id": "dsd",
+        "name": "Discover Scuba",
+        "example": true,
+        "price": 1600000,
+        "unit": "person",
+        "specs": [
+          {
+            "key": "level",
+            "value": {
+              "en": "No certificate needed",
+              "id": "Belum bersertifikat"
+            }
+          },
+          {
+            "key": "notes",
+            "value": {
+              "en": "First time in the water, with an instructor",
+              "id": "Turun pertama kali, didampingi instruktur"
+            }
+          }
+        ]
+      }
+    ],
+    "excursion": [
+      {
+        "id": "piaynemo-sehari",
+        "name": {
+          "en": "Whole day to Piaynemo",
+          "id": "Sehari penuh ke Piaynemo"
+        },
+        "specs": [
+          {
+            "key": "duration",
+            "value": {
+              "en": "One whole day",
+              "id": "Satu hari penuh"
+            }
+          },
+          {
+            "key": "includes",
+            "value": {
+              "en": "Boat and crew for the day",
+              "id": "Perahu dan awaknya untuk seharian"
+            }
+          }
+        ],
+        "example": true
+      },
+      {
+        "id": "keliling-sehari",
+        "name": {
+          "en": "Whole day around the near islands",
+          "id": "Sehari penuh keliling pulau dekat"
+        },
+        "specs": [
+          {
+            "key": "duration",
+            "value": {
+              "en": "One whole day",
+              "id": "Satu hari penuh"
+            }
+          },
+          {
+            "key": "notes",
+            "value": {
+              "en": "Where you go depends on the tide that day",
+              "id": "Ke mana saja tergantung pasang hari itu"
+            }
+          }
+        ],
+        "example": true
+      }
+    ],
+    "transfer": [
+      {
+        "id": "waisai-yenbuba",
+        "name": {
+          "en": "Waisai to Yenbuba",
+          "id": "Waisai ke Yenbuba"
+        },
+        "example": true,
+        "price": 1800000,
+        "unit": "trip",
+        "specs": [
+          {
+            "key": "seats",
+            "value": {
+              "en": "Up to 6",
+              "id": "Sampai 6 orang"
+            }
+          },
+          {
+            "key": "duration",
+            "value": {
+              "en": "About 1.5 hours",
+              "id": "Sekitar 1,5 jam"
+            }
+          },
+          {
+            "key": "notes",
+            "value": {
+              "en": "One boat, not per person",
+              "id": "Satu perahu, bukan per orang"
+            }
+          }
+        ]
+      },
+      {
+        "id": "antar-pulau",
+        "name": {
+          "en": "To a nearby island",
+          "id": "Antar pulau terdekat"
+        },
+        "example": true,
+        "unit": "trip",
+        "specs": [
+          {
+            "key": "notes",
+            "value": {
+              "en": "Depends where, and on the tide",
+              "id": "Tergantung tujuan dan pasang"
+            }
+          }
+        ]
+      }
+    ],
+    "camera": [
+      {
+        "id": "gopro",
+        "name": "GoPro",
+        "example": true,
+        "price": 150000,
+        "unit": "day",
+        "specs": [
+          {
+            "key": "includes",
+            "value": {
+              "en": "Housing, spare battery, memory card",
+              "id": "Housing, baterai cadangan, kartu memori"
+            }
+          },
+          {
+            "key": "notes",
+            "value": {
+              "en": "Waterproof",
+              "id": "Tahan air"
+            }
+          }
+        ]
+      },
+      {
+        "id": "kamera-saku",
+        "name": {
+          "en": "Compact underwater camera",
+          "id": "Kamera saku bawah air"
+        },
+        "example": true,
+        "price": 200000,
+        "unit": "day",
+        "specs": [
+          {
+            "key": "includes",
+            "value": {
+              "en": "Housing, memory card",
+              "id": "Housing, kartu memori"
             }
           }
         ]
@@ -220,352 +440,45 @@
         ]
       }
     ],
-    "boat": [
+    "merch": [
       {
-        "id": "longboat-15",
+        "id": "kaos-dewasa",
         "name": {
-          "en": "Longboat, 15 hp",
-          "id": "Longboat 15 PK"
+          "en": "Eddo Homestay T-shirt",
+          "id": "Kaos Eddo Homestay"
         },
-        "example": true,
-        "price": 1500000,
-        "unit": "day",
-        "specs": [
-          {
-            "key": "seats",
-            "value": "6"
-          },
-          {
-            "key": "power",
-            "value": "15 PK"
-          },
-          {
-            "key": "includes",
-            "value": {
-              "en": "Driver, fuel",
-              "id": "Pengemudi, bensin"
-            }
-          }
-        ]
-      },
-      {
-        "id": "speed-40",
-        "name": {
-          "en": "Speedboat, 40 hp",
-          "id": "Speed boat 40 PK"
-        },
-        "example": true,
-        "price": 2500000,
-        "unit": "day",
-        "specs": [
-          {
-            "key": "seats",
-            "value": "10"
-          },
-          {
-            "key": "power",
-            "value": "40 PK"
-          },
-          {
-            "key": "duration",
-            "value": {
-              "en": "Half day or full day",
-              "id": "Setengah atau sehari penuh"
-            }
-          }
-        ]
-      }
-    ],
-    "transfer": [
-      {
-        "id": "waisai-yenbuba",
-        "name": {
-          "en": "Waisai to Yenbuba",
-          "id": "Waisai ke Yenbuba"
-        },
-        "example": true,
-        "price": 1800000,
-        "unit": "trip",
-        "specs": [
-          {
-            "key": "seats",
-            "value": {
-              "en": "Up to 6",
-              "id": "Sampai 6 orang"
-            }
-          },
-          {
-            "key": "duration",
-            "value": {
-              "en": "About 1.5 hours",
-              "id": "Sekitar 1,5 jam"
-            }
-          },
-          {
-            "key": "notes",
-            "value": {
-              "en": "One boat, not per person",
-              "id": "Satu perahu, bukan per orang"
-            }
-          }
-        ]
-      },
-      {
-        "id": "antar-pulau",
-        "name": {
-          "en": "To a nearby island",
-          "id": "Antar pulau terdekat"
-        },
-        "example": true,
-        "unit": "trip",
-        "specs": [
-          {
-            "key": "notes",
-            "value": {
-              "en": "Depends where, and on the tide",
-              "id": "Tergantung tujuan dan pasang"
-            }
-          }
-        ]
-      }
-    ],
-    "guide": [
-      {
-        "id": "guide-harian",
-        "name": {
-          "en": "Guide for the day",
-          "id": "Pemandu harian"
-        },
-        "example": true,
-        "price": 500000,
-        "unit": "day",
-        "specs": [
-          {
-            "key": "duration",
-            "value": {
-              "en": "Half day or full day",
-              "id": "Setengah atau sehari penuh"
-            }
-          },
-          {
-            "key": "level",
-            "value": {
-              "en": "Indonesian, simple English",
-              "id": "Bahasa Indonesia, Inggris sederhana"
-            }
-          }
-        ]
-      },
-      {
-        "id": "guide-burung",
-        "name": {
-          "en": "Birdwatching guide",
-          "id": "Pemandu burung"
-        },
-        "example": true,
-        "price": 600000,
-        "unit": "trip",
-        "specs": [
-          {
-            "key": "duration",
-            "value": {
-              "en": "Dawn until morning",
-              "id": "Subuh sampai pagi"
-            }
-          },
-          {
-            "key": "notes",
-            "value": {
-              "en": "Leaves before sunrise",
-              "id": "Berangkat sebelum matahari terbit"
-            }
-          }
-        ]
-      }
-    ],
-    "camera": [
-      {
-        "id": "gopro",
-        "name": "GoPro",
         "example": true,
         "price": 150000,
-        "unit": "day",
+        "unit": "piece",
         "specs": [
           {
-            "key": "includes",
-            "value": {
-              "en": "Housing, spare battery, memory card",
-              "id": "Housing, baterai cadangan, kartu memori"
-            }
+            "key": "size",
+            "value": "S, M, L, XL"
           },
           {
             "key": "notes",
             "value": {
-              "en": "Waterproof",
-              "id": "Tahan air"
+              "en": "Cotton, one-colour print",
+              "id": "Katun, sablon satu warna"
             }
           }
         ]
       },
       {
-        "id": "kamera-saku",
+        "id": "kaos-anak",
         "name": {
-          "en": "Compact underwater camera",
-          "id": "Kamera saku bawah air"
+          "en": "Child's T-shirt",
+          "id": "Kaos anak"
         },
         "example": true,
-        "price": 200000,
-        "unit": "day",
+        "price": 120000,
+        "unit": "piece",
         "specs": [
           {
-            "key": "includes",
+            "key": "size",
             "value": {
-              "en": "Housing, memory card",
-              "id": "Housing, kartu memori"
-            }
-          }
-        ]
-      }
-    ],
-    "package": [
-      {
-        "id": "piaynemo-1h",
-        "name": {
-          "en": "Piaynemo, one day",
-          "id": "Piaynemo, sehari"
-        },
-        "example": true,
-        "price": 3500000,
-        "unit": "trip",
-        "specs": [
-          {
-            "key": "duration",
-            "value": {
-              "en": "Full day",
-              "id": "Sehari penuh"
-            }
-          },
-          {
-            "key": "seats",
-            "value": {
-              "en": "Up to 6",
-              "id": "Sampai 6 orang"
-            }
-          },
-          {
-            "key": "includes",
-            "value": {
-              "en": "Boat, fuel, lunch, guide",
-              "id": "Perahu, bensin, makan siang, pemandu"
-            }
-          }
-        ]
-      },
-      {
-        "id": "keliling-2h",
-        "name": {
-          "en": "Two days around",
-          "id": "Keliling dua hari"
-        },
-        "example": true,
-        "unit": "trip",
-        "specs": [
-          {
-            "key": "duration",
-            "value": {
-              "en": "2 days",
-              "id": "2 hari"
-            }
-          },
-          {
-            "key": "notes",
-            "value": {
-              "en": "Built around what you want to see",
-              "id": "Disusun sesuai tempat yang mau dilihat"
-            }
-          }
-        ]
-      }
-    ],
-    "diving": [
-      {
-        "id": "fun2",
-        "name": {
-          "en": "Fun dive, 2 tanks",
-          "id": "Fun dive, 2 tabung"
-        },
-        "example": true,
-        "price": 1400000,
-        "unit": "person",
-        "specs": [
-          {
-            "key": "level",
-            "value": {
-              "en": "Open Water and up",
-              "id": "Open Water ke atas"
-            }
-          },
-          {
-            "key": "includes",
-            "value": {
-              "en": "Guide, tank, weights, boat",
-              "id": "Pemandu, tabung, timbang, perahu"
-            }
-          }
-        ]
-      },
-      {
-        "id": "fun3",
-        "name": {
-          "en": "Fun dive, 3 tanks",
-          "id": "Fun dive, 3 tabung"
-        },
-        "example": true,
-        "price": 1850000,
-        "unit": "person",
-        "specs": [
-          {
-            "key": "level",
-            "value": {
-              "en": "Open Water and up",
-              "id": "Open Water ke atas"
-            }
-          },
-          {
-            "key": "duration",
-            "value": {
-              "en": "Full day",
-              "id": "Sehari penuh"
-            }
-          },
-          {
-            "key": "includes",
-            "value": {
-              "en": "Guide, tank, weights, boat, lunch",
-              "id": "Pemandu, tabung, timbang, perahu, makan siang"
-            }
-          }
-        ]
-      },
-      {
-        "id": "dsd",
-        "name": "Discover Scuba",
-        "example": true,
-        "price": 1600000,
-        "unit": "person",
-        "specs": [
-          {
-            "key": "level",
-            "value": {
-              "en": "No certificate needed",
-              "id": "Belum bersertifikat"
-            }
-          },
-          {
-            "key": "notes",
-            "value": {
-              "en": "First time in the water, with an instructor",
-              "id": "Turun pertama kali, didampingi instruktur"
+              "en": "2 to 10 years",
+              "id": "2 sampai 10 tahun"
             }
           }
         ]

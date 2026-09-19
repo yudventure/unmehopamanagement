@@ -174,7 +174,13 @@ export function CheckoutModal({
   return (
     <div
       onClick={onClose}
-      className="fixed inset-0 z-[120] flex overflow-y-auto bg-[rgba(12,26,24,.55)] p-4 backdrop-blur-[2px] sm:p-6"
+      /* `justify-center` is what puts it in the middle of the screen, and
+         leaving it off is what had it sitting against the left padding edge.
+         The vertical middle is `my-auto` on the box rather than `items-center`
+         here, because a box taller than the window has to stay scrollable from
+         its top; centring it on the cross axis would push its head off screen
+         where nothing can reach it. */
+      className="fixed inset-0 z-[120] flex justify-center overflow-y-auto bg-[rgba(12,26,24,.55)] p-4 backdrop-blur-[2px] sm:p-6"
     >
       <div
         role="dialog"
@@ -223,7 +229,10 @@ export function CheckoutModal({
                 {note("when")}
               </label>
             )}
-            <label className={LABEL}>
+            {/* Beside the day when there is one; across the row when there is
+                not, because half a row of fields with the other half blank
+                reads as something that failed to appear. */}
+            <label className={`${LABEL} ${needsDay ? "" : "sm:col-span-2"}`}>
               {t.qty}
               <select
                 value={qty}

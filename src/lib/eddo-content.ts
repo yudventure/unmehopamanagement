@@ -263,6 +263,14 @@ export interface EddoCopy {
     next: string;
     /** The small form that turns a rate into an amount. */
     checkIn: string;
+    /** The second date, from which the nights are counted. */
+    checkOut: string;
+    /** Under check-out when the pair of dates is not a stay: the same note
+        covers a date on or before check-in and one more than thirty nights
+        after it, because both are the same mistake to a reader — they picked
+        the wrong second date. Thirty is the server's own ceiling, so the page
+        must not let a total be shown that would then be charged short. */
+    stayRange: string;
     nights: string;
     nightsValue: (n: number) => string;
     guests: string;
@@ -464,6 +472,8 @@ const EN: EddoCopy = {
     prev: "Previous photo",
     next: "Next photo",
     checkIn: "Check-in",
+    checkOut: "Check-out",
+    stayRange: "Pick a date after check-in, up to 30 nights",
     nights: "Nights",
     nightsValue: (n) => (n === 1 ? "1 night" : `${n} nights`),
     guests: "Guests",
@@ -657,6 +667,8 @@ const ID: EddoCopy = {
     prev: "Foto sebelumnya",
     next: "Foto berikutnya",
     checkIn: "Check-in",
+    checkOut: "Check-out",
+    stayRange: "Pilih tanggal setelah check-in, paling lama 30 malam",
     nights: "Malam",
     nightsValue: (n) => `${n} malam`,
     guests: "Tamu",
@@ -867,6 +879,8 @@ const FR: EddoCopy = {
     prev: "Photo précédente",
     next: "Photo suivante",
     checkIn: "Arrivée",
+    checkOut: "Départ",
+    stayRange: "Choisissez une date après l'arrivée, 30 nuits au maximum",
     nights: "Nuits",
     nightsValue: (n) => (n === 1 ? "1 nuit" : `${n} nuits`),
     guests: "Personnes",
@@ -1060,6 +1074,8 @@ const JA: EddoCopy = {
     prev: "前の写真",
     next: "次の写真",
     checkIn: "チェックイン",
+    checkOut: "チェックアウト",
+    stayRange: "チェックインより後の日を、30 泊まででお選びください",
     nights: "泊数",
     nightsValue: (n) => `${n} 泊`,
     guests: "人数",
@@ -1254,6 +1270,8 @@ const DE: EddoCopy = {
     prev: "Vorheriges Foto",
     next: "Nächstes Foto",
     checkIn: "Anreise",
+    checkOut: "Abreise",
+    stayRange: "Wählt ein Datum nach der Anreise, höchstens 30 Nächte",
     nights: "Nächte",
     nightsValue: (n) => (n === 1 ? "1 Nacht" : `${n} Nächte`),
     guests: "Gäste",
@@ -1447,6 +1465,8 @@ const RU: EddoCopy = {
     prev: "Предыдущее фото",
     next: "Следующее фото",
     checkIn: "Заезд",
+    checkOut: "Выезд",
+    stayRange: "Выберите дату после заезда, не больше 30 ночей",
     nights: "Ночей",
     nightsValue: (n) => `${n} ноч${n === 1 ? "ь" : n < 5 ? "и" : "ей"}`,
     guests: "Гостей",
@@ -1640,6 +1660,8 @@ const ZH: EddoCopy = {
     prev: "上一张",
     next: "下一张",
     checkIn: "入住日期",
+    checkOut: "退房日期",
+    stayRange: "选一个在入住之后的日期，最多 30 晚",
     nights: "晚数",
     nightsValue: (n) => `${n} 晚`,
     guests: "人数",

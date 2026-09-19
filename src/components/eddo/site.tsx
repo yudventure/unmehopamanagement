@@ -535,6 +535,37 @@ const SERVICE_ICONS: Record<ServiceKey, React.ReactNode> = {
   ),
 };
 
+/**
+ * What a homestay means by a night: the days between arriving and leaving.
+ *
+ * Both dates are parsed as UTC midnight rather than local, and that is the
+ * whole reason this is a function instead of a subtraction at the call site.
+ * Parsed locally, a stay that crosses the hour a clock goes forward is 23 hours
+ * short of a whole number of days, and a reader who picked two dates a week
+ * apart is quietly charged for six nights. In UTC every day is 24 hours and
+ * there is nothing to round.
+ *
+ * Returns 0 for anything that is not a stay: a missing date, an unparseable
+ * one, or a check-out on or before the check-in.
+ */
+const MAX_NIGHTS = 30;
+
+function nightsBetween(from: string, to: string) {
+  if (!from || !to) return 0;
+  const a = Date.parse(`${from}T00:00:00Z`);
+  const b = Date.parse(`${to}T00:00:00Z`);
+  if (!Number.isFinite(a) || !Number.isFinite(b)) return 0;
+  const n = Math.round((b - a) / 86_400_000);
+  return n > 0 ? n : 0;
+}
+
+/** An ISO day, shifted. Used for the earliest and latest a check-out may be. */
+function shiftDay(iso: string, days: number) {
+  const t = Date.parse(`${iso}T00:00:00Z`);
+  if (!Number.isFinite(t)) return "";
+  return new Date(t + days * 86_400_000).toISOString().slice(0, 10);
+}
+
 const BTN =
   "inline-flex cursor-pointer items-center justify-center gap-2 rounded-full border-none bg-eddo-deep px-[22px] py-[12px] text-[14px] font-medium text-white no-underline transition-colors hover:bg-eddo-dark hover:text-white hover:no-underline";
 const BTN_GHOST =
@@ -730,13 +761,33 @@ export function EddoSite({
   /* The booking fields. They belong to the room panel, not to the dialog: the
      dialog is for asking, and these are for paying. */
   const [stayFrom, setStayFrom] = useState("");
+  const today = new Date().toISOString().slice(0, 10);
   const [payName, setPayName] = useState("");
   const [payPhone, setPayPhone] = useState("");
   const [payEmail, setPayEmail] = useState("");
-  /* One night, so the total under the fields is the price above them until a
-     reader changes it. Two nights meant the big number said 1,350,000 and the
-     total said 2,700,000 before anybody had chosen anything. */
-  const [nights, setNights] = useState(1);
+  /* Two dates, and the nights counted from them. A reader books by saying
+     when they arrive and when they leave; making them arrive and then count
+     is arithmetic the page can do and they should not have to. */
+  const [stayTo, setStayTo] = useState("");
+
+  /*
+   * What the two dates come to, and what to price with until they are a stay.
+   *
+   * Out of range counts as nothing at all, not as the number of days between
+   * the dates. That is not tidiness: a check-out sixty-eight nights out put
+   * "Total Rp 91,800,000" above the pay button, an amount this site will never
+   * charge because the endpoint shortens anything past thirty. Quoting a price
+   * nobody can be charged is worse than quoting none, and it was on screen at
+   * the same time as the red mark saying the date was no good.
+   *
+   * So an unusable pair falls back to one night, the same as a pair nobody has
+   * chosen yet, which keeps the total equal to the rate printed above it. A
+   * stay cannot be paid for until the pair is real, so the fallback is never
+   * what anybody is charged.
+   */
+  const spanNights = nightsBetween(stayFrom, stayTo);
+  const stayNights = spanNights >= 1 && spanNights <= MAX_NIGHTS ? spanNights : 0;
+  const nights = stayNights || 1;
   const [guests, setGuests] = useState(2);
   const [paying, setPaying] = useState(false);
   const [enquiry, setEnquiry] = useState<Enquiry>(EMPTY_ENQUIRY);
@@ -771,6 +822,11 @@ export function EddoSite({
        about three boxes rather than made to press the button three times. */
     const gaps = new Set<string>();
     if (!stayFrom) gaps.add("when");
+    /* Not just "filled in": a check-out on or before the check-in is not a
+       stay, and one more than thirty nights out is a stay this endpoint would
+       silently shorten to thirty and charge for thirty. Both land as zero
+       above, so one test covers them. */
+    if (stayNights < 1) gaps.add("to");
     if (!payName.trim()) gaps.add("name");
     if (!payPhone.trim()) gaps.add("phone");
     if (!payEmail.trim()) gaps.add("email");
@@ -1400,11 +1456,18 @@ export function EddoSite({
                 <input
                   type="date"
                   value={stayFrom}
+                  min={today}
                   onChange={(e) => {
                     setStayMissing((m) => {
-                      if (!m.has("when")) return m;
+                      if (!m.has("when") && !m.has("to")) return m;
                       const n = new Set(m);
                       n.delete("when");
+                      /* Moving the arrival can make a check-out that was fine
+                         wrong and one that was wrong fine, so its complaint is
+                         withdrawn here and worked out again on the next press
+                         rather than left standing against a date nobody has
+                         touched. */
+                      n.delete("to");
                       return n;
                     });
                     setStayFrom(e.target.value);
@@ -1413,17 +1476,32 @@ export function EddoSite({
                 />
                 {stayNote("when")}
               </label>
-              <label className="flex flex-col gap-[4px] rounded-[14px] border px-[14px] py-[9px] text-[11px] font-medium text-slate border-line-strong">
-                {t.rooms.nights}
-                <select
-                  value={nights}
-                  onChange={(e) => setNights(Number(e.target.value))}
-                  className="cursor-pointer border-none bg-transparent p-0 text-[14px] font-medium text-eddo-ink outline-none"
-                >
-                  {[1, 2, 3, 4, 5, 6, 7, 10, 14].map((n) => (
-                    <option key={n} value={n}>{t.rooms.nightsValue(n)}</option>
-                  ))}
-                </select>
+              <label className={`flex flex-col gap-[4px] rounded-[14px] border px-[14px] py-[9px] text-[11px] font-medium text-slate ${stayMark("to")}`}>
+                {t.rooms.checkOut}
+                <input
+                  type="date"
+                  value={stayTo}
+                  /* The day after arrival at the earliest and thirty nights
+                     after it at the latest, so the picker itself rules out
+                     most of what the check below would have to catch. */
+                  min={stayFrom ? shiftDay(stayFrom, 1) : today}
+                  max={stayFrom ? shiftDay(stayFrom, MAX_NIGHTS) : undefined}
+                  onChange={(e) => {
+                    setStayMissing((m) => {
+                      if (!m.has("to")) return m;
+                      const n = new Set(m);
+                      n.delete("to");
+                      return n;
+                    });
+                    setStayTo(e.target.value);
+                  }}
+                  className="border-none bg-transparent p-0 text-[14px] font-medium text-eddo-ink outline-none"
+                />
+                {stayMissing.has("to") && (
+                  <span className="mt-[2px] block text-[11px] font-normal text-danger">
+                    {stayTo ? t.rooms.stayRange : t.services.required}
+                  </span>
+                )}
               </label>
               <label className="flex flex-col gap-[4px] rounded-[14px] border px-[14px] py-[9px] text-[11px] font-medium text-slate border-line-strong">
                 {t.rooms.guests}
@@ -1438,6 +1516,15 @@ export function EddoSite({
                 </select>
               </label>
             </div>
+
+            {/* What the two dates came to, next to the boxes that produced it
+                rather than beside the total, because this is the page answering
+                the question the second date just asked. */}
+            {stayNights > 0 && (
+              <p className="mt-[10px] mb-0 text-[12.5px] text-slate">
+                {t.rooms.nights}: <span className="font-medium text-eddo-ink">{t.rooms.nightsValue(stayNights)}</span>
+              </p>
+            )}
 
             {/* Name, WhatsApp and email, three boxes and all three asked for.
                 It used to be two, with the second reading "WhatsApp or email"

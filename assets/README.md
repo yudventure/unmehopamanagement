@@ -580,9 +580,25 @@ cukup salah satu, karena bertanya bukan membayar dan tidak ada yang dipetakan.
 
 ### Kamar: bayar itu pesan
 
-Bawaannya **1 malam**, supaya angka besar di atas dan totalnya di bawah sama
-sebelum pembaca mengubah apa pun. Sebelumnya 2, jadi harganya terbaca
-Rp 1.350.000 sementara totalnya Rp 2.700.000 tanpa ada yang memilih.
+Tamu memilih **tanggal check-in dan tanggal check-out**, lalu malamnya
+dihitung sendiri dan tampil di bawah kotaknya. Daftar "berapa malam" sudah
+tidak ada: orang memesan dengan menyebut kapan datang dan kapan pulang, bukan
+dengan menghitung sendiri.
+
+Selisih harinya dihitung dalam UTC, bukan waktu lokal. Menginap yang melewati
+jam pergantian waktu musim panas kurang 23 jam dari kelipatan hari kalau
+dihitung lokal, jadi tamu yang memilih dua tanggal berjarak seminggu ditagih
+enam malam tanpa ada yang sadar. Sudah diuji di Europe/London melewati 29 Maret
+2026: tetap 7 malam.
+
+Sebelum kedua tanggalnya dipilih, totalnya memakai 1 malam supaya sama dengan
+angka besar di atasnya. Begitu juga kalau tanggalnya tidak masuk akal, dan itu
+penting: check-out 68 malam sesudah check-in sempat memasang **Total
+Rp 91.800.000** tepat di atas tombol bayar, padahal `/api/pay` memotong apa pun
+di atas 30 malam jadi 30. Memasang harga yang tidak mungkin ditagih lebih buruk
+daripada tidak memasang harga sama sekali, jadi sekarang pasangan tanggal yang
+di luar 1–30 malam dihitung nol dan totalnya kembali ke satu malam, sambil
+kotak check-out-nya ditandai merah.
 
 
 Tombol kamar langsung ke Midtrans, dan kalimat "tanggalnya kami cek di kalender

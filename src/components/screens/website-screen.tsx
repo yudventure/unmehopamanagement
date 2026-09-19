@@ -32,7 +32,50 @@ import type { PublicSite } from "@/lib/site-domains";
 const FIELD =
   "w-full rounded-[10px] border border-line-input bg-surface px-[12px] py-[9px] text-[13.5px] outline-none focus:border-teal";
 const LABEL = "flex flex-col gap-[6px] text-[12.5px] text-slate";
-const NOTE = "mb-4 text-[12.5px] leading-[1.5] text-slate-soft";
+
+/**
+ * The paragraph that explains a control, folded until someone wants it.
+ *
+ * Every card here opened with its explanation and reached its fields
+ * underneath, which turned the screen into a document with inputs in it: five
+ * paragraphs stood between the top of the page and the first thing that could
+ * be typed into. The prose is good and none of it is being deleted — it is
+ * simply read once, on the first visit, while the fields are what the second
+ * visit and every one after it came for.
+ *
+ * `<details>` rather than a state flag, because the browser already has this
+ * control: it opens on click, it opens on Enter, it is announced as expandable
+ * without any `aria-` of ours, and Ctrl+F opens it to reach the text inside —
+ * which is the one behaviour a hand-rolled version reliably loses, and the one
+ * that matters most for a paragraph that names an environment variable
+ * somebody is searching for.
+ */
+function Explain({ children }: { children: React.ReactNode }) {
+  return (
+    <details className="group mb-4">
+      <summary className="inline-flex cursor-pointer list-none items-center gap-[6px] text-[12.5px] text-slate-mute hover:text-slate [&::-webkit-details-marker]:hidden">
+        <svg
+          aria-hidden="true"
+          viewBox="0 0 12 12"
+          className="h-3 w-3 shrink-0 group-open:rotate-180"
+        >
+          <path
+            d="M2.5 4.5 6 8l3.5-3.5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+        Penjelasan
+      </summary>
+      <div className="mt-[10px] max-w-[760px] text-[12.5px] leading-[1.55] text-slate-soft">
+        {children}
+      </div>
+    </details>
+  );
+}
 
 type Status =
   | { kind: "idle" }
@@ -233,11 +276,15 @@ export function WebsiteScreen({ editor }: WebsiteScreenProps) {
   return (
     <div>
       <div className="mb-1 text-[22px] font-bold">Website</div>
-      <div className="mb-5 max-w-[760px] text-[13.5px] leading-[1.55] text-slate-soft">
-        Pengaturan situs publik, satu tab per properti. Menyimpan menulis ulang
-        berkas isi website di GitHub, lalu server membangun ulang situsnya.
-        Perubahan biasanya terlihat sekitar satu menit setelah disimpan, bukan
-        seketika.
+      <div className="mb-3 max-w-[760px] text-[13.5px] leading-[1.55] text-slate-soft">
+        Pengaturan situs publik, satu tab per properti.
+      </div>
+      <div className="mb-5">
+        <Explain>
+          Menyimpan menulis ulang berkas isi website di GitHub, lalu server
+          membangun ulang situsnya. Perubahan biasanya terlihat sekitar satu
+          menit setelah disimpan, bukan seketika.
+        </Explain>
       </div>
 
       {!writable && (
@@ -317,11 +364,11 @@ export function WebsiteScreen({ editor }: WebsiteScreenProps) {
         <>
           <section className={card}>
             <div className="mb-1 text-[15px] font-bold">Kontak</div>
-            <div className={NOTE}>
+            <Explain>
               Nomor WhatsApp dipakai tombol Kirim di website {LABEL_OF[tab]}.
               Email publik tampil di footernya. Email owner tidak tampil di mana
               pun; ke alamat itulah pesan dari website ini dikirim.
-            </div>
+            </Explain>
             <div className="grid grid-cols-1 gap-[14px] sm:grid-cols-3">
               {(
                 [
@@ -356,10 +403,15 @@ export function WebsiteScreen({ editor }: WebsiteScreenProps) {
             <div className="mb-2 text-[15px] font-bold">
               Pesan dari website masuk ke email
             </div>
-            <div className="max-w-[760px] text-[13px] leading-[1.6] text-slate">
-              Setiap pesan dari tombol Kirim di website {LABEL_OF[tab]} dikirim
-              ke <strong>{siteContact(tab).ownerEmail || "(belum diisi)"}</strong>,
-              lengkap dengan nama, WhatsApp, email, rencana tanggal, jumlah
+            {/* The address is the whole point of the card and the only part of
+                it that changes, so it stays out where it can be checked at a
+                glance. The rest is how it works, which is read once. */}
+            <div className="mb-3 max-w-[760px] text-[13px] leading-[1.6] text-slate">
+              Pesan dari tombol Kirim di website {LABEL_OF[tab]} dikirim ke{" "}
+              <strong>{siteContact(tab).ownerEmail || "(belum diisi)"}</strong>.
+            </div>
+            <Explain>
+              Isinya lengkap: nama, WhatsApp, email, rencana tanggal, jumlah
               orang, dan catatan tamu. Tombol balas di email langsung tertuju ke
               alamat tamunya.
               <br />
@@ -372,19 +424,19 @@ export function WebsiteScreen({ editor }: WebsiteScreenProps) {
               pengirim di domain yang sudah diverifikasi di sana. Selama
               keduanya belum ada, tombol Kirim di website otomatis beralih
               membuka WhatsApp, jadi tidak ada pesan yang hilang.
-            </div>
+            </Explain>
           </section>
         </>
 
         {(
           <section className={card}>
             <div className="mb-1 text-[15px] font-bold">Media sosial</div>
-            <div className={NOTE}>
+            <Explain>
               Tempel URL lengkap profil {LABEL_OF[tab]}, mis.{" "}
               <code className="font-mono">https://instagram.com/namaakun</code>.
               Dikosongkan pun tidak apa-apa: ikonnya tetap tampil, cuma jadi
               penanda redup yang tidak bisa diklik.
-            </div>
+            </Explain>
             <div className="grid grid-cols-1 gap-[14px] sm:grid-cols-3">
               {(
                 [
@@ -412,7 +464,7 @@ export function WebsiteScreen({ editor }: WebsiteScreenProps) {
         {HAS_DIVING[tab] && (
           <section className={card}>
             <div className="mb-1 text-[15px] font-bold">Tahun berdiri</div>
-            <div className={NOTE}>
+            <Explain>
               Dipakai di halaman profil{" "}
               <code className="font-mono">/turtle/about</code>, untuk kalimat
               &ldquo;dive center berdiri sekian tahun setelah homestay&rdquo;,
@@ -421,7 +473,7 @@ export function WebsiteScreen({ editor }: WebsiteScreenProps) {
               dive center-nya berdiri belakangan tanpa menyebut tahun, dan
               footernya cuma menulis &ldquo;Raja Ampat&rdquo;. Itu disengaja:
               tahun yang dikarang akan bertahan bertahun-tahun di sana.
-            </div>
+            </Explain>
             <div className="grid grid-cols-1 gap-[14px] sm:grid-cols-2">
               {(
                 [
@@ -458,12 +510,12 @@ export function WebsiteScreen({ editor }: WebsiteScreenProps) {
         {HAS_DIVING[tab] && (
           <section className={card}>
             <div className="mb-1 text-[15px] font-bold">Harga paket selam</div>
-            <div className={NOTE}>
+            <Explain>
               Nama dan keterangan tiap paket ada di kode; yang bisa diubah di
               sini angkanya. Harga kamar tidak ada di halaman ini karena
               diambil langsung dari Properti &amp; Kamar, supaya website dan
               dashboard tidak pernah berbeda.
-            </div>
+            </Explain>
             <div className="grid grid-cols-1 gap-[14px] sm:grid-cols-2 lg:grid-cols-3">
               {DIVE_KEYS.map((key) => (
                 <label key={key} className={LABEL}>
@@ -500,20 +552,6 @@ export function WebsiteScreen({ editor }: WebsiteScreenProps) {
         {(
           <section className={card}>
             <div className="mb-1 text-[15px] font-bold">Mode perbaikan</div>
-            <div className={NOTE}>
-              Saklar ini cuma menutup {LABEL_OF[tab]}. Keduanya dikerjakan
-              bergantian, jadi menutup yang satu untuk diperbaiki tidak boleh
-              ikut menutup yang sedang menerima tamu. Halaman yang ditutup
-              diganti halaman tunggu berisi nama homestay, nomor WhatsApp, dan
-              email, dua bahasa. Dashboard ini tidak ikut mati, jadi kamu tetap
-              bisa bekerja.
-              <br />
-              <br />
-              Yang mengerjakan situsnya tetap bisa melihat aslinya lewat{" "}
-              <code className="font-mono">/preview?token=…</code>, jadi menutup
-              situs tidak berarti ikut mengunci diri sendiri.
-            </div>
-
             <label className="flex cursor-pointer items-start gap-3 rounded-[14px] border border-line bg-surface-mute px-4 py-[13px]">
               <input
                 type="checkbox"
@@ -543,12 +581,28 @@ export function WebsiteScreen({ editor }: WebsiteScreenProps) {
               </div>
             </div>
 
-            <div className="mt-4 text-[12.5px] leading-[1.55] text-slate-soft">
-              Tulisan di halaman tunggunya ada di kode (
-              <code className="font-mono">web-content.ts</code>, kunci{" "}
-              <code className="font-mono">maintenance</code>), dua bahasa,
-              supaya tidak ada versi yang cuma terisi satu bahasa. Nomor dan
-              email yang tampil di sana diambil dari Kontak di atas.
+            {/* Below the switch and the warning, because by the time this
+                matters the switch has already been found. */}
+            <div className="mt-4">
+              <Explain>
+                Saklar ini cuma menutup {LABEL_OF[tab]}. Keduanya dikerjakan
+                bergantian, jadi menutup yang satu untuk diperbaiki tidak boleh
+                ikut menutup yang sedang menerima tamu. Dashboard ini tidak ikut
+                mati, jadi kamu tetap bisa bekerja.
+                <br />
+                <br />
+                Halaman yang ditutup diganti halaman tunggu berisi nama
+                homestay, nomor WhatsApp, dan email, dua bahasa. Tulisannya ada
+                di kode (<code className="font-mono">web-content.ts</code>,
+                kunci <code className="font-mono">maintenance</code>), supaya
+                tidak ada versi yang cuma terisi satu bahasa. Nomor dan email
+                yang tampil di sana diambil dari Kontak di atas.
+                <br />
+                <br />
+                Yang mengerjakan situsnya tetap bisa melihat aslinya lewat{" "}
+                <code className="font-mono">/preview?token=…</code>, jadi
+                menutup situs tidak berarti ikut mengunci diri sendiri.
+              </Explain>
             </div>
           </section>
         )}

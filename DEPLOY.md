@@ -218,6 +218,57 @@ tertutup penuh dan perubahan dari CMS tayang tanpa ada yang menyentuh Hostinger.
 Kalau tidak menawarkan, deploy-nya jadi satu klik di hPanel, bukan lagi unduh
 dan unggah.
 
+### Menutup klik terakhir: satu secret, sekali seumur hidup
+
+Selama belum diisi, tetap ada satu tombol Deploy yang harus ditekan orang. Yang
+menghapusnya:
+
+1. Di hPanel buka **Advanced → Git**. Di sana ada **webhook URL** milik aplikasi
+   ini. Salin.
+2. Di GitHub buka **Settings → Secrets and variables → Actions → New repository
+   secret**, namanya `DEPLOY_HOOK_URL`, isinya URL tadi.
+
+Selesai. Sejak itu Actions sendiri yang memanggil URL itu tepat setelah branch
+`deploy` diperbarui, dan Hostinger yang menarik serta me-restart.
+
+**Kenapa dipanggil dari Actions, bukan dipasang sebagai webhook GitHub.**
+Hostinger menawarkannya untuk ditempel di Settings → Webhooks, dan itu jalan.
+Tapi webhook repositori berbunyi begitu ada push, sedangkan push yang penting di
+sini adalah push ke `deploy` yang dibuat workflow ini beberapa menit *setelah*
+push ke `main` yang memulainya. Lewat GitHub, urutannya terserah keduanya; lewat
+sini, host baru diberi tahu setelah ada yang baru untuk ditarik.
+
+Kalau ternyata webhook-nya menolak panggilan polos dan menuntut payload push
+asli dari GitHub, pasang saja cara aslinya: **Settings → Webhooks**, tempel
+URL-nya, content type `application/x-www-form-urlencoded`, pilih **Just the push
+event**. Push ke `deploy` tetap membunyikannya, dan push ke `main` diabaikan
+karena branch-nya bukan yang tersambung.
+
+### Membuktikan deploy-nya benar-benar tayang
+
+Setiap build menulis `/version.json` di akar situs:
+
+```
+https://eddohomestay.com/version.json
+{ "commit": "66615d7…", "short": "66615d7", "builtAt": "2026-09-19T08:34:46.037Z" }
+```
+
+Isinya cuma nomor commit dan waktu build, tidak pernah isi situsnya. Gunanya dua.
+
+Buat pemilik: kalau ragu perubahan harga sudah tayang atau belum, buka alamat itu
+dan bandingkan. Tidak perlu login, tidak perlu menebak dari tampilan.
+
+Buat workflow: sesudah webhook dipanggil, Actions **menunggu sampai alamat itu
+menyebut commit yang barusan dibangun**, memeriksa tiap 15 detik sampai sepuluh
+menit. Jadi hijau berarti benar-benar tayang, dan kalau host diam-diam tidak
+menarik apa pun, runnya merah dengan alasannya tertulis. Sebelum ada ini,
+"deployed" adalah asumsi.
+
+Langkah tunggu ini tidur selama `DEPLOY_HOOK_URL` maupun `SSH_HOST` dua-duanya
+kosong, supaya yang masih deploy manual tidak dapat run merah tiap kali push.
+Alamat yang dipantau diambil dari variable `SITE_URL` kalau ada, kalau tidak
+diturunkan dari `SITE_DOMAIN_EDDO`.
+
 ### Satu tindakan yang tidak bisa diotomatiskan dari sini
 
 Hop terakhir, dari GitHub ke server, butuh satu dari dua hal, dan keduanya

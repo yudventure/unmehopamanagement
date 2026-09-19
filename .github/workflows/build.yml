@@ -54,6 +54,13 @@ jobs:
       SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
       DEPLOY_PATH: ${{ vars.DEPLOY_PATH }}
 
+      # The host's own "pull now" URL, and the address to watch afterwards.
+      # Declared here for the same reason as the SSH block: a step cannot read
+      # its own `env` from its `if`, and those `if`s are what keep both paths
+      # dormant for anyone who has not set them up.
+      DEPLOY_HOOK_URL: ${{ secrets.DEPLOY_HOOK_URL }}
+      SITE_URL: ${{ vars.SITE_URL }}
+
     steps:
       - uses: actions/checkout@v4
 
@@ -125,20 +132,48 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # The other way to close the last hop: push the build to the server
-      # instead of waiting for the server to pull it.
+      # Tells the host to pull the branch that was just pushed.
       #
-      # Dormant until `SSH_HOST` exists, so the workflow behaves exactly as
-      # before for anyone who has not set it up. Preferred order is still the
-      # `deploy` branch above, because Hostinger's own Git integration handles
-      # the restart and this cannot: what a panel-managed Node process needs in
-      # order to pick up new files is the one part of this that has never been
-      # tested against the real server.
+      # Hostinger's Git tool (Advanced -> Git) hands out a webhook URL and
+      # offers it as something to paste into GitHub's own Settings -> Webhooks.
+      # That works, and it is called from here instead for one reason: a
+      # repository webhook fires the moment a push lands, and the push that
+      # matters is the one this workflow makes to `deploy` several minutes after
+      # the push to `main` that started it. Wired through GitHub, the ordering
+      # is whatever the two happen to do; wired through here, the host is told
+      # to pull only once there is something new to pull.
       #
-      # Extracts into a staging directory and only then swaps, so a transfer cut
-      # halfway leaves the running site alone rather than half-replaced. The
-      # previous release is kept as `.prev` for exactly one deploy, which is the
-      # difference between a bad deploy costing a minute and costing an evening.
+      # Dormant until DEPLOY_HOOK_URL exists. A hook that answers anything other
+      # than 2xx fails the run rather than being logged and shrugged at: a
+      # deploy that quietly did not happen is the exact failure this whole step
+      # exists to remove.
+      - name: Tell the host to pull the new build
+        if: github.ref == 'refs/heads/main' && env.DEPLOY_HOOK_URL != ''
+        run: |
+          set -euo pipefail
+          code=$(curl -sS -X POST -m 60 \
+            -H 'Content-Type: application/x-www-form-urlencoded' \
+            -o hook-response.txt -w '%{http_code}' \
+            "$DEPLOY_HOOK_URL")
+          echo "webhook menjawab $code"
+          head -c 500 hook-response.txt || true
+          echo
+          case "$code" in
+            2*) echo "host diberi tahu" ;;
+            *) echo "::error::webhook deploy menjawab $code"; exit 1 ;;
+          esac
+
+      # Waits until the address actually serves this build, so "deployed" is
+      # something observed rather than something assumed.
+      #
+      # `/version.json` is written by scripts/package.mjs and carries the commit
+      # the folder was built from. Polling it turns the last hop from a button
+      # somebody has to remember into a step that either goes green or says out
+      # loud that the site is still serving the old build.
+      #
+      # Only runs once one of the two automatic paths is configured. Without
+      # that it would fail on every push for anyone still deploying by hand,
+      # and a workflow that is always red is a workflow nobody reads.
       - name: Deploy over SSH
         if: github.ref == 'refs/heads/main' && env.SSH_HOST != ''
         run: |
@@ -177,3 +212,48 @@ jobs:
           REMOTE
 
           echo "terkirim ke $SSH_HOST:$DEPLOY_PATH"
+
+      - name: Wait for the site to serve it
+        if: github.ref == 'refs/heads/main' && (env.DEPLOY_HOOK_URL != '' || env.SSH_HOST != '')
+        run: |
+          set -euo pipefail
+          BASE="${SITE_URL:-}"
+          if [ -z "$BASE" ] && [ -n "${SITE_DOMAIN_EDDO:-}" ]; then
+            BASE="https://${SITE_DOMAIN_EDDO}"
+          fi
+          if [ -z "$BASE" ]; then
+            echo "SITE_URL dan SITE_DOMAIN_EDDO dua-duanya kosong, tidak ada yang bisa diperiksa"
+            exit 0
+          fi
+          echo "menunggu $BASE/version.json menyebut ${GITHUB_SHA:0:7}"
+
+          # Ten minutes. A pull and a restart take seconds; the headroom is for
+          # a host that queues the job behind something else.
+          for i in $(seq 1 40); do
+            live=$(curl -fsS -m 20 "$BASE/version.json" 2>/dev/null | jq -r '.commit // ""' || true)
+            if [ "$live" = "$GITHUB_SHA" ]; then
+              echo "tayang setelah $(( (i - 1) * 15 )) detik"
+              exit 0
+            fi
+            short="${live:0:7}"
+            echo "  masih ${short:-tidak terbaca}, menunggu..."
+            sleep 15
+          done
+
+          echo "::error::sepuluh menit dan $BASE masih belum menyajikan ${GITHUB_SHA:0:7}"
+          exit 1
+
+      # The other way to close the last hop: push the build to the server
+      # instead of waiting for the server to pull it.
+      #
+      # Dormant until `SSH_HOST` exists, so the workflow behaves exactly as
+      # before for anyone who has not set it up. Preferred order is still the
+      # `deploy` branch above, because Hostinger's own Git integration handles
+      # the restart and this cannot: what a panel-managed Node process needs in
+      # order to pick up new files is the one part of this that has never been
+      # tested against the real server.
+      #
+      # Extracts into a staging directory and only then swaps, so a transfer cut
+      # halfway leaves the running site alone rather than half-replaced. The
+      # previous release is kept as `.prev` for exactly one deploy, which is the
+      # difference between a bad deploy costing a minute and costing an evening.

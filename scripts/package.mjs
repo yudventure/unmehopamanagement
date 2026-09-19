@@ -69,6 +69,48 @@ if (!existsSync(staticDir)) {
 }
 cpSync(staticDir, join(standalone, ".next", "static"), { recursive: true });
 
+/*
+ * Which commit this folder was built from, served publicly at `/version.json`.
+ *
+ * Deploying used to end in a question nobody could answer: the archive went to
+ * the host, the host said it was done, and whether the running site was the new
+ * build or the old one was a matter of reloading and squinting. `BUILD-INFO.txt`
+ * sits beside the server where only somebody with file access can read it, and
+ * `/api/health` is behind the dashboard session, so neither can answer it from
+ * outside.
+ *
+ * This can, which is what lets the workflow wait for a deploy and say whether it
+ * landed instead of firing a webhook and hoping. It is also the honest answer to
+ * "is my price change live yet?": open it and compare.
+ *
+ * A commit hash and a timestamp, nothing else. It says which build is running,
+ * never what is in it.
+ */
+function stamp() {
+  let commit = (process.env.GITHUB_SHA ?? "").trim();
+  if (!commit) {
+    try {
+      commit = execFileSync("git", ["rev-parse", "HEAD"], { cwd: root }).toString().trim();
+    } catch {
+      /* Built from a tarball rather than a checkout. An empty hash is honest;
+         a made-up one would make the workflow below wait for a build that can
+         never appear. */
+      commit = "";
+    }
+  }
+  return {
+    commit,
+    short: commit.slice(0, 7),
+    builtAt: new Date().toISOString(),
+  };
+}
+
+mkdirSync(join(standalone, "public"), { recursive: true });
+writeFileSync(
+  join(standalone, "public", "version.json"),
+  `${JSON.stringify(stamp(), null, 2)}\n`,
+);
+
 /* Checked rather than assumed. A copy that silently landed in the wrong place
    produces exactly the same unstyled page as a copy that never ran. */
 for (const required of ["server.js", ".next/static", "public"]) {

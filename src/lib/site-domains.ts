@@ -23,6 +23,19 @@ const SITE_ENV = {
 export type PublicSite = keyof typeof SITE_ENV;
 
 /**
+ * The public sites, as a list something can check a string against.
+ *
+ * The type alone cannot do that at runtime, and a route taking `?site=` from a
+ * query string needs to know whether what arrived is one of these before it
+ * acts on it. Derived from the same object the type is, so adding a third site
+ * cannot leave this behind.
+ */
+export const PUBLIC_SITE_KEYS = Object.keys(SITE_ENV) as PublicSite[];
+
+export const isPublicSite = (v: string): v is PublicSite =>
+  (PUBLIC_SITE_KEYS as string[]).includes(v);
+
+/**
  * The first host configured for a site, which is the canonical one. Later
  * entries in the list are alternates such as the `www.` form, and an alternate
  * is by definition not what should be advertised.

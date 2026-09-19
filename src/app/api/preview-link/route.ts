@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 import { SESSION_COOKIE, valid } from "@/lib/session";
-import { siteDomain, type PublicSite } from "@/lib/site-domains";
+import { PUBLIC_SITE_KEYS, siteDomain } from "@/lib/site-domains";
 
 /**
  * The link the owner hands to whoever is waiting to see the work.
@@ -38,12 +38,14 @@ import { siteDomain, type PublicSite } from "@/lib/site-domains";
 
 export const runtime = "nodejs";
 
-const SITES: PublicSite[] = ["turtle", "eddo"];
-
 export async function GET(req: Request) {
   const jar = await cookies();
+  /* 404 rather than 401, matching `/api/preview` beside it: telling a stranger
+     that this endpoint exists tells them the site has a way in worth looking
+     for, and a refusal that names itself is an invitation to come back with a
+     session. */
   if (!valid(jar.get(SESSION_COOKIE)?.value)) {
-    return NextResponse.json({ error: "unauthorised" }, { status: 401 });
+    return NextResponse.json({ error: "not-found" }, { status: 404 });
   }
 
   const token = process.env.PREVIEW_TOKEN;
@@ -53,10 +55,12 @@ export async function GET(req: Request) {
 
   const origin = new URL(req.url).origin;
   const links: Record<string, string> = {};
-  for (const site of SITES) {
+  for (const site of PUBLIC_SITE_KEYS) {
     const host = siteDomain(site);
     const base = host ? `https://${host}` : origin;
-    links[site] = `${base}/preview?token=${encodeURIComponent(token)}`;
+    /* `site` so the link lands on that homestay rather than on `/`, which
+       is the dashboard on any address the site does not own yet. */
+    links[site] = `${base}/preview?token=${encodeURIComponent(token)}&site=${site}`;
   }
 
   return NextResponse.json({ configured: true, links });

@@ -119,10 +119,10 @@ function ShareLink({
         <strong className="font-semibold text-ink">
           Belum ada link untuk klien.
         </strong>{" "}
-        Server belum punya <code className="font-mono">PREVIEW_TOKEN</code>.
-        Isi dengan teks apa pun yang sulit ditebak di panel server, lalu muat
-        ulang halaman ini dan linknya muncul di sini. Selama kosong, tidak ada
-        siapa pun yang bisa melewati halaman tunggu — termasuk Anda.
+        Tanpa <code className="font-mono">PREVIEW_TOKEN</code> tidak ada link
+        yang bisa dikirim, dan tidak ada siapa pun yang bisa melewati halaman
+        tunggu. Pasang tokennya, muat ulang halaman ini, dan linknya muncul di
+        sini.
       </div>
     );
   }
@@ -677,6 +677,53 @@ export function WebsiteScreen({ editor }: WebsiteScreenProps) {
               </span>
             </label>
 
+            {/* The way in, for the person already signed in here.
+                `/preview?token=…` is still what you send to somebody who is
+                not, but nobody standing in the dashboard should have to go and
+                look a token up. The route reads it on the server and hands the
+                browser the cookie; the token itself never reaches this page,
+                which is why this is a link to a route rather than a link this
+                screen builds.
+
+                `target="_blank"` on purpose: the dashboard is where the switch
+                is, and sending somebody away from it to look at the result
+                means a trip back to change their mind. */}
+            <a
+              href={`/api/preview?site=${tab}`}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-3 inline-flex items-center gap-2 rounded-[12px] border border-line bg-surface px-4 py-[11px] text-[13px] font-medium text-ink no-underline transition-colors hover:border-line-strong hover:bg-surface-hover hover:no-underline"
+            >
+              <span aria-hidden="true">↗</span>
+              Lihat {LABEL_OF[tab]}
+              {siteClosed(tab) && (
+                <span className="text-[12px] font-normal text-slate-soft">
+                  walau sedang ditutup
+                </span>
+              )}
+            </a>
+
+            {siteClosed(tab) && (
+              <div className="mt-2 text-[12px] leading-[1.55] text-slate-soft">
+                Butuh <code className="font-mono">PREVIEW_TOKEN</code> terpasang
+                di server. Belum terpasang, tombol ini tetap membawa ke halaman
+                tunggu, dan <code className="font-mono">/api/health</code>{" "}
+                menyebutnya kosong.
+              </div>
+            )}
+
+            {/* Beside the button, not somewhere else in the card. Both answer
+                the same question — how does anyone see this while it is shut —
+                and they differ only in who is asking: the button is for
+                whoever is signed in here, this is for whoever is not. Split
+                apart, the second one reads as a repeat of the first. */}
+            <ShareLink
+              url={preview?.links[tab]}
+              configured={Boolean(preview?.configured)}
+              siteLabel={LABEL_OF[tab]}
+              closed={siteClosed(tab)}
+            />
+
             <div className="mt-4 flex items-start gap-3 rounded-[14px] border border-amber-soft bg-amber-soft/40 px-4 py-[13px]">
               <span className="mt-[5px] h-[9px] w-[9px] shrink-0 rounded-full bg-amber-shade" />
               <div className="text-[12.5px] leading-[1.55] text-amber-ink">
@@ -689,16 +736,6 @@ export function WebsiteScreen({ editor }: WebsiteScreenProps) {
               </div>
             </div>
 
-            {/* Right after the switch and its warning: closing the site is
-                what creates the need for this, so the answer to "and how does
-                the owner see it now?" is in the same card as the question. */}
-            <ShareLink
-              url={preview?.links[tab]}
-              configured={Boolean(preview?.configured)}
-              siteLabel={LABEL_OF[tab]}
-              closed={siteClosed(tab)}
-            />
-
             {/* Below the switch and the warning, because by the time this
                 matters the switch has already been found. */}
             <div className="mt-4">
@@ -707,6 +744,12 @@ export function WebsiteScreen({ editor }: WebsiteScreenProps) {
                 bergantian, jadi menutup yang satu untuk diperbaiki tidak boleh
                 ikut menutup yang sedang menerima tamu. Dashboard ini tidak ikut
                 mati, jadi kamu tetap bisa bekerja.
+                <br />
+                <br />
+                Menutup situs tidak berarti ikut mengunci diri sendiri. Kamu
+                tinggal menekan tombol Lihat di atas; tokennya dibaca di server
+                dan tidak pernah sampai ke halaman ini. Untuk orang lain yang
+                tidak punya akses dashboard, salin link di bawah tombol itu.
                 <br />
                 <br />
                 Halaman yang ditutup diganti halaman tunggu berisi nama

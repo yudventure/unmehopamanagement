@@ -413,6 +413,17 @@ export interface EddoCopy {
    * The rest take their labels from `services.items`, so the dialog and the
    * section cannot drift apart.
    */
+  /** The summary page at /eddo/checkout, where an order is looked over. */
+  order: {
+    title: string;
+    intro: string;
+    what: string;
+    who: string;
+    back: string;
+    empty: string;
+    paid: string;
+    paidNote: string;
+  };
   stayLabel: string;
   message: (v: {
     activity: string;
@@ -604,6 +615,16 @@ const EN: EddoCopy = {
     qty: "How many",
     spec: { duration: "Takes", level: "Level", engine: "Engine", power: "Engine size", seats: "Seats", size: "Sizes", includes: "Includes", notes: "Note" },
     per: { day: "per day", night: "per night", person: "per person", trip: "per trip", piece: "each", hour: "per hour" },
+  },
+  order: {
+    title: "Order summary",
+    intro: "Look it over, then pay through Midtrans.",
+    what: "What you are booking",
+    who: "Who it is for",
+    back: "Change something",
+    empty: "There is nothing to pay for here yet. Choose a house, or something for us to arrange, and this page will show what it comes to.",
+    paid: "Payment received",
+    paidNote: "Your receipt is on its way, and the booking has reached the family. We will be in touch on WhatsApp.",
   },
   stayLabel: "A house",
   message: (v) =>
@@ -799,6 +820,16 @@ const ID: EddoCopy = {
     qty: "Berapa",
     spec: { duration: "Lama", level: "Level", engine: "Mesin", power: "Tenaga mesin", seats: "Muat", size: "Ukuran", includes: "Termasuk", notes: "Catatan" },
     per: { day: "per hari", night: "per malam", person: "per orang", trip: "per trip", piece: "per potong", hour: "per jam" },
+  },
+  order: {
+    title: "Ringkasan pembayaran",
+    intro: "Periksa dulu, lalu bayar lewat Midtrans.",
+    what: "Yang dipesan",
+    who: "Atas nama",
+    back: "Ubah dulu",
+    empty: "Belum ada yang perlu dibayar di sini. Pilih rumahnya, atau salah satu yang kami aturkan, nanti halaman ini yang menunjukkan totalnya.",
+    paid: "Pembayaran diterima",
+    paidNote: "Buktinya segera sampai, dan pesanannya sudah masuk ke keluarganya. Nanti kami hubungi lewat WhatsApp.",
   },
   stayLabel: "rumah",
   message: (v) =>
@@ -1012,6 +1043,16 @@ const FR: EddoCopy = {
     spec: { duration: "Durée", level: "Niveau", engine: "Moteur", power: "Cylindrée", seats: "Places", size: "Tailles", includes: "Comprend", notes: "Remarque" },
     per: { day: "par jour", night: "par nuit", person: "par personne", trip: "par sortie", piece: "pièce", hour: "par heure" },
   },
+  order: {
+    title: "Récapitulatif",
+    intro: "Vérifiez, puis payez via Midtrans.",
+    what: "Ce que vous réservez",
+    who: "À quel nom",
+    back: "Modifier quelque chose",
+    empty: "Il n'y a rien à payer ici pour l'instant. Choisissez une maison, ou quelque chose à organiser, et cette page affichera le total.",
+    paid: "Paiement reçu",
+    paidNote: "Votre reçu arrive, et la réservation est parvenue à la famille. Nous vous écrirons sur WhatsApp.",
+  },
   stayLabel: "une maison",
   message: (v) =>
     [
@@ -1206,6 +1247,16 @@ const JA: EddoCopy = {
     qty: "いくつ",
     spec: { duration: "所要", level: "レベル", engine: "エンジン", power: "排気量", seats: "定員", size: "サイズ", includes: "含まれるもの", notes: "備考" },
     per: { day: "1 日あたり", night: "1 泊あたり", person: "1 名あたり", trip: "1 回あたり", piece: "1 点あたり", hour: "1 時間あたり" },
+  },
+  order: {
+    title: "ご注文の確認",
+    intro: "内容をご確認のうえ、Midtrans でお支払いください。",
+    what: "ご予約の内容",
+    who: "お名前",
+    back: "内容を変える",
+    empty: "まだお支払いいただくものがありません。お家か、手配するものをお選びいただくと、こちらに金額が出ます。",
+    paid: "お支払いを受け取りました",
+    paidNote: "控えはまもなく届きます。ご予約は家族に届いておりますので、WhatsApp でご連絡します。",
   },
   stayLabel: "宿泊",
   message: (v) =>
@@ -1403,6 +1454,16 @@ const DE: EddoCopy = {
     spec: { duration: "Dauer", level: "Stufe", engine: "Motor", power: "Hubraum", seats: "Plätze", size: "Größen", includes: "Enthält", notes: "Hinweis" },
     per: { day: "pro Tag", night: "pro Nacht", person: "pro Person", trip: "pro Fahrt", piece: "pro Stück", hour: "pro Stunde" },
   },
+  order: {
+    title: "Bestellübersicht",
+    intro: "Schaut es durch und zahlt dann über Midtrans.",
+    what: "Was ihr bucht",
+    who: "Auf welchen Namen",
+    back: "Etwas ändern",
+    empty: "Hier ist noch nichts zu bezahlen. Wählt ein Haus, oder etwas, das wir organisieren, dann steht hier, was es macht.",
+    paid: "Zahlung erhalten",
+    paidNote: "Der Beleg ist unterwegs, und die Buchung ist bei der Familie angekommen. Wir melden uns über WhatsApp.",
+  },
   stayLabel: "ein Haus",
   message: (v) =>
     [
@@ -1598,6 +1659,16 @@ const RU: EddoCopy = {
     spec: { duration: "Занимает", level: "Уровень", engine: "Двигатель", power: "Объём", seats: "Мест", size: "Размеры", includes: "Входит", notes: "Примечание" },
     per: { day: "за день", night: "за ночь", person: "с человека", trip: "за поездку", piece: "за штуку", hour: "за час" },
   },
+  order: {
+    title: "Ваш заказ",
+    intro: "Проверьте и оплатите через Midtrans.",
+    what: "Что вы бронируете",
+    who: "На чьё имя",
+    back: "Изменить что-нибудь",
+    empty: "Здесь пока нечего оплачивать. Выберите дом или то, что нам организовать, и на этой странице появится сумма.",
+    paid: "Оплата получена",
+    paidNote: "Квитанция уже идёт, а бронь попала к семье. Мы напишем вам в WhatsApp.",
+  },
   stayLabel: "Дом",
   message: (v) =>
     [
@@ -1792,6 +1863,16 @@ const ZH: EddoCopy = {
     qty: "几个",
     spec: { duration: "时长", level: "等级", engine: "发动机", power: "排量", seats: "座位", size: "尺码", includes: "包含", notes: "备注" },
     per: { day: "每天", night: "每晚", person: "每人", trip: "每趟", piece: "每件", hour: "每小时" },
+  },
+  order: {
+    title: "订单确认",
+    intro: "看一遍，然后用 Midtrans 付款。",
+    what: "你预订的内容",
+    who: "用谁的名字",
+    back: "改一下",
+    empty: "这里还没有要付的东西。先选一间屋子，或者一项我们帮你安排的服务，这个页面就会显示总额。",
+    paid: "已收到付款",
+    paidNote: "收据这就来，订单也已经送到这家人手里。我们会用 WhatsApp 联系你。",
   },
   stayLabel: "房子",
   message: (v) =>

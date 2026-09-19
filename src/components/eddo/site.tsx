@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Fragment, useEffect, useRef, useState } from "react";
 
 import {
@@ -59,6 +60,7 @@ import {
   waLink,
   type EddoCopy,
 } from "@/lib/eddo-content";
+import { saveDraft } from "@/lib/eddo-order";
 import { siteConfig, type ServiceProduct } from "@/lib/site-config";
 import { type ActivityKey } from "@/lib/web-content";
 
@@ -106,25 +108,6 @@ const LOGO_RATIO = 164 / 240;
  * enquiry form was never worse than one.
  */
 const MIDTRANS_CLIENT_KEY = process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY ?? "";
-
-declare global {
-  interface Window {
-    snap?: { pay: (token: string, cb?: Record<string, unknown>) => void };
-  }
-}
-
-/** Loads Snap once, from wherever the server says its Midtrans lives. */
-function loadSnap(src: string) {
-  return new Promise<void>((done, fail) => {
-    if (window.snap) return done();
-    const el = document.createElement("script");
-    el.src = src;
-    el.setAttribute("data-client-key", MIDTRANS_CLIENT_KEY);
-    el.onload = () => done();
-    el.onerror = () => fail(new Error("snap-script"));
-    document.head.appendChild(el);
-  });
-}
 
 /**
  * The badge from `public/eddo-logo.webp` beside the name.
@@ -699,38 +682,36 @@ export function EddoSite({
    * example, so a made-up figure cannot become a real charge however the button
    * is pressed.
    */
+  /*
+   * Takes what the dialog collected to the summary page.
+   *
+   * It used to call `/api/pay` from here and let Midtrans open its sheet over
+   * whatever was on screen, which was the top of the front page. Now the order
+   * is stashed in the tab and the reader is sent to a page that exists for it.
+   *
+   * Nothing about money travels: the draft names the product and the server
+   * prices it, same as before. Returning false leaves the dialog open with a
+   * complaint, which is what happens when the browser has no session storage
+   * to stash anything in.
+   */
   const payForProduct = async (
     key: ServiceKey,
     x: ServiceProduct,
     o: CheckoutOrder,
   ): Promise<boolean> => {
-    try {
-      const res = await fetch("/api/pay", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          service: key,
-          productId: x.id,
-          qty: o.qty,
-          /* The endpoint wants a date for its order id, and for a shirt there
-             is no day to name; today is the day it was bought. */
-          checkIn: o.when || new Date().toISOString().slice(0, 10),
-          name: o.name,
-          phone: o.phone,
-          email: o.email,
-        }),
-      });
-      if (!res.ok) throw new Error(String(res.status));
-      const out = (await res.json()) as { token: string; snap: string };
-      await loadSnap(out.snap);
-      window.snap?.pay(out.token);
-      return true;
-    } catch {
-      /* Keys unset, order refused, script blocked. The dialog says so and
-         stays open with everything they typed still in it, rather than
-         throwing them into a different form and losing the lot. */
-      return false;
-    }
+    const stashed = saveDraft({
+      kind: "service",
+      service: key,
+      productId: x.id,
+      qty: o.qty,
+      when: o.when,
+      name: o.name,
+      phone: o.phone,
+      email: o.email,
+    });
+    if (!stashed) return false;
+    router.push("/eddo/checkout");
+    return true;
   };
 
   const [menuOpen, setMenuOpen] = useState(false);
@@ -760,6 +741,7 @@ export function EddoSite({
   const barSolid = scrolled || menuOpen;
   /* The booking fields. They belong to the room panel, not to the dialog: the
      dialog is for asking, and these are for paying. */
+  const router = useRouter();
   const [stayFrom, setStayFrom] = useState("");
   const today = new Date().toISOString().slice(0, 10);
   const [payName, setPayName] = useState("");
@@ -789,7 +771,6 @@ export function EddoSite({
   const stayNights = spanNights >= 1 && spanNights <= MAX_NIGHTS ? spanNights : 0;
   const nights = stayNights || 1;
   const [guests, setGuests] = useState(2);
-  const [paying, setPaying] = useState(false);
   const [enquiry, setEnquiry] = useState<Enquiry>(EMPTY_ENQUIRY);
   const [enquiryOpen, setEnquiryOpen] = useState(false);
   const patch = (p: Partial<Enquiry>) => setEnquiry((prev) => ({ ...prev, ...p }));
@@ -815,11 +796,18 @@ export function EddoSite({
    * What it does not do is check the calendar. Nothing here holds a night:
    * paying sends money and a message, and two people can pay for the same week.
    */
-  const startPayment = async () => {
-    if (paying) return;
-    /* Date, name, number and address, all four. Collected as a set rather than
-       stopping at the first, so somebody who left three boxes empty is told
-       about three boxes rather than made to press the button three times. */
+  /*
+   * The house, taken to the summary page.
+   *
+   * Checks first, for the same reason it always did: a set of gaps rather than
+   * the first one, so somebody who left three boxes empty is told about three
+   * boxes. What changed is the end of it — the order goes into the tab and the
+   * reader goes to `/eddo/checkout`, where it is priced again and paid for.
+   *
+   * Nothing here holds a night. Paying sends money and a message, and two
+   * people can pay for the same week.
+   */
+  const startPayment = () => {
     const gaps = new Set<string>();
     if (!stayFrom) gaps.add("when");
     /* Not just "filled in": a check-out on or before the check-in is not a
@@ -835,30 +823,21 @@ export function EddoSite({
       return;
     }
     setStayMissing(new Set());
-    setStayFailed(false);
-    setPaying(true);
-    try {
-      const res = await fetch("/api/pay", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          checkIn: stayFrom,
-          nights,
-          guests,
-          name: payName.trim(),
-          phone: payPhone.trim(),
-          email: payEmail.trim(),
-        }),
-      });
-      if (!res.ok) throw new Error(String(res.status));
-      const out = (await res.json()) as { token: string; snap: string };
-      await loadSnap(out.snap);
-      window.snap?.pay(out.token);
-    } catch {
+    const stashed = saveDraft({
+      kind: "room",
+      from: stayFrom,
+      to: stayTo,
+      guests,
+      name: payName.trim(),
+      phone: payPhone.trim(),
+      email: payEmail.trim(),
+    });
+    if (!stashed) {
       setStayFailed(true);
-    } finally {
-      setPaying(false);
+      return;
     }
+    setStayFailed(false);
+    router.push("/eddo/checkout");
   };
 
   /* The same marking the checkout dialog uses, for the same reason: a reader
@@ -1584,7 +1563,6 @@ export function EddoSite({
             <button
               type="button"
               onClick={() => (canPay ? startPayment() : ask("stay", t.rooms.ctaNote(t.rooms.name)))}
-              disabled={paying}
               className={`${BTN} mt-5 w-full disabled:cursor-wait disabled:opacity-70`}
             >
               {canPay ? t.rooms.pay : t.rooms.cta}

@@ -560,6 +560,36 @@ Harganya sendiri **selalu** dihitung server dari berkas ini. Diuji dengan
 permintaan yang menitipkan `price: 1` dan `gross_amount: 1`: yang terkirim
 tetap Rp 300.000 untuk dua kaos.
 
+### Halaman ringkasan: `/eddo/checkout`
+
+Menekan **Pesan dan bayar**, baik di panel kamar maupun di kartu layanan,
+tidak langsung membuka Midtrans. Pesanannya dibawa ke halaman ringkasan
+sendiri, tamunya memeriksa dulu, lalu tombol di situ yang membuka Midtrans.
+
+Sebabnya: Midtrans membuka lembar pembayarannya di atas halaman apa pun yang
+sedang tampil, dan yang sedang tampil adalah puncak halaman depan. Jendela
+pembayaran melayang di atas foto pantai dengan judul besar di belakangnya.
+Jalan, tapi kelihatan seperti kecelakaan.
+
+Pesanannya dititipkan di `sessionStorage`, **bukan di URL**. Di URL, nama,
+nomor, dan email tamunya akan tercatat di riwayat peramban, di log server, di
+header referrer tautan berikutnya, dan ikut tersalin kalau tautannya dikirim ke
+orang lain. Di session storage, datanya tinggal di satu tab yang mengisinya dan
+hilang waktu tab-nya ditutup.
+
+Yang dititipkan cuma **apa yang dipilih, tidak pernah harganya**. Halaman
+ringkasannya menghitung ulang dari berkas yang sama dengan kartunya, dan
+`/api/pay` menghitung ketiga kalinya sebelum menagih. Tiga kali baca satu
+angka, tidak ada salinan yang dioper.
+
+Pada domain hidup halamannya menjawab di `/checkout`: `/eddo/checkout` dibelokkan
+ke bentuk pendeknya lalu ditulis ulang balik untuk dirender, sama seperti
+`/turtle/about`. Halamannya tidak diindeks, karena isinya baru ada setelah
+seorang tamu memilih sesuatu di tab-nya sendiri.
+
+Sesudah dibayar, halamannya menunjukkan keadaan lunas dan draft-nya dihapus,
+jadi kembali ke alamat itu tidak menawarkan membayar untuk kedua kalinya.
+
 ### Nama, WhatsApp, dan email: tiga kotak, ketiganya wajib
 
 **Jangan pernah menggabungnya jadi "WhatsApp atau email".** Kotak yang menerima

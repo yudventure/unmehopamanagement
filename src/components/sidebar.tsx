@@ -130,6 +130,180 @@ function NarrowNav({
   );
 }
 
+/**
+ * The two filters, given somewhere to live on a phone.
+ *
+ * Narrow used to keep the nav row and drop the rest of the column, which threw
+ * away both chooser lists along with it. On the width the manager is most
+ * often opened at, there was no way to look at one property, or at one
+ * channel, at all — and nothing said so, because a control that is absent
+ * looks exactly like a control that was never built.
+ *
+ * Folded rather than laid out flat. Eight chips above the calendar would push
+ * the month itself off a phone screen, and the filters are set once and then
+ * left alone, while the month is what the reader came for.
+ *
+ * **What is folded still announces itself.** Closed, the row prints whatever is
+ * actually being filtered on, and goes to the tinted, heavier treatment the
+ * moment either chooser is off "Semua". A hidden filter that silently narrows
+ * the figures is worse than no filter: the occupancy looks wrong and nothing
+ * on the screen explains why.
+ */
+function NarrowFilters({
+  propCounts,
+  filterProp,
+  onFilterProp,
+  channelCounts,
+  filterCh,
+  onFilterCh,
+}: Pick<
+  SidebarProps,
+  | "propCounts"
+  | "filterProp"
+  | "onFilterProp"
+  | "channelCounts"
+  | "filterCh"
+  | "onFilterCh"
+>) {
+  const [open, setOpen] = useState(false);
+
+  const active = filterProp !== "all" || filterCh !== "all";
+  /* Named from the lists themselves rather than re-derived, so the summary can
+     never drift from the chip that is lit. */
+  const propLabel = propCounts.find((p) => p.key === filterProp)?.label ?? "";
+  const chLabel = channelCounts.find((c) => c.key === filterCh)?.label ?? "";
+  const summary = active
+    ? [filterProp === "all" ? "" : propLabel, filterCh === "all" ? "" : chLabel]
+        .filter(Boolean)
+        .join(" · ")
+    : "Semua";
+
+  return (
+    <div className="shrink-0 border-b border-line px-[14px] py-[9px]">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className={`flex w-full cursor-pointer items-center gap-2 rounded-[11px] border-none px-[13px] py-[9px] text-left text-[13px] ${
+          active ? "bg-surface-hover text-ink" : "bg-surface-tint text-ink-soft"
+        }`}
+      >
+        <span className={active ? "font-bold" : ""}>Filter</span>
+        <span
+          className={`min-w-0 flex-1 truncate text-right ${
+            active ? "font-medium text-ink" : "text-slate-mute"
+          }`}
+        >
+          {summary}
+        </span>
+        {/* Points down closed and up open, so the control says which way it
+            goes rather than only that it is a control. */}
+        <svg
+          aria-hidden="true"
+          viewBox="0 0 12 12"
+          className={`h-3 w-3 shrink-0 ${open ? "rotate-180" : ""}`}
+        >
+          <path
+            d="M2.5 4.5 6 8l3.5-3.5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </button>
+
+      {open && (
+        <div className="mt-[10px] flex flex-col gap-[14px] pb-[3px]">
+          {/* Hidden for an account scoped to one property, matching the wide
+              column: a chooser with one real option is furniture. */}
+          {propCounts.length > 1 && (
+            <div>
+              <div className={SECTION_LABEL}>Properti</div>
+              <div className="flex flex-wrap gap-[6px]">
+                {propCounts.map((p) => (
+                  <FilterChip
+                    key={p.key}
+                    on={filterProp === p.key}
+                    count={p.count}
+                    onClick={() => onFilterProp(p.key)}
+                  >
+                    {p.label}
+                  </FilterChip>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div>
+            <div className={SECTION_LABEL}>Saluran</div>
+            <div className="flex flex-wrap gap-[6px]">
+              {channelCounts.map((c) => (
+                <FilterChip
+                  key={c.key}
+                  on={filterCh === c.key}
+                  count={c.count}
+                  dot={
+                    c.key === "all"
+                      ? "var(--color-slate-ghost)"
+                      : CH[c.key as (typeof CHANNEL_KEYS)[number]].dot
+                  }
+                  onClick={() => onFilterCh(c.key)}
+                >
+                  {c.label}
+                </FilterChip>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/**
+ * One chooser option at phone width. Wrapped rather than in a scrolling row:
+ * a filter list that runs off the edge hides the very option someone opened
+ * the panel to find, and unlike the nav row there is no current tab to scroll
+ * back into view as a hint that more exists.
+ */
+function FilterChip({
+  on,
+  count,
+  dot,
+  onClick,
+  children,
+}: {
+  on: boolean;
+  count: number;
+  dot?: string;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={on}
+      className={`flex cursor-pointer items-center gap-[7px] rounded-[10px] px-[11px] py-[7px] text-[13px] whitespace-nowrap ${
+        on
+          ? "border border-teal-line bg-teal-tint font-medium text-teal-deep"
+          : "border border-line-strong bg-surface text-slate"
+      }`}
+    >
+      {dot && (
+        <span
+          className="h-[9px] w-[9px] shrink-0 rounded-[3px]"
+          style={{ background: dot }}
+        />
+      )}
+      <span>{children}</span>
+      <span className="font-mono text-[11px] text-slate-mute">{count}</span>
+    </button>
+  );
+}
+
 export function Sidebar({
   narrow,
   nav,
@@ -144,7 +318,19 @@ export function Sidebar({
   onFilterCh,
 }: SidebarProps) {
   if (narrow) {
-    return <NarrowNav nav={nav} screen={screen} onScreen={onScreen} />;
+    return (
+      <>
+        <NarrowNav nav={nav} screen={screen} onScreen={onScreen} />
+        <NarrowFilters
+          propCounts={propCounts}
+          filterProp={filterProp}
+          onFilterProp={onFilterProp}
+          channelCounts={channelCounts}
+          filterCh={filterCh}
+          onFilterCh={onFilterCh}
+        />
+      </>
+    );
   }
 
   return (

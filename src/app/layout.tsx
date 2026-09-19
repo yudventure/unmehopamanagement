@@ -91,7 +91,29 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="id" className={`${dmSans.variable} ${jetbrainsMono.variable} ${kaushan.variable}`}>
+    /*
+     * `suppressHydrationWarning` is about the `data-anim` the script below
+     * writes onto this element.
+     *
+     * The script runs while the HTML is still being parsed, which is the whole
+     * point of it — the flag has to be there before the first paint or the
+     * things it hides have already been seen. But React then hydrates against
+     * markup it rendered without that attribute, finds one it did not put
+     * there, and reports a mismatch on every single page load. In development
+     * that is the red "1 Issue" badge sitting in the corner of every screen,
+     * including the dashboard, which does not animate anything at all and is
+     * simply inheriting the warning from this layout.
+     *
+     * Suppressing it here says what is actually true: on this one element the
+     * DOM is the authority and React's copy is not. It is scoped to `<html>`
+     * itself and does not reach the tree inside, so a genuine mismatch
+     * anywhere in the application is still reported.
+     */
+    <html
+      lang="id"
+      className={`${dmSans.variable} ${jetbrainsMono.variable} ${kaushan.variable}`}
+      suppressHydrationWarning
+    >
       <body>
         <script dangerouslySetInnerHTML={{ __html: START_AT_TOP }} />
         {children}

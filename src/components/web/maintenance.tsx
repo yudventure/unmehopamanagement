@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
+
 import { HeroScene } from "@/components/web/scenes";
 import { MailIcon, WhatsAppIcon } from "@/components/web/icons";
 import { useLang } from "@/hooks/use-site-prefs";
@@ -26,6 +28,15 @@ export function Maintenance() {
   const { lang, pickLang } = useLang();
   const t = COPY[lang];
   const m = t.maintenance;
+
+  /* The document says which language it is in, the way the real pages do.
+     Without this the holding page kept whatever the root layout was rendered
+     with — a page written in German, announced to a screen reader and to a
+     translation tool as Indonesian. It was wrong with two languages and is
+     wrong five more ways now. */
+  useEffect(() => {
+    document.documentElement.lang = t.htmlLang;
+  }, [t.htmlLang]);
 
   const button =
     "inline-flex items-center justify-center gap-[9px] rounded-full px-[22px] py-[13px] text-[14px] font-medium no-underline transition-colors hover:no-underline";

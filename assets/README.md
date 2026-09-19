@@ -556,3 +556,66 @@ bahasa; dibiarkan bebas, pembaca Perancis akan melihat "Mesin" di sebelah
 
 Ukuran fotonya sama seperti foto kamar: 4:3, lebar 1200, WebP, dan sediakan
 juga versi `-720` kalau mau ringan di HP.
+
+## Ikon situs: favicon, tab, dan layar utama
+
+Berkasnya di `src/app/`, bukan di `public/`, karena Next menautkannya sendiri
+ke halaman lewat nama berkasnya. Tidak ada kode yang menyebut nama-nama ini.
+
+| Berkas | Dipakai di | Ukuran |
+|---|---|---|
+| `src/app/favicon.ico` | permintaan buta ke akar domain, penanda buku | 16 dan 32 di satu berkas, 2,5 KB |
+| `src/app/icon.png` | tab peramban, semua halaman kecuali yang menimpa | 32x32, 1,5 KB |
+| `src/app/apple-icon.png` | pintasan layar utama iOS | 180x180, 10,4 KB |
+| `src/app/eddo/icon.png` dan `apple-icon.png` | halaman Eddo | sama dengan akar |
+| `src/app/turtle/icon.png` dan `apple-icon.png` | halaman Turtle | 1,8 dan 15,6 KB |
+
+**Ikon akar memakai mark Eddo, dan itu sengaja.** Satu-satunya domain yang hidup
+adalah eddohomestay.com, dan di sana `/` ditulis ulang ke `/eddo`, jadi peramban
+yang meminta favicon ke akar sedang memintanya atas nama Eddo. Turtle menimpanya
+di jalurnya sendiri, dan itu tempat Turtle dibaca.
+
+Kalau nanti turtlehomestay.com hidup, `/favicon.ico` di domain itu masih akan
+mengembalikan mark Eddo. Tab-nya sendiri tetap benar karena halamannya
+menautkan ikonnya sendiri; yang salah cuma permintaan buta ke akar. Perbaikannya
+satu route handler yang membaca header Host, dan belum dibuat karena belum ada
+yang membacanya.
+
+### Kenapa marknya diputihkan di atas ubin toska
+
+Master Eddo itu garis toska tipis di atas transparan, 2000 piksel dan 389 KB.
+Dikecilkan ke 16, goresannya jatuh di bawah satu piksel dan seluruh gambarnya
+jadi noda samar yang hilang di bar tab terang.
+
+Tiga perlakuan digambar lalu dilihat pada 16, 32, dan 64: di atas putih hilang,
+transparan hilang, putih-di-atas-toska bertahan. Yang bertahan di ukuran itu
+memang bloknya, bukan gambar di dalamnya. Mengisi 88 persen ubin, bukan 74,
+menambah satu piksel ketebalan goresan.
+
+Di 16 wajahnya tetap hilang, dan itu memang yang terjadi pada gambar garis di
+ukuran 16. Yang tersisa ubin toska pekat, dan itu sudah cukup untuk menemukan
+tab. Di 32, yang justru diambil layar berkerapatan tinggi, wajahnya terbaca.
+
+### Dua jebakan yang sudah ditemui
+
+**Trik pemutihan itu salah untuk logo Turtle.** Mark Eddo garis di atas
+transparan, jadi saluran alfanya adalah gambarnya sendiri dan mengecat ulang
+warnanya tidak merusak apa pun. Logo Turtle ilustrasi berwarna penuh yang
+alfanya cuma lingkaran luarnya, jadi operasi yang sama mengecat seluruh
+piringannya putih dan menghasilkan koin kosong. Logo Turtle cuma dikecilkan,
+tidak diapa-apakan.
+
+**PNG di dalam ICO harus RGBA.** Palet terindeks menghemat sekitar satu kilobait
+dan membuat build berhenti dengan "The PNG is not in RGBA format", karena Next
+membongkar berkas itu saat build untuk membaca ukurannya. Yang di dalam ICO
+tidak diindeks; yang berdiri sendiri diindeks.
+
+### Membuat ulang
+
+Skripnya tidak disimpan di repo karena sekali pakai, sama seperti pembuat
+`eddo-logo`. Resepnya: pangkas transparan di tepi master, cat ulang seluruh
+piksel jadi putih sambil menyimpan alfanya, tempel di tengah ubin `#06777d`
+dengan mengisi 88 persen, render di empat kali ukuran sasaran lalu kecilkan
+(antialias yang menahan gambarnya di ukuran itu), simpan PNG. ICO-nya wadah
+dengan header enam bait plus enam belas bait per gambar, isinya PNG utuh.
+

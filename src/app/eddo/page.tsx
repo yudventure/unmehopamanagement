@@ -1,7 +1,7 @@
 import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 
 import { EddoSite } from "@/components/eddo/site";
 import { EDDO, EDDO_COPY } from "@/lib/eddo-content";
@@ -17,6 +17,20 @@ import { DEFAULT_LANG } from "@/lib/web-content";
  * own domain without the other noticing.
  */
 const copy = EDDO_COPY[DEFAULT_LANG];
+
+/**
+ * The colour a phone paints its own chrome with while this page is open.
+ *
+ * Its own rather than the one in the root layout, which is Turtle's pale green
+ * and belongs to a different homestay. The deep teal is the colour the page
+ * carries its type in and the colour of the mark in the tab beside it, so the
+ * browser's own furniture stops being a strip of somebody else's brand.
+ */
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#06777d",
+};
 
 export const metadata: Metadata = {
   title: copy.meta.title,

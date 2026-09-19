@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 
+import { GUEST_MAIL, guestLang, guestMailHtml, guestMailText } from "@/lib/eddo-mail";
 import { outcome, signatureOk } from "@/lib/midtrans";
-import { mailOwner, rowsToHtml, type Row } from "@/lib/notify";
+import { mailGuest, mailOwner, rowsToHtml, type Row } from "@/lib/notify";
 
 /**
  * Where Midtrans says what happened to a payment.
@@ -17,6 +18,31 @@ import { mailOwner, rowsToHtml, type Row } from "@/lib/notify";
  */
 
 export const runtime = "nodejs";
+
+/*
+ * Orders whose guest has already been thanked, so they are not thanked twice.
+ *
+ * A card payment notifies on `capture` and can notify again on `settlement`,
+ * and both mean paid. The owner getting two emails is noise; a guest getting
+ * two thank-yous for one payment is a guest counting their bank statement.
+ *
+ * In memory, and honest about what that is worth: it is emptied by a restart
+ * and it is not shared between instances, so it removes the common case and not
+ * every case. Doing it properly needs somewhere to write down that an order has
+ * been handled, which is the same missing piece that stops a room being held.
+ */
+const thanked = new Map<string, number>();
+const THANKED_FOR = 12 * 60 * 60 * 1000;
+
+function alreadyThanked(order: string) {
+  const now = Date.now();
+  /* Swept on the way past rather than on a timer, so an idle server holds
+     nothing and a busy one cannot grow without bound. */
+  for (const [id, at] of thanked) if (now - at > THANKED_FOR) thanked.delete(id);
+  if (thanked.has(order)) return true;
+  thanked.set(order, now);
+  return false;
+}
 
 export async function POST(req: Request) {
   let body: Record<string, string>;
@@ -122,6 +148,49 @@ export async function POST(req: Request) {
     ),
     text: rows.map(([k, v]) => `${k}: ${v}`).join("\n"),
   });
+
+  /*
+   * And a word to the guest, once the money is actually in.
+   *
+   * Only on `paid`. A pending bank transfer is not something to thank anybody
+   * for, and a failed card is something they already know about.
+   *
+   * Everything it needs was written into the custom fields when the payment
+   * started: who they are, what they booked, which language they were reading
+   * the site in. An order made before those existed simply has none, and is
+   * skipped rather than guessed at.
+   */
+  if (state === "paid") {
+    const to = (body.custom_field3 ?? "").trim();
+    const who = (body.custom_field2 ?? "").trim();
+    /* "Name / phone / LANG". Read from the end, so a name with a slash in it
+       cannot shift which piece is which. */
+    const tail = /\s\/\s*([A-Za-z]{2})\s*$/.exec(who);
+    const lang = guestLang(tail?.[1]);
+    const name = (tail ? who.slice(0, tail.index) : who).split(" / ")[0]?.trim() ?? "";
+    const order = body.order_id ?? "";
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) {
+      /* No address, or one that cannot be an address. Said out loud rather
+         than passed to Resend to be rejected there. */
+      console.error("pay/notify: guest not told, no usable address:", order);
+    } else if (alreadyThanked(order)) {
+      /* A card that is captured and then settled notifies twice, and both are
+         "paid". The family can live with two emails; a guest thanked twice for
+         one payment starts wondering whether they were charged twice. */
+      console.error("pay/notify: guest already thanked:", order);
+    } else {
+      const input = { lang, name: name || to, booking: body.custom_field1 ?? "", order };
+      const guest = await mailGuest({
+        site: "eddo",
+        to,
+        subject: GUEST_MAIL[lang].subject(order),
+        html: guestMailHtml(input),
+        text: guestMailText(input),
+      });
+      if (guest) console.error("pay/notify: guest not told:", guest);
+    }
+  }
 
   /* Answer 200 either way. A non-2xx tells Midtrans to retry, and retrying
      will not fix a Resend key that was never set; the payment itself is

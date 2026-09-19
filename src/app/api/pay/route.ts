@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 
 import { eddoRooms, pickText, priceService } from "@/lib/eddo-content";
+import { guestLang } from "@/lib/eddo-mail";
 import { createSnapToken, midtransConfigured, snapScript } from "@/lib/midtrans";
 
 /**
@@ -55,6 +56,10 @@ export async function POST(req: Request) {
   const checkIn = clean(body.checkIn);
   /* The second date: when a hire comes back, or when a return crossing does. */
   const until = clean(body.until);
+  /* Which language the guest read the site in. It travels with the order so the
+     confirmation that follows is written in it, rather than handing a reader who
+     spent an hour on the French pages back to English at the last step. */
+  const lang = guestLang(clean(body.lang));
   const nights = whole(body.nights, 1, MAX_NIGHTS);
   const guests = whole(body.guests, 1, MAX_GUESTS);
 
@@ -183,7 +188,11 @@ export async function POST(req: Request) {
       quantity: nights,
       name: `Eddo Homestay, ${nights} malam, ${guests} tamu`.slice(0, 50),
     };
-    detail = `Eddo Homestay, check-in ${checkIn}, ${nights} night(s), ${guests} guest(s)`;
+    /* Written out rather than "night(s)": this line is copied into the note the
+       guest receives, and a guest reading "2 night(s)" is reading a database. */
+    detail =
+      `Eddo Homestay, check-in ${checkIn}, ` +
+      `${nights} night${nights === 1 ? "" : "s"}, ${guests} guest${guests === 1 ? "" : "s"}`;
   }
   /* Dated and random: the date is what makes it readable in the dashboard, the
      random tail is what stops two people booking in the same second from
@@ -202,7 +211,7 @@ export async function POST(req: Request) {
     /* Three short lines, because three is all Midtrans gives back. What was
        booked, who booked it, and how to answer them: exactly what somebody
        reading "LUNAS" at six in the morning needs in front of them. */
-    fields: [detail, `${name} / ${phone}`, email],
+    fields: [detail, `${name} / ${phone} / ${lang.toUpperCase()}`, email],
   });
 
   if (!snap.ok) {

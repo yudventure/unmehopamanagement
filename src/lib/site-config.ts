@@ -106,6 +106,27 @@ export interface ServiceProduct {
   /** Label from that same small list, value in the owner's words. */
   specs?: { key: string; value: Localised }[];
   /**
+   * The same crossing bought both ways, when the owner sells it that way.
+   *
+   * Absent means one price and no choice, which is right for everything that is
+   * not a journey. Present makes the dialog ask which, and this is the figure it
+   * charges for the return: its own number rather than twice the one above,
+   * because a boat that waits and comes back is not the same sale as a boat that
+   * drops you off, and only the owner knows which theirs is.
+   */
+  returnPrice?: number;
+  /**
+   * What has to be chosen before this can be bought, and how many are left.
+   *
+   * `stock` absent and `stock: 0` are different facts and the page treats them
+   * differently: absent means nobody has counted, so no number is shown and the
+   * size can still be picked; zero means counted and gone, so it is shown struck
+   * through and cannot be chosen. Collapsing the two would mean either inventing
+   * a count on a page people buy from, or hiding a size that is actually in the
+   * cupboard.
+   */
+  sizes?: { label: string; stock?: number }[];
+  /**
    * Made up, and saying so on the card.
    *
    * There to let an owner fill the shape of the page before the real

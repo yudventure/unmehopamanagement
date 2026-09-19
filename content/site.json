@@ -220,6 +220,7 @@
           "id": "Waisai ke Yenbuba"
         },
         "price": 1800000,
+        "returnPrice": 3600000,
         "unit": "trip",
         "specs": [
           {
@@ -434,6 +435,20 @@
         },
         "price": 150000,
         "unit": "piece",
+        "sizes": [
+          {
+            "label": "S"
+          },
+          {
+            "label": "M"
+          },
+          {
+            "label": "L"
+          },
+          {
+            "label": "XL"
+          }
+        ],
         "specs": [
           {
             "key": "size",
@@ -456,6 +471,20 @@
         },
         "price": 120000,
         "unit": "piece",
+        "sizes": [
+          {
+            "label": "2-4"
+          },
+          {
+            "label": "4-6"
+          },
+          {
+            "label": "6-8"
+          },
+          {
+            "label": "8-10"
+          }
+        ],
         "specs": [
           {
             "key": "size",

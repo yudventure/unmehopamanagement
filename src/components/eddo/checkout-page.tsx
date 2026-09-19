@@ -8,11 +8,15 @@ import { useCurrency, useEddoLang, useRates } from "@/hooks/use-site-prefs";
 import {
   EDDO_COPY,
   eddoRooms,
+  hasReturn,
   isPriceUnit,
+  isRental,
   pickText,
+  priceService,
   serviceProducts,
   type ServiceKey,
 } from "@/lib/eddo-content";
+import { daysBetween, todayISO } from "@/lib/eddo-days";
 import { clearDraft, readDraft, type PayDraft } from "@/lib/eddo-order";
 
 /**
@@ -38,15 +42,6 @@ import { clearDraft, readDraft, type PayDraft } from "@/lib/eddo-order";
  * looks it up a third time before charging anything. Three readings of one
  * number, no copies passed between them.
  */
-
-/** The nights between two ISO days, in UTC so a clock change cannot eat one. */
-function nightsBetween(from: string, to: string) {
-  const a = Date.parse(`${from}T00:00:00Z`);
-  const b = Date.parse(`${to}T00:00:00Z`);
-  if (!Number.isFinite(a) || !Number.isFinite(b)) return 0;
-  const n = Math.round((b - a) / 86_400_000);
-  return n > 0 ? n : 0;
-}
 
 /**
  * An ISO day, written the way the reader's language writes days.
@@ -129,7 +124,7 @@ export function EddoCheckout() {
   let back = "/eddo";
 
   if (draft?.kind === "room") {
-    const nights = nightsBetween(draft.from, draft.to);
+    const nights = daysBetween(draft.from, draft.to);
     title = t.rooms.name;
     unit = rooms.rate;
     count = nights;
@@ -142,14 +137,38 @@ export function EddoCheckout() {
     unitLabel = t.rooms.perNight;
     back = "/eddo#kamar";
   } else if (draft?.kind === "service") {
-    const product = serviceProducts(draft.service as ServiceKey).find((x) => x.id === draft.productId);
+    /* Priced through the same function `/api/pay` uses, so the return fare and
+       the stock check are one rule rather than two that have to agree. A draft
+       it refuses prices at zero and shows nothing to pay, which is the right
+       answer for a size that sold out while this tab was open. */
+    const priced = priceService(draft.service, draft.productId, {
+      qty: draft.qty,
+      way: draft.way,
+      size: draft.size,
+    });
+    const product = priced?.product ?? serviceProducts(draft.service as ServiceKey).find((x) => x.id === draft.productId);
+    const rental = Boolean(product && isRental(product));
     title = product ? pickText(product.name, lang) : draft.productId;
-    unit = typeof product?.price === "number" ? product.price : 0;
+    unit = priced?.unitPrice ?? 0;
     count = draft.qty;
     lines = [
       { k: t.order.what, v: t.services.items[draft.service as ServiceKey].title },
-      ...(draft.when ? [{ k: t.services.when, v: niceDay(draft.when, t.htmlLang) }] : []),
-      { k: t.services.qty, v: String(draft.qty) },
+      ...(draft.size ? [{ k: t.services.size, v: draft.size }] : []),
+      ...(priced && hasReturn(priced.product)
+        ? [{ k: t.services.way, v: priced.way === "return" ? t.services.roundTrip : t.services.oneWay }]
+        : []),
+      /* A hire reads as a span and a length, the way a stay does. Everything
+         else keeps the one day and the count it always had. */
+      ...(rental
+        ? [
+            { k: t.services.fromDay, v: niceDay(draft.when, t.htmlLang) },
+            { k: t.services.untilDay, v: niceDay(draft.until, t.htmlLang) },
+            { k: t.services.days, v: t.services.daysValue(draft.qty) },
+          ]
+        : [
+            ...(draft.when ? [{ k: t.services.when, v: niceDay(draft.when, t.htmlLang) }] : []),
+            { k: t.services.qty, v: String(draft.qty) },
+          ]),
     ];
     unitLabel = product?.unit && isPriceUnit(product.unit) ? t.services.per[product.unit] : "";
     back = "/eddo#layanan";
@@ -165,7 +184,7 @@ export function EddoCheckout() {
         draft.kind === "room"
           ? {
               checkIn: draft.from,
-              nights: nightsBetween(draft.from, draft.to),
+              nights: daysBetween(draft.from, draft.to),
               guests: draft.guests,
               name: draft.name,
               phone: draft.phone,
@@ -175,7 +194,9 @@ export function EddoCheckout() {
               service: draft.service,
               productId: draft.productId,
               qty: draft.qty,
-              checkIn: draft.when || new Date().toISOString().slice(0, 10),
+              way: draft.way,
+              size: draft.size,
+              checkIn: draft.when || todayISO(),
               name: draft.name,
               phone: draft.phone,
               email: draft.email,

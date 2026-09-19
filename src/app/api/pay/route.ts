@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 
 import { NextResponse } from "next/server";
 
-import { eddoRooms, payableProduct, pickText } from "@/lib/eddo-content";
+import { eddoRooms, pickText, priceService } from "@/lib/eddo-content";
 import { createSnapToken, midtransConfigured, snapScript } from "@/lib/midtrans";
 
 /**
@@ -91,13 +91,29 @@ export async function POST(req: Request) {
   let tag: string;
 
   if (service) {
-    const product = payableProduct(service, productId);
-    if (!product) {
+    /*
+     * One call decides three things: whether this is sellable at all, which of
+     * the two fares a crossing is on, and whether the size asked for is one the
+     * owner has and has any of. It reads the file for every one of them.
+     *
+     * The size check matters more than it looks. Without it, the browser is the
+     * only thing standing between a guest and paying for a shirt in a size that
+     * ran out, and the browser's copy of the stock is whatever was true when the
+     * page loaded. This is still not a reservation: nothing is written down
+     * between pricing and paying, so two people can buy the last shirt inside
+     * the same minute. That needs somewhere to record it, which this site does
+     * not have yet, and it is a smaller hole than the one this closes.
+     */
+    const priced = priceService(service, productId, {
+      qty: whole(body.qty, 1, MAX_QTY),
+      way: clean(body.way),
+      size: clean(body.size),
+    });
+    if (!priced) {
       return NextResponse.json({ error: "not-payable" }, { status: 422 });
     }
-    const qty = whole(body.qty, 1, MAX_QTY);
-    const price = product.price as number;
-    gross = price * qty;
+    const { product, unitPrice: price, qty } = priced;
+    gross = priced.total;
     tag = service.toUpperCase().slice(0, 8);
     item = {
       id: `EDDO-${service}-${product.id}`.slice(0, 50),
@@ -107,11 +123,18 @@ export async function POST(req: Request) {
          and in the receipt by a guest who may be reading the site in any of
          seven languages. One language beats a different one every time.
 
-         The name is the name and nothing else. It used to have the quantity
-         stuck on the end of it as well, beside the `quantity` field two lines
-         up, so an order for two shirts arrived as "Eddo Homestay T-shirt x2",
-         quantity 2, and the receipt read as four. */
-      name: pickText(product.name, "en").slice(0, 50),
+         The quantity is not on it. It used to be, stuck on the end beside the
+         `quantity` field two lines up, so an order for two shirts arrived as
+         "Eddo Homestay T-shirt x2", quantity 2, and the receipt read as four.
+
+         The size and the return are, because unlike the quantity they appear
+         nowhere else in what Midtrans sends on. A shirt packed in the wrong
+         size and a boat that was not booked to come back are both failures of
+         a detail that never reached the person doing the packing. */
+      name: [pickText(product.name, "en"), priced.size, priced.way === "return" ? "return" : ""]
+        .filter(Boolean)
+        .join(", ")
+        .slice(0, 50),
     };
   } else {
     const { rate } = eddoRooms();

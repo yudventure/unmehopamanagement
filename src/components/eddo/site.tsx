@@ -44,6 +44,7 @@ import {
   SERVICE_KEYS,
   eddoActivityLabels,
   isPriceUnit,
+  isRental,
   isSpecKey,
   pickText,
   serviceProducts,
@@ -60,6 +61,7 @@ import {
   waLink,
   type EddoCopy,
 } from "@/lib/eddo-content";
+import { daysBetween, MAX_SPAN, shiftDay, todayISO } from "@/lib/eddo-days";
 import { saveDraft } from "@/lib/eddo-order";
 import { siteConfig, type ServiceProduct } from "@/lib/site-config";
 import { type ActivityKey } from "@/lib/web-content";
@@ -531,23 +533,6 @@ const SERVICE_ICONS: Record<ServiceKey, React.ReactNode> = {
  * Returns 0 for anything that is not a stay: a missing date, an unparseable
  * one, or a check-out on or before the check-in.
  */
-const MAX_NIGHTS = 30;
-
-function nightsBetween(from: string, to: string) {
-  if (!from || !to) return 0;
-  const a = Date.parse(`${from}T00:00:00Z`);
-  const b = Date.parse(`${to}T00:00:00Z`);
-  if (!Number.isFinite(a) || !Number.isFinite(b)) return 0;
-  const n = Math.round((b - a) / 86_400_000);
-  return n > 0 ? n : 0;
-}
-
-/** An ISO day, shifted. Used for the earliest and latest a check-out may be. */
-function shiftDay(iso: string, days: number) {
-  const t = Date.parse(`${iso}T00:00:00Z`);
-  if (!Number.isFinite(t)) return "";
-  return new Date(t + days * 86_400_000).toISOString().slice(0, 10);
-}
 
 const BTN =
   "inline-flex cursor-pointer items-center justify-center gap-2 rounded-full border-none bg-eddo-deep px-[22px] py-[12px] text-[14px] font-medium text-white no-underline transition-colors hover:bg-eddo-dark hover:text-white hover:no-underline";
@@ -705,6 +690,9 @@ export function EddoSite({
       productId: x.id,
       qty: o.qty,
       when: o.when,
+      until: o.until,
+      size: o.size,
+      way: o.way,
       name: o.name,
       phone: o.phone,
       email: o.email,
@@ -743,7 +731,7 @@ export function EddoSite({
      dialog is for asking, and these are for paying. */
   const router = useRouter();
   const [stayFrom, setStayFrom] = useState("");
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayISO();
   const [payName, setPayName] = useState("");
   const [payPhone, setPayPhone] = useState("");
   const [payEmail, setPayEmail] = useState("");
@@ -767,8 +755,8 @@ export function EddoSite({
    * stay cannot be paid for until the pair is real, so the fallback is never
    * what anybody is charged.
    */
-  const spanNights = nightsBetween(stayFrom, stayTo);
-  const stayNights = spanNights >= 1 && spanNights <= MAX_NIGHTS ? spanNights : 0;
+  const spanNights = daysBetween(stayFrom, stayTo);
+  const stayNights = spanNights >= 1 && spanNights <= MAX_SPAN ? spanNights : 0;
   const nights = stayNights || 1;
   const [guests, setGuests] = useState(2);
   const [enquiry, setEnquiry] = useState<Enquiry>(EMPTY_ENQUIRY);
@@ -1464,7 +1452,7 @@ export function EddoSite({
                      after it at the latest, so the picker itself rules out
                      most of what the check below would have to catch. */
                   min={stayFrom ? shiftDay(stayFrom, 1) : today}
-                  max={stayFrom ? shiftDay(stayFrom, MAX_NIGHTS) : undefined}
+                  max={stayFrom ? shiftDay(stayFrom, MAX_SPAN) : undefined}
                   onChange={(e) => {
                     setStayMissing((m) => {
                       if (!m.has("to")) return m;
@@ -2023,10 +2011,25 @@ export function EddoSite({
             required: t.services.required,
             failed: t.services.checkoutFailed,
             close: t.enquiry.close,
+            way: t.services.way,
+            oneWay: t.services.oneWay,
+            roundTrip: t.services.roundTrip,
+            fromDay: t.services.fromDay,
+            untilDay: t.services.untilDay,
+            days: t.services.days,
+            daysValue: t.services.daysValue,
+            size: t.services.size,
+            sizeNote: t.services.sizeNote,
+            left: t.services.left,
+            soldOut: t.services.soldOut,
           }}
           what={`${t.services.items[buying.service].title} · ${pickText(buying.product.name, lang)}`}
           price={buying.product.price as number}
-          needsDay={buying.product.unit !== "piece"}
+          returnPrice={buying.product.returnPrice}
+          shape={
+            isRental(buying.product) ? "rental" : buying.product.unit === "piece" ? "piece" : "dated"
+          }
+          sizes={buying.product.sizes}
           lang={t.htmlLang}
           currency={currency}
           rates={rates}

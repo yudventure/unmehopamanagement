@@ -197,6 +197,96 @@ export function payableProduct(service: string, id: string): ServiceProduct | nu
   return found;
 }
 
+/**
+ * Hired by the day, so the question is how long rather than how many.
+ *
+ * A motorbike, a car and a camera are one object leaving with one guest for a
+ * stretch of days. The dialog used to ask "how many" for them, and the honest
+ * reading of that answer was "how many motorbikes", which is not a thing anyone
+ * was buying: the number that varies is the number of days.
+ *
+ * Read off the unit rather than off a list of services, because the unit is
+ * already the thing that says what the price is per. A product priced per day
+ * is hired by the day by definition, and a second list naming which ones those
+ * are would be a list to forget to update.
+ */
+export const isRental = (p: ServiceProduct) => p.unit === "day";
+
+/** Whether the buyer has to choose a size before this can go in an order. */
+export const hasSizes = (p: ServiceProduct) => Boolean(p.sizes?.length);
+
+/** Whether the same journey can be bought as a return as well as one way. */
+export const hasReturn = (p: ServiceProduct) =>
+  typeof p.returnPrice === "number" && p.returnPrice > 0;
+
+export interface ServiceChoice {
+  /** Pieces, people, trips, or days for something hired by the day. */
+  qty: number;
+  /** "return" when a round trip was chosen. Anything else means one way. */
+  way?: string;
+  /** The size label exactly as the owner wrote it, when the thing has sizes. */
+  size?: string;
+}
+
+export interface PricedService {
+  product: ServiceProduct;
+  unitPrice: number;
+  qty: number;
+  total: number;
+  /** Normalised: "return" only when the product actually sells one. */
+  way: "one" | "return";
+  /** Empty when the product has no sizes. */
+  size: string;
+}
+
+/**
+ * What a service order comes to, and whether it is allowed at all.
+ *
+ * One function rather than one per caller. The dialog, the summary page and
+ * `/api/pay` each need the same three answers, and the rule that a return costs
+ * `returnPrice` instead of `price` is exactly the kind of rule that gets fixed
+ * in two of three places. Returning `null` for anything it will not sell means
+ * a caller that forgets to check gets nothing to charge rather than a wrong
+ * number to charge.
+ *
+ * It refuses, in order: a product that is not payable, a size that was not
+ * offered, a size that is counted and gone, a quantity beyond what is left, and
+ * a quantity below one.
+ *
+ * Stock is checked here and not only in the browser, because the browser's copy
+ * of it is whatever was true when the page loaded. This is not a reservation
+ * either: nothing is held between pricing and paying, so two people can still
+ * buy the last shirt within the same minute. Fixing that needs somewhere to
+ * write down that a shirt is spoken for, which this site does not yet have.
+ */
+export function priceService(
+  service: string,
+  id: string,
+  choice: ServiceChoice,
+): PricedService | null {
+  const product = payableProduct(service, id);
+  if (!product) return null;
+
+  let size = "";
+  if (hasSizes(product)) {
+    const picked = product.sizes?.find((s) => s.label === choice.size);
+    if (!picked) return null;
+    if (typeof picked.stock === "number") {
+      if (picked.stock <= 0) return null;
+      if (choice.qty > picked.stock) return null;
+    }
+    size = picked.label;
+  }
+
+  const qty = Math.floor(choice.qty);
+  if (!Number.isFinite(qty) || qty < 1) return null;
+
+  const way = choice.way === "return" && hasReturn(product) ? "return" : "one";
+  const unitPrice = way === "return" ? (product.returnPrice as number) : (product.price as number);
+
+  return { product, unitPrice, qty, total: unitPrice * qty, way, size };
+}
+
 export const EDDO_ACTIVITIES = ["stay", ...SERVICE_KEYS] as const;
 export type EddoActivity = (typeof EDDO_ACTIVITIES)[number];
 
@@ -404,6 +494,20 @@ export interface EddoCopy {
     pay: string;
     when: string;
     qty: string;
+    /** The crossing, when the owner sells it both ways as well as one. */
+    way: string;
+    oneWay: string;
+    roundTrip: string;
+    /** Something hired by the day: when it is collected, when it comes back. */
+    fromDay: string;
+    untilDay: string;
+    days: string;
+    daysValue: (n: number) => string;
+    /** The size picker, and what nobody local expects about the sizes. */
+    size: string;
+    sizeNote: string;
+    left: (n: number) => string;
+    soldOut: string;
     /** What a spec line is called, and what a price is per. */
     spec: Record<SpecKey, string>;
     per: Record<PriceUnit, string>;
@@ -613,6 +717,18 @@ const EN: EddoCopy = {
     pay: "Book and pay",
     when: "Which day",
     qty: "How many",
+    way: "Trip",
+    oneWay: "One way",
+    roundTrip: "Return",
+    fromDay: "From",
+    untilDay: "Until",
+    days: "Days",
+    daysValue: (n) => (n === 1 ? "1 day" : `${n} days`),
+    size: "Size",
+    sizeNote:
+      "These are Western sizes. If you usually buy Indonesian sizes, one size down is likely to fit.",
+    left: (n) => `${n} left`,
+    soldOut: "Sold out",
     spec: { duration: "Takes", level: "Level", engine: "Engine", power: "Engine size", seats: "Seats", size: "Sizes", includes: "Includes", notes: "Note" },
     per: { day: "per day", night: "per night", person: "per person", trip: "per trip", piece: "each", hour: "per hour" },
   },
@@ -818,6 +934,18 @@ const ID: EddoCopy = {
     pay: "Pesan dan bayar",
     when: "Hari apa",
     qty: "Berapa",
+    way: "Perjalanan",
+    oneWay: "Sekali jalan",
+    roundTrip: "Pulang pergi",
+    fromDay: "Mulai",
+    untilDay: "Sampai",
+    days: "Lama",
+    daysValue: (n) => `${n} hari`,
+    size: "Ukuran",
+    sizeNote:
+      "Ukurannya ukuran bule. Kalau biasa memakai ukuran Indonesia, turun satu ukuran biasanya pas.",
+    left: (n) => `sisa ${n}`,
+    soldOut: "Habis",
     spec: { duration: "Lama", level: "Level", engine: "Mesin", power: "Tenaga mesin", seats: "Muat", size: "Ukuran", includes: "Termasuk", notes: "Catatan" },
     per: { day: "per hari", night: "per malam", person: "per orang", trip: "per trip", piece: "per potong", hour: "per jam" },
   },
@@ -1040,6 +1168,18 @@ const FR: EddoCopy = {
     pay: "Réserver et payer",
     when: "Quel jour",
     qty: "Combien",
+    way: "Trajet",
+    oneWay: "Aller simple",
+    roundTrip: "Aller-retour",
+    fromDay: "Du",
+    untilDay: "Au",
+    days: "Durée",
+    daysValue: (n) => (n === 1 ? "1 jour" : `${n} jours`),
+    size: "Taille",
+    sizeNote:
+      "Ce sont des tailles occidentales. Si vous portez d'habitude des tailles indonésiennes, une taille en dessous ira sans doute mieux.",
+    left: (n) => (n === 1 ? "1 restant" : `${n} restants`),
+    soldOut: "Épuisé",
     spec: { duration: "Durée", level: "Niveau", engine: "Moteur", power: "Cylindrée", seats: "Places", size: "Tailles", includes: "Comprend", notes: "Remarque" },
     per: { day: "par jour", night: "par nuit", person: "par personne", trip: "par sortie", piece: "pièce", hour: "par heure" },
   },
@@ -1245,6 +1385,18 @@ const JA: EddoCopy = {
     pay: "予約して支払う",
     when: "いつ",
     qty: "いくつ",
+    way: "行程",
+    oneWay: "片道",
+    roundTrip: "往復",
+    fromDay: "開始",
+    untilDay: "終了",
+    days: "日数",
+    daysValue: (n) => `${n}日`,
+    size: "サイズ",
+    sizeNote:
+      "欧米サイズです。ふだんインドネシアサイズをお使いの方は、ワンサイズ下がちょうどよいことが多いです。",
+    left: (n) => `残り${n}点`,
+    soldOut: "完売",
     spec: { duration: "所要", level: "レベル", engine: "エンジン", power: "排気量", seats: "定員", size: "サイズ", includes: "含まれるもの", notes: "備考" },
     per: { day: "1 日あたり", night: "1 泊あたり", person: "1 名あたり", trip: "1 回あたり", piece: "1 点あたり", hour: "1 時間あたり" },
   },
@@ -1451,6 +1603,18 @@ const DE: EddoCopy = {
     pay: "Buchen und bezahlen",
     when: "An welchem Tag",
     qty: "Wie viele",
+    way: "Fahrt",
+    oneWay: "Einfach",
+    roundTrip: "Hin und zurück",
+    fromDay: "Von",
+    untilDay: "Bis",
+    days: "Tage",
+    daysValue: (n) => (n === 1 ? "1 Tag" : `${n} Tage`),
+    size: "Größe",
+    sizeNote:
+      "Das sind westliche Größen. Wer sonst indonesische Größen kauft, liegt mit einer Nummer kleiner meist richtig.",
+    left: (n) => `noch ${n}`,
+    soldOut: "Ausverkauft",
     spec: { duration: "Dauer", level: "Stufe", engine: "Motor", power: "Hubraum", seats: "Plätze", size: "Größen", includes: "Enthält", notes: "Hinweis" },
     per: { day: "pro Tag", night: "pro Nacht", person: "pro Person", trip: "pro Fahrt", piece: "pro Stück", hour: "pro Stunde" },
   },
@@ -1656,6 +1820,18 @@ const RU: EddoCopy = {
     pay: "Забронировать и оплатить",
     when: "В какой день",
     qty: "Сколько",
+    way: "Поездка",
+    oneWay: "В одну сторону",
+    roundTrip: "Туда и обратно",
+    fromDay: "С",
+    untilDay: "По",
+    days: "Срок",
+    daysValue: (n) => `${n} д${n === 1 ? "ень" : n < 5 ? "ня" : "ней"}`,
+    size: "Размер",
+    sizeNote:
+      "Размеры европейские. Если вы обычно берёте индонезийские, скорее всего подойдёт на размер меньше.",
+    left: (n) => `осталось ${n}`,
+    soldOut: "Распродано",
     spec: { duration: "Занимает", level: "Уровень", engine: "Двигатель", power: "Объём", seats: "Мест", size: "Размеры", includes: "Входит", notes: "Примечание" },
     per: { day: "за день", night: "за ночь", person: "с человека", trip: "за поездку", piece: "за штуку", hour: "за час" },
   },
@@ -1861,6 +2037,17 @@ const ZH: EddoCopy = {
     pay: "预订并付款",
     when: "哪一天",
     qty: "几个",
+    way: "行程",
+    oneWay: "单程",
+    roundTrip: "往返",
+    fromDay: "起",
+    untilDay: "至",
+    days: "天数",
+    daysValue: (n) => `${n} 天`,
+    size: "尺码",
+    sizeNote: "这些是欧美尺码。平时穿印尼尺码的话，小一号通常更合身。",
+    left: (n) => `剩 ${n} 件`,
+    soldOut: "已售完",
     spec: { duration: "时长", level: "等级", engine: "发动机", power: "排量", seats: "座位", size: "尺码", includes: "包含", notes: "备注" },
     per: { day: "每天", night: "每晚", person: "每人", trip: "每趟", piece: "每件", hour: "每小时" },
   },

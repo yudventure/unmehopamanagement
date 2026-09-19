@@ -537,6 +537,83 @@ Bahasa yang tidak ditulis diisi dari `en`, bukan dari kunci pertama, supaya
 pembaca Perancis tidak mendapat bahasa Jepang atau Indonesia tergantung urutan
 mengetiknya.
 
+### Tiga bentuk barang, dan `unit` yang menentukannya
+
+Satu formulir yang bertanya "tanggal berapa" dan "berapa banyak" tidak cocok
+untuk ketiganya, dan yang paling salah adalah sewa: pertanyaannya bukan berapa
+motor yang disewa, melainkan berapa lama satu motor dipakai.
+
+| `unit` | Yang ditanya | Contohnya |
+|---|---|---|
+| `piece` | jumlah saja | kaos |
+| `day` | tanggal mulai dan tanggal kembali, harinya dihitung sendiri | motor, mobil, kamera |
+| lainnya | satu tanggal dan jumlah | trip selam, antar pulau |
+
+Jadi mengubah satu barang dari "berapa banyak" jadi "berapa lama" cukup dengan
+menulis `"unit": "day"`. Tidak ada daftar kedua yang menyebut barang mana yang
+disewa harian, karena daftar kedua adalah daftar yang lupa diperbarui.
+
+Untuk sewa, hari dihitung sebagai selisih tanggal, sama seperti malam pada
+kamar: diambil 10 sampai 14 November berarti 4 hari. Batasnya 30 hari; lebih
+dari itu, orang yang menjawab.
+
+### Pulang pergi: `returnPrice`
+
+```json
+{ "id": "waisai-yenbuba", "price": 1800000, "returnPrice": 3600000, "unit": "trip" }
+```
+
+Ada `returnPrice`, kotaknya menawarkan dua tombol, sekali jalan dan pulang
+pergi, lengkap dengan harga masing-masing supaya tidak perlu menekan dulu baru
+tahu bedanya. Tidak ada, tidak ada pilihan sama sekali, yang benar untuk semua
+yang bukan perjalanan.
+
+Angkanya berdiri sendiri, bukan dua kali harga di atasnya. Perahu yang menunggu
+dan mengantar balik bukan penjualan yang sama dengan perahu yang sekadar
+menurunkan, dan cuma pemiliknya yang tahu punyanya yang mana.
+
+> **Angka `returnPrice` yang ada sekarang masih tempelan**, diisi dua kali tarif
+> sekali jalan supaya bentuknya bisa dilihat. Ganti dengan tarif yang sebenarnya
+> sebelum Midtrans dipindah ke produksi.
+
+### Ukuran dan stok: `sizes`
+
+```json
+"sizes": [
+  { "label": "S", "stock": 4 },
+  { "label": "M", "stock": 2 },
+  { "label": "L" },
+  { "label": "XL", "stock": 0 }
+]
+```
+
+Ada `sizes`, ukurannya wajib dipilih sebelum bisa dibayar, dan di bawah barisnya
+muncul catatan bahwa ukurannya ukuran bule sehingga pembeli lokal biasanya
+turun satu ukuran. Catatan itu ada di tujuh bahasa dan tidak perlu ditulis di
+sini.
+
+`stock` tidak diisi dan `"stock": 0` **bukan hal yang sama**, dan halamannya
+memperlakukannya berbeda:
+
+- tidak diisi berarti belum dihitung: tidak ada angka yang ditampilkan, ukurannya
+  tetap bisa dipilih
+- `0` berarti sudah dihitung dan habis: ukurannya tetap tampil, dicoret, tidak
+  bisa dipilih
+- angka lain tampil sebagai sisa sekian, dan pesanan melebihi sisanya ditolak
+
+Dibedakan karena menyamakannya berarti memilih antara mengarang angka di halaman
+tempat orang membayar, atau menyembunyikan ukuran yang sebetulnya ada di lemari.
+
+Stoknya diperiksa di server juga, bukan cuma di browser: salinan yang ada di
+browser adalah keadaan waktu halaman dibuka. Yang **belum** ada: tidak ada yang
+menahan stok antara memilih dan membayar, jadi dua orang masih bisa membeli kaos
+terakhir dalam menit yang sama. Itu butuh tempat mencatat, dan situs ini belum
+punya.
+
+> **Angka stok belum ada sama sekali** karena belum ada yang menghitungnya, dan
+> mengarang stok di halaman jual bukan hal yang pantas dikarang. Isi `stock` per
+> ukuran dan angkanya langsung tampil.
+
 ### Ada harganya berarti bisa dibayar
 
 Satu aturan, bukan dua. Dulu ada daftar terpisah yang menyebut golongan mana
@@ -549,8 +626,8 @@ tidak bertanda contoh, maka tombolnya "pesan dan bayar". Tidak ada `price`,
 tombolnya "tanya harga" dan yang menjawab orang.
 
 Menekan tombol bayar membuka kotak checkout, bukan langsung ke Midtrans. Di
-situ ditanya tanggalnya (kecuali satuannya `piece`, karena kaos tidak punya
-hari), jumlahnya, nama, dan WhatsApp atau email. Sebelum ini kartunya
+situ ditanya apa yang perlu ditanya menurut bentuk barangnya, lalu nama,
+WhatsApp dan email. Sebelum ini kartunya
 mengirim nama **barangnya** sebagai nama pembeli dan nomor WhatsApp
 **homestay** sebagai nomor pembeli, jadi keluarganya menerima pembayaran yang
 tidak bisa dicocokkan dengan tamu mana pun. Sudah diuji: yang sampai ke

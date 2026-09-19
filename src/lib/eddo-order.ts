@@ -35,9 +35,16 @@ export type PayDraft =
       kind: "service";
       service: ServiceKey;
       productId: string;
+      /** Pieces, people or trips, and the number of days for a hire. */
       qty: number;
       /** Empty for something with no day to it, like a shirt. */
       when: string;
+      /** The day a hire ends. Empty for everything else. */
+      until: string;
+      /** The size chosen, when the thing comes in sizes. */
+      size: string;
+      /** "return" only for a crossing bought both ways. */
+      way: "one" | "return";
       name: string;
       phone: string;
       email: string;

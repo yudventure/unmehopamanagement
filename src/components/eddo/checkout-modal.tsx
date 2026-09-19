@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 import { Price } from "@/components/web/price";
 import type { CurrencyCode, Rates } from "@/lib/currency";
+import { MAX_SPAN, shiftDay, spanInRange, todayISO } from "@/lib/eddo-days";
 
 /**
  * The step between pressing a price and paying it.
@@ -20,9 +21,24 @@ import type { CurrencyCode, Rates } from "@/lib/currency";
  * So the card now only shows and offers, and everything an order needs is
  * asked for here: the day, how many, a name, and a way to answer.
  *
+ * ## Three shapes, because three things are being sold
+ *
+ * One form asking "which day" and "how many" fitted none of them properly.
+ *
+ * - `piece` is a shirt. No day, and the number is how many shirts.
+ * - `dated` is a dive or a crossing. One day, and the number is how many
+ *   people or how many trips.
+ * - `rental` is a motorbike, a car or a camera. One object leaves with one
+ *   guest for a stretch of days, so the number that varies is the days and
+ *   "how many" was quietly asking how many motorbikes, which nobody was
+ *   buying. It asks for two dates instead and counts.
+ *
+ * On top of that, two things are asked only where they exist: which way a
+ * crossing goes, and which size a shirt is.
+ *
  * It does not take the payment itself. It collects, checks it has enough to be
  * useful, and hands the order up; the page owns the call to `/api/pay` because
- * the page already owns the room's. And it never sends a price — the server
+ * the page already owns the room's. And it never sends a price: the server
  * looks that up from the same file the card was drawn from.
  */
 export interface CheckoutCopy {
@@ -46,12 +62,41 @@ export interface CheckoutCopy {
   required: string;
   failed: string;
   close: string;
+  /** A crossing that can be bought both ways. */
+  way: string;
+  oneWay: string;
+  roundTrip: string;
+  /** Something hired by the day. */
+  fromDay: string;
+  untilDay: string;
+  days: string;
+  daysValue: (n: number) => string;
+  /** Something that comes in sizes. */
+  size: string;
+  sizeNote: string;
+  left: (n: number) => string;
+  soldOut: string;
+}
+
+/** What is being sold, which decides what has to be asked. */
+export type CheckoutShape = "piece" | "dated" | "rental";
+
+export interface CheckoutSize {
+  label: string;
+  /** Absent means nobody has counted. Zero means counted and gone. */
+  stock?: number;
 }
 
 export interface CheckoutOrder {
+  /** Pieces, people or trips, and the number of days for a hire. */
   qty: number;
-  /** Empty for a thing with no day to it, like a shirt. */
+  /** The day, or the day a hire starts. Empty for a thing with no day to it. */
   when: string;
+  /** The day a hire ends. Empty otherwise. */
+  until: string;
+  /** The size chosen, when the thing comes in sizes. */
+  size: string;
+  way: "one" | "return";
   name: string;
   phone: string;
   email: string;
@@ -64,6 +109,19 @@ const FIELD =
 const FIELD_BAD = "border-danger";
 const FIELD_OK = "border-line-input";
 const LABEL = "flex min-w-0 flex-col gap-[6px] text-[12px] font-medium tracking-[.01em] text-slate";
+/* The one-of-several buttons, for a size and for which way a boat goes. Real
+   buttons with `aria-pressed` rather than styled radios, because what they look
+   like and what they announce then come from the same place. */
+const CHIP =
+  "cursor-pointer rounded-[10px] border bg-surface px-[14px] py-[9px] text-[13px] leading-tight transition-colors";
+const CHIP_ON = "border-eddo bg-eddo-wash font-semibold text-eddo-deep";
+const CHIP_OFF = "border-line-input text-ink hover:border-eddo";
+/* Its own state rather than `CHIP_OFF` with a red border tacked on the end.
+   Two border classes on one element are decided by which comes later in the
+   stylesheet, not by which comes later in the attribute, so the tacked-on one
+   quietly lost and the row was never marked. */
+const CHIP_BAD = "border-danger text-ink hover:border-eddo";
+const CHIP_DEAD = "cursor-not-allowed border-line-input text-slate-mute line-through opacity-60";
 
 export function CheckoutModal({
   open,
@@ -71,8 +129,9 @@ export function CheckoutModal({
   t,
   what,
   price,
-  /** False for a thing with no day to it, which is what `piece` means. */
-  needsDay,
+  returnPrice,
+  shape,
+  sizes,
   lang,
   currency,
   rates,
@@ -83,7 +142,10 @@ export function CheckoutModal({
   t: CheckoutCopy;
   what: string;
   price: number;
-  needsDay: boolean;
+  /** Present when the same journey is also sold as a return. */
+  returnPrice?: number;
+  shape: CheckoutShape;
+  sizes?: CheckoutSize[];
   lang: string;
   currency: CurrencyCode;
   rates: Rates | null;
@@ -91,9 +153,9 @@ export function CheckoutModal({
 }) {
   const [qty, setQty] = useState(1);
   const [when, setWhen] = useState("");
-  const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
+  const [until, setUntil] = useState("");
+  const [size, setSize] = useState("");
+  const [way, setWay] = useState<"one" | "return">("one");
   const [status, setStatus] = useState<"idle" | "paying" | "failed">("idle");
   /* Which boxes were asked for and left empty. Named rather than counted, so
      the page can put the complaint under the box it belongs to instead of one
@@ -118,6 +180,9 @@ export function CheckoutModal({
     if (!open) return;
     setQty(1);
     setWhen("");
+    setUntil("");
+    setSize("");
+    setWay("one");
     setStatus("idle");
     setMissing(new Set());
   }, [open, what]);
@@ -137,14 +202,41 @@ export function CheckoutModal({
     };
   }, [open, onClose]);
 
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+
   if (!open) return null;
+
+  const rental = shape === "rental";
+  const offersReturn = typeof returnPrice === "number" && returnPrice > 0;
+  const pickSize = Boolean(sizes?.length);
+
+  /* Days for a hire, and it is a span rather than a count: a hire from the 10th
+     to the 13th is three days on the road, which is also how the nights of a
+     stay are counted one file over. Out of range counts as none, so an
+     impossible span never quietly prices itself. */
+  const days = rental ? spanInRange(when, until) : 0;
+  /* What the total is multiplied by. A hire that has not been given its dates
+     yet shows one day rather than nothing, for the same reason the room panel
+     opens on one night: a price of zero reads as free. */
+  const count = rental ? days || 1 : qty;
+  const unitPrice = way === "return" && offersReturn ? (returnPrice as number) : price;
 
   const submit = async () => {
     /* A name, a number and an address, all three. Without them a paid order is
        money the family cannot match to a person, which is worse than no order.
        Collected as a set so each empty box can be marked where it stands. */
     const gaps = new Set<string>();
-    if (needsDay && !when) gaps.add("when");
+    if (rental) {
+      if (!when) gaps.add("when");
+      /* The second date is the one marked when the span itself is wrong, since
+         that is the one the reader would change. */
+      if (!until || !days) gaps.add("until");
+    } else if (shape === "dated" && !when) {
+      gaps.add("when");
+    }
+    if (pickSize && !size) gaps.add("size");
     if (!name.trim()) gaps.add("name");
     if (!phone.trim()) gaps.add("phone");
     if (!email.trim()) gaps.add("email");
@@ -154,8 +246,11 @@ export function CheckoutModal({
     }
     setStatus("paying");
     const done = await onPay({
-      qty,
+      qty: count,
       when,
+      until: rental ? until : "",
+      size,
+      way: offersReturn ? way : "one",
       name: name.trim(),
       phone: phone.trim(),
       email: email.trim(),
@@ -215,37 +310,152 @@ export function CheckoutModal({
             <div className="mt-[4px] text-[14.5px] leading-[1.35] font-bold text-eddo-ink">{what}</div>
           </div>
 
-          <div className="mt-[14px] grid grid-cols-1 gap-[14px] sm:grid-cols-2">
-            {needsDay && (
-              <label className={LABEL}>
-                {t.when}
-                <input
-                  type="date"
-                  value={when}
-                  min={new Date().toISOString().slice(0, 10)}
-                  onChange={(e) => edit("when", setWhen)(e.target.value)}
-                  className={`${FIELD} ${mark("when")}`}
-                />
-                {note("when")}
-              </label>
-            )}
-            {/* Beside the day when there is one; across the row when there is
-                not, because half a row of fields with the other half blank
-                reads as something that failed to appear. */}
-            <label className={`${LABEL} ${needsDay ? "" : "sm:col-span-2"}`}>
-              {t.qty}
-              <select
-                value={qty}
-                onChange={(e) => edit("qty", setQty)(Number(e.target.value))}
-                className={`${FIELD} ${FIELD_OK} cursor-pointer`}
-              >
-                {Array.from({ length: 14 }, (_, i) => i + 1).map((n) => (
-                  <option key={n} value={n}>
-                    {n}
-                  </option>
+          {/* Which way the boat goes. Both prices are on the buttons, because
+              the question is really "is the return worth it" and answering it
+              should not need the total to be watched while they are pressed. */}
+          {offersReturn && (
+            <div className="mt-[14px]">
+              <div className={`${LABEL} gap-[6px]`}>{t.way}</div>
+              <div className="mt-[6px] grid grid-cols-2 gap-[10px]">
+                {([
+                  { key: "one" as const, label: t.oneWay, amount: price },
+                  { key: "return" as const, label: t.roundTrip, amount: returnPrice as number },
+                ]).map((o) => (
+                  <button
+                    key={o.key}
+                    type="button"
+                    aria-pressed={way === o.key}
+                    onClick={() => edit("way", setWay)(o.key)}
+                    className={`${CHIP} ${way === o.key ? CHIP_ON : CHIP_OFF} text-left`}
+                  >
+                    {o.label}
+                    <Price
+                      rupiah={o.amount}
+                      lang={lang}
+                      currency={currency}
+                      rates={rates}
+                      size="sm"
+                      className="mt-[3px] block font-normal text-slate"
+                    />
+                  </button>
                 ))}
-              </select>
-            </label>
+              </div>
+            </div>
+          )}
+
+          {/* The size, with the warning nobody local expects. Sizes that are
+              counted and gone stay on show, struck through: a shirt that is
+              missing from the row reads as a shirt that was never made. */}
+          {pickSize && (
+            <div className="mt-[14px]">
+              <div className={`${LABEL} gap-[6px]`}>
+                {t.size}
+                {note("size")}
+              </div>
+              <div className="mt-[6px] flex flex-wrap gap-[8px]">
+                {sizes?.map((s) => {
+                  const gone = s.stock === 0;
+                  return (
+                    <button
+                      key={s.label}
+                      type="button"
+                      disabled={gone}
+                      aria-pressed={size === s.label}
+                      onClick={() => edit("size", setSize)(s.label)}
+                      className={`${CHIP} ${
+                        gone
+                          ? CHIP_DEAD
+                          : size === s.label
+                            ? CHIP_ON
+                            : missing.has("size")
+                              ? CHIP_BAD
+                              : CHIP_OFF
+                      }`}
+                    >
+                      {s.label}
+                      {typeof s.stock === "number" && (
+                        <span className="mt-[2px] block text-[11px] font-normal text-slate-mute no-underline">
+                          {gone ? t.soldOut : t.left(s.stock)}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="mt-[8px] mb-0 text-[11.5px] leading-[1.5] text-slate-mute">{t.sizeNote}</p>
+            </div>
+          )}
+
+          <div className="mt-[14px] grid grid-cols-1 gap-[14px] sm:grid-cols-2">
+            {/* A hire asks when it starts and when it comes back, and counts
+                the days itself. Everything else with a day to it asks for the
+                one day and how many. */}
+            {rental ? (
+              <>
+                <label className={LABEL}>
+                  {t.fromDay}
+                  <input
+                    type="date"
+                    value={when}
+                    min={todayISO()}
+                    onChange={(e) => edit("when", setWhen)(e.target.value)}
+                    className={`${FIELD} ${mark("when")}`}
+                  />
+                  {note("when")}
+                </label>
+                <label className={LABEL}>
+                  {t.untilDay}
+                  <input
+                    type="date"
+                    value={until}
+                    min={when ? shiftDay(when, 1) : todayISO()}
+                    max={when ? shiftDay(when, MAX_SPAN) : undefined}
+                    onChange={(e) => edit("until", setUntil)(e.target.value)}
+                    className={`${FIELD} ${mark("until")}`}
+                  />
+                  {note("until")}
+                </label>
+                <div className={`${LABEL} sm:col-span-2 flex-row items-baseline justify-between`}>
+                  <span>{t.days}</span>
+                  <span className="text-[13.5px] font-semibold text-eddo-ink">
+                    {t.daysValue(days || 1)}
+                  </span>
+                </div>
+              </>
+            ) : (
+              <>
+                {shape === "dated" && (
+                  <label className={LABEL}>
+                    {t.when}
+                    <input
+                      type="date"
+                      value={when}
+                      min={todayISO()}
+                      onChange={(e) => edit("when", setWhen)(e.target.value)}
+                      className={`${FIELD} ${mark("when")}`}
+                    />
+                    {note("when")}
+                  </label>
+                )}
+                {/* Beside the day when there is one; across the row when there
+                    is not, because half a row of fields with the other half
+                    blank reads as something that failed to appear. */}
+                <label className={`${LABEL} ${shape === "dated" ? "" : "sm:col-span-2"}`}>
+                  {t.qty}
+                  <select
+                    value={qty}
+                    onChange={(e) => edit("qty", setQty)(Number(e.target.value))}
+                    className={`${FIELD} ${FIELD_OK} cursor-pointer`}
+                  >
+                    {Array.from({ length: 14 }, (_, i) => i + 1).map((n) => (
+                      <option key={n} value={n}>
+                        {n}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </>
+            )}
             <label className={`${LABEL} sm:col-span-2`}>
               {t.name}
               <input
@@ -284,7 +494,7 @@ export function CheckoutModal({
           <div className="mt-5 flex items-baseline justify-between gap-3 border-t border-line pt-4">
             <span className="text-[13px] text-slate">{t.total}</span>
             <Price
-              rupiah={price * qty}
+              rupiah={unitPrice * count}
               lang={lang}
               currency={currency}
               rates={rates}

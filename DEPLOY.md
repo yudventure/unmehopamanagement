@@ -35,7 +35,7 @@ bersangkutan, dan matinya dijelaskan di layar, bukan berupa error.
 | `NEXT_PUBLIC_LOGIN_HERO` | foto panel login | panel tampil sebagai bingkai kosong |
 | `SITE_DOMAIN_TURTLE` | domain situs Turtle | Turtle tetap di `/turtle` |
 | `SITE_DOMAIN_EDDO` | domain situs Eddo | Eddo tetap di `/eddo` |
-| `MIDTRANS_SERVER_KEY` | membuat transaksi Snap dan memeriksa notifikasi | tombol di bagian kamar Eddo bertanya, bukan menagih |
+| `MIDTRANS_SERVER_KEY` | membuat transaksi Snap dan memeriksa notifikasi | Eddo dan Turtle sama-sama cuma bertanya, tidak menagih |
 | `NEXT_PUBLIC_MIDTRANS_CLIENT_KEY` | dipakai browser untuk membuka Snap | sama seperti di atas |
 | `MIDTRANS_IS_PRODUCTION` | `true` untuk keluar dari sandbox | tetap di sandbox |
 
@@ -54,6 +54,16 @@ Tiga hal yang harus benar, dan dua di antaranya tidak ada di sini:
    siapa yang mengirim melainkan tanda tangannya: SHA-512 dari
    `order_id + status_code + gross_amount + server key`. Body yang tidak lolos
    dijawab 401 dan tidak ada email yang dikirim.
+4. **Satu pasang kunci untuk dua homestay.** Notifikasi yang masuk diarahkan
+   ke inbox yang benar lewat awalan order id — `TURTLE-…` ke pemilik Turtle,
+   sisanya ke Eddo — jadi tidak ada kunci atau endpoint kedua yang perlu
+   disiapkan.
+5. **Halaman Turtle membaca kunci itu saat build.** Halamannya di-*prerender*,
+   dan tombol bayarnya hanya digambar kalau kuncinya ada. Jadi menambahkan
+   `MIDTRANS_SERVER_KEY` di panel Vercel baru kelihatan setelah deploy
+   berikutnya; sampai saat itu situsnya tetap hidup dan tetap menawarkan
+   bertanya. (Endpoint-nya sendiri membaca kunci saat jalan, jadi pembayaran
+   Eddo yang sudah tayang tidak menunggu apa pun.)
 
 Nominalnya dihitung di server dari tabel kamar, tidak pernah diambil dari
 permintaan. Nominal yang datang bersama permintaan adalah nominal yang dipilih

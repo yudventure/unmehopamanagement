@@ -619,11 +619,13 @@ caranya ada di `DEPLOY.md`.
 Isinya: hero foto, bagian nilai, kamar, dive center, musim, cara sampai, FAQ,
 footer. Dua bahasa, default Inggris, tombol ID/EN di header.
 
-**Setiap tombol pesan membuka satu popup** (`web/enquiry-modal.tsx`) berisi
-nama, WhatsApp, email, mau apa, rencana bulan, jumlah orang, lama menginap,
-dan catatan. Tombolnya cuma satu: Kirim. Kamar tetap diarahkan ke OTA karena
-di sanalah kalendernya hidup; yang benar-benar dipesan lewat situs ini adalah
-paket menyelam.
+**Ada dua pintu, dan keduanya pintu depan.** Tombol tanya membuka popup
+(`web/enquiry-modal.tsx`) berisi nama, WhatsApp, email, mau apa, rencana bulan,
+jumlah orang, lama menginap, dan catatan; tombolnya cuma satu: Kirim. Di
+sebelahnya, kamar dan paket selam sekarang bisa **dipesan dan dibayar langsung**
+lewat Midtrans — lihat bagian di bawah. Kamar tetap ikut tercantum di OTA karena
+di sanalah kalendernya hidup; bedanya, tamu yang sudah memutuskan tidak lagi
+harus menunggu balasan untuk membayar.
 
 ### Ke mana pesan itu pergi
 
@@ -651,6 +653,49 @@ Butuh dua variabel di Vercel:
 Selama keduanya belum ada, endpoint menjawab 503 dan tombol Kirim otomatis
 beralih membuka WhatsApp dengan pesan yang sama. Jadi kunci yang belum
 dipasang tidak menghilangkan satu pesan pun.
+
+### Pesan langsung dan bayar
+
+Jalannya tiga langkah, dan tidak satu pun membawa angka dari browser:
+
+1. **Dialog** (`web/book-modal.tsx`), dibuka dari kartu kamar, kartu paket,
+   atau halaman paket. Bentuknya tiga, karena yang dijual tiga rupa: kamar
+   minta dua tanggal dan jumlah tamu, paket selam minta satu tanggal dan
+   jumlah penyelam, sewa alat minta dua tanggal lalu harinya dihitung sendiri.
+   Mana yang dipakai ditentukan `DIVE_PER` di `web-content.ts` — fakta, bukan
+   kata: membacanya dari tulisan "per day" di bawah harga akan salah hitung
+   begitu halamannya dibaca dalam bahasa Indonesia.
+2. **Halaman ringkasan** `/turtle/checkout` (`web/checkout-page.tsx`). Pesanan
+   dititipkan di `sessionStorage` tab itu (`lib/turtle-order.ts`), bukan di URL,
+   karena isinya nama, nomor dan alamat email — di URL ketiganya masuk riwayat
+   browser, log server, dan header referer. Halaman ini menghitung ulang
+   harganya sendiri; draf yang diutak-atik akan menampilkan total yang tidak
+   pernah ditagihkan, bukan tagihan yang tidak pernah disetujui.
+3. **`POST /api/pay`** dengan `site: "turtle"`, menghitung untuk ketiga kalinya
+   lewat `priceTurtle()`, lalu meminta token Snap. Harga selalu dibaca dari
+   tabel kamar milik manager dan `divePrices` di `content/site.json`.
+
+Yang ditolak di server, bukan cuma di browser: menginap nol malam atau lebih
+dari 30 malam, tamu melebihi kapasitas kamar (`too-many-guests`), penyelam
+lebih dari enam (batas perahu — ditolak, bukan dipotong diam-diam jadi enam),
+paket yang harganya belum diisi owner, dan kamar atau paket yang namanya tidak
+dikenal. Semuanya 422.
+
+`/api/pay/notify` mengirim email ke inbox yang benar dengan membaca awalan
+order id: yang berawalan `TURTLE-` milik Turtle, sisanya milik Eddo. Isi
+pesanannya ikut di tiga custom field Midtrans, karena notifikasi Midtrans
+sendiri cuma membawa order id, jumlah, dan status.
+
+**Tidak ada kamar yang dikunci.** Tidak ada database, jadi dua orang bisa
+membayar minggu yang sama. Situsnya mengatakan itu di bawah tombol, apa adanya,
+dan konfirmasi tetap lewat WhatsApp.
+
+**Tanpa kunci Midtrans, situsnya persis seperti sebelumnya**: tidak ada tombol
+bayar sama sekali, semua kartu cuma menawarkan bertanya. `midtransConfigured()`
+dibaca di halaman server lalu diturunkan sebagai prop `payable`. Karena
+halaman Turtle di-*prerender*, kuncinya dibaca **saat build** — memasang kunci
+di panel Vercel baru terlihat setelah deploy berikutnya, sama seperti mode
+perbaikan dan harga.
 
 ### Halaman detail tiap paket selam
 

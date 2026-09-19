@@ -1,4 +1,5 @@
 import { seedRooms } from "./data";
+import { MAX_SPAN } from "./days";
 import { SITE_CONFIG, siteConfig } from "./site-config";
 
 /**
@@ -97,7 +98,13 @@ export function money(n: number, locale: string) {
   }
 }
 
-export type RoomKey = "standard" | "family";
+/**
+ * The two room types, as a list as well as a union, because a room key that
+ * arrives in a request body has to be checked against something at runtime and
+ * a type is gone by then.
+ */
+export const ROOM_KEYS = ["standard", "family"] as const;
+export type RoomKey = (typeof ROOM_KEYS)[number];
 
 export interface RoomFacts {
   key: RoomKey;
@@ -144,6 +151,127 @@ export const DIVE_PRICE = SITE_CONFIG.divePrices as Record<DiveKey, number>;
 
 /** Drawn as the accented card. */
 export const DIVE_FEATURED: DiveKey = "fun3";
+
+/**
+ * What each package's price is multiplied by.
+ *
+ * A fact, not a word: five of the six are charged per person and the gear is
+ * charged per day, and that is true whichever language the page is being read
+ * in. The copy says "per person" and "per hari" beside the figure, which is
+ * the same fact written for a reader; this is the one the arithmetic uses.
+ *
+ * Keeping them apart matters because the words are translated and the rule is
+ * not. Deciding how to multiply by looking at whether the unit string reads
+ * "per day" would work in English and quietly charge a day's gear hire per
+ * person to everyone reading Indonesian.
+ */
+export const DIVE_PER: Record<DiveKey, "person" | "day"> = {
+  fun2: "person",
+  fun3: "person",
+  dsd: "person",
+  ow: "person",
+  snorkel: "person",
+  gear: "day",
+};
+
+/**
+ * How many people a room type sleeps.
+ *
+ * The same numbers as the `cap` line in the room table and the `cap` line in
+ * the copy, written once more here because this is the one of the three that
+ * is arithmetic: it is the top of the guest picker. Reading it out of either
+ * of the others would mean parsing "2 dewasa + 2 anak" for its digits, which
+ * is a sentence, not a number, and is one rewording away from letting six
+ * people book a room that sleeps four.
+ */
+export const ROOM_SLEEPS: Record<RoomKey, number> = { standard: 2, family: 4 };
+
+/** Six divers per guide is the boat's limit, and the copy says so out loud. */
+export const MAX_DIVERS = 6;
+
+/** What a Turtle order comes to, and what the number of them counts. */
+export interface TurtleSale {
+  /**
+   * What it is, in English, for the Midtrans dashboard and the receipt.
+   *
+   * English rather than the reader's language for the same reason Eddo's items
+   * are: this line is read by the family in the dashboard and by a guest who
+   * may have been reading the site in either language. One language beats a
+   * different one every time.
+   */
+  name: string;
+  /** Rupiah, per whatever `per` says. */
+  unitPrice: number;
+  count: number;
+  total: number;
+  /** Nights, divers, or days of gear hire. */
+  per: "night" | "person" | "day";
+}
+
+/**
+ * The one place a Turtle order is priced.
+ *
+ * Called three times for every payment and never with a figure from the
+ * browser: the checkout page calls it to show a total, `/api/pay` calls it
+ * again before asking Midtrans for a token, and the two agree because they are
+ * the same function reading the same two tables. A price that arrives in a
+ * request body is a price the sender chose.
+ *
+ * Returns null for anything it cannot price — a room type that does not exist,
+ * a package whose price the owner has not filled in, a count outside what the
+ * boat and the calendar allow. Null is what the endpoint answers 422 to and
+ * what the summary page shows as nothing to pay, which is the right answer for
+ * a draft that was tampered with and for one that went stale.
+ */
+export function priceTurtle(v: {
+  kind: string;
+  /** For a room. */
+  room?: string;
+  /** For a dive package. */
+  pack?: string;
+  /** Nights, divers or days, depending on which of the two this is. */
+  count: number;
+}): TurtleSale | null {
+  const count = Math.floor(v.count);
+  if (!Number.isFinite(count) || count < 1) return null;
+
+  if (v.kind === "room") {
+    const key = ROOM_KEYS.find((k) => k === v.room);
+    if (!key) return null;
+    if (count > MAX_SPAN) return null;
+    const rate = roomFacts().find((r) => r.key === key)?.rate ?? 0;
+    if (rate <= 0) return null;
+    return {
+      name: EN.rooms.types[key].name,
+      unitPrice: rate,
+      count,
+      total: rate * count,
+      per: "night",
+    };
+  }
+
+  if (v.kind === "dive") {
+    const key = DIVE_KEYS.find((k) => k === v.pack);
+    if (!key) return null;
+    /* A package the owner has not priced is not for sale. The CMS can leave a
+       figure out, and a missing one must read as "ask us" rather than as free. */
+    const price = DIVE_PRICE[key];
+    if (typeof price !== "number" || price <= 0) return null;
+    const per = DIVE_PER[key];
+    /* Gear is hired by the day and the rest are sold by the head, so the two
+       are capped by different things: the calendar, and the boat. */
+    if (count > (per === "day" ? MAX_SPAN : MAX_DIVERS)) return null;
+    return {
+      name: EN.dive.packages[key].name,
+      unitPrice: price,
+      count,
+      total: price * count,
+      per,
+    };
+  }
+
+  return null;
+}
 
 /**
  * Everything either site can be asked about, in one list.
@@ -351,6 +479,62 @@ export interface SiteCopy {
     sent: string;
     needContact: string;
     failed: string;
+  };
+  /**
+   * Booking and paying, which the enquiry above is deliberately not.
+   *
+   * Two different things a reader can do about the same room, and the site
+   * offers both: a message when they want to ask something, and an order when
+   * they have decided. The words are kept apart for the same reason — nothing
+   * in the enquiry should read as a purchase, and nothing here should read as
+   * a question.
+   */
+  booking: {
+    /** On a room card, a dive card, and a package's own page. */
+    cta: string;
+    title: string;
+    intro: string;
+    /** Names the thing being bought, at the top of the dialog. */
+    what: string;
+    close: string;
+    checkIn: string;
+    checkOut: string;
+    nights: string;
+    nightsValue: (n: number) => string;
+    guests: string;
+    guestsValue: (n: number) => string;
+    /** The one day a dive is booked for. */
+    day: string;
+    /** Gear is hired for a stretch of days, so it asks for two. */
+    fromDay: string;
+    untilDay: string;
+    days: string;
+    daysValue: (n: number) => string;
+    divers: string;
+    diversValue: (n: number) => string;
+    total: string;
+    /** The dialog's button. It goes to the summary, not to Midtrans. */
+    next: string;
+    /** Under whichever box was asked for and left empty. */
+    required: string;
+    failed: string;
+    /** Says out loud that paying does not hold a night by itself. */
+    hold: string;
+    /** The summary page an order is looked over on before it is paid. */
+    order: {
+      title: string;
+      intro: string;
+      what: string;
+      who: string;
+      empty: string;
+      back: string;
+      pay: string;
+      payNote: string;
+      paid: string;
+      paidNote: string;
+      failed: string;
+      home: string;
+    };
   };
   about: {
     /** The button on the home page that leads here. */
@@ -855,6 +1039,51 @@ const EN: SiteCopy = {
     sent: "Thank you, your message is with us. We answer the same day, usually within a few hours.",
     needContact: "Please leave a WhatsApp number or an email, so we can answer.",
     failed: "That did not go through. Please try again, or message us on WhatsApp.",
+  },
+  booking: {
+    cta: "Book and pay",
+    title: "Book directly",
+    intro:
+      "The days, who you are, and what it comes to. Payment is taken on the next page, through Midtrans.",
+    what: "What you are booking",
+    close: "Close",
+    checkIn: "Check in",
+    checkOut: "Check out",
+    nights: "Nights",
+    nightsValue: (n) => (n === 1 ? "1 night" : `${n} nights`),
+    guests: "Guests",
+    guestsValue: (n) => (n === 1 ? "1 guest" : `${n} guests`),
+    day: "Day",
+    fromDay: "From",
+    untilDay: "Until",
+    days: "Days",
+    daysValue: (n) => (n === 1 ? "1 day" : `${n} days`),
+    divers: "Divers",
+    diversValue: (n) => (n === 1 ? "1 diver" : `${n} divers`),
+    total: "Total",
+    next: "Review the order",
+    required: "This one is needed",
+    failed: "That did not go through. Try again, or message us on WhatsApp.",
+    hold:
+      "Paying sends the money and the booking together. We read every order the same day and confirm on WhatsApp — the rooms are sold on other sites too, so the days are certain once we have answered.",
+    order: {
+      title: "Your order",
+      intro: "Look it over, then pay. Anything wrong is fixed by going back.",
+      what: "Booking",
+      who: "Who it is for",
+      empty:
+        "Nothing has been chosen yet. Pick a room or a dive package and it will appear here.",
+      back: "Back to the homestay",
+      pay: "Pay with Midtrans",
+      payNote:
+        "Cards, bank transfer, QRIS, GoPay and ShopeePay. The payment window is Midtrans's own; we never see your card.",
+      paid: "Thank you",
+      paidNote:
+        "The payment reached us and the family has been told. We answer on WhatsApp the same day with the room and the boat time.",
+      failed:
+        "The payment did not go through. Nothing was charged; try again, or message us on WhatsApp.",
+      home: "Back to the homestay",
+    },
   },
   about: {
     cta: "Know us better",
@@ -1449,6 +1678,51 @@ const ID: SiteCopy = {
     sent: "Terima kasih, pesanmu sudah kami terima. Kami balas hari itu juga, biasanya dalam beberapa jam.",
     needContact: "Isi nomor WhatsApp atau email dulu, supaya kami bisa membalas.",
     failed: "Pesannya gagal terkirim. Coba lagi, atau hubungi kami lewat WhatsApp.",
+  },
+  booking: {
+    cta: "Pesan & bayar",
+    title: "Pesan langsung",
+    intro:
+      "Tanggalnya, siapa kamu, dan totalnya. Pembayaran dilakukan di halaman berikutnya, lewat Midtrans.",
+    what: "Yang dipesan",
+    close: "Tutup",
+    checkIn: "Check-in",
+    checkOut: "Check-out",
+    nights: "Malam",
+    nightsValue: (n) => `${n} malam`,
+    guests: "Tamu",
+    guestsValue: (n) => `${n} orang`,
+    day: "Tanggal",
+    fromDay: "Dari",
+    untilDay: "Sampai",
+    days: "Hari",
+    daysValue: (n) => `${n} hari`,
+    divers: "Penyelam",
+    diversValue: (n) => `${n} orang`,
+    total: "Total",
+    next: "Periksa pesanan",
+    required: "Bagian ini belum diisi",
+    failed: "Belum berhasil. Coba lagi, atau hubungi kami lewat WhatsApp.",
+    hold:
+      "Membayar mengirim uangnya sekaligus pesanannya. Kami baca hari itu juga dan konfirmasi lewat WhatsApp — kamar juga dijual di situs lain, jadi tanggalnya pasti setelah kami balas.",
+    order: {
+      title: "Pesananmu",
+      intro: "Periksa dulu, baru bayar. Kalau ada yang keliru, kembali saja.",
+      what: "Pesanan",
+      who: "Atas nama",
+      empty:
+        "Belum ada yang dipilih. Pilih kamar atau paket selam, nanti muncul di sini.",
+      back: "Kembali ke homestay",
+      pay: "Bayar lewat Midtrans",
+      payNote:
+        "Kartu, transfer bank, QRIS, GoPay dan ShopeePay. Jendela pembayarannya milik Midtrans; nomor kartumu tidak pernah kami lihat.",
+      paid: "Terima kasih",
+      paidNote:
+        "Pembayarannya sudah masuk dan keluarga pengelola sudah dikabari. Kami balas hari itu juga lewat WhatsApp, beserta kamarnya dan jam perahunya.",
+      failed:
+        "Pembayarannya belum berhasil. Tidak ada uang yang terpotong; coba lagi, atau hubungi kami lewat WhatsApp.",
+      home: "Kembali ke homestay",
+    },
   },
   about: {
     cta: "Kenali kami",

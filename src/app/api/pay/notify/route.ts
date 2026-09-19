@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 
-import { outcome, signatureOk } from "@/lib/midtrans";
+import { EDDO } from "@/lib/eddo-content";
+import { orderSite, outcome, signatureOk } from "@/lib/midtrans";
 import { mailOwner, rowsToHtml, type Row } from "@/lib/notify";
+import type { PublicSite } from "@/lib/site-domains";
+import { PROPERTY } from "@/lib/web-content";
 
 /**
  * Where Midtrans says what happened to a payment.
@@ -108,16 +111,27 @@ export async function POST(req: Request) {
     ["Status Midtrans", body.transaction_status ?? "—"],
   ];
 
-  /* Payment only exists on Eddo's rooms, so a payment notice is Eddo's by
-     construction. Named rather than assumed, so adding payment to the other
-     site is a compile error here instead of a misdelivered email. */
+  /*
+   * Whose payment this is, read out of the order id.
+   *
+   * Both homestays take payments now, and they are answered by two different
+   * families with two different inboxes. Midtrans sends back the order id, the
+   * amount and the status and nothing that names a site, so the id is where
+   * the answer has to be: `/api/pay` writes `TURTLE-` into the front of one
+   * site's ids and `orderSite` reads it back. This used to be the constant
+   * "eddo" with a note saying a second payable site would be a compile error
+   * here; it was not a compile error, so the note is now a function.
+   */
+  const site: PublicSite = orderSite(body.order_id);
+  const name = site === "turtle" ? PROPERTY.name : EDDO.name;
+
   const sent = await mailOwner({
-    site: "eddo",
-    subject: `Pembayaran Eddo ${label[state]} · ${body.order_id ?? ""}`,
+    site,
+    subject: `Pembayaran ${site === "turtle" ? "Turtle" : "Eddo"} ${label[state]} · ${body.order_id ?? ""}`,
     html: rowsToHtml(
       state === "paid"
-        ? "Satu pemesanan Eddo Homestay sudah dibayar. Cek kalendernya sebelum memastikan tanggalnya ke tamu."
-        : "Ada perubahan status pembayaran di Eddo Homestay.",
+        ? `Satu pemesanan ${name} sudah dibayar. Cek kalendernya sebelum memastikan tanggalnya ke tamu.`
+        : `Ada perubahan status pembayaran di ${name}.`,
       rows,
     ),
     text: rows.map(([k, v]) => `${k}: ${v}`).join("\n"),

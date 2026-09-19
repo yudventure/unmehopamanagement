@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { BookModal, type BookOrder } from "@/components/web/book-modal";
 import {
   EMPTY_ENQUIRY,
   EnquiryModal,
@@ -23,6 +25,7 @@ import {
   WhatsAppIcon,
 } from "@/components/web/icons";
 import { CurrencySwitch, Price } from "@/components/web/price";
+import { SiteLogo } from "@/components/web/site-logo";
 import { JourneyMap } from "@/components/web/journey-map";
 import { JourneyScene, STEP_SCENES } from "@/components/web/journey-scenes";
 import { SeasonScene, type SeasonKey } from "@/components/web/season-scenes";
@@ -30,6 +33,7 @@ import { useHeroScroll } from "@/hooks/use-hero-scroll";
 import { useReveal } from "@/hooks/use-reveal";
 import { useCurrency, useLang, useRates } from "@/hooks/use-site-prefs";
 import { SITE_CONFIG, siteConfig } from "@/lib/site-config";
+import { saveDraft } from "@/lib/turtle-order";
 import {
   TURTLE_ACTIVITIES,
   ACTIVITY_KEYS,
@@ -37,10 +41,13 @@ import {
   DEFAULT_LANG,
   DIVE_FEATURED,
   DIVE_KEYS,
+  DIVE_PER,
   DIVE_PRICE,
   EMAIL,
   LANGS,
+  MAX_DIVERS,
   PROPERTY,
+  ROOM_SLEEPS,
   WHATSAPP,
   type ActivityKey,
   type DiveKey,
@@ -57,12 +64,18 @@ import {
  * from the booking manager, sharing only the room rates and the illustration
  * kit.
  *
- * Every call to action ends in the same place: a WhatsApp message with the
- * enquiry already written out. That is not a placeholder for a booking engine
- * — it is how a homestay on Mansuar actually takes a booking, and it works
- * with no backend, no payment provider and no account to create. Rooms are
- * also pointed at the OTA listings, because that is where their calendars
- * live; the dive centre is the part that is genuinely booked here.
+ * Two doors, and both are the front door. A message on WhatsApp with the
+ * enquiry already written out is how a homestay on Mansuar has always taken a
+ * booking, and it is still here for anybody with a question. Beside it, a room
+ * or a dive package can now be booked and paid for outright, which is the door
+ * a guest who has already decided reaches for at two in the morning in another
+ * time zone.
+ *
+ * Paying is offered only when the server has Midtrans keys — `payable` below —
+ * so a site with no keys is the site it was rather than a site with a button
+ * that opens a broken window. Rooms stay pointed at the OTA listings too,
+ * because that is where their calendars live; the dive centre remains the part
+ * that is genuinely booked here.
  */
 
 /** Anchors stay in one language; only the labels move. */
@@ -126,33 +139,6 @@ const SOCIALS = [
   { name: "Facebook", href: TURTLE_SOCIAL.facebook, icon: <FacebookIcon /> },
   { name: "TikTok", href: TURTLE_SOCIAL.tiktok, icon: <TikTokIcon /> },
 ];
-
-/**
- * The homestay's own badge, used across the site in place of the Unmehopa
- * mark — the manager belongs to the company, this site belongs to one
- * property, and they are not the same brand.
- *
- * The file has a solid white background, so it is masked to a circle. Its ink
- * sits at most 134px from the centre of a 300px square, which is inside the
- * 150px mask: the corners go, the badge is untouched.
- */
-function SiteLogo({ size }: { size: number }) {
-  return (
-    <span
-      className="block shrink-0 overflow-hidden rounded-full bg-white"
-      style={{ width: size, height: size }}
-    >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src="/logo.png"
-        alt={`Logo ${PROPERTY.name}`}
-        width={size}
-        height={size}
-        className="h-full w-full object-cover"
-      />
-    </span>
-  );
-}
 
 /**
  * Two languages, both always visible — a dropdown would hide the fact that
@@ -279,7 +265,7 @@ function PhotoFill({ src, alt }: { src: string; alt: string }) {
   );
 }
 
-export function TurtleSite() {
+export function TurtleSite({ payable = false }: { payable?: boolean }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   /*
@@ -377,6 +363,60 @@ export function TurtleSite() {
   };
 
   const rooms = roomFacts();
+
+  /*
+   * What the booking dialog is open on, or nothing.
+   *
+   * One piece of state rather than one per card: only one dialog can be open,
+   * and holding the choice here is what lets the dialog be written once and
+   * opened from a room, from a package, or from the bar.
+   */
+  const [booking, setBooking] = useState<
+    { kind: "room"; room: RoomKey } | { kind: "dive"; pack: DiveKey } | null
+  >(null);
+  const router = useRouter();
+
+  /*
+   * The order, stashed in the tab and handed to the summary page.
+   *
+   * Nothing is priced here and nothing is charged here. The dialog collected
+   * the days and the name; `/turtle/checkout` prices it from the same tables
+   * this page drew its figures from, and `/api/pay` prices it once more before
+   * Midtrans is asked for anything.
+   *
+   * False when the tab refused to store it — a private window with site data
+   * blocked throws rather than returning nothing — and the dialog says so
+   * where it stands instead of sending the reader to an empty page.
+   */
+  const confirmBooking = (o: BookOrder) => {
+    if (!booking) return false;
+    const stashed = saveDraft(
+      booking.kind === "room"
+        ? {
+            kind: "room",
+            room: booking.room,
+            from: o.from,
+            to: o.to,
+            guests: o.count,
+            name: o.name,
+            phone: o.phone,
+            email: o.email,
+          }
+        : {
+            kind: "dive",
+            pack: booking.pack,
+            from: o.from,
+            to: o.to,
+            count: o.count,
+            name: o.name,
+            phone: o.phone,
+            email: o.email,
+          },
+    );
+    if (!stashed) return false;
+    router.push("/turtle/checkout");
+    return true;
+  };
 
   return (
     <div className="bg-surface text-ink">
@@ -702,11 +742,28 @@ export function TurtleSite() {
                   ))}
                 </ul>
 
+                {/* Two doors. Booking is the solid one when it is open at
+                    all, and asking steps back to an outline beside it — a card
+                    with two equally loud buttons asks the reader to weigh a
+                    decision they have already made by pressing the card. With
+                    no Midtrans keys there is only ever one button, and it is
+                    the one that was always there. */}
                 <div className="mt-6 flex flex-wrap gap-[10px]">
+                  {payable && (
+                    <button
+                      type="button"
+                      onClick={() => setBooking({ kind: "room", room: r.key })}
+                      className={`${PILL_DARK} cursor-pointer border-none`}
+                    >
+                      {t.booking.cta}
+                    </button>
+                  )}
                   <button
                     type="button"
                     onClick={() => ask("stay", t.rooms.askNote(rc.name))}
-                    className={`${PILL_DARK} cursor-pointer border-none`}
+                    className={`cursor-pointer ${
+                      payable ? PILL_LIGHT : `${PILL_DARK} border-none`
+                    }`}
                   >
                     {t.rooms.ask}
                   </button>
@@ -894,6 +951,7 @@ export function TurtleSite() {
             {DIVE_KEYS.map((key, i) => {
               const p = t.dive.packages[key];
               const featured = key === DIVE_FEATURED;
+              const canBuy = payable && DIVE_PRICE[key] > 0;
               return (
               <article
                 key={key}
@@ -959,10 +1017,11 @@ export function TurtleSite() {
                     price and every button sits on the same line across the
                     row, whatever the text above them does. */}
                 <div
-                  className={`mt-auto flex items-end justify-between gap-3 border-t pt-4 ${
+                  className={`mt-auto border-t pt-4 ${
                     featured ? "border-amber-deep/15" : "border-white/12"
                   }`}
                 >
+                <div className="flex items-end justify-between gap-3">
                   <div>
                     <Price
                       rupiah={DIVE_PRICE[key]}
@@ -983,17 +1042,45 @@ export function TurtleSite() {
                     </div>
                   </div>
                   {/* A link, not a button: it goes to a page, so it should
-                      middle-click, open in a tab, and be crawlable like one. */}
+                      middle-click, open in a tab, and be crawlable like one.
+
+                      Solid while it is the only thing to press, and plain text
+                      once the card can be booked: two solid pills on one card
+                      is two primary actions, and the one that takes money
+                      should not have to share the emphasis with the one that
+                      reads more about it. */}
                   <Link
                     href={`/turtle/dive/${key}`}
-                    className={`shrink-0 rounded-full px-[16px] py-[9px] text-[13px] font-medium no-underline hover:no-underline ${
-                      featured
-                        ? "bg-amber-deep text-amber"
-                        : "bg-white text-ink hover:bg-surface-hover"
+                    className={`shrink-0 text-[13px] font-medium no-underline hover:no-underline ${
+                      canBuy
+                        ? featured
+                          ? "text-amber-deep/85 hover:text-amber-deep"
+                          : "text-white/75 hover:text-white"
+                        : featured
+                          ? "rounded-full bg-amber-deep px-[16px] py-[9px] text-amber"
+                          : "rounded-full bg-white px-[16px] py-[9px] text-ink hover:bg-surface-hover"
                     }`}
                   >
                     {t.dive.details}
                   </Link>
+                </div>
+                {/* A package the owner has not priced is not for sale, and the
+                    card says "ask us" by simply not offering this. The same
+                    refusal is in `priceTurtle`, where it is the one that
+                    counts. */}
+                {canBuy && (
+                  <button
+                    type="button"
+                    onClick={() => setBooking({ kind: "dive", pack: key })}
+                    className={`mt-4 w-full cursor-pointer rounded-full border-none px-[16px] py-[10px] text-[13.5px] font-medium transition-colors ${
+                      featured
+                        ? "bg-amber-deep text-amber hover:bg-amber-ink"
+                        : "bg-white text-ink hover:bg-surface-hover"
+                    }`}
+                  >
+                    {t.booking.cta}
+                  </button>
+                )}
                 </div>
               </article>
               );
@@ -1299,6 +1386,48 @@ export function TurtleSite() {
         lang={lang}
         activities={TURTLE_ACTIVITIES}
       />
+
+      {/* The booking dialog, which exists only while something is being
+          booked. What it asks for comes from what was pressed: a room asks
+          for two dates and how many guests, a package for the day and how
+          many divers, and the gear — hired by the day rather than by the
+          head — for two dates again. */}
+      {booking && (
+        <BookModal
+          open
+          onClose={() => setBooking(null)}
+          t={t}
+          what={
+            booking.kind === "room"
+              ? t.rooms.types[booking.room].name
+              : t.dive.packages[booking.pack].name
+          }
+          shape={
+            booking.kind === "room"
+              ? "stay"
+              : DIVE_PER[booking.pack] === "day"
+                ? "hire"
+                : "dived"
+          }
+          unitPrice={
+            booking.kind === "room"
+              ? (rooms.find((r) => r.key === booking.room)?.rate ?? 0)
+              : DIVE_PRICE[booking.pack]
+          }
+          unitLabel={
+            booking.kind === "room"
+              ? t.rooms.perNight
+              : t.dive.packages[booking.pack].unit
+          }
+          maxCount={
+            booking.kind === "room" ? ROOM_SLEEPS[booking.room] : MAX_DIVERS
+          }
+          lang={lang}
+          currency={currency}
+          rates={rates}
+          onConfirm={confirmBooking}
+        />
+      )}
     </div>
   );
 }

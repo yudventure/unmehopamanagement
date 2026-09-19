@@ -31,6 +31,12 @@ Tiga situs, satu aplikasi:
 Di produksi ketiganya dipetakan ke domainnya masing-masing; caranya ada di
 [`DEPLOY.md`](DEPLOY.md).
 
+Kamar dan paket selam di situs Turtle bisa dipesan dan dibayar langsung lewat
+Midtrans. Tanpa kunci Midtrans tombolnya tidak digambar sama sekali dan situs
+tetap menawarkan bertanya lewat WhatsApp, jadi tidak ada yang rusak. Alurnya —
+dialog, halaman ringkasan `/turtle/checkout`, lalu `POST /api/pay` — dijelaskan
+di [`HANDOFF.md`](HANDOFF.md) bagian 6.
+
 ### Demo login
 
 Halaman login muncul pertama kali. Pilih peran di **Masuk sebagai** — email
@@ -97,6 +103,9 @@ Sesuai keputusan scope tahap ini — bukan kelalaian:
 - **Sinkronisasi iCal.** Status "12 menit lalu / 5 feed aktif" dan jumlah feed
   per kamar masih statis.
 - **Ekspor CSV & perbandingan bulan.** Tombolnya ada, aksinya belum.
+- **Kunci kamar saat dibayar.** Pembayaran mengirim uang dan pesanan, tapi
+  tidak memesan malamnya: tanpa database, dua orang bisa membayar minggu yang
+  sama. Situsnya mengatakan itu apa adanya di bawah tombol bayar.
 - **Upload bukti transfer, harga musiman, halaman "Hari Ini".**
 
 Urutan pengerjaannya ada di `project/Handoff Teknis Booking Manager.dc.html`.

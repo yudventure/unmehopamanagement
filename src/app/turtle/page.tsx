@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { Maintenance } from "@/components/web/maintenance";
 import { TurtleSite } from "@/components/web/site";
+import { midtransConfigured } from "@/lib/midtrans";
 import { isClosedFor } from "@/lib/preview";
 import { canonical } from "@/lib/site-domains";
 import { siteConfig } from "@/lib/site-config";
@@ -41,5 +42,19 @@ export const metadata: Metadata = {
 
 export default async function TurtlePage() {
   if (await isClosedFor("turtle")) return <Maintenance />;
-  return <TurtleSite />;
+  /*
+   * Whether the site may offer to be paid, decided here rather than in the
+   * browser: the server key is server-only by design, and the component runs
+   * where it cannot be read.
+   *
+   * Read at build, like the maintenance switch above it, so turning payments
+   * on is the same minute-long redeploy that a price change is. That is the
+   * right trade for a key that is set once and then left alone, and it keeps
+   * this page a static file for the guests reading it on island signal.
+   *
+   * Without keys the site is exactly the site it was: every room and every
+   * package still asks, and nothing offers a button that would open a broken
+   * payment window.
+   */
+  return <TurtleSite payable={midtransConfigured()} />;
 }

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 import { Price } from "@/components/web/price";
 import type { CurrencyCode, Rates } from "@/lib/currency";
-import { MAX_SPAN, shiftDay, spanInRange, todayISO } from "@/lib/eddo-days";
+import { MAX_SPAN, shiftDay, spanInRange, todayISO } from "@/lib/days";
 
 /**
  * The step between pressing a price and paying it.

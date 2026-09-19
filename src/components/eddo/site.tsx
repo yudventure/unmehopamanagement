@@ -875,19 +875,77 @@ export function EddoSite({
     96,
   );
 
+  /*
+   * The holding page, which is the whole site while the switch in the CMS is on.
+   *
+   * Built as the card the summary page is built as, on the same wash, because a
+   * guest who lands here is meeting the homestay for the first time and a page
+   * that looks unfinished says the homestay is. One card, one column, one thing
+   * to press.
+   *
+   * The island is here to do a job rather than to decorate. Text alone on a
+   * pale field reads as an error page; a drawing of the place, with the sea
+   * moving in it, says the place is still there and only the website is away.
+   * It carries `data-reveal data-shown` from the server because the draw-on
+   * animation is keyed to a revealed section and this page has none: without
+   * them the dash rule would apply, nothing would ever unset it, and the
+   * illustration would be an empty box.
+   */
   if (maintenance) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-eddo-wash px-5 text-center">
-        <div className="max-w-[520px]">
-          <EddoLogo size={28} />
-          <h1 className="mt-8 text-[clamp(28px,5vw,44px)] leading-[1.1] font-bold tracking-[-.03em] text-eddo-ink">
-            {t.maintenance.title}
-          </h1>
-          <p className="mt-4 text-[15px] leading-[1.7] text-slate">{t.maintenance.body}</p>
-          <a href={waLink("Halo Eddo Homestay")} target="_blank" rel="noreferrer" className={`${BTN} mt-7`}>
-            <span className="h-[18px] w-[18px]"><WhatsAppIcon /></span>
-            {t.maintenance.whatsapp}
-          </a>
+      <main className="flex min-h-screen items-center justify-center bg-eddo-wash px-5 py-14">
+        <div className="w-full max-w-[560px] overflow-hidden rounded-[22px] bg-surface text-center shadow-[0_30px_80px_-42px_rgba(15,30,26,.45)]">
+          <div aria-hidden="true" className="h-[5px] w-full bg-eddo-deep" />
+          <div className="px-6 py-12 sm:px-12">
+            {/* The logo is itself a flex row of badge and name, so the
+                `text-center` above does nothing to it: it needs a centred box
+                of its own, which is what it was missing. */}
+            <div className="flex justify-center">
+              <EddoLogo size={24} />
+            </div>
+
+            {/* The house rather than the islands, because the sentence under
+                it is "nothing about the homestay has changed" and this is the
+                homestay: a palm, the house on its stilts, the ladder down into
+                the water, and two lines of sea drifting under it.
+
+                Its own classes rather than `ART_BOX` with a colour bolted on.
+                Two `text-eddo-deep/*` utilities on one element are settled by
+                which comes later in the stylesheet rather than in the
+                attribute, so the override would have been a coin toss. On a
+                section heading the drawing is a note in the margin at 35%;
+                here it is the only picture on the page and has to hold it. */}
+            <div data-reveal data-shown className="mt-10 flex justify-center">
+              <HouseArt className="h-auto w-full max-w-[320px] shrink-0 text-eddo-deep/60" />
+            </div>
+
+            <h1 className="mt-10 text-[clamp(26px,4.4vw,38px)] leading-[1.12] font-bold tracking-[-.03em] text-eddo-ink">
+              {t.maintenance.title}
+            </h1>
+            <p className="mx-auto mt-4 max-w-[42ch] text-[15px] leading-[1.7] text-slate">
+              {t.maintenance.body}
+            </p>
+
+            <a
+              href={waLink("Halo Eddo Homestay")}
+              target="_blank"
+              rel="noreferrer"
+              className={`${BTN} mt-8`}
+            >
+              <span className="h-[18px] w-[18px]">
+                <WhatsAppIcon />
+              </span>
+              {t.maintenance.whatsapp}
+            </a>
+
+            {/* Written out as well as linked. Somebody reading this on a laptop
+                cannot press a WhatsApp link, and somebody who would rather
+                write an email should not have to guess the address. */}
+            <div className="mt-7 border-t border-line pt-6 font-mono text-[12px] leading-[1.9] tracking-[.02em] text-slate-mute">
+              <div>+{WHATSAPP}</div>
+              <div>{EMAIL}</div>
+            </div>
+          </div>
         </div>
       </main>
     );

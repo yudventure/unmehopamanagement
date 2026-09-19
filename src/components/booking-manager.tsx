@@ -51,6 +51,7 @@ import {
   monthStats,
   monthlyTrend,
   nightsInMonth,
+  splitConflicts,
   visibleBookings,
   type ChannelFilter,
   type PropFilter,
@@ -322,11 +323,21 @@ export function BookingManager({
     [conflicts],
   );
 
+  /* The banner speaks for one of these two lists, never both. A live overlap
+     is work; a past one is a record, and mixing them in one red sentence is
+     how the red stops meaning anything. */
+  const { live: liveConflicts, past: pastConflicts } = useMemo(
+    () => splitConflicts(conflicts, today),
+    [conflicts, today],
+  );
+  const bannerPairs = liveConflicts.length ? liveConflicts : pastConflicts;
+  const conflictTone = liveConflicts.length ? "danger" : "past";
+
   /* Names the room and the nights actually double-sold, instead of the fixed
      sentence the prototype printed. */
   const conflictText = useMemo(() => {
-    if (!conflicts.length) return "";
-    const p = conflicts[0];
+    if (!bannerPairs.length) return "";
+    const p = bannerPairs[0];
     const room = roomById.get(p.roomId)?.name ?? "";
     const last = iso(
       new Date(parse(p.from).getTime() + (p.nights - 1) * 86400000),
@@ -336,10 +347,19 @@ export function BookingManager({
         ? fmtShort(p.from)
         : `${fmtShort(p.from)}–${fmtShort(last)}`;
     const head = `${room} terjual dua kali pada ${when}`;
-    return conflicts.length === 1
+
+    /* Past reads in the past tense and says so outright, so nobody spends a
+       morning chasing a room that was freed up weeks ago. */
+    if (conflictTone === "past") {
+      return bannerPairs.length === 1
+        ? `Pernah bentrok: ${head}. Tanggalnya sudah lewat.`
+        : `${bannerPairs.length} bentrok yang sudah lewat. Terbaru: ${head}.`;
+    }
+
+    return bannerPairs.length === 1
       ? `${head}. Belum ada yang dihapus.`
-      : `${conflicts.length} bentrok kamar. Terdekat: ${head}.`;
-  }, [conflicts, roomById]);
+      : `${bannerPairs.length} bentrok kamar. Terdekat: ${head}.`;
+  }, [bannerPairs, conflictTone, roomById]);
 
   const cells = useMemo(
     () =>
@@ -1154,7 +1174,8 @@ export function BookingManager({
                     narrow={nw}
                     compact={phone}
                     showMoney={showMoney}
-                    conflictCount={conflicts.length}
+                    conflictCount={bannerPairs.length}
+                    conflictTone={conflictTone}
                     conflictText={conflictText}
                     onReviewConflict={() => setConflictOpen(true)}
                     monthLabel={monthLabel}
@@ -1277,9 +1298,9 @@ export function BookingManager({
         </div>
       </div>
 
-      {conflictOpen && conflicts.length > 0 && (
+      {conflictOpen && bannerPairs.length > 0 && (
         <ConflictModal
-          pairs={conflicts}
+          pairs={bannerPairs}
           roomName={(id) => roomById.get(id)?.name ?? ""}
           showMoney={showMoney}
           onClose={() => setConflictOpen(false)}

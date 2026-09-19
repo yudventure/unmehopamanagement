@@ -12,6 +12,13 @@ export interface CalendarScreenProps {
   compact: boolean;
   showMoney: boolean;
   conflictCount: number;
+  /**
+   * Which kind of overlap the banner is speaking for. `danger` is one whose
+   * contested nights are still ahead and is drawn to interrupt; `past` is one
+   * that has already happened, kept on the screen as a record and drawn so it
+   * reads as one.
+   */
+  conflictTone: "danger" | "past";
   /** Ready-made sentence naming the room and the nights sold twice. */
   conflictText: string;
   onReviewConflict: () => void;
@@ -79,6 +86,7 @@ export function CalendarScreen({
   compact,
   showMoney,
   conflictCount,
+  conflictTone,
   conflictText,
   onReviewConflict,
   monthLabel,
@@ -131,22 +139,36 @@ export function CalendarScreen({
     <div>
       {conflictCount > 0 && (
         <div
-          className={`mb-4 rounded-[14px] border border-danger-line bg-danger-tint px-4 py-[13px] ${
+          className={`mb-4 rounded-[14px] border px-4 py-[13px] ${
+            conflictTone === "danger"
+              ? "border-danger-line bg-danger-tint"
+              : "border-line-strong bg-surface-mute"
+          } ${
             compact ? "flex flex-col gap-[10px]" : "flex items-center gap-[14px]"
           }`}
         >
           <div className="flex items-start gap-[11px]">
-            <span className="mt-[6px] h-[9px] w-[9px] shrink-0 rounded-full bg-danger" />
-            <div className="flex-1 text-[13.5px] leading-[1.45] text-danger-deep">
+            <span
+              className={`mt-[6px] h-[9px] w-[9px] shrink-0 rounded-full ${
+                conflictTone === "danger" ? "bg-danger" : "bg-slate-faint"
+              }`}
+            />
+            <div
+              className={`flex-1 text-[13.5px] leading-[1.45] ${
+                conflictTone === "danger" ? "text-danger-deep" : "text-slate"
+              }`}
+            >
               {conflictText}
             </div>
           </div>
           <button
             type="button"
             onClick={onReviewConflict}
-            className={`cursor-pointer rounded-[10px] border border-danger bg-transparent px-[14px] py-2 text-[12.5px] font-medium text-danger hover:bg-danger hover:text-white ${
-              compact ? "w-full" : "shrink-0"
-            }`}
+            className={`cursor-pointer rounded-[10px] bg-transparent px-[14px] py-2 text-[12.5px] font-medium ${
+              conflictTone === "danger"
+                ? "border border-danger text-danger hover:bg-danger hover:text-white"
+                : "border border-line-input text-slate hover:bg-surface-hover"
+            } ${compact ? "w-full" : "shrink-0"}`}
           >
             Tinjau
           </button>

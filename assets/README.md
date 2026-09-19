@@ -560,7 +560,30 @@ Harganya sendiri **selalu** dihitung server dari berkas ini. Diuji dengan
 permintaan yang menitipkan `price: 1` dan `gross_amount: 1`: yang terkirim
 tetap Rp 300.000 untuk dua kaos.
 
+### Nama, WhatsApp, dan email: tiga kotak, ketiganya wajib
+
+**Jangan pernah menggabungnya jadi "WhatsApp atau email".** Kotak yang menerima
+salah satu memberi keluarganya salah satu secara acak, padahal nomornya dipakai
+menjawab dan emailnya dipakai memetakan pesanannya nanti. Dulu memang begitu,
+dan sekarang tidak lagi, di kotak checkout maupun di panel kamar.
+
+Ketiganya wajib. Yang kosong ditandai garis merah pada kotaknya sendiri dengan
+tulisan "Wajib diisi" di bawahnya, jadi yang kurang itu jelas yang mana, bukan
+satu kalimat di bawah tombol yang bilang ada yang kurang. Tandanya hilang
+begitu kotaknya diisi.
+
+`/api/pay` juga menolak dengan 422 kalau salah satu dari ketiganya kosong. Itu
+yang membuat aturannya berlaku untuk pesanannya, bukan cuma untuk formulirnya.
+
+Formulir **tanya-jawab** beda: di situ WhatsApp dan email sudah terpisah, tapi
+cukup salah satu, karena bertanya bukan membayar dan tidak ada yang dipetakan.
+
 ### Kamar: bayar itu pesan
+
+Bawaannya **1 malam**, supaya angka besar di atas dan totalnya di bawah sama
+sebelum pembaca mengubah apa pun. Sebelumnya 2, jadi harganya terbaca
+Rp 1.350.000 sementara totalnya Rp 2.700.000 tanpa ada yang memilih.
+
 
 Tombol kamar langsung ke Midtrans, dan kalimat "tanggalnya kami cek di kalender
 lalu kami kabari" sudah dilepas atas permintaan pemiliknya. Yang perlu

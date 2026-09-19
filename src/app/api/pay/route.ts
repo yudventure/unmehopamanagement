@@ -56,7 +56,16 @@ export async function POST(req: Request) {
   const nights = whole(body.nights, 1, MAX_NIGHTS);
   const guests = whole(body.guests, 1, MAX_GUESTS);
 
-  if (!name || (!phone && !email)) {
+  /*
+   * All three, not a name and one of the other two.
+   *
+   * It used to take whichever of the number and the address turned up, which
+   * meant the family got one of them at random: the number is what they answer
+   * on and the address is what the booking is keyed by afterwards, and a form
+   * that accepts either guarantees neither. The browser asks for all three, and
+   * this is what makes that true of an order rather than true of a form.
+   */
+  if (!name || !phone || !email) {
     return NextResponse.json({ error: "no-contact" }, { status: 422 });
   }
   /* A stay that has not been given a date cannot be held for anyone. */

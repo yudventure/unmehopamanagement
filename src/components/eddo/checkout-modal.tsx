@@ -33,11 +33,17 @@ export interface CheckoutCopy {
   when: string;
   qty: string;
   name: string;
-  contact: string;
+  /* Two fields, never one. "WhatsApp or email" collects one of the two, and
+     the family needs both: one to answer on and one to key the booking by
+     later. A box that accepts either is a box that guarantees neither. */
+  phone: string;
+  phonePlaceholder: string;
+  email: string;
+  emailPlaceholder: string;
   total: string;
   pay: string;
-  /** Shown when a name or a way to answer is missing, and when it fails. */
-  need: string;
+  /** Under whichever box has been left empty, and when the payment fails. */
+  required: string;
   failed: string;
   close: string;
 }
@@ -47,11 +53,16 @@ export interface CheckoutOrder {
   /** Empty for a thing with no day to it, like a shirt. */
   when: string;
   name: string;
-  contact: string;
+  phone: string;
+  email: string;
 }
 
 const FIELD =
-  "rounded-[10px] border border-line-input bg-surface px-[13px] py-[11px] text-[14px] text-ink outline-none transition-colors focus:border-eddo";
+  "rounded-[10px] border bg-surface px-[13px] py-[11px] text-[14px] text-ink outline-none transition-colors focus:border-eddo";
+/* A box that has been asked for and left empty. Red on the edge and red under
+   it: the colour alone would say nothing to a reader who cannot see it. */
+const FIELD_BAD = "border-danger";
+const FIELD_OK = "border-line-input";
 const LABEL = "flex min-w-0 flex-col gap-[6px] text-[12px] font-medium tracking-[.01em] text-slate";
 
 export function CheckoutModal({
@@ -81,12 +92,23 @@ export function CheckoutModal({
   const [qty, setQty] = useState(1);
   const [when, setWhen] = useState("");
   const [name, setName] = useState("");
-  const [contact, setContact] = useState("");
-  const [status, setStatus] = useState<"idle" | "paying" | "need" | "failed">("idle");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<"idle" | "paying" | "failed">("idle");
+  /* Which boxes were asked for and left empty. Named rather than counted, so
+     the page can put the complaint under the box it belongs to instead of one
+     line at the bottom saying something is missing. */
+  const [missing, setMissing] = useState<Set<string>>(new Set());
   /* Every field goes through this. A complaint that survives being answered
      is a complaint about the form rather than about the reader. */
-  const edit = <T,>(set: (v: T) => void) => (v: T) => {
-    setStatus((s) => (s === "need" || s === "failed" ? "idle" : s));
+  const edit = <T,>(key: string, set: (v: T) => void) => (v: T) => {
+    setStatus((s) => (s === "failed" ? "idle" : s));
+    setMissing((m) => {
+      if (!m.has(key)) return m;
+      const next = new Set(m);
+      next.delete(key);
+      return next;
+    });
     set(v);
   };
 
@@ -97,6 +119,7 @@ export function CheckoutModal({
     setQty(1);
     setWhen("");
     setStatus("idle");
+    setMissing(new Set());
   }, [open, what]);
 
   /* Escape closes it, and the page behind holds still while it is up. */
@@ -117,17 +140,36 @@ export function CheckoutModal({
   if (!open) return null;
 
   const submit = async () => {
-    /* A name and one way to reach them. Without both, a paid order is money
-       the family cannot match to a person, which is worse than no order. */
-    if (!name.trim() || !contact.trim() || (needsDay && !when)) {
-      setStatus("need");
+    /* A name, a number and an address, all three. Without them a paid order is
+       money the family cannot match to a person, which is worse than no order.
+       Collected as a set so each empty box can be marked where it stands. */
+    const gaps = new Set<string>();
+    if (needsDay && !when) gaps.add("when");
+    if (!name.trim()) gaps.add("name");
+    if (!phone.trim()) gaps.add("phone");
+    if (!email.trim()) gaps.add("email");
+    if (gaps.size) {
+      setMissing(gaps);
       return;
     }
     setStatus("paying");
-    const done = await onPay({ qty, when, name: name.trim(), contact: contact.trim() });
+    const done = await onPay({
+      qty,
+      when,
+      name: name.trim(),
+      phone: phone.trim(),
+      email: email.trim(),
+    });
     setStatus(done ? "idle" : "failed");
     if (done) onClose();
   };
+
+  /** A box, its red edge when it is empty, and the word under it. */
+  const mark = (key: string) => (missing.has(key) ? FIELD_BAD : FIELD_OK);
+  const note = (key: string) =>
+    missing.has(key) ? (
+      <span className="text-[11.5px] font-normal text-danger">{t.required}</span>
+    ) : null;
 
   return (
     <div
@@ -175,17 +217,18 @@ export function CheckoutModal({
                   type="date"
                   value={when}
                   min={new Date().toISOString().slice(0, 10)}
-                  onChange={(e) => edit(setWhen)(e.target.value)}
-                  className={FIELD}
+                  onChange={(e) => edit("when", setWhen)(e.target.value)}
+                  className={`${FIELD} ${mark("when")}`}
                 />
+                {note("when")}
               </label>
             )}
             <label className={LABEL}>
               {t.qty}
               <select
                 value={qty}
-                onChange={(e) => edit(setQty)(Number(e.target.value))}
-                className={`${FIELD} cursor-pointer`}
+                onChange={(e) => edit("qty", setQty)(Number(e.target.value))}
+                className={`${FIELD} ${FIELD_OK} cursor-pointer`}
               >
                 {Array.from({ length: 14 }, (_, i) => i + 1).map((n) => (
                   <option key={n} value={n}>
@@ -196,11 +239,36 @@ export function CheckoutModal({
             </label>
             <label className={`${LABEL} sm:col-span-2`}>
               {t.name}
-              <input value={name} onChange={(e) => edit(setName)(e.target.value)} className={FIELD} />
+              <input
+                value={name}
+                onChange={(e) => edit("name", setName)(e.target.value)}
+                className={`${FIELD} ${mark("name")}`}
+              />
+              {note("name")}
             </label>
-            <label className={`${LABEL} sm:col-span-2`}>
-              {t.contact}
-              <input value={contact} onChange={(e) => edit(setContact)(e.target.value)} className={FIELD} />
+            <label className={LABEL}>
+              {t.phone}
+              <input
+                value={phone}
+                onChange={(e) => edit("phone", setPhone)(e.target.value)}
+                placeholder={t.phonePlaceholder}
+                inputMode="tel"
+                autoComplete="tel"
+                className={`${FIELD} ${mark("phone")}`}
+              />
+              {note("phone")}
+            </label>
+            <label className={LABEL}>
+              {t.email}
+              <input
+                value={email}
+                onChange={(e) => edit("email", setEmail)(e.target.value)}
+                placeholder={t.emailPlaceholder}
+                inputMode="email"
+                autoComplete="email"
+                className={`${FIELD} ${mark("email")}`}
+              />
+              {note("email")}
             </label>
           </div>
 
@@ -214,9 +282,9 @@ export function CheckoutModal({
               className="text-right text-eddo-ink"
             />
           </div>
-          {(status === "need" || status === "failed") && (
-            <p className="mt-4 mb-0 rounded-[10px] bg-amber-soft px-[13px] py-[10px] text-[12.5px] leading-[1.5] text-amber-deep">
-              {status === "need" ? t.need : t.failed}
+          {status === "failed" && (
+            <p className="mt-4 mb-0 rounded-[10px] bg-danger-tint px-[13px] py-[10px] text-[12.5px] leading-[1.5] text-danger-deep">
+              {t.failed}
             </p>
           )}
 

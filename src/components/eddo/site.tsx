@@ -640,8 +640,10 @@ export function EddoSite({
      state for the whole section rather than a set of fields per card: the
      cards are drawn in a loop, and a hook cannot be. */
   const [buying, setBuying] = useState<{ service: ServiceKey; product: ServiceProduct } | null>(null);
-  /* What went wrong with the room payment, shown under its button. */
-  const [stayError, setStayError] = useState<"need" | "failed" | null>(null);
+  /* The room's empty boxes, named so each can be marked where it stands, and
+     separately whether the payment itself failed. */
+  const [stayMissing, setStayMissing] = useState<Set<string>>(new Set());
+  const [stayFailed, setStayFailed] = useState(false);
 
   /*
    * Whether this card offers to charge rather than to ask.
@@ -683,9 +685,8 @@ export function EddoSite({
              is no day to name; today is the day it was bought. */
           checkIn: o.when || new Date().toISOString().slice(0, 10),
           name: o.name,
-          /* An at sign is the whole of the guess, and it is enough: the server
-             only needs one of the two to be able to answer. */
-          ...(o.contact.includes("@") ? { email: o.contact } : { phone: o.contact }),
+          phone: o.phone,
+          email: o.email,
         }),
       });
       if (!res.ok) throw new Error(String(res.status));
@@ -730,8 +731,12 @@ export function EddoSite({
      dialog is for asking, and these are for paying. */
   const [stayFrom, setStayFrom] = useState("");
   const [payName, setPayName] = useState("");
-  const [payContact, setPayContact] = useState("");
-  const [nights, setNights] = useState(2);
+  const [payPhone, setPayPhone] = useState("");
+  const [payEmail, setPayEmail] = useState("");
+  /* One night, so the total under the fields is the price above them until a
+     reader changes it. Two nights meant the big number said 1,350,000 and the
+     total said 2,700,000 before anybody had chosen anything. */
+  const [nights, setNights] = useState(1);
   const [guests, setGuests] = useState(2);
   const [paying, setPaying] = useState(false);
   const [enquiry, setEnquiry] = useState<Enquiry>(EMPTY_ENQUIRY);
@@ -761,14 +766,22 @@ export function EddoSite({
    */
   const startPayment = async () => {
     if (paying) return;
-    if (!payName.trim() || !payContact.trim() || !stayFrom) {
-      setStayError("need");
+    /* Date, name, number and address, all four. Collected as a set rather than
+       stopping at the first, so somebody who left three boxes empty is told
+       about three boxes rather than made to press the button three times. */
+    const gaps = new Set<string>();
+    if (!stayFrom) gaps.add("when");
+    if (!payName.trim()) gaps.add("name");
+    if (!payPhone.trim()) gaps.add("phone");
+    if (!payEmail.trim()) gaps.add("email");
+    if (gaps.size) {
+      setStayMissing(gaps);
       return;
     }
-    setStayError(null);
+    setStayMissing(new Set());
+    setStayFailed(false);
     setPaying(true);
     try {
-      const looksEmail = payContact.includes("@");
       const res = await fetch("/api/pay", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -777,7 +790,8 @@ export function EddoSite({
           nights,
           guests,
           name: payName.trim(),
-          ...(looksEmail ? { email: payContact.trim() } : { phone: payContact.trim() }),
+          phone: payPhone.trim(),
+          email: payEmail.trim(),
         }),
       });
       if (!res.ok) throw new Error(String(res.status));
@@ -785,11 +799,22 @@ export function EddoSite({
       await loadSnap(out.snap);
       window.snap?.pay(out.token);
     } catch {
-      setStayError("failed");
+      setStayFailed(true);
     } finally {
       setPaying(false);
     }
   };
+
+  /* The same marking the checkout dialog uses, for the same reason: a reader
+     who has left something out should be told which thing, beside the thing. */
+  const stayMark = (key: string) =>
+    stayMissing.has(key) ? "border-danger" : "border-line-strong";
+  const stayNote = (key: string) =>
+    stayMissing.has(key) ? (
+      <span className="mt-[2px] block text-[11px] font-normal text-danger">
+        {t.services.required}
+      </span>
+    ) : null;
 
   const ask = (activity: ActivityKey, notes: string, extra: Partial<Enquiry> = {}) => {
     patch({ activity, notes, ...extra });
@@ -1370,16 +1395,25 @@ export function EddoSite({
             </div>
 
             <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
-              <label className="flex flex-col gap-[4px] rounded-[14px] border border-line-strong px-[14px] py-[9px] text-[11px] font-medium text-slate">
+              <label className={`flex flex-col gap-[4px] rounded-[14px] border px-[14px] py-[9px] text-[11px] font-medium text-slate ${stayMark("when")}`}>
                 {t.rooms.checkIn}
                 <input
                   type="date"
                   value={stayFrom}
-                  onChange={(e) => setStayFrom(e.target.value)}
+                  onChange={(e) => {
+                    setStayMissing((m) => {
+                      if (!m.has("when")) return m;
+                      const n = new Set(m);
+                      n.delete("when");
+                      return n;
+                    });
+                    setStayFrom(e.target.value);
+                  }}
                   className="border-none bg-transparent p-0 text-[14px] font-medium text-eddo-ink outline-none"
                 />
+                {stayNote("when")}
               </label>
-              <label className="flex flex-col gap-[4px] rounded-[14px] border border-line-strong px-[14px] py-[9px] text-[11px] font-medium text-slate">
+              <label className="flex flex-col gap-[4px] rounded-[14px] border px-[14px] py-[9px] text-[11px] font-medium text-slate border-line-strong">
                 {t.rooms.nights}
                 <select
                   value={nights}
@@ -1391,7 +1425,7 @@ export function EddoSite({
                   ))}
                 </select>
               </label>
-              <label className="flex flex-col gap-[4px] rounded-[14px] border border-line-strong px-[14px] py-[9px] text-[11px] font-medium text-slate">
+              <label className="flex flex-col gap-[4px] rounded-[14px] border px-[14px] py-[9px] text-[11px] font-medium text-slate border-line-strong">
                 {t.rooms.guests}
                 <select
                   value={guests}
@@ -1405,24 +1439,41 @@ export function EddoSite({
               </label>
             </div>
 
+            {/* Name, WhatsApp and email, three boxes and all three asked for.
+                It used to be two, with the second reading "WhatsApp or email"
+                and taking whichever arrived; that hands the family one of the
+                two at random, and they need the number to answer on and the
+                address to key the booking by. */}
             {canPay && (
-              <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <label className="flex flex-col gap-[4px] rounded-[14px] border border-line-strong px-[14px] py-[9px] text-[11px] font-medium text-slate">
-                  {t.rooms.yourName}
-                  <input
-                    value={payName}
-                    onChange={(e) => setPayName(e.target.value)}
-                    className="border-none bg-transparent p-0 text-[14px] font-medium text-eddo-ink outline-none"
-                  />
-                </label>
-                <label className="flex flex-col gap-[4px] rounded-[14px] border border-line-strong px-[14px] py-[9px] text-[11px] font-medium text-slate">
-                  {t.rooms.contact}
-                  <input
-                    value={payContact}
-                    onChange={(e) => setPayContact(e.target.value)}
-                    className="border-none bg-transparent p-0 text-[14px] font-medium text-eddo-ink outline-none"
-                  />
-                </label>
+              <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
+                {(
+                  [
+                    ["name", t.rooms.yourName, payName, setPayName, undefined, undefined],
+                    ["phone", t.enquiry.phone, payPhone, setPayPhone, t.enquiry.phonePlaceholder, "tel"],
+                    ["email", t.enquiry.email, payEmail, setPayEmail, t.enquiry.emailPlaceholder, "email"],
+                  ] as const
+                ).map(([key, label, value, set, placeholder, mode]) => (
+                  <label key={key} className={`flex flex-col gap-[4px] rounded-[14px] border px-[14px] py-[9px] text-[11px] font-medium text-slate ${stayMark(key)}`}>
+                    {label}
+                    <input
+                      value={value}
+                      placeholder={placeholder}
+                      inputMode={mode}
+                      autoComplete={mode === "tel" ? "tel" : mode === "email" ? "email" : "name"}
+                      onChange={(e) => {
+                        setStayMissing((m) => {
+                          if (!m.has(key)) return m;
+                          const n = new Set(m);
+                          n.delete(key);
+                          return n;
+                        });
+                        set(e.target.value);
+                      }}
+                      className="w-full min-w-0 border-none bg-transparent p-0 text-[14px] font-medium text-eddo-ink outline-none"
+                    />
+                    {stayNote(key)}
+                  </label>
+                ))}
               </div>
             )}
 
@@ -1451,9 +1502,9 @@ export function EddoSite({
             >
               {canPay ? t.rooms.pay : t.rooms.cta}
             </button>
-            {stayError && (
-              <p className="mt-3 mb-0 rounded-[10px] bg-amber-soft px-[13px] py-[10px] text-[12.5px] leading-[1.5] text-amber-deep">
-                {stayError === "need" ? t.services.checkoutNeed : t.services.checkoutFailed}
+            {stayFailed && (
+              <p className="mt-3 mb-0 rounded-[10px] bg-danger-tint px-[13px] py-[10px] text-[12.5px] leading-[1.5] text-danger-deep">
+                {t.services.checkoutFailed}
               </p>
             )}
             {/* The line under the button describes the button that is there,
@@ -1898,10 +1949,13 @@ export function EddoSite({
             when: t.services.when,
             qty: t.services.qty,
             name: t.rooms.yourName,
-            contact: t.rooms.contact,
+            phone: t.enquiry.phone,
+            phonePlaceholder: t.enquiry.phonePlaceholder,
+            email: t.enquiry.email,
+            emailPlaceholder: t.enquiry.emailPlaceholder,
             total: t.rooms.total,
             pay: t.services.pay,
-            need: t.services.checkoutNeed,
+            required: t.services.required,
             failed: t.services.checkoutFailed,
             close: t.enquiry.close,
           }}

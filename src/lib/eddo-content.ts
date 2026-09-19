@@ -268,7 +268,6 @@ export interface EddoCopy {
     guests: string;
     guestsValue: (n: number) => string;
     yourName: string;
-    contact: string;
     total: string;
     /** Sends the reader to Midtrans. */
     pay: string;
@@ -388,7 +387,10 @@ export interface EddoCopy {
     /** The checkout dialog. The rest of its labels it borrows from the room
         panel and from this block, because they are the same words. */
     checkoutIntro: string;
-    checkoutNeed: string;
+    /** Under a field that has to be filled in and is not. Short: it sits
+        directly beneath the box it is complaining about, so it does not have
+        to name it. */
+    required: string;
     checkoutFailed: string;
     /** On a card that can be paid for outright, and the two fields it needs. */
     pay: string;
@@ -467,7 +469,6 @@ const EN: EddoCopy = {
     guests: "Guests",
     guestsValue: (n) => (n === 1 ? "1 guest" : `${n} guests`),
     yourName: "Your name",
-    contact: "WhatsApp or email",
     total: "Total",
     pay: "Book and pay",
     cta: "Ask about a house",
@@ -586,7 +587,7 @@ const EN: EddoCopy = {
     askPrice: "Ask the price",
     noPhoto: "Photograph still to come",
     checkoutIntro: "Fill in the day and who it is for, then pay through Midtrans.",
-    checkoutNeed: "Please put in your name and a WhatsApp number or an email.",
+    required: "Required",
     checkoutFailed: "That did not go through. Please try again, or message us on WhatsApp.",
     pay: "Book and pay",
     when: "Which day",
@@ -661,7 +662,6 @@ const ID: EddoCopy = {
     guests: "Tamu",
     guestsValue: (n) => `${n} tamu`,
     yourName: "Nama",
-    contact: "WhatsApp atau email",
     total: "Total",
     pay: "Pesan dan bayar",
     cta: "Tanya soal rumahnya",
@@ -780,7 +780,7 @@ const ID: EddoCopy = {
     askPrice: "Tanya harga",
     noPhoto: "Fotonya menyusul",
     checkoutIntro: "Isi harinya dan atas nama siapa, lalu bayar lewat Midtrans.",
-    checkoutNeed: "Tolong isi namamu dan nomor WhatsApp atau email.",
+    required: "Wajib diisi",
     checkoutFailed: "Belum berhasil. Coba lagi, atau hubungi kami lewat WhatsApp.",
     pay: "Pesan dan bayar",
     when: "Hari apa",
@@ -872,7 +872,6 @@ const FR: EddoCopy = {
     guests: "Personnes",
     guestsValue: (n) => (n === 1 ? "1 personne" : `${n} personnes`),
     yourName: "Votre nom",
-    contact: "WhatsApp ou e-mail",
     total: "Total",
     pay: "Réserver et payer",
     cta: "Demander une maison",
@@ -991,7 +990,7 @@ const FR: EddoCopy = {
     askPrice: "Demander le prix",
     noPhoto: "Photo à venir",
     checkoutIntro: "Indiquez le jour et à quel nom, puis payez via Midtrans.",
-    checkoutNeed: "Merci d'indiquer votre nom et un numéro WhatsApp ou un e-mail.",
+    required: "Obligatoire",
     checkoutFailed: "Cela n'a pas abouti. Réessayez, ou écrivez-nous sur WhatsApp.",
     pay: "Réserver et payer",
     when: "Quel jour",
@@ -1066,7 +1065,6 @@ const JA: EddoCopy = {
     guests: "人数",
     guestsValue: (n) => `${n} 名`,
     yourName: "お名前",
-    contact: "WhatsApp またはメール",
     total: "合計",
     pay: "予約して支払う",
     cta: "空きを問い合わせる",
@@ -1185,7 +1183,7 @@ const JA: EddoCopy = {
     askPrice: "料金を聞く",
     noPhoto: "写真は準備中です",
     checkoutIntro: "日にちとお名前をご記入のうえ、Midtrans でお支払いください。",
-    checkoutNeed: "お名前と、WhatsApp 番号かメールアドレスをご記入ください。",
+    required: "必須です",
     checkoutFailed: "通りませんでした。もう一度お試しいただくか、WhatsApp でご連絡ください。",
     pay: "予約して支払う",
     when: "いつ",
@@ -1261,7 +1259,6 @@ const DE: EddoCopy = {
     guests: "Gäste",
     guestsValue: (n) => (n === 1 ? "1 Gast" : `${n} Gäste`),
     yourName: "Euer Name",
-    contact: "WhatsApp oder E-Mail",
     total: "Gesamt",
     pay: "Buchen und bezahlen",
     cta: "Nach einem Haus fragen",
@@ -1380,7 +1377,7 @@ const DE: EddoCopy = {
     askPrice: "Nach dem Preis fragen",
     noPhoto: "Foto folgt noch",
     checkoutIntro: "Tragt den Tag ein und auf wen es läuft, dann zahlt über Midtrans.",
-    checkoutNeed: "Bitte tragt euren Namen und eine WhatsApp-Nummer oder eine E-Mail ein.",
+    required: "Pflichtfeld",
     checkoutFailed: "Das ist nicht durchgegangen. Versucht es noch einmal, oder schreibt uns auf WhatsApp.",
     pay: "Buchen und bezahlen",
     when: "An welchem Tag",
@@ -1455,7 +1452,6 @@ const RU: EddoCopy = {
     guests: "Гостей",
     guestsValue: (n) => `${n} гост${n === 1 ? "ь" : n < 5 ? "я" : "ей"}`,
     yourName: "Ваше имя",
-    contact: "WhatsApp или почта",
     total: "Итого",
     pay: "Забронировать и оплатить",
     cta: "Спросить про дом",
@@ -1574,7 +1570,7 @@ const RU: EddoCopy = {
     askPrice: "Спросить цену",
     noPhoto: "Фотография будет позже",
     checkoutIntro: "Укажите день и на чьё имя, затем оплатите через Midtrans.",
-    checkoutNeed: "Пожалуйста, укажите имя и номер WhatsApp или адрес почты.",
+    required: "Обязательно",
     checkoutFailed: "Не прошло. Попробуйте ещё раз или напишите нам в WhatsApp.",
     pay: "Забронировать и оплатить",
     when: "В какой день",
@@ -1649,7 +1645,6 @@ const ZH: EddoCopy = {
     guests: "人数",
     guestsValue: (n) => `${n} 人`,
     yourName: "称呼",
-    contact: "WhatsApp 或邮箱",
     total: "合计",
     pay: "预订并付款",
     cta: "问问房子",
@@ -1768,7 +1763,7 @@ const ZH: EddoCopy = {
     askPrice: "问价格",
     noPhoto: "照片稍后补上",
     checkoutIntro: "填好日期和用谁的名字，然后用 Midtrans 付款。",
-    checkoutNeed: "请填写你的名字，以及 WhatsApp 号码或邮箱。",
+    required: "必填",
     checkoutFailed: "没有成功。再试一次，或者用 WhatsApp 联系我们。",
     pay: "预订并付款",
     when: "哪一天",

@@ -540,6 +540,26 @@ const BTN =
 const BTN_GHOST =
   "inline-flex cursor-pointer items-center justify-center gap-2 rounded-full border border-eddo-line bg-surface px-[22px] py-[12px] text-[14px] font-medium text-eddo-ink no-underline transition-colors hover:border-eddo hover:no-underline";
 
+/**
+ * The one button that sits on a photograph, turned inside out.
+ *
+ * `BTN` is teal on white and right everywhere else on the page. On the hero it
+ * is teal on the sea, which is teal, and it measured 1.42:1 against the water
+ * behind it on a wide screen and 1.29:1 on a phone. A control needs 3:1 from
+ * what it sits on before anybody can be certain they have seen it, and the
+ * owner reported it as faint before any of that was measured.
+ *
+ * White is the way out and the only one that keeps working: the sea changes
+ * colour with the hour, the crop and the photograph, and a darker or brighter
+ * teal only wins against the water it was sampled from. White wins against any
+ * of them, and the brand colour moves to the type where it still reads.
+ *
+ * Bigger than `BTN` as well, because this is the first thing on the page and
+ * the only thing being asked of a reader who has just arrived.
+ */
+const BTN_ON_PHOTO =
+  "inline-flex cursor-pointer items-center justify-center gap-2 rounded-full border-none bg-white px-[26px] py-[14px] text-[15px] font-semibold text-eddo-deep no-underline shadow-[0_12px_28px_-10px_rgba(6,40,44,.55)] transition-colors hover:bg-eddo-tint hover:text-eddo-dark hover:no-underline";
+
 export function EddoSite({
   maintenance = false,
   sisterHref = "/turtle",
@@ -1191,7 +1211,7 @@ export function EddoSite({
               {t.hero.sub}
             </p>
             <div className="mt-7 flex flex-wrap gap-3">
-              <a href="#kamar" className={BTN}>
+              <a href="#kamar" className={BTN_ON_PHOTO}>
                 {t.hero.cta}
                 <span aria-hidden="true">→</span>
               </a>
@@ -1764,7 +1784,14 @@ export function EddoSite({
               <span className="font-mono text-[10.5px] tracking-[.12em] text-white/75 uppercase">{t.why.cta.eyebrow}</span>
               <h3 className="mt-3 mb-0 max-w-[16ch] text-[clamp(24px,3.2vw,34px)] leading-[1.1] font-bold tracking-[-.02em]">{t.why.cta.title}</h3>
               <p className="mt-3 max-w-[360px] text-[14px] leading-[1.65] text-white/85">{t.why.cta.body}</p>
-              <button type="button" onClick={() => setEnquiryOpen(true)} className={`${BTN} mt-6 w-fit`}>
+              {/* On a photograph as well, so the same white. Measured teal on
+                  teal at 1.09:1 wide and 1.07:1 on a phone, which is the hero's
+                  problem in a second place rather than a new one. */}
+              <button
+                type="button"
+                onClick={() => setEnquiryOpen(true)}
+                className={`${BTN_ON_PHOTO} mt-6 w-fit`}
+              >
                 {t.why.cta.button}
                 <span aria-hidden="true">→</span>
               </button>

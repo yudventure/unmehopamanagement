@@ -39,6 +39,44 @@ export async function POST(req: Request) {
   };
 
   /*
+   * Midtrans sends the amount as "2700000.00", and printing it straight gave
+   * "Rp 2700000.00" in the one line of this email anybody checks twice. Read as
+   * a number and written the way rupiah is written, with the raw string kept if
+   * it is ever something this cannot parse: a wrong-looking total is better
+   * than a missing one.
+   *
+   * The fraction goes because rupiah has none. Midtrans sends two decimals
+   * because its field is decimal, not because there are centavos.
+   */
+  const rupiah = (raw: string | undefined) => {
+    if (!raw) return "—";
+    const n = Number(raw);
+    return Number.isFinite(n) ? `Rp ${Math.round(n).toLocaleString("id-ID")}` : `Rp ${raw}`;
+  };
+
+  /*
+   * `credit_card` is what the API calls it; the family reads this on a phone at
+   * six in the morning. Anything not on the list is tidied rather than dropped,
+   * so a payment method Midtrans adds next year still arrives readable instead
+   * of arriving as a dash.
+   */
+  const CARA: Record<string, string> = {
+    credit_card: "Kartu kredit",
+    bank_transfer: "Transfer bank",
+    echannel: "Mandiri Bill",
+    permata: "Permata VA",
+    bca_klikpay: "BCA KlikPay",
+    gopay: "GoPay",
+    shopeepay: "ShopeePay",
+    qris: "QRIS",
+    cstore: "Gerai (Indomaret atau Alfamart)",
+    akulaku: "Akulaku",
+    danamon_online: "Danamon Online",
+  };
+  const cara = (v: string | undefined) =>
+    !v ? "—" : (CARA[v] ?? v.replace(/_/g, " "));
+
+  /*
    * The three lines `/api/pay` wrote into the custom fields, read back out.
    *
    * Without them this email said that money had arrived for order
@@ -64,8 +102,8 @@ export async function POST(req: Request) {
     ["Status", label[state]],
     ...booked,
     ["Order", body.order_id ?? "—"],
-    ["Jumlah", body.gross_amount ? `Rp ${body.gross_amount}` : "—"],
-    ["Cara bayar", body.payment_type ?? "—"],
+    ["Jumlah", rupiah(body.gross_amount)],
+    ["Cara bayar", cara(body.payment_type)],
     ["Waktu", body.transaction_time ?? "—"],
     ["Status Midtrans", body.transaction_status ?? "—"],
   ];

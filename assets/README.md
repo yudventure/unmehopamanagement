@@ -47,6 +47,31 @@ sekitar 3 MB untuk satu halaman. Dimuat malas (`loading="lazy"`) jadi tidak
 menahan tampilan pertama, tapi di sinyal pulau tetap terasa. Simpan ulang di
 lebar 1080px dengan kualitas 80 biasanya turun ke 150–250 KB per foto.
 
+## `dive.mp4` — klip di atas bar pemesanan selam
+
+Slot video di bagian Selam, tepat di atas bar "cek ketersediaan". **Belum ada
+berkasnya**, dan selama belum ada bandnya memang tidak digambar sama sekali —
+bukan kotak hitam, bukan ikon rusak.
+
+| Berkas | Wajib? | Catatan |
+|---|---|---|
+| `dive.mp4` | untuk memunculkan bandnya | H.264 + AAC, mendatar. Web-nya membaca metadata saja sampai ditekan, jadi ukuran berkas tidak menahan halaman — tapi tetap simpan di bawah 20 MB kalau bisa |
+| `dive-poster.jpg` | opsional | gambar diam sebelum diputar. Tanpa ini yang tampil frame pertama klipnya |
+
+Mau menaruhnya di tempat lain (CDN, Cloudflare Stream)? Isi
+`NEXT_PUBLIC_DIVE_VIDEO` dan `NEXT_PUBLIC_DIVE_POSTER` dengan URL-nya; nilai
+kosong berarti bandnya mati.
+
+**Tidak diputar otomatis, dan itu keputusan.** Gambar bergerak selebar halaman
+yang datang tanpa diminta persis yang diminta berhenti oleh aturan gerak di
+`CLAUDE.md` — dan separuh pembaca memakai Windows yang melaporkan "reduce"
+karena pernah disetel "adjust for best performance". Jadi klipnya menunggu
+ditekan; imbalannya, ia boleh bersuara, dan menyelam tanpa suara itu setengah
+menyelam.
+
+Tinggi bandnya dibatasi 460 px dan memakai `object-contain`, jadi klip tegak
+pun tidak ada kepala yang terpotong — yang muncul air di kiri-kanannya.
+
 ## `standard.jpg`, `family.jpg` — foto bungalow
 
 Sejak konten situs disamakan dengan situs asli Turtle, tipe kamarnya cuma satu

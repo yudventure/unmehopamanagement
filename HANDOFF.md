@@ -923,6 +923,7 @@ Yang diambil apa adanya dari sana:
 | Kontak | WhatsApp 081243237470 · turtlediversrajaampat@gmail.com · IG turtlediversrajaampat | `content/site.json` |
 | OTA | stayrajaampat.com dan Booking.com | `COPY[*].rooms.otaNote` |
 | Harga selam | daftar harga 2025 lengkap: 15 baris + 4 perahu excursion + 5 catatan | `divePrices` di `content/site.json`, barisnya di `PRICE_ROWS`/`BOAT_ROWS`, kata-katanya di `COPY[*].dive.list` |
+| Klip di atas bar pemesanan selam | **belum ada berkasnya**; slotnya `public/dive.mp4` (+ `dive-poster.jpg` opsional), tanpa autoplay | `assets/README.md` menerangkan slotnya |
 | Nomor kantor | +62 812 4323 7470 untuk reservasi selam | sama dengan `contact.whatsapp` |
 
 **Situs lama menyebut Pulau Kri, bukan Yenbuba.** Sebelum ini, seluruh copy
@@ -933,7 +934,16 @@ Akibatnya: copy **Eddo** masih menulis Turtle sebagai "di kampung yang sama",
 dan itu perlu dikonfirmasi ke pemiliknya — file Eddo sengaja tidak disentuh.
 
 **Daftar harga selam 2025** menyusul dalam bentuk yang terbaca, dan sekarang
-ada di situs sebagai tabel di bawah kartu paket. Tiga angka di kartu yang dulu
+ada di situs sebagai **kartu per kategori** di bawah kartu paket: fun dive dan
+trip harian, night dive, coba selam dan penyegaran, pemandu dan sewa tabung,
+lalu perahu excursion. Tiap kategori menampilkan **enam kartu**, sisanya di
+balik tombol *Lihat N lainnya* — hari ini cuma kategori pertama (sembilan
+baris) yang melewatinya, tapi tombolnya ada per kategori supaya menambah satu
+night dive tidak berarti memikirkan ulang bagiannya. Yang disembunyikan tidak
+dirender sama sekali, bukan disembunyikan dengan CSS: pembaca di ponsel tidak
+membayar unduhan harga yang belum diminta, dan pembaca layar tidak membacakan
+daftar yang tidak ada di layar. Batas enamnya di `PRICE_SHOWN`, kelompoknya di
+kolom `group` pada `PRICE_ROWS`. Tiga angka di kartu yang dulu
 karangan jadi angka mereka (dua fun dive 1.600.000, tiga penyelaman 2.250.000,
 try dive 1.300.000), dan kartu keenam — dulu "sewa alat lengkap" seharga
 350.000/hari — diganti **Pemandu Pribadi** 400.000/hari, karena sewa alat

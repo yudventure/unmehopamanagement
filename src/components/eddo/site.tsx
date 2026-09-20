@@ -1942,11 +1942,12 @@ export function EddoSite({
           ))}
         </ol>
 
-        {/* Capped rather than full width: the frame has to hold Sorong and
-            Mansuar, which are three quarters of a degree apart, so at the full
-            width of the page the drawing is over eight hundred pixels tall and
-            most of it is the crossing. */}
-        <div data-reveal className="mx-auto w-full max-w-[980px]">
+        {/* Full width, flush with the ends of the card row above it. Capping
+            it narrower and centring it left the map inset from the cards by
+            an arm's length on a wide screen, which reads as a mistake rather
+            than as a choice. The frame is shaped to suit that width instead;
+            see the journey map's box in `scripts/peta.mjs`. */}
+        <div data-reveal>
           <JourneyMap t={t} />
         </div>
 

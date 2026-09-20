@@ -255,12 +255,16 @@ const MAPS = [
     out: "perjalanan.ts",
     title: "Sorong to the homestay",
     /* The whole journey in one box: the airport at Sorong bottom right, the
-       ferry north-west to Waisai, the boat down to Mansuar on the left. Wide
-       rather than square because that is the shape the journey is.
-       The west edge is at 130.52 rather than 130.56 so that Mansuar, the
-       island the house is on, is whole rather than cut off by a hundredth of
-       a degree at the very edge of the frame. */
-    frame: { w: 130.52, e: 131.38, s: -0.98, n: -0.36 },
+       ferry north-west to Waisai, the boat down to Mansuar on the left.
+       Wide rather than square, and wider than the journey strictly needs.
+       The map runs the full width of the section, edge to edge with the step
+       cards above it, so its height is its width divided by this ratio: a
+       squarer frame put eight hundred pixels of mostly open water on the
+       page. Stretching the box sideways and trimming it top and bottom keeps
+       every marker well clear of an edge and brings that down by a sixth.
+       Mansuar, the island the house stands on, is whole rather than clipped:
+       at 130.52 it was losing a hundredth of a degree off its west end. */
+    frame: { w: 130.46, e: 131.42, s: -0.95, n: -0.38 },
     w: 1280,
     /* Four for orientation, not for pressing. Enough that a reader can tell
        which green shape is which without the map becoming a gazetteer. */

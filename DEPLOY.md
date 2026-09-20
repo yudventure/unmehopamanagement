@@ -657,11 +657,15 @@ gejalanya membingungkan karena tidak ada yang error, cuma perilakunya salah.
 
 | Dibaca saat **build** (di GitHub Actions) | Dibaca saat **jalan** (di panel Hostinger) |
 | --- | --- |
-| `SITE_DOMAIN_TURTLE` | `MIDTRANS_SERVER_KEY` |
-| `SITE_DOMAIN_EDDO` | `MIDTRANS_IS_PRODUCTION` |
-| `NEXT_PUBLIC_MIDTRANS_CLIENT_KEY` | `RESEND_API_KEY`, `ENQUIRY_FROM` |
-| `NEXT_PUBLIC_LOGIN_HERO` | `GITHUB_TOKEN`, `GITHUB_REPO`, `GITHUB_BRANCH` |
+| `SITE_DOMAIN_TURTLE` | `DATABASE_URL` |
+| `SITE_DOMAIN_EDDO` | `DASHBOARD_PASSWORD` |
+| `NEXT_PUBLIC_MIDTRANS_CLIENT_KEY` | `SESSION_SECRET` |
+| `NEXT_PUBLIC_LOGIN_HERO` | `MIDTRANS_SERVER_KEY` |
+| `NEXT_PUBLIC_DIVE_VIDEO` | `MIDTRANS_IS_PRODUCTION` |
+| `NEXT_PUBLIC_DIVE_POSTER` | `RESEND_API_KEY`, `ENQUIRY_FROM` |
+| | `GITHUB_TOKEN`, `GITHUB_REPO`, `GITHUB_BRANCH` |
 | | `CMS_PASSWORD` |
+| | `PREVIEW_TOKEN` |
 | | `RATES_URL` (opsional) |
 
 Yang kiri ikut tertanam ke dalam hasil build, jadi **ganti domain berarti build
@@ -669,6 +673,27 @@ ulang**, bukan sekadar ubah variabel lalu restart. Yang berawalan
 `NEXT_PUBLIC_` ikut tertanam ke JavaScript yang diunduh browser, jadi jangan
 pernah menaruh rahasia di sana. Yang kanan tidak pernah ikut ke arsip dan tidak
 pernah sampai ke browser.
+
+**`DIRECT_URL` tidak ada di kedua kolom, dan itu benar.** Ia cuma dibaca
+`prisma7.config.ts`, yang hanya dijalankan Prisma CLI di GitHub Actions saat
+menerapkan migrasi. Server yang melayani permintaan tidak pernah membukanya.
+
+### GitHub Secrets bukan panel hosting
+
+Dua tempat yang berbeda, dan tidak ada satu pun yang menyalin ke yang lain.
+
+- **GitHub Secrets** dibaca oleh Actions, jadi itu yang membuat langkah migrasi
+  bisa menyentuh database. `DATABASE_URL` dan `DIRECT_URL` di sana.
+- **Panel Node.js Hostinger** dibaca oleh server yang menyajikan halaman. Itu
+  yang menentukan apakah dashboard melihat database atau tidak.
+
+Mengisi yang pertama saja membuat tabelnya berdiri di Neon sementara dashboard
+tetap memakai data contoh — dan karena aplikasi ini sengaja tidak pernah error
+karena variabel yang kosong, satu-satunya tanda adalah kalimat kuning di atas
+kalender: *"Ini data contoh, bukan buku Anda."* Kalimat itu bukan kerusakan; ia
+sedang mengatakan dengan tepat apa yang terjadi. Kalau muncul padahal database
+sudah jadi, yang kurang adalah `DATABASE_URL` di panel — **yang pooled** —
+diikuti restart aplikasinya.
 
 ### Yang perlu dipastikan ada di sana
 

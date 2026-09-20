@@ -68,6 +68,7 @@ const STATUS = {
   "Checked-in": "CHECKED_IN",
   "Checked-out": "CHECKED_OUT",
   Cancelled: "CANCELLED",
+  "Tidak datang": "NO_SHOW",
 } as const;
 
 /**

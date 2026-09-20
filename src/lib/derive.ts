@@ -33,7 +33,11 @@ export function visibleBookings({
       !(
         b.guest.toLowerCase().includes(q) ||
         r.name.toLowerCase().includes(q) ||
-        b.id.toLowerCase().includes(q)
+        /* Kodenya, bukan `id`-nya. Keduanya sama pada data contoh, tapi dari
+           database `id` adalah cuid yang tidak pernah dilihat siapa pun,
+           sementara `code` justru yang diucapkan ke tamu lewat telepon dan
+           yang diketik orang ke kotak ini. */
+        b.code.toLowerCase().includes(q)
       )
     )
       return false;

@@ -198,8 +198,12 @@ export function seedBookings(rooms: Room[]): Booking[] {
          prototype's generator. */
       rnd();
 
+      /* `id` dan `code` sama pada data contoh. Dari database keduanya berbeda:
+         yang satu cuid, yang satu kode yang diucapkan ke tamu. */
+      const kode = "BK" + String(++n).padStart(4, "0");
       bookings.push({
-        id: "BK" + String(++n).padStart(4, "0"),
+        id: kode,
+        code: kode,
         roomId: r.id,
         guest: NAMES[Math.floor(rnd() * NAMES.length)],
         phone: "0812" + Math.floor(1000000 + rnd() * 8999999),
@@ -227,6 +231,7 @@ export function seedBookings(rooms: Room[]): Booking[] {
   // has something real to point at.
   bookings.push({
     id: "BK9001",
+    code: "BK9001",
     roomId: "T3",
     guest: "Grace Adeyemi",
     phone: "081277341200",
@@ -242,6 +247,7 @@ export function seedBookings(rooms: Room[]): Booking[] {
   });
   bookings.push({
     id: "BK9002",
+    code: "BK9002",
     roomId: "T3",
     guest: "Henrik Olsen",
     phone: "081399820011",
@@ -373,8 +379,10 @@ export function seedLedger(rooms: Room[], seeded: Booking[]): Booking[] {
 
       const ch = chans[Math.floor(rnd() * chans.length)];
       const settled = checkOut <= SEED_TODAY;
+      const kode = "BH" + String(++n).padStart(4, "0");
       out.push({
-        id: "BH" + String(++n).padStart(4, "0"),
+        id: kode,
+        code: kode,
         roomId: r.id,
         guest: NAMES[Math.floor(rnd() * NAMES.length)],
         phone: "0812" + Math.floor(1000000 + rnd() * 8999999),

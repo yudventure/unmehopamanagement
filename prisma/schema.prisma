@@ -183,6 +183,11 @@ model Booking {
   /// tanpa ini tiap siklus tarik akan menduplikasi seluruh booking OTA.
   externalUid String? @map("external_uid")
 
+  /// Jumlah tamu. Null berarti belum diketahui — booking dari feed iCal OTA
+  /// sering tidak membawanya sama sekali, dan nilai bawaan akan membuat
+  /// booking impor mengaku tahu sesuatu yang tidak pernah dikirim kepadanya.
+  pax Int?
+
   totalAmount       Decimal? @db.Decimal(14, 2) @map("total_amount")
   otaCommissionEst  Decimal? @db.Decimal(14, 2) @map("ota_commission_est")
   notes             String?

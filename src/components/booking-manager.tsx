@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { BookingDrawer } from "@/components/booking-drawer";
+import { DataSourceNote, type SumberData } from "@/components/data-source-note";
 import { BookingFormModal } from "@/components/booking-form-modal";
 import { ConflictModal } from "@/components/conflict-modal";
 import { DashboardRail } from "@/components/dashboard-rail";
@@ -23,6 +24,12 @@ import { SyncScreen } from "@/components/screens/sync-screen";
 import { UsersScreen } from "@/components/screens/users-screen";
 import { WebsiteScreen } from "@/components/screens/website-screen";
 import { Sidebar, type NavItem } from "@/components/sidebar";
+import {
+  bookingDariApi,
+  kamarDariApi,
+  terlewat,
+  type ApiKalender,
+} from "@/lib/dari-database";
 import { TopBar } from "@/components/top-bar";
 import { useViewportWidth } from "@/hooks/use-viewport-width";
 import {
@@ -92,6 +99,22 @@ const PHONE_MAX = 640;
 
 /** How far ahead the rail's arrivals list looks, in days. */
 const UPCOMING_DAYS = 7;
+
+/**
+ * Berapa bulan ke belakang dan ke depan diambil dari database dalam sekali
+ * permintaan.
+ *
+ * Satu bulan tidak cukup: grafik tren di layar Laporan membentang delapan bulan
+ * ke belakang dan tiga ke depan dari bulan yang dilaporkan, dan bulan itu bisa
+ * digeser. Mengambil per bulan berarti satu perjalanan ke server tiap kali
+ * panah ditekan — di pulau dengan koneksi lambat itu terasa.
+ *
+ * Dua belas ke tiap arah menutupi seluruh yang bisa digambar tanpa mengambil
+ * apa pun lagi. Untuk lima belas kamar itu paling banyak beberapa ratus baris,
+ * dan Postgres menjawabnya lewat indeks gist yang memang dibuat untuk
+ * pertanyaan bentuk ini.
+ */
+const JENDELA_BULAN = 12;
 
 /**
  * Months either side of the reported one in the trend chart. Eight back covers
@@ -235,6 +258,75 @@ export function BookingManager({
     setToday(iso(now));
     setMonth(new Date(now.getFullYear(), now.getMonth(), 1));
   }, []);
+
+  /*
+   * Dari mana isi layar ini berasal, dan pengambilannya.
+   *
+   * Hanya setelah masuk: `/api/calendar` menjawab 404 tanpa cookie sesi, dan
+   * meminta sebelum itu berarti satu permintaan yang sudah pasti ditolak pada
+   * tiap kali halaman dibuka.
+   *
+   * Data contoh dibiarkan di tempatnya sampai ada yang sungguhan menggantikan
+   * seluruhnya. Mengosongkan layar lebih dulu berarti kalender kosong selama
+   * beberapa ratus milidetik yang terbaca seperti "tidak ada tamu" — dan kalau
+   * permintaannya gagal, terbaca begitu selamanya. Catatan di atas kisi yang
+   * mengatakan mana yang sedang dilihat.
+   */
+  const [sumber, setSumber] = useState<SumberData>({ keadaan: "memuat" });
+  useEffect(() => {
+    if (!auth) return;
+
+    const batal = new AbortController();
+    const now = new Date();
+    const dari = iso(new Date(now.getFullYear(), now.getMonth() - JENDELA_BULAN, 1));
+    const sampai = iso(
+      new Date(now.getFullYear(), now.getMonth() + JENDELA_BULAN + 1, 1),
+    );
+
+    void (async () => {
+      try {
+        const res = await fetch(`/api/calendar?from=${dari}&to=${sampai}`, {
+          signal: batal.signal,
+        });
+        if (!res.ok) {
+          setSumber({
+            keadaan: "gagal",
+            pesan: `Server menjawab ${res.status}.`,
+          });
+          return;
+        }
+        const data = (await res.json()) as ApiKalender;
+        if (!data.configured) {
+          setSumber({ keadaan: "contoh" });
+          return;
+        }
+
+        const kamar = kamarDariApi(data.rooms ?? []);
+        /* Tersambung tapi tanpa kamar bukan "tidak ada tamu", melainkan
+           pemasangan yang belum selesai. Data contoh tetap di layar, dan
+           catatannya menyebut workflow yang mengisinya. */
+        if (kamar.length === 0) {
+          setSumber({ keadaan: "kosong" });
+          return;
+        }
+
+        const baris = data.bookings ?? [];
+        setRooms(kamar);
+        setBookings(bookingDariApi(baris));
+        setSumber({ keadaan: "database", terlewat: terlewat(baris) });
+      } catch {
+        /* Permintaan yang dibatalkan saat komponennya dilepas bukan kegagalan
+           yang perlu dilaporkan ke siapa pun. */
+        if (batal.signal.aborted) return;
+        setSumber({
+          keadaan: "gagal",
+          pesan: "Tidak bisa menghubungi server.",
+        });
+      }
+    })();
+
+    return () => batal.abort();
+  }, [auth]);
 
   const vw = useViewportWidth();
   const isOwner = role === "owner";
@@ -577,8 +669,13 @@ export function BookingManager({
 
       const nights = Math.max(1, dayDiff(form.checkIn, form.checkOut));
       const total = bookingTotal(room.rate, nights, form.channel);
+      /* Sama untuk booking yang dibuat di sini, karena belum ada server yang
+         memberi keduanya. Begitu POST /api/bookings ada, `id` datang dari
+         database dan `code` dari kolomnya sendiri. */
+      const kode = "BK" + String(9100 + bookings.length).slice(-4);
       const booking: Booking = {
-        id: "BK" + String(9100 + bookings.length).slice(-4),
+        id: kode,
+        code: kode,
         roomId: form.room,
         guest: form.guest.trim(),
         phone: form.phone || "-",
@@ -999,7 +1096,10 @@ export function BookingManager({
           const nights = dayDiff(b.checkIn, b.checkOut);
           const inside = nightsInMonth(b, y, m);
           return {
-            id: b.id,
+            /* Kolomnya bernama "Kode" dan dibaca manusia, jadi kodenya yang
+               masuk. `id` dari database adalah cuid yang tidak berarti apa-apa
+               di sebuah CSV yang dibuka pemiliknya. */
+            id: b.code,
             property: room ? propName(room.prop) : "",
             room: room?.name ?? "",
             guest: b.guest,
@@ -1171,6 +1271,12 @@ export function BookingManager({
                   nw ? "px-[14px] pt-4 pb-6" : "px-[26px] pt-[22px] pb-[30px]"
                 }`}
               >
+                {/* Di atas isi tiap layar, bukan hanya kalender: okupansi di
+                    Laporan dan tarif di Properti dibangkitkan dari sumber yang
+                    sama, jadi peringatan yang cuma muncul di satu layar akan
+                    membuat dua layar lain terbaca sebagai kenyataan. */}
+                <DataSourceNote sumber={sumber} />
+
                 {screen === "kalender" && (
                   <CalendarScreen
                     narrow={nw}

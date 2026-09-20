@@ -59,7 +59,8 @@ function Side({
 
       <div className="text-[16px] font-bold">{booking.guest}</div>
       <div className="mt-[2px] font-mono text-[11.5px] text-slate-soft">
-        {booking.id} · {booking.src === "iCal" ? "impor iCal" : "input manual"}
+        {booking.code} ·{" "}
+        {booking.src === "iCal" ? "impor iCal" : "input manual"}
       </div>
 
       <dl className="mt-3 flex flex-col gap-[7px] text-[13px]">
@@ -72,7 +73,8 @@ function Side({
         <div className="flex justify-between gap-3">
           <dt className="text-slate">Lama</dt>
           <dd className="font-medium">
-            {nights} malam · {booking.pax} tamu
+            {nights} malam
+            {booking.pax === null ? "" : ` · ${booking.pax} tamu`}
           </dd>
         </div>
         {showMoney && (

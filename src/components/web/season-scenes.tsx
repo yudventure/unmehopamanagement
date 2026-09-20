@@ -19,7 +19,8 @@
  * layout or paint. Six layers times three cards is affordable on a phone only
  * under that rule.
  *
- * Optional. `prefers-reduced-motion` stops all of it. The wave shapes stay,
+ * Optional. `prefers-reduced-motion` stops the one thing that crosses the
+ * card and leaves; the drift and the swell keep going. The wave shapes stay,
  * because a still sea is still a sea; what goes is the movement, which is the
  * part that makes people ill.
  */
@@ -123,8 +124,9 @@ export function SeasonScene({ season }: { season: SeasonKey }) {
   return (
     <div
       aria-hidden="true"
-      /* The stylesheet's reduced-motion rule hangs off this attribute. It has
-         to be a rule rather than a class because the durations are inline. */
+      /* Names the season for the stylesheet. It used to be what reduced
+         motion switched the whole scene off by; now only the one travelling
+         object carries that, below. */
       data-sea={season}
       className="pointer-events-none absolute inset-0 overflow-hidden rounded-[20px]"
     >
@@ -171,8 +173,13 @@ export function SeasonScene({ season }: { season: SeasonKey }) {
               }}
             />
           ))}
-          {/* Fifty seconds to cross, which is roughly how long it feels. */}
+          {/* Fifty seconds to cross, which is roughly how long it feels.
+
+              `data-cross` is what a reader asking for less motion switches
+              off: this is the one thing in the card that travels, rather than
+              drifting a few pixels in place. */}
           <div
+            data-cross
             className="absolute bottom-[3%] w-[20%]"
             style={{ animation: "seaCross 50s linear infinite" }}
           >
@@ -192,6 +199,7 @@ export function SeasonScene({ season }: { season: SeasonKey }) {
            then the boat goes out anyway. Kept in the water band with the
            rest. */
         <div
+          data-cross
           className="absolute top-[76%] bottom-0 w-[34%]"
           style={{ animation: "seaCross 26s linear infinite" }}
         >
@@ -241,10 +249,13 @@ export function SeasonScene({ season }: { season: SeasonKey }) {
       {season === "windy" && (
         <>
           {/* Gusts skimming the water, at the speed wind actually reads:
-              six seconds to cross against the manta's fifty. */}
+              six seconds to cross against the manta's fifty. `data-cross`
+              for the same reason the manta carries it, and more so: these are
+              the fastest things on the page. */}
           {[78, 85, 91].map((top, i) => (
             <div
               key={top}
+              data-cross
               className="absolute w-[28%]"
               style={{
                 top: `${top}%`,

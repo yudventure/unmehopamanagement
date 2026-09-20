@@ -251,20 +251,47 @@ input[type="search"]::-webkit-search-decoration {
 }
 
 /*
- * Reduced motion stops all of it.
+ * What reduced motion stops in here, which is one thing and not all of it.
+ *
+ * This used to stop every animation under `[data-sea]` and `[data-move]` at
+ * once, and that was the very mistake CLAUDE.md is written about. Those two
+ * markers carry every continuous animation the Turtle page has — the water
+ * behind the season cards, the boats in the journey drawings, the dashes
+ * along the sketch map's route — so the rule did not calm a page-wide scene,
+ * it left a whole class of machine looking at a photograph of a website. On
+ * Windows the same signal comes from "Animation effects", which is off on
+ * anything set to "adjust for best performance", so that class of machine is
+ * most of them.
+ *
+ * Decided per animation instead, by the test in the rule: what stops is what
+ * crosses the screen, follows the scroll, or arrives unasked.
+ *
+ * - `seaSwell` moves four pixels. `seaGlint` is opacity. `bob`, `rock` and
+ *   `tilt` are a degree or two of a drawing inside a card. `trail`, `ripple`
+ *   and `pinPulse` are marks a few pixels across. None of them travels, and
+ *   none of them can be outrun — they are the postcard-sized drift the rule
+ *   names as the thing that keeps going.
+ * - `seaDrift` slides a wave exactly half its own width inside a card that
+ *   clips it, so the loop has no seam and nothing arrives or leaves. It is
+ *   texture, not an object in motion.
+ * - `routeDash` marches along a 200-unit path in a box the size of a
+ *   postcard, and it is what tells a reader the line is a route.
+ *
+ * What is left is `seaCross`: the manta under the calm card, the shower under
+ * the mixed one, and the three gusts under the windy one, each travelling the
+ * whole width of its card and out the other side — the gusts in six seconds
+ * against the manta's fifty. Those are objects crossing, none of them was
+ * asked for, and they are the things in here somebody who gets motion sick
+ * would want held still.
  *
  * `!important` is right here and nowhere else: the durations are set as inline
  * styles, because each layer has its own, and an inline style beats any class
  * a utility could add. This is the one declaration that has to win against it.
  *
- * The wave shapes stay. A still sea is still a sea; what goes is the movement,
- * which is the part that makes people ill.
+ * The shape stays either way. A still manta is still a manta.
  */
 @media (prefers-reduced-motion: reduce) {
-  [data-sea],
-  [data-sea] *,
-  [data-move],
-  [data-move] * {
+  [data-cross] {
     animation: none !important;
   }
 }
@@ -274,11 +301,12 @@ input[type="search"]::-webkit-search-decoration {
 /*
  * The map pin, and the four step cards.
  *
- * Same rule as the season cards: transform and opacity only, and the whole lot
- * stops under `prefers-reduced-motion` (the rule below covers `[data-move]`
- * alongside `[data-sea]`). The one exception is `routeDash`, which animates
- * stroke-dashoffset and so does repaint — it is a single 200-unit path, which
- * is a price worth paying to show the route as a route rather than a line.
+ * Same rule as the season cards: transform and opacity only, every one of
+ * them a few pixels inside a box the size of a postcard, and so every one of
+ * them keeps going when a reader asks for less motion. `routeDash` is the one
+ * that animates stroke-dashoffset and so does repaint — a single 200-unit
+ * path, which is a price worth paying to show the route as a route rather
+ * than as a line.
  */
 @keyframes pinPulse {
   0% {

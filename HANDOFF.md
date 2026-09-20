@@ -930,7 +930,7 @@ Yang diambil apa adanya dari sana:
 | Kontak | WhatsApp 081243237470 · turtlediversrajaampat@gmail.com · IG turtlediversrajaampat | `content/site.json` |
 | OTA | stayrajaampat.com dan Booking.com | `COPY[*].rooms.otaNote` |
 | Harga selam | daftar harga 2025 lengkap: 21 baris (15 + 4 perahu excursion + kursus & snorkeling yang belum berharga) + 5 catatan, semuanya jadi kartu | `divePrices` di `content/site.json`, barisnya di `PRICE_ROWS`, kata-katanya di `COPY[*].dive.list` |
-| Klip di atas bar pemesanan selam | **belum diisi**; slotnya digambar dan bilang klipnya menyusul. Diisi dari dashboard: tautan YouTube atau berkas di `public/`, tanpa autoplay | `diveVideo` di `content/site.json`; `assets/README.md` menerangkan slotnya |
+| Klip di atas bar pemesanan selam | diisi dari dashboard: tautan YouTube atau berkas di `public/`. Selebar seksinya, 16:9, **autoplay tanpa suara dan berulang** begitu bandnya masuk layar, dengan kontrol tetap ada | `diveVideo` di `content/site.json`; `assets/README.md` menerangkan slotnya |
 | Nomor kantor | +62 812 4323 7470 untuk reservasi selam | sama dengan `contact.whatsapp` |
 
 **Situs lama menyebut Pulau Kri, bukan Yenbuba.** Sebelum ini, seluruh copy

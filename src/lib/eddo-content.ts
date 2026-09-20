@@ -63,6 +63,47 @@ export const EDDO = {
   region: "Raja Ampat",
 };
 
+/**
+ * Where the house actually stands, and the two places a guest passes through
+ * on the way to it.
+ *
+ * `home` is the owner's own pin, to the digit. Checked rather than taken on
+ * trust: dropped on the official coastline in `perjalanan.ts` it lands on the
+ * north shore of Pulau Mansuar, which is where `EDDO.village` has said Yenbuba
+ * is since long before there was a map.
+ *
+ * `sorong` and `waisai` are the airport and the ferry port, from published
+ * sources rather than from memory. They are there to read the journey by, not
+ * to navigate to. The one a guest navigates to is `home`, and only that one
+ * gets links.
+ *
+ * `plusCode` is computed from `home`, not typed in, and kept to ten digits. A
+ * plus code's eleventh character comes from a different grid to the first ten,
+ * and the published test vectors this was checked against only exercise the
+ * first ten. Ten resolves to about fourteen metres, which finds a house.
+ */
+export const EDDO_LOCATION = {
+  home: { lat: -0.5683976400674828, lng: 130.64846687905552 },
+  /** Domine Eduard Osok (SOQ), where the flight from Jakarta lands. */
+  sorong: { lat: -0.894151, lng: 131.289429 },
+  /** Waisai, where the ferry arrives and Eddo's boat waits at Falaya. */
+  waisai: { lat: -0.423194, lng: 130.818556 },
+  plusCode: "CJJX+J9",
+  area: `${EDDO.village}, ${EDDO.island}`,
+  admin: "Distrik Meos Mansar, Kabupaten Raja Ampat, Papua Barat Daya",
+};
+
+export const EDDO_MAP_LINKS = {
+  google: `https://www.google.com/maps/search/?api=1&query=${EDDO_LOCATION.home.lat},${EDDO_LOCATION.home.lng}`,
+  osm: `https://www.openstreetmap.org/?mlat=${EDDO_LOCATION.home.lat}&mlon=${EDDO_LOCATION.home.lng}#map=15/${EDDO_LOCATION.home.lat}/${EDDO_LOCATION.home.lng}`,
+  /** Documented, key-free embed. Requested only once the dialog asks for it. */
+  embed:
+    `https://www.openstreetmap.org/export/embed.html?bbox=` +
+    `${EDDO_LOCATION.home.lng - 0.04},${EDDO_LOCATION.home.lat - 0.025},` +
+    `${EDDO_LOCATION.home.lng + 0.04},${EDDO_LOCATION.home.lat + 0.025}` +
+    `&layer=mapnik&marker=${EDDO_LOCATION.home.lat},${EDDO_LOCATION.home.lng}`,
+};
+
 /* Eddo's own number and address, which fall back to the shared ones while
    they are blank. Blank is the state today, and it is the reason a guest on
    eddohomestay.com is still shown an address at turtlehomestay.com: nobody
@@ -320,7 +361,7 @@ export type IncludedKey = (typeof INCLUDED_KEYS)[number];
 export interface EddoCopy {
   htmlLang: string;
   meta: { title: string; description: string };
-  nav: { home: string; rooms: string; around: string; services: string; why: string; faq: string };
+  nav: { home: string; rooms: string; journey: string; services: string; why: string; faq: string };
   openMenu: string;
   currencyLabel: string;
   langLabel: string;
@@ -387,13 +428,43 @@ export interface EddoCopy {
     note: string;
     bands: { label: string; months: string; note: string }[];
   };
-  around: {
+  /**
+   * How a guest gets here, and where here is.
+   *
+   * This replaced four cards of places worth a day out. They were pleasant and
+   * they answered a question nobody had asked yet: somebody reading a homestay
+   * page in Raja Ampat for the first time wants to know whether they can reach
+   * it at all. The four steps are that answer, and the map under them is the
+   * same answer drawn.
+   *
+   * The step bodies carry no prices and no exact departure times. Ferry times
+   * move, the park fees change from year to year, and a page that states
+   * either as fact is wrong within a season. What it does state is where to
+   * stand and who meets you, and that does not change.
+   */
+  journey: {
     eyebrow: string;
     title: string;
-    all: string;
-    /** Distance is a relative label, not minutes: nobody here has timed them. */
-    places: { name: string; where: string; tag: string; time: string; alt: string }[];
+    lead: string;
+    steps: { tag: string; title: string; body: string }[];
     note: string;
+    /** The enquiry button at the foot of the section. */
+    all: string;
+    map: {
+      alt: string;
+      /** The pin, the ferry port, and the airport. */
+      here: string;
+      waisai: string;
+      sorong: string;
+      open: string;
+      title: string;
+      copy: string;
+      copied: string;
+      google: string;
+      osm: string;
+      live: string;
+      note: string;
+    };
   };
   /**
    * The strait, island by island.
@@ -593,7 +664,7 @@ const EN: EddoCopy = {
     description:
       "Five family houses on the shore at Yenbuba, Pulau Mansuar, Raja Ampat. A house to yourselves, three meals a day, and snorkelling straight off the jetty.",
   },
-  nav: { home: "Home", rooms: "Rooms", around: "Around us", services: "What we arrange", why: "Why Eddo", faq: "Questions" },
+  nav: { home: "Home", rooms: "Rooms", journey: "Getting here", services: "What we arrange", why: "Why Eddo", faq: "Questions" },
   openMenu: "Open menu",
   currencyLabel: "Show an approximate price in",
   langLabel: "Language",
@@ -655,17 +726,32 @@ const EN: EddoCopy = {
       { label: "Quiet", months: "May – July", note: "Southeast wind, bigger swell. The emptiest months of the year." },
     ],
   },
-  around: {
-    eyebrow: "Around us",
-    title: "Where a day can go",
-    all: "Ask about a trip",
-    places: [
-      { name: "Yenbuba jetty", where: "Right here", tag: "Snorkelling", time: "From the door", alt: "Fish under the jetty at Yenbuba" },
-      { name: "Birds of paradise", where: "Sawinggrai, on Gam", tag: "Dawn trip", time: "By boat, before sunrise", alt: "Forest path behind Sawinggrai at dawn" },
-      { name: "Arborek", where: "Neighbouring island", tag: "Village & jetty", time: "By boat", alt: "The jetty at Arborek village" },
-      { name: "Piaynemo", where: "Karst islands", tag: "Viewpoint", time: "Half a day by boat", alt: "The karst islands of Piaynemo from the viewpoint" },
+  journey: {
+    eyebrow: "Getting here",
+    title: "How you reach us",
+    lead: "Raja Ampat is a long way off, but the way in is a straight line, and the last part of it is us.",
+    steps: [
+      { tag: "By air", title: "Land at Sorong", body: "Domine Eduard Osok airport, SOQ. Daily flights from Jakarta, Makassar and Manado." },
+      { tag: "By sea", title: "Ferry to Waisai", body: "The fast ferry leaves Sorong harbour twice a day, morning and early afternoon, and takes about two hours." },
+      { tag: "In Waisai", title: "The entry fees", body: "Raja Ampat charges a marine park fee and a visitor ticket, both settled in Waisai at the jetty. The park card lasts a year. Ask us and we will tell you what they come to this season." },
+      { tag: "The last hour", title: "We meet you at Falaya", body: "Our boat waits at Dermaga Falaya in Waisai and takes you across to the house at Yenbuba, on Pulau Mansuar." },
     ],
-    note: "Boat trips are arranged at the house and shared between guests when it works out. Times and prices depend on the tide and the fuel, so ask when you book.",
+    note: "Ferry times move and boats do not always keep to them. Send us the one you are on and we will be at Falaya when it arrives.",
+    all: "Tell us when you land",
+    map: {
+      alt: "A map of the route: Sorong on the mainland at the bottom right, the ferry north-west to Waisai on Waigeo, and the boat south-west to the house on Pulau Mansuar.",
+      here: "Eddo Homestay",
+      waisai: "Waisai",
+      sorong: "Sorong",
+      open: "Open the map",
+      title: "Where the house is",
+      copy: "Copy the address",
+      copied: "Copied",
+      google: "Open in Google Maps",
+      osm: "Open in OpenStreetMap",
+      live: "Load the live map",
+      note: "The coastline is the real one, from Indonesia's own village records. Both links and the live map point at the exact coordinates. The live map loads only when you ask for it, so nothing here talks to a map server unless you press the button.",
+    },
   },
   map: {
     eyebrow: "The strait",
@@ -827,7 +913,7 @@ const ID: EddoCopy = {
     description:
       "Lima rumah keluarga di tepi air Yenbuba, Pulau Mansuar, Raja Ampat. Satu rumah dipakai sendiri, tiga kali makan, dan snorkeling langsung dari dermaga.",
   },
-  nav: { home: "Beranda", rooms: "Kamar", around: "Sekitar kami", services: "Layanan", why: "Kenapa Eddo", faq: "Tanya" },
+  nav: { home: "Beranda", rooms: "Kamar", journey: "Cara ke sini", services: "Layanan", why: "Kenapa Eddo", faq: "Tanya" },
   openMenu: "Buka menu",
   currencyLabel: "Tampilkan perkiraan harga dalam",
   langLabel: "Bahasa",
@@ -889,17 +975,32 @@ const ID: EddoCopy = {
       { label: "Sepi", months: "Mei – Juli", note: "Angin tenggara, ombak lebih besar. Bulan paling sepi sepanjang tahun." },
     ],
   },
-  around: {
-    eyebrow: "Sekitar kami",
-    title: "Ke mana harinya bisa dibawa",
-    all: "Tanya soal trip",
-    places: [
-      { name: "Dermaga Yenbuba", where: "Di depan rumah", tag: "Snorkeling", time: "Dari pintu", alt: "Ikan di bawah dermaga Yenbuba" },
-      { name: "Burung cendrawasih", where: "Sawinggrai, di Gam", tag: "Trip subuh", time: "Naik perahu, sebelum terbit", alt: "Jalan setapak hutan di belakang Sawinggrai saat fajar" },
-      { name: "Arborek", where: "Pulau tetangga", tag: "Kampung & dermaga", time: "Naik perahu", alt: "Dermaga kampung Arborek" },
-      { name: "Piaynemo", where: "Gugusan karst", tag: "Puncak pandang", time: "Setengah hari naik perahu", alt: "Gugusan karst Piaynemo dari puncak pandang" },
+  journey: {
+    eyebrow: "Cara ke sini",
+    title: "Sampai ke rumah kami",
+    lead: "Raja Ampat memang jauh, tapi jalannya lurus saja, dan bagian terakhirnya kami yang urus.",
+    steps: [
+      { tag: "Pesawat", title: "Mendarat di Sorong", body: "Bandara Domine Eduard Osok, SOQ. Penerbangan tiap hari dari Jakarta, Makassar, dan Manado." },
+      { tag: "Laut", title: "Kapal ke Waisai", body: "Kapal cepat berangkat dari pelabuhan Sorong dua kali sehari, pagi dan awal siang, kurang lebih dua jam." },
+      { tag: "Di Waisai", title: "Karcis masuknya", body: "Raja Ampat menarik biaya jasa lingkungan dan karcis wisatawan, keduanya diurus di Waisai, di dermaga. Kartunya berlaku setahun. Tanyakan saja, nanti kami beri tahu besarannya musim ini." },
+      { tag: "Satu jam terakhir", title: "Kami jemput di Falaya", body: "Perahu kami menunggu di Dermaga Falaya, Waisai, lalu menyeberang ke rumah di Yenbuba, Pulau Mansuar." },
     ],
-    note: "Trip perahu diatur dari rumah dan dibagi antar tamu kalau jadwalnya cocok. Waktu dan harganya tergantung pasang dan bahan bakar, jadi tanyakan saat memesan.",
+    note: "Jadwal kapal bisa berubah dan tidak selalu tepat. Kabari saja kapal yang Anda naiki, nanti kami sudah di Falaya waktu kapalnya sandar.",
+    all: "Kabari jadwal tibanya",
+    map: {
+      alt: "Peta jalurnya: Sorong di daratan sebelah kanan bawah, kapal ke barat laut menuju Waisai di Waigeo, lalu perahu ke barat daya menuju rumah di Pulau Mansuar.",
+      here: "Eddo Homestay",
+      waisai: "Waisai",
+      sorong: "Sorong",
+      open: "Buka petanya",
+      title: "Letak rumahnya",
+      copy: "Salin alamatnya",
+      copied: "Tersalin",
+      google: "Buka di Google Maps",
+      osm: "Buka di OpenStreetMap",
+      live: "Muat peta langsung",
+      note: "Garis pantainya asli, dari data desa resmi Indonesia. Kedua tautan dan peta langsungnya menunjuk ke koordinat yang persis. Peta langsung baru dimuat kalau Anda minta, jadi tidak ada yang menghubungi server peta sebelum tombolnya ditekan.",
+    },
   },
   map: {
     eyebrow: "Selat",
@@ -1078,7 +1179,7 @@ const FR: EddoCopy = {
     description:
       "Cinq maisons familiales au bord de l'eau à Yenbuba, Pulau Mansuar, Raja Ampat. Une maison rien que pour vous, trois repas par jour et du snorkeling depuis le ponton.",
   },
-  nav: { home: "Accueil", rooms: "Maisons", around: "Autour de nous", services: "Nos services", why: "Pourquoi Eddo", faq: "Questions" },
+  nav: { home: "Accueil", rooms: "Maisons", journey: "Y venir", services: "Nos services", why: "Pourquoi Eddo", faq: "Questions" },
   openMenu: "Ouvrir le menu",
   currencyLabel: "Afficher un prix approximatif en",
   langLabel: "Langue",
@@ -1140,17 +1241,32 @@ const FR: EddoCopy = {
       { label: "Calme", months: "Mai – juillet", note: "Vent de sud-est, houle plus forte. Les mois les plus vides de l'année." },
     ],
   },
-  around: {
-    eyebrow: "Autour de nous",
-    title: "Où une journée peut mener",
-    all: "Demander une sortie",
-    places: [
-      { name: "Ponton de Yenbuba", where: "Juste devant", tag: "Snorkeling", time: "Dès la porte", alt: "Poissons sous le ponton de Yenbuba" },
-      { name: "Oiseaux de paradis", where: "Sawinggrai, sur Gam", tag: "Sortie à l'aube", time: "En bateau, avant le lever du soleil", alt: "Sentier forestier derrière Sawinggrai à l'aube" },
-      { name: "Arborek", where: "Île voisine", tag: "Village & ponton", time: "En bateau", alt: "Le ponton du village d'Arborek" },
-      { name: "Piaynemo", where: "Îles karstiques", tag: "Point de vue", time: "Une demi-journée en bateau", alt: "Les îles karstiques de Piaynemo vues du belvédère" },
+  journey: {
+    eyebrow: "Y venir",
+    title: "Comment on arrive chez nous",
+    lead: "Raja Ampat est loin, mais le chemin est simple, et la dernière partie, c'est nous.",
+    steps: [
+      { tag: "En avion", title: "Atterrir à Sorong", body: "Aéroport Domine Eduard Osok, SOQ. Vols quotidiens depuis Jakarta, Makassar et Manado." },
+      { tag: "En mer", title: "Ferry pour Waisai", body: "Le ferry rapide part du port de Sorong deux fois par jour, le matin et en début d'après-midi, et met environ deux heures." },
+      { tag: "À Waisai", title: "Les droits d'entrée", body: "Raja Ampat demande une redevance de parc marin et un ticket visiteur, réglés tous deux à Waisai, sur le quai. La carte du parc vaut un an. Demandez-nous et nous vous dirons les montants de la saison." },
+      { tag: "La dernière heure", title: "On vous attend à Falaya", body: "Notre bateau attend au Dermaga Falaya, à Waisai, puis vous emmène jusqu'à la maison, à Yenbuba, sur Pulau Mansuar." },
     ],
-    note: "Les sorties en bateau s'organisent à la maison et se partagent entre hôtes quand cela tombe bien. Les horaires et les prix dépendent de la marée et du carburant, alors demandez au moment de réserver.",
+    note: "Les horaires bougent et les bateaux ne les suivent pas toujours. Dites-nous lequel vous prenez et nous serons à Falaya à son arrivée.",
+    all: "Dites-nous votre arrivée",
+    map: {
+      alt: "Carte du trajet : Sorong sur le continent en bas à droite, le ferry vers le nord-ouest jusqu'à Waisai sur Waigeo, puis le bateau vers le sud-ouest jusqu'à la maison sur Pulau Mansuar.",
+      here: "Eddo Homestay",
+      waisai: "Waisai",
+      sorong: "Sorong",
+      open: "Ouvrir la carte",
+      title: "Où se trouve la maison",
+      copy: "Copier l'adresse",
+      copied: "Copié",
+      google: "Ouvrir dans Google Maps",
+      osm: "Ouvrir dans OpenStreetMap",
+      live: "Charger la carte en direct",
+      note: "Le trait de côte est le vrai, d'après les registres communaux indonésiens. Les deux liens et la carte en direct pointent sur les coordonnées exactes. La carte en direct ne se charge que si vous le demandez : rien ici ne contacte un serveur de cartes avant que vous n'appuyiez.",
+    },
   },
   map: {
     eyebrow: "Le détroit",
@@ -1312,7 +1428,7 @@ const JA: EddoCopy = {
     description:
       "Raja Ampat、Pulau Mansuar の Yenbuba 海辺に建つ家族経営の 5 棟。1 棟まるごと貸切、1 日 3 食付き、桟橋からそのままシュノーケリング。",
   },
-  nav: { home: "ホーム", rooms: "お部屋", around: "まわりのこと", services: "手配できること", why: "Eddo を選ぶ理由", faq: "よくある質問" },
+  nav: { home: "ホーム", rooms: "お部屋", journey: "アクセス", services: "手配できること", why: "Eddo を選ぶ理由", faq: "よくある質問" },
   openMenu: "メニューを開く",
   currencyLabel: "おおよその価格を表示する通貨",
   langLabel: "言語",
@@ -1374,17 +1490,32 @@ const JA: EddoCopy = {
       { label: "静か", months: "5月 – 7月", note: "南東の風が吹き、うねりが大きくなります。一年でいちばん人の少ない時期です。" },
     ],
   },
-  around: {
-    eyebrow: "まわりのこと",
-    title: "一日をどこまで運べるか",
-    all: "ボートの相談をする",
-    places: [
-      { name: "Yenbuba の桟橋", where: "すぐ目の前", tag: "シュノーケリング", time: "玄関から", alt: "Yenbuba の桟橋の下を泳ぐ魚" },
-      { name: "極楽鳥", where: "Gam 島の Sawinggrai", tag: "夜明けの舟", time: "日の出前、舟で", alt: "夜明けの Sawinggrai 裏手の森の小道" },
-      { name: "Arborek", where: "となりの島", tag: "村と桟橋", time: "舟で", alt: "Arborek 村の桟橋" },
-      { name: "Piaynemo", where: "カルストの島々", tag: "展望台", time: "舟で半日", alt: "展望台から見た Piaynemo のカルストの島々" },
+  journey: {
+    eyebrow: "アクセス",
+    title: "ここまでの道のり",
+    lead: "ラジャ・アンパットは遠いですが、道順は単純です。最後のひと区間は私たちが引き受けます。",
+    steps: [
+      { tag: "空路", title: "ソロンに降りる", body: "ドミネ・エドゥアルド・オソク空港、SOQ。ジャカルタ、マカッサル、マナドから毎日便があります。" },
+      { tag: "海路", title: "ワイサイへの船", body: "高速船がソロン港から一日二便、朝と昼過ぎに出ます。所要はおよそ二時間です。" },
+      { tag: "ワイサイで", title: "入域料のこと", body: "ラジャ・アンパットでは海洋公園料と観光税がかかり、どちらもワイサイの桟橋で払います。公園カードは一年有効です。今季の金額はお尋ねください。" },
+      { tag: "最後の一時間", title: "ファラヤでお迎えします", body: "私たちの船がワイサイのファラヤ桟橋で待ち、マンスアル島イェンブバの宿までお連れします。" },
     ],
-    note: "ボートはこの家で手配し、都合が合えばほかのお客さまと分け合います。時間も料金も潮と燃料しだいなので、ご予約のときにお尋ねください。",
+    note: "船の時刻は変わりますし、そのとおりに動くとも限りません。乗る便をお知らせいただければ、着く頃にはファラヤにいます。",
+    all: "到着の予定を知らせる",
+    map: {
+      alt: "道のりの地図。右下の本土がソロン、そこから北西へワイゲオ島のワイサイ、さらに南西へマンスアル島の宿まで。",
+      here: "Eddo Homestay",
+      waisai: "Waisai",
+      sorong: "Sorong",
+      open: "地図を開く",
+      title: "宿の場所",
+      copy: "住所をコピー",
+      copied: "コピーしました",
+      google: "Google マップで開く",
+      osm: "OpenStreetMap で開く",
+      live: "実際の地図を読み込む",
+      note: "海岸線はインドネシアの村境データそのままです。二つのリンクも実際の地図も、正確な座標を指しています。実際の地図はお求めになったときだけ読み込むので、ボタンを押すまで地図サーバーとのやり取りは起きません。",
+    },
   },
   map: {
     eyebrow: "海峡",
@@ -1547,7 +1678,7 @@ const DE: EddoCopy = {
     description:
       "Fünf Familienhäuser am Ufer von Yenbuba, Pulau Mansuar, Raja Ampat. Ein Haus für euch allein, drei Mahlzeiten am Tag und Schnorcheln direkt vom Steg.",
   },
-  nav: { home: "Start", rooms: "Häuser", around: "Um uns herum", services: "Was wir organisieren", why: "Warum Eddo", faq: "Fragen" },
+  nav: { home: "Start", rooms: "Häuser", journey: "Anreise", services: "Was wir organisieren", why: "Warum Eddo", faq: "Fragen" },
   openMenu: "Menü öffnen",
   currencyLabel: "Ungefähren Preis anzeigen in",
   langLabel: "Sprache",
@@ -1609,17 +1740,32 @@ const DE: EddoCopy = {
       { label: "Ruhig", months: "Mai – Juli", note: "Südostwind, höhere Dünung. Die leersten Monate des Jahres." },
     ],
   },
-  around: {
-    eyebrow: "Um uns herum",
-    title: "Wohin ein Tag führen kann",
-    all: "Nach einer Bootsfahrt fragen",
-    places: [
-      { name: "Steg von Yenbuba", where: "Direkt hier", tag: "Schnorcheln", time: "Von der Tür aus", alt: "Fische unter dem Steg von Yenbuba" },
-      { name: "Paradiesvögel", where: "Sawinggrai, auf Gam", tag: "Fahrt im Morgengrauen", time: "Mit dem Boot, vor Sonnenaufgang", alt: "Waldpfad hinter Sawinggrai im Morgengrauen" },
-      { name: "Arborek", where: "Nachbarinsel", tag: "Dorf & Steg", time: "Mit dem Boot", alt: "Der Steg des Dorfes Arborek" },
-      { name: "Piaynemo", where: "Karstinseln", tag: "Aussichtspunkt", time: "Ein halber Tag mit dem Boot", alt: "Die Karstinseln von Piaynemo vom Aussichtspunkt aus" },
+  journey: {
+    eyebrow: "Anreise",
+    title: "Wie Sie zu uns kommen",
+    lead: "Raja Ampat ist weit, aber der Weg ist einfach, und das letzte Stück übernehmen wir.",
+    steps: [
+      { tag: "Mit dem Flugzeug", title: "In Sorong landen", body: "Flughafen Domine Eduard Osok, SOQ. Tägliche Flüge aus Jakarta, Makassar und Manado." },
+      { tag: "Über See", title: "Fähre nach Waisai", body: "Die Schnellfähre legt zweimal täglich im Hafen von Sorong ab, morgens und am frühen Nachmittag, und braucht etwa zwei Stunden." },
+      { tag: "In Waisai", title: "Die Eintrittsgebühren", body: "Raja Ampat erhebt eine Meeresparkgebühr und ein Besucherticket, beides wird in Waisai am Steg bezahlt. Die Parkkarte gilt ein Jahr. Fragen Sie uns, dann sagen wir Ihnen die Beträge dieser Saison." },
+      { tag: "Die letzte Stunde", title: "Wir holen Sie in Falaya ab", body: "Unser Boot wartet am Dermaga Falaya in Waisai und bringt Sie hinüber zum Haus in Yenbuba auf Pulau Mansuar." },
     ],
-    note: "Bootsfahrten werden im Haus organisiert und unter den Gästen geteilt, wenn es sich ergibt. Zeiten und Preise hängen von Gezeiten und Treibstoff ab, fragt also bei der Buchung nach.",
+    note: "Fährzeiten verschieben sich, und die Boote halten sich nicht immer daran. Sagen Sie uns, welche Sie nehmen, dann sind wir in Falaya, wenn sie anlegt.",
+    all: "Sagen Sie uns Ihre Ankunft",
+    map: {
+      alt: "Karte der Strecke: Sorong auf dem Festland unten rechts, die Fähre nach Nordwesten bis Waisai auf Waigeo, dann das Boot nach Südwesten bis zum Haus auf Pulau Mansuar.",
+      here: "Eddo Homestay",
+      waisai: "Waisai",
+      sorong: "Sorong",
+      open: "Karte öffnen",
+      title: "Wo das Haus steht",
+      copy: "Adresse kopieren",
+      copied: "Kopiert",
+      google: "In Google Maps öffnen",
+      osm: "In OpenStreetMap öffnen",
+      live: "Live-Karte laden",
+      note: "Die Küstenlinie ist die echte, aus den indonesischen Gemeindedaten. Beide Links und die Live-Karte zeigen auf die genauen Koordinaten. Die Live-Karte lädt nur auf Wunsch, hier spricht also nichts mit einem Kartenserver, bevor Sie darauf drücken.",
+    },
   },
   map: {
     eyebrow: "Die Meerenge",
@@ -1781,7 +1927,7 @@ const RU: EddoCopy = {
     description:
       "Пять семейных домов на берегу в Yenbuba, Pulau Mansuar, Raja Ampat. Отдельный дом только для вас, трёхразовое питание и снорклинг прямо с причала.",
   },
-  nav: { home: "Главная", rooms: "Дома", around: "Вокруг нас", services: "Что мы устраиваем", why: "Почему Eddo", faq: "Вопросы" },
+  nav: { home: "Главная", rooms: "Дома", journey: "Как добраться", services: "Что мы устраиваем", why: "Почему Eddo", faq: "Вопросы" },
   openMenu: "Открыть меню",
   currencyLabel: "Показать примерную цену в",
   langLabel: "Язык",
@@ -1843,17 +1989,32 @@ const RU: EddoCopy = {
       { label: "Тихо", months: "Май – июль", note: "Юго-восточный ветер, волна крупнее. Самые безлюдные месяцы в году." },
     ],
   },
-  around: {
-    eyebrow: "Вокруг нас",
-    title: "Куда может увести день",
-    all: "Спросить про поездку",
-    places: [
-      { name: "Причал Yenbuba", where: "Прямо здесь", tag: "Снорклинг", time: "От порога", alt: "Рыбы под причалом в Yenbuba" },
-      { name: "Райские птицы", where: "Sawinggrai, на острове Gam", tag: "Поездка на рассвете", time: "На лодке, до восхода", alt: "Лесная тропа за Sawinggrai на рассвете" },
-      { name: "Arborek", where: "Соседний остров", tag: "Деревня и причал", time: "На лодке", alt: "Причал деревни Arborek" },
-      { name: "Piaynemo", where: "Карстовые острова", tag: "Смотровая площадка", time: "Полдня на лодке", alt: "Карстовые острова Piaynemo со смотровой площадки" },
+  journey: {
+    eyebrow: "Как добраться",
+    title: "Дорога до нас",
+    lead: "Раджа-Ампат далеко, но дорога простая, а последний её участок берём на себя мы.",
+    steps: [
+      { tag: "Самолётом", title: "Прилёт в Соронг", body: "Аэропорт Домине Эдуард Осок, SOQ. Ежедневные рейсы из Джакарты, Макасара и Манадо." },
+      { tag: "Морем", title: "Паром до Вайсая", body: "Скоростной паром уходит из порта Соронга дважды в день, утром и в начале дня, идёт около двух часов." },
+      { tag: "В Вайсае", title: "Входные сборы", body: "В Раджа-Ампате берут сбор морского парка и туристический билет — и то и другое оплачивается в Вайсае, на причале. Карта парка действует год. Спросите нас, и мы назовём суммы этого сезона." },
+      { tag: "Последний час", title: "Встречаем на Фалайе", body: "Наша лодка ждёт на причале Фалайя в Вайсае и отвозит к дому в Йенбубе, на острове Мансуар." },
     ],
-    note: "Поездки на лодке организуются прямо в доме и делятся между гостями, когда так выходит. Время и цена зависят от прилива и топлива, поэтому спрашивайте при бронировании.",
+    note: "Расписание парома меняется, и суда не всегда его держат. Напишите, на каком идёте, — будем на Фалайе к его приходу.",
+    all: "Сообщите, когда прилетаете",
+    map: {
+      alt: "Карта маршрута: Соронг на материке справа внизу, паром на северо-запад до Вайсая на Вайгео, затем лодка на юго-запад до дома на острове Мансуар.",
+      here: "Eddo Homestay",
+      waisai: "Waisai",
+      sorong: "Sorong",
+      open: "Открыть карту",
+      title: "Где стоит дом",
+      copy: "Скопировать адрес",
+      copied: "Скопировано",
+      google: "Открыть в Google Maps",
+      osm: "Открыть в OpenStreetMap",
+      live: "Загрузить живую карту",
+      note: "Береговая линия настоящая, по индонезийским данным о границах деревень. Обе ссылки и живая карта ведут на точные координаты. Живая карта грузится только по запросу, так что до нажатия кнопки ничего здесь не обращается к картографическому серверу.",
+    },
   },
   map: {
     eyebrow: "Пролив",
@@ -2015,7 +2176,7 @@ const ZH: EddoCopy = {
     description:
       "Raja Ampat, Pulau Mansuar 的 Yenbuba 海边五栋家庭民宿。整栋独享，一日三餐，从自家栈桥下水浮潜。",
   },
-  nav: { home: "首页", rooms: "房子", around: "周边", services: "我们能安排的", why: "为什么选 Eddo", faq: "常见问题" },
+  nav: { home: "首页", rooms: "房子", journey: "怎么来", services: "我们能安排的", why: "为什么选 Eddo", faq: "常见问题" },
   openMenu: "打开菜单",
   currencyLabel: "以此货币显示大致价格",
   langLabel: "语言",
@@ -2077,17 +2238,32 @@ const ZH: EddoCopy = {
       { label: "清静", months: "5月 – 7月", note: "刮东南风，浪更大。一年里人最少的几个月。" },
     ],
   },
-  around: {
-    eyebrow: "周边",
-    title: "一天可以走多远",
-    all: "问问出海",
-    places: [
-      { name: "Yenbuba 栈桥", where: "就在门口", tag: "浮潜", time: "出门就是", alt: "Yenbuba 栈桥下的鱼群" },
-      { name: "极乐鸟", where: "Gam 岛的 Sawinggrai", tag: "清晨出海", time: "坐船，日出前", alt: "天刚亮时 Sawinggrai 后面的林间小路" },
-      { name: "Arborek", where: "邻岛", tag: "村子与栈桥", time: "坐船", alt: "Arborek 村的栈桥" },
-      { name: "Piaynemo", where: "喀斯特群岛", tag: "观景台", time: "坐船半天", alt: "从观景台看 Piaynemo 的喀斯特群岛" },
+  journey: {
+    eyebrow: "怎么来",
+    title: "到我们这儿的路",
+    lead: "拉贾安帕远是远，路却直；最后那一段由我们接。",
+    steps: [
+      { tag: "飞机", title: "落地索龙", body: "多米内·爱德华·奥索克机场，SOQ。每天都有从雅加达、望加锡和万鸦老来的航班。" },
+      { tag: "海路", title: "渡轮到外赛", body: "快船每天从索龙港出两班，早上一班、午后一班，约两小时。" },
+      { tag: "在外赛", title: "入区费用", body: "拉贾安帕收海洋公园费和游客票，两样都在外赛码头办。公园卡有效期一年。问我们一句，这一季的数目我们告诉你。" },
+      { tag: "最后一小时", title: "我们在法拉亚接你", body: "我们的船在外赛的法拉亚码头等，送你到曼苏阿岛延布巴村的家里。" },
     ],
-    note: "出海由我们在屋里安排，时间凑得上就几位客人一起分摊。时间和价格要看潮水和油钱，所以订房时问一声。",
+    note: "船期会变，船也不一定准。把你坐的那班告诉我们，船靠岸时我们已经在法拉亚了。",
+    all: "告诉我们你的到达时间",
+    map: {
+      alt: "路线图：右下角大陆上是索龙，渡轮往西北到韦盖奥岛上的外赛，再乘船往西南到曼苏阿岛上的家。",
+      here: "Eddo Homestay",
+      waisai: "Waisai",
+      sorong: "Sorong",
+      open: "打开地图",
+      title: "家在哪里",
+      copy: "复制地址",
+      copied: "已复制",
+      google: "用 Google 地图打开",
+      osm: "用 OpenStreetMap 打开",
+      live: "加载实时地图",
+      note: "海岸线是真的，取自印尼村界数据。两个链接和实时地图都指向精确坐标。实时地图只在你要求时才加载，按下按钮之前这里不会联系任何地图服务器。",
+    },
   },
   map: {
     eyebrow: "海峡",

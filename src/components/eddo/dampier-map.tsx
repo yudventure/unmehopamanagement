@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { ISLANDS, REST, VIEW, type DampierIsland } from "@/lib/dampier";
+import { ISLANDS, REST, VIEW, type MapIsland } from "@/lib/dampier";
 import { EDDO, type MapCopy } from "@/lib/eddo-content";
 
 /**
@@ -78,7 +78,7 @@ function Pin({
   label,
   home,
 }: {
-  island: DampierIsland;
+  island: MapIsland;
   on: boolean;
   onPick: () => void;
   label: string;

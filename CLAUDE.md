@@ -55,3 +55,32 @@ tersembunyi, bahwa gambarnya tetap bergerak, dan bahwa hero-nya tetap diam.
 Hal lain yang berbeda antar sistem dan pantas dilihat dua kali: lebar dan
 perilaku scrollbar, penampilan `<input type="date">` dan `<select>`, serta
 pembulatan font.
+
+## Nama tempat, harga, dan stok tidak boleh dikarang
+
+Situs ini dibaca tamu yang lalu naik perahu atau membayar. Jadi nama pulau,
+nama kampung, harga, kapasitas, dan ketersediaan barang adalah fakta yang bisa
+diperiksa, bukan isian sementara yang kedengarannya masuk akal.
+
+Yang belum diketahui ditulis sebagai belum diketahui, dengan tempatnya
+disiapkan supaya pemilik tinggal mengisi. Halaman yang jujur mengatakan
+"belum kami tulis, tanyakan saja" lebih berguna daripada halaman yang
+meyakinkan dan salah.
+
+Kalau ada daftar resminya, biarkan build yang menjaga: cocokkan ke sumber itu
+dan hentikan build kalau tidak cocok. Waktu peta Selat Dampier dibuat, aturan
+itu langsung menangkap satu kekeliruan — pulau kecil di timur laut Gam yang
+disangka Friwen ternyata Pulau Kurai. Tanpa pemeriksaan itu nama yang salah
+sudah tayang dan terbaca seolah-olah resmi.
+
+Cara mendapat data wilayah Indonesia yang benar, sumbernya, dan jebakan di
+tiap berkasnya ada di `.claude/skills/peta-wilayah-indonesia/`.
+
+## Peta Selat Dampier sudah jadi tapi sedang tidak dipasang
+
+Pemiliknya menyimpannya dulu; bisa jadi dipakai di situs ini, di Turtle, atau
+di situs lain. Jangan dihapus karena terlihat tidak terpakai. Komponennya
+`src/components/eddo/dampier-map.tsx`, datanya `src/lib/dampier.ts`
+(`npm run peta` membangunnya ulang), salinannya di `map` dalam
+`eddo-content.ts` untuk tujuh bahasa, dan animasinya di `globals.css`. Cara
+memasangnya kembali ditulis di tempat seksinya dulu berada, di `site.tsx`.

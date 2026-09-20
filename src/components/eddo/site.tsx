@@ -16,7 +16,6 @@ import {
   TikTokIcon,
   WhatsAppIcon,
 } from "@/components/web/icons";
-import { DampierMap } from "@/components/eddo/dampier-map";
 import { RoomCarousel, type RoomPhoto } from "@/components/eddo/room-carousel";
 import { ServiceScene } from "@/components/eddo/service-scenes";
 import { CheckoutModal, type CheckoutOrder } from "@/components/eddo/checkout-modal";
@@ -1682,28 +1681,34 @@ export function EddoSite({
         </div>
       </Section>
 
-      {/* ------------------------------------------------------- the strait */}
       {/*
-       * Its own section rather than more cards under "around us". The four
-       * cards up there are four days out; this is the whole water they happen
-       * on, and a reader who has just been told about Piaynemo and Arborek is
-       * exactly the reader who wants to know where those are in relation to
-       * each other.
+       * The strait map is built and is not on the page.
+       *
+       * It was a section of its own here, between "around us" and the
+       * services, and the owner has parked it: it may end up here, on the
+       * Turtle site, or on something else entirely. Nothing about it was
+       * thrown away. `dampier-map.tsx` is the component, `dampier.ts` the
+       * coastline, `npm run peta` rebuilds that from the two Indonesian
+       * government registers, `map` in `eddo-content.ts` holds its words in
+       * all seven languages, and the two animations it needs are still in
+       * `globals.css` under "the strait map moves".
+       *
+       * To put it back, import `DampierMap` and drop this in:
+       *
+       *   <Section id="peta" className="pt-20 md:pt-24">
+       *     <div data-reveal className="max-w-[720px]">
+       *       <Eyebrow>{t.map.eyebrow}</Eyebrow>
+       *       <h2 className="mt-4 mb-0 text-[clamp(30px,4.6vw,48px)] leading-[1.05]
+       *                      font-bold tracking-[-.03em] text-eddo-ink">{t.map.title}</h2>
+       *       <p className="mt-4 mb-0 text-[14.5px] leading-[1.7] text-slate">{t.map.lead}</p>
+       *     </div>
+       *     <DampierMap t={t.map} locale={t.htmlLang}
+       *                 onAsk={(island) => ask("excursion", t.map.ask(island))} />
+       *   </Section>
+       *
+       * `.claude/skills/peta-wilayah-indonesia/` explains how the map was
+       * sourced and checked, for putting one on a different site.
        */}
-      <Section id="peta" className="pt-20 md:pt-24">
-        <div data-reveal className="max-w-[720px]">
-          <Eyebrow>{t.map.eyebrow}</Eyebrow>
-          <h2 className="mt-4 mb-0 text-[clamp(30px,4.6vw,48px)] leading-[1.05] font-bold tracking-[-.03em] text-eddo-ink">
-            {t.map.title}
-          </h2>
-          <p className="mt-4 mb-0 text-[14.5px] leading-[1.7] text-slate">{t.map.lead}</p>
-        </div>
-        <DampierMap
-          t={t.map}
-          locale={t.htmlLang}
-          onAsk={(island) => ask("excursion", t.map.ask(island))}
-        />
-      </Section>
 
       {/* ------------------------------------------------------- services */}
       {/*

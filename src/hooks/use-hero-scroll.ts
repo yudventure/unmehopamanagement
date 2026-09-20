@@ -26,8 +26,11 @@ export function useHeroScroll<T extends HTMLElement>() {
 
   useEffect(() => {
     const el = ref.current;
-    /* Only when the reveal hook has taken charge. `data-anim` is absent for
-       reduced motion, which is exactly when a moving hero is unwelcome. */
+    /* Only when the reveal hook has taken charge. `data-anim` is dropped by
+       the layout's failsafe when this never arrives, and a hero that reads a
+       number nobody is writing would sit at its scrolled-past state for good.
+       It is not a reduced-motion check: that decision is in the stylesheet,
+       where it can be made per animation. */
     if (!el || document.documentElement.dataset.anim !== "on") return;
 
     let frame = 0;

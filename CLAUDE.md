@@ -26,14 +26,29 @@ mematikan situs pada sebagian besar mesin Windows.
 
 **Aturannya: putuskan per animasi, bukan sekaligus.**
 
+Keputusan yang berlaku sekarang, 20 September 2026, sesudah pemiliknya tiga
+kali melaporkan situsnya mati di mesinnya sendiri:
+
 | Tetap jalan walau diminta tenang | Berhenti |
 |---|---|
-| gambar garis kecil di dalam kotak seukuran kartu pos | hero yang ikut menggulung |
-| gerak beberapa piksel yang tidak melintasi layar | bagian yang meluncur naik saat tiba |
-| | adegan selebar halaman |
+| gambar garis kecil di dalam kotak seukuran kartu pos | benda yang menyeberangi kartunya sendiri lalu keluar: manta di kartu musim tenang, hujan di kartu campuran, tiga embusan angin di kartu berangin (`[data-cross]`) |
+| gerak beberapa piksel yang tidak melintasi layar | |
+| hero yang tumbuh 8% mengikuti scroll pembacanya sendiri | |
+| seksi yang mendarat saat tiba | |
 
-Yang berhenti adalah yang melintasi layar, mengikuti scroll, atau datang tanpa
-diminta. Itu yang dimaksud setelannya.
+Jadi di situs ini `prefers-reduced-motion` tinggal mengerjakan satu hal, dan
+itu disengaja. Yang berhenti adalah yang bergerak **tanpa diminta dan tidak
+bisa dihindari dengan memalingkan mata**. Hero dan seksi yang mendarat tidak
+begitu: keduanya digerakkan oleh scroll pembacanya sendiri, berhenti begitu
+tangannya berhenti.
+
+**Harganya, disebut terang-terangan.** Pembaca Mac yang sengaja menyalakan
+Reduce motion tetap mendapat hero dan reveal-nya. Itu pembebanan yang nyata,
+dan itu keputusan pemiliknya atas situsnya sendiri; pilihan lainnya adalah
+halaman diam untuk sebagian besar tamu Windows-nya. Kalau suatu saat ditinjau
+ulang, jawabannya **bukan** mengembalikan aturan-aturan itu ke stylesheet,
+melainkan memberi halamannya saklar sendiri — yang artinya sama di mesin mana
+pun.
 
 **Jangan pernah** membuat `prefers-reduced-motion` berakhir pada konten yang
 tidak kelihatan. Kalau sebuah elemen disembunyikan sampai animasinya berjalan,

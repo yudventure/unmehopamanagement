@@ -84,10 +84,12 @@ export const viewport: Viewport = {
  *
  * So the decision moved from this script into the stylesheet, where it can be
  * made per animation rather than for all of them at once. What still stops
- * under `prefers-reduced-motion` is everything the setting exists for: the
- * hero that moves with the scroll, the sections that slide up as they arrive,
- * the full-width scenes. What keeps going is the line drawings, which are a few
- * pixels of drift inside a box the size of a postcard.
+ * under `prefers-reduced-motion` is the one thing on these pages that crosses
+ * a card on its own and leaves — the manta, the shower, the gusts. The hero
+ * that moves under the reader's own scroll, the sections that land as they
+ * arrive, and the drift inside the drawings all keep going; the reasoning,
+ * including what that costs, is written where those rules live in
+ * `globals.css`.
  */
 const START_AT_TOP = `
 if ("scrollRestoration" in history) history.scrollRestoration = "manual";

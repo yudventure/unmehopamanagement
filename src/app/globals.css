@@ -947,37 +947,51 @@ input[type="search"]::-webkit-search-decoration {
 }
 
 /*
- * What asking for less motion actually switches off.
+ * What asking for less motion switches off here, and why it is so little.
  *
- * This was once a belt to the inline script's braces, back when that script
- * never armed anything at all for such a reader. It is now the decision itself,
- * made one animation at a time rather than for the lot of them.
+ * This block used to hold the hero and the reveal as well. Both are gone from
+ * it, on the owner's instruction, after the third report in a row that the
+ * site was dead on their machine. The reasoning is the one this whole file is
+ * built on and is worth writing out once more, because it reads like a
+ * violation of the rule until you follow it.
  *
- * The hero moves with the scroll across the whole screen. The sections slide
- * twenty-two pixels as they arrive. Neither was asked for and neither can be
- * outrun by looking somewhere else, which is the definition of the motion this
- * setting exists to stop. So both land finished and at rest.
+ * `prefers-reduced-motion: reduce` is not one signal. On macOS it is an
+ * accessibility switch somebody turned on. On Windows it is Accessibility →
+ * Visual effects → Animation effects, which is off on any machine set to
+ * "adjust for best performance" and on a great deal of what ships from a
+ * shop. The web gives both the same name. So on this site the signal was not
+ * separating people who get motion sick from people whose laptop was tuned
+ * for speed — and what it did to the second group was take away the hero that
+ * moves under their scroll and the sections that land as they arrive, which
+ * together are most of what the page does when you scroll it.
  *
- * The line drawings do not stop, for the reasons written where they live.
+ * What is left in here is `[data-cross]`, above: the manta, the shower and
+ * the gusts, each crossing a card on its own and leaving. That is the one
+ * thing on these pages that moves without being asked and cannot be outrun by
+ * looking somewhere else, and it is the one thing this setting still stops.
+ *
+ * Everything else is either directed by the reader's own scroll — the hero
+ * grows eight percent from its own centre across a whole screen of scrolling,
+ * the headline slides forty-six pixels and fades as it leaves — or it is a
+ * few pixels of drift inside a box the size of a postcard. None of it travels
+ * and none of it arrives uninvited.
+ *
+ * **What this costs, said plainly.** A reader on a Mac who has turned Reduce
+ * motion on gets the hero and the reveals anyway. That is a real imposition
+ * and it is the owner's call to make about their own site; the alternative
+ * they were shown was a still page for most of their Windows guests. If it is
+ * ever revisited, the answer is not to put these rules back — it is to give
+ * the page its own switch, which means what it says whatever the machine
+ * reports.
+ *
+ * The rule that must never bend, and does not bend here: nothing stopped by
+ * this setting may end up invisible. Every animation above ends at opacity 1
+ * whether it runs or not, and `gerak2.mjs` counts it on both settings.
+ *
+ * There is no block under this comment, and that is the point: the only
+ * `prefers-reduced-motion` rule left in this stylesheet is the one over
+ * `[data-cross]`, beside the season cards' motion where it belongs.
  */
-@media (prefers-reduced-motion: reduce) {
-  [data-anim] [data-reveal],
-  [data-anim] [data-reveal][data-shown] {
-    opacity: 1;
-    transform: none;
-    transition: none;
-  }
-
-  [data-anim] [data-hero-photo],
-  [data-anim] [data-hero-copy] {
-    transform: none;
-  }
-
-  [data-anim] [data-hero-copy],
-  [data-anim] [data-hero-scrim] {
-    opacity: 1;
-  }
-}
 
 /* ---------------------------------------------------------------------------
    The manager, in its own light.

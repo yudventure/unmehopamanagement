@@ -972,6 +972,28 @@ di kategori itu sendiri — titik selamnya, minimal penyelamnya, apa yang bukan
 trip dan bukan kursus — jadi tidak ada klaim baru yang tidak sudah ada di
 daftar harganya.
 
+**Kartunya subgrid, dan itu yang membuat barisnya rapi.** Lima bagian — nama,
+keterangan, isi paket, harga, tombol — dan tiap kartu meminjam baris grid
+seksinya, jadi kelimanya sejajar melintasi satu baris kartu, bukan cuma di
+dalam tiap kartu. Sebelumnya kartunya diregangkan sama tinggi dengan harga
+dipaku ke bawah, dan itu menyisakan satu cacat yang kelihatan: kartu yang bisa
+dibayar membawa tombol, yang diatur lewat pesan tidak, jadi garis di atas
+harganya duduk lebih rendah daripada tetangganya. Menyediakan tinggi tombolnya
+di semua kartu membereskan baris itu dan membuang tinggi yang sama di tiap
+baris yang memang tidak ada yang bisa dibeli. Subgrid tidak menuntut pilihan
+itu: tiap bagian setinggi yang paling butuh di baris itu, dan nol kalau tidak
+ada yang memakainya. Bagian yang tidak ada dirender sebagai elemen kosong
+supaya tiap kartu menyerahkan lima anak yang sama. Diukur: selisih garis harga
+terbesar dalam satu baris **0 px**, di 1280, 900 dan 390 px, pada kelima tab.
+
+Di dalam tiap kelompok, **yang bisa diterangkan lengkap didahulukan** — enam
+paket dulu, baru baris daftar harga biasa. Urutannya selebihnya tetap urutan
+keluarganya sendiri; sort-nya stabil dan tidak memindahkan apa pun selain
+keenam paket itu, dan hanya melewati baris di kelompok yang sama. Alasannya
+tampilan: satu kartu yang membawa durasi, level, empat chip dan tombol
+bersebelahan dengan kartu yang membawa nama dan harga saja membuat baris itu
+meregangkan yang pendek sampai setinggi yang panjang.
+
 Kartunya tidak sama isinya, dan justru itu yang jujur. **Enam paket** membawa
 durasi, level dan daftar "sudah termasuk" yang ditulis dan diperiksa dalam
 tujuh bahasa; **lima belas sisanya** membawa kalimat dari daftar harga

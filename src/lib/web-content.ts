@@ -6172,5 +6172,18 @@ export function diveCards(t: SiteCopy): DiveCard[] {
       rupiah: divePrice(row.key),
       pack: isDiveKey(row.key) ? row.key : null,
     };
-  });
+  })
+    /* Within a group, the ones we can describe in full come first.
+ 
+       The order inside each group is otherwise the family's own, and that is
+       still what this is: a stable sort moves nothing but the six packages,
+       and only past rows in the same group. It is here because of what the
+       cards look like side by side. A package carries a duration, a level,
+       three or four chips and a Book button; a plain row carries a sentence
+       and a figure, and a grid that alternates the two puts a card with a
+       name and a price next to one twice its height, which the row then
+       stretches it to match. Sorted, the heavy cards share a row with each
+       other and the light ones with each other, and the section stops looking
+       like a staircase. */
+    .sort((a, b) => (a.pack ? 0 : 1) - (b.pack ? 0 : 1));
 }

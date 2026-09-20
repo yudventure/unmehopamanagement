@@ -290,6 +290,23 @@ function DiveCard({
   canBuy: boolean;
   onBook: () => void;
 }) {
+  /* Everything that is true of this card and is not its name, its
+     description or its price, on one line.
+
+     It used to be a pill floating at the top right, and that pill is most of
+     why the grid looked untidy: a long name with a pill beside it wrapped to
+     two lines while its neighbour's stayed on one, so every title sat at a
+     different height and the card under it started at a different place. A
+     line of its own underneath is the same words, always in the same place,
+     and never fighting the name for the width.
+
+     The unit is left out where it would only repeat the footer: a private
+     guide is "per day" in both, and saying it twice on one card reads as a
+     mistake rather than as emphasis. */
+  const meta = [card.badge, card.level]
+    .filter((bit): bit is string => Boolean(bit) && bit !== card.unit)
+    .join(" · ");
+
   return (
     <article
       /* The plain cards are dark glass rather than the white tint they were.
@@ -300,45 +317,75 @@ function DiveCard({
          the photograph through. */
       /* The featured card carries a transparent border rather than none.
          Without it its content box starts 1px higher than its neighbours',
-         and that 1px is visible once the footers are pinned and the prices
-         are meant to sit on one line. */
-      className={`flex flex-col rounded-[20px] border px-6 py-6 ${
+         and that 1px is visible once the rows below are meant to line up. */
+      /* ## Why this is a subgrid
+ 
+         Five slots — name, description, what is included, price, button —
+         and the card borrows the grid rows of the section it sits in, so the
+         five line up across every card in a row rather than only inside each
+         card.
+ 
+         Stretching the cards to a common height and pinning the footer to the
+         bottom got most of the way there and left the last visible fault: a
+         card that can be paid for carries a button and one that is arranged
+         by message does not, so its footer is shorter, so the rule above its
+         price sat lower than its neighbours'. Reserving the button's height
+         everywhere fixed that row and wasted the same height on every row
+         where nothing could be bought at all.
+ 
+         A subgrid has no such trade: each slot is exactly as tall as the
+         tallest card needs it to be, in that row, and nothing at all where
+         no card in the row uses it. Absent slots are rendered as empty
+         elements so every card has the same five children to hand up.
+ 
+         A browser too old for `subgrid` drops the declaration and draws the
+         card as an ordinary grid: the five parts stack in order, in the right
+         card, and only the alignment between cards is lost. Every engine has
+         shipped it since 2023, so this is a floor rather than a plan. */
+      className={`grid grid-rows-subgrid row-span-5 [row-gap:0] rounded-[18px] border px-5 py-[18px] ${
         featured
           ? "border-transparent bg-amber text-amber-deep"
           : "border-white/10 bg-[#06141a]/62 text-white backdrop-blur-md"
       }`}
     >
-      <div className="flex items-start justify-between gap-3">
-        <h5 className="m-0 text-[17px] leading-[1.25] font-bold">
+      <div>
+        <h5 className="m-0 text-[15.5px] leading-[1.3] font-bold">
           {card.name}
         </h5>
-        {card.badge ? (
-          <span
-            className={`shrink-0 rounded-full px-[10px] py-[4px] text-[11px] whitespace-nowrap ${
-              featured ? "bg-amber-deep/12" : "bg-white/12"
+        {meta ? (
+          <p
+            className={`mt-[5px] mb-0 text-[11.5px] leading-[1.45] ${
+              /* 90% rather than 70%: 70% of amber-deep on amber measured
+                 3.6:1, under the 4.5 a line this small needs. */
+              featured ? "text-amber-deep/90" : "text-white/50"
             }`}
           >
-            {card.badge}
-          </span>
+            {meta}
+          </p>
         ) : null}
       </div>
 
+      {/* Each of the four below is either itself or an empty element. The
+          spacing lives inside the present one, never on the empty one, so a
+          slot nobody in the row uses takes no height at all. */}
       {card.blurb ? (
         <p
-          className={`mt-[10px] text-[13.5px] leading-[1.6] ${
+          className={`mt-[11px] mb-0 text-[13px] leading-[1.6] ${
             featured ? "text-amber-deep/80" : "text-white/65"
           }`}
         >
           {card.blurb}
         </p>
-      ) : null}
+      ) : (
+        <div />
+      )}
 
-      {card.includes.length > 0 && (
-        <ul className="mt-4 mb-0 flex list-none flex-wrap gap-[6px] p-0">
+      {card.includes.length > 0 ? (
+        <ul className="mt-[13px] mb-0 flex list-none flex-wrap content-start gap-[6px] p-0">
           {card.includes.map((inc) => (
             <li
               key={inc}
-              className={`rounded-full px-[10px] py-[4px] text-[11.5px] ${
+              className={`h-fit rounded-full px-[9px] py-[3px] text-[11px] ${
                 featured ? "bg-amber-deep/10" : "bg-white/10 text-white/75"
               }`}
             >
@@ -346,15 +393,12 @@ function DiveCard({
             </li>
           ))}
         </ul>
+      ) : (
+        <div />
       )}
 
-      {/* mt-auto is what lines the prices up. The cards already stretch to the
-          tallest in their row, but a blurb that runs to two lines instead of
-          three used to leave the footer floating halfway up. Pushed to the
-          bottom instead, every price and every button sits on the same line
-          across the row, whatever the text above them does. */}
       <div
-        className={`mt-auto border-t pt-4 ${
+        className={`mt-[15px] border-t pt-[14px] ${
           featured ? "border-amber-deep/15" : "border-white/12"
         }`}
       >
@@ -368,47 +412,52 @@ function DiveCard({
             lang={lang}
             currency={currency}
             rates={rates}
+            size="sm"
             tone={featured ? "amber" : "light"}
           />
         ) : (
-          <div
-            className={`text-[20px] font-bold ${
-              featured ? "text-amber-deep" : "text-white"
-            }`}
-          >
-            {t.dive.askPrice}
-          </div>
+          <>
+            <div
+              className={`text-[17px] font-bold ${
+                featured ? "text-amber-deep" : "text-white"
+              }`}
+            >
+              {t.dive.askPrice}
+            </div>
+            {/* The line `Price` keeps open for a conversion that may never
+                load. Held open here too, empty, so a card that asks and a
+                card that quotes are the same height. */}
+            <div className="min-h-[15px]" />
+          </>
         )}
         <div
-          className={`text-[11.5px] ${
-            /* 70% of amber-deep on amber measured 3.6:1, under the 4.5 this
-               11.5px line needs. Predates the photograph; caught while
-               checking the section. */
+          className={`mt-[2px] text-[11.5px] ${
             featured ? "text-amber-deep/90" : "text-white/55"
           }`}
         >
           {card.unit}
-          {card.level ? ` · ${card.level}` : ""}
         </div>
-
-        {/* A row the dive centre does not sell through this site is not for
-            sale here, and the card says "ask us" by simply not offering this.
-            The same refusal is in `priceTurtle`, where it is the one that
-            counts. */}
-        {canBuy && (
-          <button
-            type="button"
-            onClick={onBook}
-            className={`mt-4 w-full cursor-pointer rounded-full border-none px-[16px] py-[10px] text-[13.5px] font-medium transition-colors ${
-              featured
-                ? "bg-amber-deep text-amber hover:bg-amber-ink"
-                : "bg-white text-ink hover:bg-surface-hover"
-            }`}
-          >
-            {t.booking.cta}
-          </button>
-        )}
       </div>
+
+      {/* A row the dive centre does not sell through this site is not for
+          sale here, and the card says "ask us" by simply not offering this.
+          The same refusal is in `priceTurtle`, where it is the one that
+          counts. */}
+      {canBuy ? (
+        <button
+          type="button"
+          onClick={onBook}
+          className={`mt-[14px] h-fit w-full cursor-pointer rounded-full border-none px-[16px] py-[9px] text-[13px] font-medium transition-colors ${
+            featured
+              ? "bg-amber-deep text-amber hover:bg-amber-ink"
+              : "bg-white text-ink hover:bg-surface-hover"
+          }`}
+        >
+          {t.booking.cta}
+        </button>
+      ) : (
+        <div />
+      )}
     </article>
   );
 }
@@ -1382,7 +1431,7 @@ export function TurtleSite({ payable = false }: { payable?: boolean }) {
                   {t.dive.list.groupNote[diveGroup]}
                 </p>
 
-                <div className="mt-6 grid grid-cols-1 items-start gap-4 sm:grid-cols-2">
+                <div className="mt-6 grid grid-cols-1 gap-[14px] sm:grid-cols-2 xl:grid-cols-3">
                   {cards
                     .filter((c) => c.group === diveGroup)
                     .map((card) => (

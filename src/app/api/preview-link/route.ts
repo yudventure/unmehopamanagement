@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
+import { requestOrigin } from "@/lib/request-url";
 import { SESSION_COOKIE, valid } from "@/lib/session";
 import { PUBLIC_SITE_KEYS, siteDomain } from "@/lib/site-domains";
 
@@ -34,6 +35,11 @@ import { PUBLIC_SITE_KEYS, siteDomain } from "@/lib/site-domains";
  * where there is one, and the address this request arrived on only as the
  * fallback for the state the application is in today, where all three share a
  * host.
+ *
+ * That fallback is read from the request's own headers rather than from
+ * `req.url`, and `lib/request-url.ts` says why at length: the short version is
+ * that `req.url` carries the address the server binds to, which on the
+ * standalone build is `0.0.0.0` — a wildcard no browser will open.
  */
 
 export const runtime = "nodejs";
@@ -53,7 +59,10 @@ export async function GET(req: Request) {
      one up, and the screen explains it rather than showing a failure. */
   if (!token) return NextResponse.json({ configured: false, links: {} });
 
-  const origin = new URL(req.url).origin;
+  /* The address the browser asked for, not the one the server bound to. The
+     standalone build listens on 0.0.0.0, and a link carrying that host is one
+     Chrome refuses to open — on the client's phone, after it has been sent. */
+  const origin = requestOrigin(req);
   const links: Record<string, string> = {};
   for (const site of PUBLIC_SITE_KEYS) {
     const host = siteDomain(site);

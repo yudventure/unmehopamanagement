@@ -193,9 +193,11 @@ export function BookingManager({
 
   const [auth, setAuth] = useState(signedIn);
   const [role, setRole] = useState<Role>("owner");
-  const [loginEmail, setLoginEmail] = useState(OWNER_EMAIL);
+  /* Empty, and on neither role, for the reason `sign-in.tsx` gives: a login
+     that arrives pre-filled is a demo of a login. */
+  const [loginEmail, setLoginEmail] = useState("");
   const [loginPass, setLoginPass] = useState("");
-  const [loginRole, setLoginRole] = useState<Role>("owner");
+  const [loginRole, setLoginRole] = useState<Role | null>(null);
   const [loginError, setLoginError] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
 

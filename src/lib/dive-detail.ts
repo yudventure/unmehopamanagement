@@ -10,7 +10,7 @@ import type { DiveKey } from "./web-content";
  *
  * Real, taken from the price list and the section copy: how many dives each
  * package has, its total duration, the boat being 20 to 45 minutes out, the
- * twelve-metre ceiling on Discover Scuba, the four days of the Open Water
+ * twelve-metre ceiling on the try dive, the four days of the Open Water
  * course, six divers per guide.
  *
  * Reconstructed: the minutes given to each individual stage. They are a
@@ -39,7 +39,7 @@ export interface Stage {
 }
 
 export interface DiveDetailFacts {
-  /** Empty where the package is not a trip with a shape, like gear hire. */
+  /** Empty where the package is not a trip with a shape, like the guide. */
   stages: Stage[];
   /** Metres, or null where the package never leaves the surface. */
   depth: number | null;
@@ -128,8 +128,9 @@ export const DIVE_DETAIL: Record<DiveKey, DiveDetailFacts> = {
     days: null,
     photo: "/manta.jpg",
   },
-  /* Kit for the day. No trip of its own, so no shape to draw. */
-  gear: {
+  /* A guide for the day. No trip of its own — the guide rides along with
+     whichever dives are booked — so there is no shape to draw. */
+  guide: {
     stages: [],
     depth: null,
     days: null,

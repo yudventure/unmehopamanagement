@@ -10,7 +10,7 @@ import { LOCATION, MAP_LINKS, type SiteCopy } from "@/lib/web-content";
  * The thumbnail is a sketch and says so. It is not trying to be a map you
  * navigate by; it is trying to answer the question the section is already
  * asking, which is what the four steps look like laid out in space: Sorong on
- * the mainland, a ferry north-east to Waisai, and a boat back down to Mansuar.
+ * the mainland, a ferry north-east to Waisai, and a boat back down to Kri.
  * A real map at this size shows almost none of that.
  *
  * Pressing it opens the real thing: an OpenStreetMap frame at the exact
@@ -28,6 +28,14 @@ const PLACES = {
   sorong: { lat: -0.878, lng: 131.255 },
   waisai: { lat: -0.433, lng: 130.818 },
   home: { lat: LOCATION.lat, lng: LOCATION.lng },
+  /* The two islands at the end of the journey, by their middles rather than
+     by an offset from the pin. Which of them the homestay stands on is the
+     one thing this corner of the map has to get right — it is Kri, the small
+     one — and a hand-placed blob is one edit away from putting it on the
+     wrong island again. Sizes below are still drawn larger than life, the
+     way the rest of the sketch is. */
+  mansuar: { lat: -0.5806, lng: 130.625 },
+  kri: { lat: -0.559, lng: 130.687 },
 };
 
 /* The frame the sketch is drawn in, in degrees. */
@@ -43,6 +51,8 @@ const px = (p: { lat: number; lng: number }) => ({
 const S = px(PLACES.sorong);
 const WA = px(PLACES.waisai);
 const HO = px(PLACES.home);
+const MANSUAR = px(PLACES.mansuar);
+const KRI = px(PLACES.kri);
 
 export function JourneyMap({ t }: { t: SiteCopy }) {
   const [open, setOpen] = useState(false);
@@ -273,13 +283,16 @@ function Sketch({ t }: { t: SiteCopy }) {
       {island({ x: S.x - 96, y: S.y + 18 }, 58, 30, 6)}
       {/* The Sorong peninsula, bottom right. */}
       {island({ x: S.x + 34, y: S.y + 30 }, 62, 34, -4)}
-      {/* Mansuar, with the homestay on it, and Kri alongside. */}
-      {island({ x: HO.x + 6, y: HO.y + 3 }, 34, 14, -6)}
+      {/* Mansuar, the long one, to the south-west; Kri, the islet the
+          homestay stands on, north-east of it with the pin on top. The
+          homestay is not on Mansuar, and a sketch that puts it there is still
+          a map naming the wrong island. */}
+      {island(MANSUAR, 18, 6.5, -6)}
       <ellipse
-        cx={HO.x + 52}
-        cy={HO.y - 6}
-        rx="15"
-        ry="7"
+        cx={KRI.x}
+        cy={KRI.y}
+        rx="9"
+        ry="4.5"
         fill="#cbe7d7"
         stroke="#a9d4bd"
         strokeWidth="1.5"

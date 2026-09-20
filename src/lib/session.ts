@@ -13,7 +13,9 @@ import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
  *
  *   DASHBOARD_PASSWORD   what the login screen asks for
  *   SESSION_SECRET       optional; signs the cookie. Generated per boot when
- *                        unset, which signs everyone out on a restart.
+ *                        unset, which signs everyone out on a restart. Set it
+ *                        in production, where a restart is somebody else's
+ *                        decision and a deploy is every few days.
  *
  * With `DASHBOARD_PASSWORD` unset nobody can sign in at all. That is the same
  * direction `CMS_PASSWORD` takes and for the same reason: a password nobody
@@ -36,9 +38,27 @@ export const SESSION_COOKIE = "unmehopa_session";
 /** Eight hours: a working day, and short enough that a borrowed laptop forgets. */
 const TTL_SECONDS = 60 * 60 * 8;
 
-/* Unset means sessions do not survive a restart, which is inconvenient and
-   safe, rather than predictable and not. */
-const SECRET = process.env.SESSION_SECRET || randomBytes(32).toString("hex");
+/**
+ * The key the cookie is signed with.
+ *
+ * Unset means sessions do not survive a restart, which is inconvenient and
+ * safe, rather than predictable and not.
+ *
+ * The generated one is kept on `globalThis` rather than in this module's own
+ * scope, and that is not a nicety. A module here is not one instance: Next
+ * bundles the page and the route handler separately, so each got its own
+ * random value, and a cookie signed by `/api/login` was then checked by the
+ * page against a different key. Signing in looked like it worked — 200, a
+ * cookie in the jar — and the very next render showed the login screen again,
+ * with nothing on the screen or in the log saying why. The symbol is the
+ * cross-bundle handle; `Symbol.for` because two bundles are two module scopes
+ * but one realm.
+ */
+const SECRET_KEY = Symbol.for("unmehopa.session.secret");
+const realm = globalThis as unknown as Record<symbol, string | undefined>;
+const SECRET =
+  process.env.SESSION_SECRET ||
+  (realm[SECRET_KEY] ??= randomBytes(32).toString("hex"));
 
 export function loginConfigured() {
   return Boolean(process.env.DASHBOARD_PASSWORD);

@@ -35,7 +35,7 @@ bersangkutan, dan matinya dijelaskan di layar, bukan berupa error.
 | `NEXT_PUBLIC_LOGIN_HERO` | foto panel login | panel tampil sebagai bingkai kosong |
 | `SITE_DOMAIN_TURTLE` | domain situs Turtle | Turtle tetap di `/turtle` |
 | `SITE_DOMAIN_EDDO` | domain situs Eddo | Eddo tetap di `/eddo` |
-| `MIDTRANS_SERVER_KEY` | membuat transaksi Snap dan memeriksa notifikasi | tombol di bagian kamar Eddo bertanya, bukan menagih |
+| `MIDTRANS_SERVER_KEY` | membuat transaksi Snap dan memeriksa notifikasi | Eddo dan Turtle sama-sama cuma bertanya, tidak menagih |
 | `NEXT_PUBLIC_MIDTRANS_CLIENT_KEY` | dipakai browser untuk membuka Snap | sama seperti di atas |
 | `MIDTRANS_IS_PRODUCTION` | `true` untuk keluar dari sandbox | tetap di sandbox |
 
@@ -54,6 +54,16 @@ Tiga hal yang harus benar, dan dua di antaranya tidak ada di sini:
    siapa yang mengirim melainkan tanda tangannya: SHA-512 dari
    `order_id + status_code + gross_amount + server key`. Body yang tidak lolos
    dijawab 401 dan tidak ada email yang dikirim.
+4. **Satu pasang kunci untuk dua homestay.** Notifikasi yang masuk diarahkan
+   ke inbox yang benar lewat awalan order id — `TURTLE-…` ke pemilik Turtle,
+   sisanya ke Eddo — jadi tidak ada kunci atau endpoint kedua yang perlu
+   disiapkan.
+5. **Halaman Turtle membaca kunci itu saat build.** Halamannya di-*prerender*,
+   dan tombol bayarnya hanya digambar kalau kuncinya ada. Jadi menambahkan
+   `MIDTRANS_SERVER_KEY` di panel Vercel baru kelihatan setelah deploy
+   berikutnya; sampai saat itu situsnya tetap hidup dan tetap menawarkan
+   bertanya. (Endpoint-nya sendiri membaca kunci saat jalan, jadi pembayaran
+   Eddo yang sudah tayang tidak menunggu apa pun.)
 
 Nominalnya dihitung di server dari tabel kamar, tidak pernah diambil dari
 permintaan. Nominal yang datang bersama permintaan adalah nominal yang dipilih
@@ -81,14 +91,16 @@ ke yang lain.
 **2. Isi dua variabel berikut**, lalu deploy ulang sekali supaya terbaca:
 
 ```
-SITE_DOMAIN_EDDO   = eddohomestay.com,www.eddohomestay.com   <- sudah dibeli
-SITE_DOMAIN_TURTLE = turtlehomestay.com,www.turtlehomestay.com
+SITE_DOMAIN_EDDO   = eddohomestay.com,www.eddohomestay.com          <- sudah dibeli
+SITE_DOMAIN_TURTLE = turtledivehomestay.com,www.turtledivehomestay.com  <- domain klien
 ```
 
-Baris pertama bukan contoh lagi: `eddohomestay.com` adalah domain yang sudah
-dibeli, dan nilai di atas itu yang dipakai apa adanya. Baris kedua masih
-contoh sampai domain Turtle dibeli, dan selama variabelnya kosong Turtle tetap
-hidup di `/turtle` tanpa ada yang rusak.
+Keduanya bukan contoh lagi. `eddohomestay.com` sudah dibeli, dan
+`turtledivehomestay.com` adalah domain yang sudah dipakai klien Turtle untuk
+situs lamanya — situs yang sedang diganti ini. Artinya pemindahannya perlu
+dijadwalkan bersama klien: begitu DNS-nya diarahkan ke sini, situs lama tidak
+bisa diakses lagi di alamat itu. Selama variabelnya kosong, Turtle tetap hidup
+di `/turtle` tanpa ada yang rusak.
 
 Daftar lengkap semua variabel beserta bentuk nilainya ada di `.env.example`,
 terpisah antara yang dibaca saat build dan yang dibaca saat jalan.
@@ -126,9 +138,9 @@ Sesudah itu:
 
 | Yang diminta | Yang disajikan |
 |---|---|
-| `turtlehomestay.com/` | situs Turtle |
-| `turtlehomestay.com/about` | halaman profil Turtle |
-| `turtlehomestay.com/turtle` | memantul ke `turtlehomestay.com/` |
+| `turtledivehomestay.com/` | situs Turtle |
+| `turtledivehomestay.com/about` | halaman profil Turtle |
+| `turtledivehomestay.com/turtle` | memantul ke `turtledivehomestay.com/` |
 | `eddohomestay.com/` | situs Eddo |
 | `unmehopamanagement.com/` | dashboard |
 | `eddohomestay.com/turtle` | situs Turtle |
@@ -464,7 +476,18 @@ Cookie-nya `httpOnly`, jadi tidak ada skrip di halaman yang bisa membacanya,
 dan `sameSite=lax`, jadi ikut pada kunjungan biasa tapi tidak pada permintaan
 yang dibuat situs lain atas namamu. `secure` menyala sendiri di https dan mati
 di http, supaya pengujian lokal tetap bisa jalan tanpa token pernah lewat
-terbuka di produksi.
+terbuka di produksi. Yang dibaca `x-forwarded-proto` lebih dulu: di belakang
+proxy yang mengakhiri TLS — Vercel salah satunya — permintaannya sampai ke
+aplikasi sebagai http biasa, dan menilai dari situ saja berarti `secure` tidak
+pernah menyala di mana pun yang punya proxy.
+
+**Tautannya tidak perlu disalin dari panel server.** Tab Website di manager
+menampilkannya untuk tiap situs, lengkap dengan tokennya, siap dikirim.
+Alamatnya diambil dari domain yang sudah dipasang untuk situs itu; kalau belum
+ada, dari alamat yang dipakai browser saat membuka manager — bukan dari alamat
+yang di-*bind* server. Bedanya kelihatan waktu `next start` versi standalone
+dipakai: server itu bind ke `0.0.0.0`, dan tautan yang membawa host itu ditolak
+Chrome (`ERR_ADDRESS_INVALID`) — di ponsel klien, sesudah dikirim.
 
 Token yang salah dan token yang tidak diisi dijawab sama persis, 404, dan
 keduanya tidak menyebutkan yang mana. Tidak ada yang bisa dipelajari dari

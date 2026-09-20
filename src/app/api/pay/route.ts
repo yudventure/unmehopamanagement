@@ -2,9 +2,18 @@ import { randomUUID } from "node:crypto";
 
 import { NextResponse } from "next/server";
 
+import { daysBetween } from "@/lib/days";
 import { eddoRooms, pickText, priceService } from "@/lib/eddo-content";
 import { guestLang } from "@/lib/eddo-mail";
 import { createSnapToken, midtransConfigured, snapScript } from "@/lib/midtrans";
+import {
+  DIVE_PER,
+  PROPERTY,
+  ROOM_SLEEPS,
+  priceTurtle,
+  type DiveKey,
+  type RoomKey,
+} from "@/lib/web-content";
 
 /**
  * Starts a payment: takes who and when, answers with a Snap token.
@@ -16,6 +25,8 @@ import { createSnapToken, midtransConfigured, snapScript } from "@/lib/midtrans"
  *
  * There is still no database. The order id is what ties this to the
  * notification that follows, and the notification is what reaches the owner.
+ * It carries the site as its first word, because the notification arrives with
+ * the order id and nothing else and has two inboxes to choose between.
  *
  * Answers 503 when the Midtrans keys are unset, which is what the button reads
  * before it decides whether to offer paying or asking.
@@ -30,6 +41,9 @@ const MAX_GUESTS = 12;
 const MAX_QTY = 30;
 
 const clean = (v: unknown) => (typeof v === "string" ? v.trim().slice(0, 200) : "");
+/* "2 nights", never "2 night(s)". This line is copied into the note the guest
+   receives, and somebody reading "night(s)" is reading a database. */
+const many = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`;
 const whole = (v: unknown, lo: number, hi: number) => {
   const n = Math.floor(Number(v));
   return Number.isFinite(n) ? Math.min(hi, Math.max(lo, n)) : lo;
@@ -81,17 +95,26 @@ export async function POST(req: Request) {
   }
 
   /*
-   * Two things can be paid for: a house, and one of the services the family
-   * hires out. Both are priced here, from files, and neither reads a number
-   * out of the request.
+   * Three things can be paid for: a Turtle booking, Eddo's house, and one of
+   * the services Eddo's family hires out. All three are priced here, from
+   * files, and none of them reads a number out of the request.
    *
    * The service branch refuses anything still marked as an example, which is
    * what `payableProduct` is for. Every price in that section is invented until
    * an owner replaces it, and the page no longer says which ones those are, so
    * this refusal is the whole of the guard rather than the second half of it.
+   * Turtle's branch refuses a package the owner has not priced for the same
+   * reason: a missing figure means "ask us", never "free".
    */
   const service = clean(body.service);
   const productId = clean(body.productId);
+  /*
+   * Which homestay is being paid. Eddo when nothing says otherwise, because
+   * Eddo's pages were the only ones that could reach this endpoint until
+   * Turtle's could, and a tab left open across that deploy must not have its
+   * order rejected for a field it had never heard of.
+   */
+  const site = clean(body.site) === "turtle" ? "turtle" : "eddo";
 
   let gross: number;
   let item: { id: string; price: number; quantity: number; name: string };
@@ -109,7 +132,81 @@ export async function POST(req: Request) {
    */
   let detail = "";
 
-  if (service) {
+  if (site === "turtle") {
+    /*
+     * A room for some nights, or a place on the boat.
+     *
+     * The count is never read out of the request when it can be worked out
+     * from the dates instead: nights are the span between check-in and
+     * check-out, and a day of gear hire is the same arithmetic. What is left
+     * for the browser to state is the one number two dates cannot give — how
+     * many divers — and `priceTurtle` refuses anything past the boat's six.
+     *
+     * Rooms and packages are priced by the same function the summary page
+     * used a moment ago, reading the manager's room table and the owner's
+     * dive prices, so the figure on the button and the figure charged are one
+     * lookup rather than two that agree today.
+     */
+    const kind = clean(body.kind);
+    const pack = clean(body.pack) as DiveKey;
+    const room = clean(body.room) as RoomKey;
+    const byDay = kind === "room" || (kind === "dive" && DIVE_PER[pack] === "day");
+    /*
+     * How many sleep in the bungalow, floored and never clamped.
+     *
+     * `whole` above pins a number to a range, which is right for a field whose
+     * worst case is a silly total and wrong for this one, the way it is wrong
+     * for divers: a party of four clamped to two is a bungalow with two beds
+     * sold to four people, paid for, and discovered at the door. It is also
+     * half the price now — the family charges 850 for one and 1,550 for two —
+     * so a head count nobody checked is a figure nobody agreed to.
+     *
+     * `priceTurtle` refuses anything the bungalow is not sold for, which is
+     * what makes the 422 below cover this as well.
+     */
+    const roomGuests = Math.floor(Number(body.guests));
+    const sale = priceTurtle({
+      kind,
+      room,
+      pack,
+      /* Floored, never clamped, for the same reason: eight divers clamped to
+         six is six places on a boat sold to a party of eight, paid for, and
+         discovered at the jetty. Out of range is refused below instead. */
+      count: byDay ? daysBetween(checkIn, until) : Math.floor(Number(body.divers)),
+      guests: roomGuests,
+    });
+    if (!sale) {
+      return NextResponse.json({ error: "not-payable" }, { status: 422 });
+    }
+    /*
+     * The bungalow sleeps what it sleeps.
+     *
+     * `priceTurtle` has already refused a head count outside it, so this is
+     * the same answer said twice — and it stays because it says out loud what
+     * the 422 above means, and because the day somebody prices a room without
+     * asking for guests, this is the check that is still standing.
+     */
+    if (kind === "room" && roomGuests > (ROOM_SLEEPS[room] ?? 0)) {
+      return NextResponse.json({ error: "too-many-guests" }, { status: 422 });
+    }
+    gross = sale.total;
+    tag = "TURTLE";
+    item = {
+      id: `TURTLE-${kind}-${room || pack}`.slice(0, 50),
+      price: sale.unitPrice,
+      quantity: sale.count,
+      name: sale.name.slice(0, 50),
+    };
+    detail = [
+      PROPERTY.name,
+      sale.name,
+      kind === "room"
+        ? `check-in ${checkIn}, check-out ${until}, ${many(sale.count, "night")}, ${many(roomGuests, "guest")}`
+        : sale.per === "day"
+          ? `${checkIn} to ${until}, ${many(sale.count, "day")}`
+          : `on ${checkIn}, ${many(sale.count, "diver")}`,
+    ].join(", ");
+  } else if (service) {
     /*
      * One call decides three things: whether this is sellable at all, which of
      * the two fares a crossing is on, and whether the size asked for is one the
@@ -188,11 +285,9 @@ export async function POST(req: Request) {
       quantity: nights,
       name: `Eddo Homestay, ${nights} malam, ${guests} tamu`.slice(0, 50),
     };
-    /* Written out rather than "night(s)": this line is copied into the note the
-       guest receives, and a guest reading "2 night(s)" is reading a database. */
     detail =
       `Eddo Homestay, check-in ${checkIn}, ` +
-      `${nights} night${nights === 1 ? "" : "s"}, ${guests} guest${guests === 1 ? "" : "s"}`;
+      `${many(nights, "night")}, ${many(guests, "guest")}`;
   }
   /* Dated and random: the date is what makes it readable in the dashboard, the
      random tail is what stops two people booking in the same second from

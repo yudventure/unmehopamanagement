@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { BookModal, type BookOrder } from "@/components/web/book-modal";
 import {
   EMPTY_ENQUIRY,
   EnquiryModal,
@@ -22,7 +24,10 @@ import {
   TikTokIcon,
   WhatsAppIcon,
 } from "@/components/web/icons";
+import { LangSwitch } from "@/components/web/lang-switch";
 import { CurrencySwitch, Price } from "@/components/web/price";
+import { convert, type CurrencyCode, type Rates } from "@/lib/currency";
+import { SiteLogo } from "@/components/web/site-logo";
 import { JourneyMap } from "@/components/web/journey-map";
 import { JourneyScene, STEP_SCENES } from "@/components/web/journey-scenes";
 import { SeasonScene, type SeasonKey } from "@/components/web/season-scenes";
@@ -30,6 +35,7 @@ import { useHeroScroll } from "@/hooks/use-hero-scroll";
 import { useReveal } from "@/hooks/use-reveal";
 import { useCurrency, useLang, useRates } from "@/hooks/use-site-prefs";
 import { SITE_CONFIG, siteConfig } from "@/lib/site-config";
+import { saveDraft } from "@/lib/turtle-order";
 import {
   TURTLE_ACTIVITIES,
   ACTIVITY_KEYS,
@@ -37,18 +43,25 @@ import {
   DEFAULT_LANG,
   DIVE_FEATURED,
   DIVE_KEYS,
-  DIVE_PRICE,
+  BOAT_ROWS,
+  DIVE_PER,
   EMAIL,
-  LANGS,
+  EXTRA_BED,
+  HOUSE,
+  MAX_DIVERS,
   PROPERTY,
+  ROOM_SLEEPS,
   WHATSAPP,
   type ActivityKey,
   type DiveKey,
-  type Lang,
+  type ExtraBedKey,
   type RoomKey,
+  PRICE_ROWS,
+  divePrice,
   money,
   monthOptions,
   roomFacts,
+  roomRate,
   waLink,
 } from "@/lib/web-content";
 
@@ -57,12 +70,18 @@ import {
  * from the booking manager, sharing only the room rates and the illustration
  * kit.
  *
- * Every call to action ends in the same place: a WhatsApp message with the
- * enquiry already written out. That is not a placeholder for a booking engine
- * — it is how a homestay on Mansuar actually takes a booking, and it works
- * with no backend, no payment provider and no account to create. Rooms are
- * also pointed at the OTA listings, because that is where their calendars
- * live; the dive centre is the part that is genuinely booked here.
+ * Two doors, and both are the front door. A message on WhatsApp with the
+ * enquiry already written out is how a homestay on Mansuar has always taken a
+ * booking, and it is still here for anybody with a question. Beside it, a room
+ * or a dive package can now be booked and paid for outright, which is the door
+ * a guest who has already decided reaches for at two in the morning in another
+ * time zone.
+ *
+ * Paying is offered only when the server has Midtrans keys — `payable` below —
+ * so a site with no keys is the site it was rather than a site with a button
+ * that opens a broken window. Rooms stay pointed at the OTA listings too,
+ * because that is where their calendars live; the dive centre remains the part
+ * that is genuinely booked here.
  */
 
 /** Anchors stay in one language; only the labels move. */
@@ -90,16 +109,27 @@ const LANG_KEY = "turtle-lang";
 const HERO_PHOTO = "/hero.jpg";
 
 /**
- * One photograph per room type, named after the type rather than numbered, so
- * replacing the family room's picture is a matter of overwriting a file called
- * `family.jpg` and nothing has to be counted. Same case-sensitivity warning as
- * the hero, and the same fallback: a missing file leaves the drawn scene
- * showing rather than a broken image.
+ * One photograph per kind of bungalow, named after the kind rather than
+ * numbered, so replacing it is a matter of overwriting a file and nothing has
+ * to be counted. Same case-sensitivity warning as the hero, and the same
+ * fallback: a missing file leaves the drawn scene showing rather than a
+ * broken image.
  */
 const ROOM_PHOTO: Record<RoomKey, string> = {
-  standard: "/standard.jpg",
-  family: "/family.jpg",
+  deluxe: "/standard.jpg",
 };
+
+/**
+ * The three extra-bed bands, in the order the family's price list prints
+ * them, each tied to its own figure here rather than in the markup: an age
+ * band and the money beside it are one fact, and a list that pairs them by
+ * position is one reordering away from charging a nine-year-old as an adult.
+ */
+const EXTRA_ROWS: { key: ExtraBedKey; rupiah: number }[] = [
+  { key: "child", rupiah: EXTRA_BED.child },
+  { key: "teen", rupiah: EXTRA_BED.teen },
+  { key: "adult", rupiah: EXTRA_BED.adult },
+];
 
 /** Sits behind the dive section, under a scrim. */
 const DIVE_PHOTO = "/manta.jpg";
@@ -126,69 +156,6 @@ const SOCIALS = [
   { name: "Facebook", href: TURTLE_SOCIAL.facebook, icon: <FacebookIcon /> },
   { name: "TikTok", href: TURTLE_SOCIAL.tiktok, icon: <TikTokIcon /> },
 ];
-
-/**
- * The homestay's own badge, used across the site in place of the Unmehopa
- * mark — the manager belongs to the company, this site belongs to one
- * property, and they are not the same brand.
- *
- * The file has a solid white background, so it is masked to a circle. Its ink
- * sits at most 134px from the centre of a 300px square, which is inside the
- * 150px mask: the corners go, the badge is untouched.
- */
-function SiteLogo({ size }: { size: number }) {
-  return (
-    <span
-      className="block shrink-0 overflow-hidden rounded-full bg-white"
-      style={{ width: size, height: size }}
-    >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src="/logo.png"
-        alt={`Logo ${PROPERTY.name}`}
-        width={size}
-        height={size}
-        className="h-full w-full object-cover"
-      />
-    </span>
-  );
-}
-
-/**
- * Two languages, both always visible — a dropdown would hide the fact that
- * the other one exists, which is the only thing this control has to say.
- * `lang` on each button lets a browser pronounce "Bahasa Indonesia"
- * correctly while the rest of the page is in English.
- */
-function LangSwitch({
-  lang,
-  onPick,
-}: {
-  lang: Lang;
-  onPick: (next: Lang) => void;
-}) {
-  return (
-    <div className="flex items-center gap-[2px] rounded-full border border-white/25 p-[2px]">
-      {LANGS.map((l) => (
-        <button
-          key={l.key}
-          type="button"
-          lang={l.key}
-          onClick={() => onPick(l.key)}
-          aria-label={l.label}
-          aria-pressed={lang === l.key}
-          className={`cursor-pointer rounded-full border-none px-[10px] py-[5px] text-[12px] font-medium transition-colors ${
-            lang === l.key
-              ? "bg-white text-ink"
-              : "bg-transparent text-white/70 hover:text-white"
-          }`}
-        >
-          {l.short}
-        </button>
-      ))}
-    </div>
-  );
-}
 
 const PILL_DARK =
   "inline-flex items-center justify-center rounded-full bg-ink px-6 py-[13px] text-[14px] font-medium text-white transition-colors hover:bg-ink-soft";
@@ -262,6 +229,69 @@ function Frame({
 const FILL = "absolute inset-0 h-full w-full";
 
 /**
+ * One line of the dive price list: what it is on the left, what it costs on
+ * the right.
+ *
+ * Not the `Price` component, which stacks the rupiah figure over its
+ * conversion and holds a line's height open for a conversion that may never
+ * load. That is right for a card, where the price is the loudest thing on it,
+ * and wrong for fifteen rows in a row: it doubled the height of the table and
+ * left every "per person" floating away from the figure it belongs to. Here
+ * the three parts sit on one line, and the conversion simply is not there
+ * when there is nothing honest to put in it.
+ */
+function PriceRow({
+  label,
+  min,
+  rupiah,
+  unit,
+  ask,
+  lang,
+  currency,
+  rates,
+}: {
+  label: string;
+  /** "minimum 3 divers", for the rows the boat will not go out under. */
+  min: string | null;
+  /** Zero where the owner has not filled the figure in. */
+  rupiah: number;
+  unit: string;
+  ask: string;
+  lang: string;
+  currency: CurrencyCode;
+  rates: Rates | null;
+}) {
+  const approx = rupiah > 0 ? convert(rupiah, currency, rates) : null;
+  return (
+    <li className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-[2px] border-b border-white/10 py-[9px]">
+      <span className="max-w-[56ch] min-w-0 text-[13.5px] leading-[1.5] text-white/85">
+        {label}
+        {min ? (
+          <span className="ml-[8px] text-[11.5px] whitespace-nowrap text-white/45">
+            {min}
+          </span>
+        ) : null}
+      </span>
+      {rupiah > 0 ? (
+        <span className="shrink-0 text-right text-[14px] font-bold text-white">
+          {money(rupiah, lang)}
+          <span className="ml-[7px] text-[11.5px] font-normal text-white/45">
+            {unit}
+          </span>
+          {approx ? (
+            <span className="ml-[7px] text-[11.5px] font-normal text-white/40">
+              ≈ {approx}
+            </span>
+          ) : null}
+        </span>
+      ) : (
+        <span className="shrink-0 text-[13px] text-white/60">{ask}</span>
+      )}
+    </li>
+  );
+}
+
+/**
  * A photograph over the drawn scene inside a `Frame`. Lazy, because these sit
  * below the fold and the three of them weigh more than the rest of the page
  * put together.
@@ -279,7 +309,7 @@ function PhotoFill({ src, alt }: { src: string; alt: string }) {
   );
 }
 
-export function TurtleSite() {
+export function TurtleSite({ payable = false }: { payable?: boolean }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   /*
@@ -378,6 +408,60 @@ export function TurtleSite() {
 
   const rooms = roomFacts();
 
+  /*
+   * What the booking dialog is open on, or nothing.
+   *
+   * One piece of state rather than one per card: only one dialog can be open,
+   * and holding the choice here is what lets the dialog be written once and
+   * opened from a room, from a package, or from the bar.
+   */
+  const [booking, setBooking] = useState<
+    { kind: "room"; room: RoomKey } | { kind: "dive"; pack: DiveKey } | null
+  >(null);
+  const router = useRouter();
+
+  /*
+   * The order, stashed in the tab and handed to the summary page.
+   *
+   * Nothing is priced here and nothing is charged here. The dialog collected
+   * the days and the name; `/turtle/checkout` prices it from the same tables
+   * this page drew its figures from, and `/api/pay` prices it once more before
+   * Midtrans is asked for anything.
+   *
+   * False when the tab refused to store it — a private window with site data
+   * blocked throws rather than returning nothing — and the dialog says so
+   * where it stands instead of sending the reader to an empty page.
+   */
+  const confirmBooking = (o: BookOrder) => {
+    if (!booking) return false;
+    const stashed = saveDraft(
+      booking.kind === "room"
+        ? {
+            kind: "room",
+            room: booking.room,
+            from: o.from,
+            to: o.to,
+            guests: o.count,
+            name: o.name,
+            phone: o.phone,
+            email: o.email,
+          }
+        : {
+            kind: "dive",
+            pack: booking.pack,
+            from: o.from,
+            to: o.to,
+            count: o.count,
+            name: o.name,
+            phone: o.phone,
+            email: o.email,
+          },
+    );
+    if (!stashed) return false;
+    router.push("/turtle/checkout");
+    return true;
+  };
+
   return (
     <div className="bg-surface text-ink">
       {/* ------------------------------------------------------------ nav */}
@@ -430,7 +514,7 @@ export function TurtleSite() {
             >
               {t.book}
             </button>
-            <LangSwitch lang={lang} onPick={pickLang} />
+            <LangSwitch lang={lang} onPick={pickLang} label={t.langLabel} />
           </nav>
 
           {/* Below the nav's breakpoint the row is the two controls, still
@@ -443,7 +527,7 @@ export function TurtleSite() {
             >
               {t.book}
             </button>
-            <LangSwitch lang={lang} onPick={pickLang} />
+            <LangSwitch lang={lang} onPick={pickLang} label={t.langLabel} />
             <button
               type="button"
               onClick={() => setMenuOpen((v) => !v)}
@@ -642,85 +726,196 @@ export function TurtleSite() {
           </div>
         </div>
 
-        <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2">
+        {/* One kind of bungalow, so one card rather than a grid of two — and
+            a wide one, because a lone card in a two-column grid reads as a
+            column with something missing beside it. The list survives: a
+            second kind, if the family ever builds one, is a line of data
+            rather than a rewrite of this section. */}
+        <div className="mt-10 flex flex-col gap-6">
           {rooms.map((r, i) => {
             const rc = t.rooms.types[r.key];
             return (
-            <article
-              key={r.key}
-              data-reveal
-              style={step(i)}
-              className="overflow-hidden rounded-[24px] border border-line-soft bg-surface"
-            >
-              <Frame ratio="16 / 10" className="rounded-none">
-                {i === 0 ? (
+              <article
+                key={r.key}
+                data-reveal
+                style={step(i)}
+                className="overflow-hidden rounded-[24px] border border-line-soft bg-surface md:grid md:grid-cols-2"
+              >
+                {/* Not a `Frame`: that one sets its ratio inline, and an
+                    inline ratio cannot be turned off for the wide layout,
+                    where the photograph has to fill the column's height
+                    instead of dictating its width. Here the ratio is a class,
+                    so `md:aspect-auto` can override it. */}
+                <div className="relative overflow-hidden bg-surface-tint aspect-[16/10] md:aspect-auto md:h-full">
                   <JettyScene className={FILL} />
-                ) : (
-                  <IsletScene className={FILL} />
-                )}
-                {/* Keyed off the room, not the card's position, so the
-                    family photograph cannot end up over the standard room
-                    if the two are ever reordered. */}
-                <PhotoFill src={ROOM_PHOTO[r.key]} alt={rc.alt} />
-                <span className="absolute top-4 left-4 rounded-full bg-white/92 px-[12px] py-[6px] text-[12px] font-medium">
-                  {t.rooms.roomsLabel(r.count)}
-                </span>
-              </Frame>
+                  <PhotoFill src={ROOM_PHOTO[r.key]} alt={rc.alt} />
+                  <span className="absolute top-4 left-4 rounded-full bg-white/92 px-[12px] py-[6px] text-[12px] font-medium">
+                    {t.rooms.roomsLabel(r.count)}
+                  </span>
+                </div>
 
-              <div className="px-6 py-6">
-                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                <div className="px-6 py-6 md:px-7 md:py-7">
                   <h3 className="m-0 text-[21px] font-bold tracking-[-.015em]">
                     {rc.name}
                   </h3>
-                  <div className="text-right">
-                    <Price
-                      rupiah={r.rate}
-                      lang={lang}
-                      currency={currency}
-                      rates={rates}
-                      size="sm"
-                    />
-                    <div className="text-[11.5px] text-slate-soft">
-                      {t.rooms.perNight}
-                    </div>
+
+                  <p className="mt-2 text-[14px] leading-[1.6] text-slate">
+                    {rc.blurb}
+                  </p>
+
+                  <ul className="mt-4 mb-0 grid list-none grid-cols-1 gap-x-4 gap-y-[7px] p-0 sm:grid-cols-2">
+                    {rc.features.map((f) => (
+                      <li
+                        key={f}
+                        className="flex items-start gap-[9px] text-[13px] text-ink-soft"
+                      >
+                        <span className="mt-[6px] h-[6px] w-[6px] shrink-0 rounded-full bg-teal" />
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+
+                  {/* Both figures, side by side and equally loud. The family
+                      charges by how many sleep in the bungalow, so one price
+                      with the other in a footnote would be the wrong number
+                      for half the people reading it. */}
+                  <div className="mt-5 grid grid-cols-2 gap-4 rounded-[16px] bg-surface-mute px-[18px] py-[14px]">
+                    {[
+                      { rupiah: r.rateOne, who: t.rooms.forOne },
+                      { rupiah: r.rateTwo, who: t.rooms.forTwo },
+                    ].map((p) => (
+                      <div key={p.who}>
+                        <Price
+                          rupiah={p.rupiah}
+                          lang={lang}
+                          currency={currency}
+                          rates={rates}
+                          size="sm"
+                        />
+                        <div className="text-[11.5px] leading-[1.35] text-slate-soft">
+                          {t.rooms.perNight} · {p.who}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Two doors. Booking is the solid one when it is open at
+                      all, and asking steps back to an outline beside it — a
+                      card with two equally loud buttons asks the reader to
+                      weigh a decision they have already made by pressing the
+                      card. With no Midtrans keys there is only ever one
+                      button, and it is the one that was always there. */}
+                  <div className="mt-6 flex flex-wrap gap-[10px]">
+                    {payable && (
+                      <button
+                        type="button"
+                        onClick={() => setBooking({ kind: "room", room: r.key })}
+                        className={`${PILL_DARK} cursor-pointer border-none`}
+                      >
+                        {t.booking.cta}
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => ask("stay", t.rooms.askNote(rc.name))}
+                      className={`cursor-pointer ${
+                        payable ? PILL_LIGHT : `${PILL_DARK} border-none`
+                      }`}
+                    >
+                      {t.rooms.ask}
+                    </button>
+                    <span className="inline-flex items-center text-[12.5px] text-slate-soft">
+                      {rc.cap}
+                    </span>
                   </div>
                 </div>
-
-                <p className="mt-2 text-[14px] leading-[1.6] text-slate">
-                  {rc.blurb}
-                </p>
-
-                <ul className="mt-4 mb-0 grid list-none grid-cols-1 gap-x-4 gap-y-[7px] p-0 sm:grid-cols-2">
-                  {rc.features.map((f) => (
-                    <li
-                      key={f}
-                      className="flex items-start gap-[9px] text-[13px] text-ink-soft"
-                    >
-                      <span className="mt-[6px] h-[6px] w-[6px] shrink-0 rounded-full bg-teal" />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-
-                <div className="mt-6 flex flex-wrap gap-[10px]">
-                  <button
-                    type="button"
-                    onClick={() => ask("stay", t.rooms.askNote(rc.name))}
-                    className={`${PILL_DARK} cursor-pointer border-none`}
-                  >
-                    {t.rooms.ask}
-                  </button>
-                  <span className="inline-flex items-center text-[12.5px] text-slate-soft">
-                    {rc.cap}
-                  </span>
-                </div>
-              </div>
-            </article>
+              </article>
             );
           })}
         </div>
 
-        <p className="mt-6 rounded-[16px] border border-line-soft bg-surface-mute px-5 py-4 text-[13.5px] leading-[1.6] text-slate">
+        {/* The two things the price list says next to the rates: what a third
+            person costs, and the hours the day runs to. They were missing
+            from this site entirely, and they are the questions a guest asks
+            on arrival — after the money has moved. */}
+        <div className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-2">
+          <div
+            data-reveal
+            className="rounded-[20px] border border-line-soft bg-surface px-5 py-5 md:px-6"
+          >
+            <h3 className="m-0 text-[15px] font-bold tracking-[-.01em]">
+              {t.rooms.extra.heading}
+            </h3>
+            <p className="mt-[3px] mb-0 text-[11.5px] tracking-[.01em] text-slate-soft">
+              {t.rooms.extra.per}
+            </p>
+            <ul className="mt-4 mb-0 flex list-none flex-col gap-[6px] p-0">
+              {EXTRA_ROWS.map((row) => (
+                <li
+                  key={row.key}
+                  className="flex items-baseline justify-between gap-4 border-b border-line-soft pb-[7px]"
+                >
+                  <span className="text-[13px] text-ink-soft">
+                    {t.rooms.extra.ages[row.key]}
+                  </span>
+                  <Price
+                    rupiah={row.rupiah}
+                    lang={lang}
+                    currency={currency}
+                    rates={rates}
+                    size="sm"
+                    className="text-right"
+                  />
+                </li>
+              ))}
+            </ul>
+            <p className="mt-4 mb-0 text-[12.5px] leading-[1.55] text-slate">
+              {t.rooms.extra.note}
+            </p>
+          </div>
+
+          <div
+            data-reveal
+            style={step(1)}
+            className="rounded-[20px] border border-line-soft bg-surface px-5 py-5 md:px-6"
+          >
+            <h3 className="m-0 text-[15px] font-bold tracking-[-.01em]">
+              {t.rooms.rules.heading}
+            </h3>
+            {/* The times come from `HOUSE`, not from the copy: 12:30 is 12:30
+                in all seven languages, and seven copies of a clock is how a
+                site ends up serving breakfast an hour later in German. */}
+            <dl className="mt-4 mb-0 flex flex-col gap-[6px]">
+              {[
+                { k: t.rooms.rules.checkIn, v: HOUSE.checkIn },
+                { k: t.rooms.rules.checkOut, v: HOUSE.checkOut },
+                { k: t.rooms.rules.power, v: `${HOUSE.power.from}–${HOUSE.power.to}` },
+                {
+                  k: t.rooms.rules.meals,
+                  v: `${HOUSE.meals.breakfast} · ${HOUSE.meals.lunch} · ${HOUSE.meals.dinner}`,
+                },
+              ].map((row) => (
+                <div
+                  key={row.k}
+                  className="flex items-baseline justify-between gap-4 border-b border-line-soft pb-[7px]"
+                >
+                  <dt className="text-[13px] text-ink-soft">{row.k}</dt>
+                  <dd className="m-0 font-mono text-[13px] font-medium text-ink">
+                    {row.v}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+            <p className="mt-4 mb-0 text-[12.5px] leading-[1.55] text-slate">
+              {t.rooms.rules.diet}
+            </p>
+            <p className="mt-2 mb-0 text-[12.5px] leading-[1.55] text-slate">
+              {t.rooms.rules.refund}
+            </p>
+          </div>
+        </div>
+
+        <p className="mt-5 rounded-[16px] border border-line-soft bg-surface-mute px-5 py-4 text-[13.5px] leading-[1.6] text-slate">
           {t.rooms.otaNote}
         </p>
       </Section>
@@ -894,6 +1089,7 @@ export function TurtleSite() {
             {DIVE_KEYS.map((key, i) => {
               const p = t.dive.packages[key];
               const featured = key === DIVE_FEATURED;
+              const canBuy = payable && divePrice(key) > 0;
               return (
               <article
                 key={key}
@@ -959,18 +1155,33 @@ export function TurtleSite() {
                     price and every button sits on the same line across the
                     row, whatever the text above them does. */}
                 <div
-                  className={`mt-auto flex items-end justify-between gap-3 border-t pt-4 ${
+                  className={`mt-auto border-t pt-4 ${
                     featured ? "border-amber-deep/15" : "border-white/12"
                   }`}
                 >
+                <div className="flex items-end justify-between gap-3">
                   <div>
-                    <Price
-                      rupiah={DIVE_PRICE[key]}
-                      lang={lang}
-                      currency={currency}
-                      rates={rates}
-                      tone={featured ? "amber" : "light"}
-                    />
+                    {/* A package the owner has not priced asks instead of
+                        showing Rp 0. The family's own list prices neither the
+                        course nor the snorkelling trip, and a zero on a card
+                        reads as free rather than as unknown. */}
+                    {divePrice(key) > 0 ? (
+                      <Price
+                        rupiah={divePrice(key)}
+                        lang={lang}
+                        currency={currency}
+                        rates={rates}
+                        tone={featured ? "amber" : "light"}
+                      />
+                    ) : (
+                      <div
+                        className={`text-[20px] font-bold ${
+                          featured ? "text-amber-deep" : "text-white"
+                        }`}
+                      >
+                        {t.dive.askPrice}
+                      </div>
+                    )}
                     <div
                       className={`text-[11.5px] ${
                         /* 70% of amber-deep on amber measured 3.6:1, under
@@ -983,21 +1194,138 @@ export function TurtleSite() {
                     </div>
                   </div>
                   {/* A link, not a button: it goes to a page, so it should
-                      middle-click, open in a tab, and be crawlable like one. */}
+                      middle-click, open in a tab, and be crawlable like one.
+
+                      Solid while it is the only thing to press, and plain text
+                      once the card can be booked: two solid pills on one card
+                      is two primary actions, and the one that takes money
+                      should not have to share the emphasis with the one that
+                      reads more about it. */}
                   <Link
                     href={`/turtle/dive/${key}`}
-                    className={`shrink-0 rounded-full px-[16px] py-[9px] text-[13px] font-medium no-underline hover:no-underline ${
-                      featured
-                        ? "bg-amber-deep text-amber"
-                        : "bg-white text-ink hover:bg-surface-hover"
+                    className={`shrink-0 text-[13px] font-medium no-underline hover:no-underline ${
+                      canBuy
+                        ? featured
+                          ? "text-amber-deep/85 hover:text-amber-deep"
+                          : "text-white/75 hover:text-white"
+                        : featured
+                          ? "rounded-full bg-amber-deep px-[16px] py-[9px] text-amber"
+                          : "rounded-full bg-white px-[16px] py-[9px] text-ink hover:bg-surface-hover"
                     }`}
                   >
                     {t.dive.details}
                   </Link>
                 </div>
+                {/* A package the owner has not priced is not for sale, and the
+                    card says "ask us" by simply not offering this. The same
+                    refusal is in `priceTurtle`, where it is the one that
+                    counts. */}
+                {canBuy && (
+                  <button
+                    type="button"
+                    onClick={() => setBooking({ kind: "dive", pack: key })}
+                    className={`mt-4 w-full cursor-pointer rounded-full border-none px-[16px] py-[10px] text-[13.5px] font-medium transition-colors ${
+                      featured
+                        ? "bg-amber-deep text-amber hover:bg-amber-ink"
+                        : "bg-white text-ink hover:bg-surface-hover"
+                    }`}
+                  >
+                    {t.booking.cta}
+                  </button>
+                )}
+                </div>
               </article>
               );
             })}
+          </div>
+
+          {/* The rest of the list.
+              
+              Six cards are what somebody chooses between before they have
+              talked to anybody; the family sells fifteen things, and the
+              other nine — the manta station, the wreck, the night dives, a
+              tank for the house reef — were nowhere on this site. A card
+              each would be a wall of photographs, so the rest is a table,
+              which is also the shape the family already keeps it in. */}
+          <div
+            data-reveal
+            className="mt-12 rounded-[24px] border border-white/12 bg-white/[.04] px-6 py-7 md:px-8 md:py-8"
+          >
+            <h3 className="m-0 text-[20px] leading-[1.15] font-bold tracking-[-.02em] text-white">
+              {t.dive.list.heading}
+            </h3>
+            <p className="mt-2 mb-0 max-w-[640px] text-[13.5px] leading-[1.6] text-white/60">
+              {t.dive.list.intro}
+            </p>
+
+            <ul className="mt-6 mb-0 flex list-none flex-col p-0">
+              {PRICE_ROWS.map((row) => (
+                <PriceRow
+                  key={row.key}
+                  label={t.dive.list.rows[row.key]}
+                  min={row.min ? t.dive.list.min(row.min) : null}
+                  rupiah={divePrice(row.key)}
+                  unit={t.dive.list.per[row.per]}
+                  ask={t.dive.askPrice}
+                  lang={lang}
+                  currency={currency}
+                  rates={rates}
+                />
+              ))}
+            </ul>
+
+            <ul className="mt-5 mb-0 flex list-none flex-col gap-[7px] p-0">
+              {t.dive.list.notes.map((note) => (
+                <li
+                  key={note}
+                  className="flex gap-[10px] text-[12.5px] leading-[1.55] text-white/55"
+                >
+                  <span
+                    aria-hidden="true"
+                    className="mt-[7px] h-[4px] w-[4px] shrink-0 rounded-full bg-white/35"
+                  />
+                  {note}
+                </li>
+              ))}
+            </ul>
+
+            <h4 className="mt-9 mb-0 text-[15px] font-bold tracking-[-.01em] text-white">
+              {t.dive.list.boatHeading}
+            </h4>
+            <p className="mt-1 mb-0 max-w-[560px] text-[12.5px] leading-[1.55] text-white/55">
+              {t.dive.list.boatNote}
+            </p>
+            <ul className="mt-4 mb-0 flex list-none flex-col p-0">
+              {BOAT_ROWS.map((key) => (
+                <PriceRow
+                  key={key}
+                  label={t.dive.list.boats[key]}
+                  min={null}
+                  rupiah={divePrice(key)}
+                  unit={t.dive.list.per.boat}
+                  ask={t.dive.askPrice}
+                  lang={lang}
+                  currency={currency}
+                  rates={rates}
+                />
+              ))}
+            </ul>
+
+            {/* How a dive is actually reserved, which is not this website:
+                the plan for tomorrow is made after dinner, and the office
+                number is the one on the family's own price list. */}
+            <p className="mt-7 mb-0 border-t border-white/10 pt-5 text-[12.5px] leading-[1.65] text-white/60">
+              {t.dive.list.plan}{" "}
+              {t.dive.list.reserve}{" "}
+              <a
+                href={waLink(t.dive.list.heading)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-white underline decoration-white/40 underline-offset-[3px] hover:decoration-white"
+              >
+                +{WHATSAPP}
+              </a>
+            </p>
           </div>
 
           <p className="mt-6 text-[13px] leading-[1.6] text-white/50">
@@ -1299,6 +1627,52 @@ export function TurtleSite() {
         lang={lang}
         activities={TURTLE_ACTIVITIES}
       />
+
+      {/* The booking dialog, which exists only while something is being
+          booked. What it asks for comes from what was pressed: a room asks
+          for two dates and how many guests, a package for the day and how
+          many divers, and the gear — hired by the day rather than by the
+          head — for two dates again. */}
+      {booking && (
+        <BookModal
+          open
+          onClose={() => setBooking(null)}
+          t={t}
+          what={
+            booking.kind === "room"
+              ? t.rooms.types[booking.room].name
+              : t.dive.packages[booking.pack].name
+          }
+          shape={
+            booking.kind === "room"
+              ? "stay"
+              : DIVE_PER[booking.pack] === "day"
+                ? "hire"
+                : "dived"
+          }
+          /* A room's rate is a function of how many sleep in it, so the
+             dialog is handed the lookup rather than a figure: the total
+             under the guest picker has to move when the picker does. A dive
+             package has one price whoever is on the boat. */
+          unitPrice={
+            booking.kind === "room"
+              ? (guests) => roomRate(booking.room, guests) ?? 0
+              : divePrice(booking.pack)
+          }
+          unitLabel={
+            booking.kind === "room"
+              ? t.rooms.perNight
+              : t.dive.packages[booking.pack].unit
+          }
+          maxCount={
+            booking.kind === "room" ? ROOM_SLEEPS[booking.room] : MAX_DIVERS
+          }
+          lang={lang}
+          currency={currency}
+          rates={rates}
+          onConfirm={confirmBooking}
+        />
+      )}
     </div>
   );
 }

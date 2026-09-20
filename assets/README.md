@@ -47,16 +47,17 @@ sekitar 3 MB untuk satu halaman. Dimuat malas (`loading="lazy"`) jadi tidak
 menahan tampilan pertama, tapi di sinyal pulau tetap terasa. Simpan ulang di
 lebar 1080px dengan kualitas 80 biasanya turun ke 150–250 KB per foto.
 
-## `standard.jpg`, `family.jpg` — foto kartu kamar
+## `standard.jpg`, `family.jpg` — foto bungalow
 
-Satu foto per tipe kamar, dinamai sesuai tipenya, bukan diberi nomor. Jadi
-mengganti foto kamar keluarga berarti menimpa berkas bernama `family.jpg` dan
-tidak ada yang perlu dihitung urutannya.
+Sejak konten situs disamakan dengan situs asli Turtle, tipe kamarnya cuma satu
+— Deluxe Bungalow — jadi `standard.jpg` yang dipakai di kartu bungalow, dan
+`family.jpg` tinggal di galeri. Namanya sengaja tidak diubah supaya tidak ada
+tautan yang putus; isinya yang menentukan, bukan namanya.
 
-| Berkas | Kartu | Isi foto sekarang |
+| Berkas | Dipakai di | Isi foto sekarang |
 |---|---|---|
-| `standard.jpg` | Kamar Standar | deretan kamar kayu berpanggung di tepi pasir |
-| `family.jpg` | Kamar Keluarga | satu kamar keluarga dari depan, teras lebar + hammock |
+| `standard.jpg` | kartu bungalow + galeri | deretan bungalow kayu berpanggung di tepi pasir |
+| `family.jpg` | galeri | satu bungalow dari depan, teras lebar + hammock |
 
 Rasio kartunya 16:10, jadi foto mendatar paling pas. Foto tegak akan terpotong
 banyak di atas dan bawah.

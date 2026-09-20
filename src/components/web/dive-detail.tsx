@@ -1,26 +1,30 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { BookModal, type BookOrder } from "@/components/web/book-modal";
 import { DayStrip, DepthMeter } from "@/components/web/dive-diagrams";
 import {
   EMPTY_ENQUIRY,
   EnquiryModal,
   type Enquiry,
 } from "@/components/web/enquiry-modal";
+import { LangSwitch } from "@/components/web/lang-switch";
 import { CurrencySwitch, Price } from "@/components/web/price";
 import { useReveal } from "@/hooks/use-reveal";
 import { useCurrency, useLang, useRates } from "@/hooks/use-site-prefs";
 import { DIVE_DETAIL } from "@/lib/dive-detail";
+import { saveDraft } from "@/lib/turtle-order";
 import {
   TURTLE_ACTIVITIES,
   COPY,
-  DIVE_PRICE,
-  LANGS,
+  DIVE_PER,
+  MAX_DIVERS,
+  divePrice,
   monthOptions,
   type DiveKey,
-  type Lang,
 } from "@/lib/web-content";
 
 /**
@@ -58,7 +62,14 @@ const Card = ({
   </section>
 );
 
-export function DiveDetail({ pack }: { pack: DiveKey }) {
+export function DiveDetail({
+  pack,
+  payable = false,
+}: {
+  pack: DiveKey;
+  /** Whether the server has Midtrans keys. Decided on the page, not here. */
+  payable?: boolean;
+}) {
   useReveal();
   const { lang, pickLang } = useLang();
   const { currency, pickCurrency } = useCurrency();
@@ -101,6 +112,31 @@ export function DiveDetail({ pack }: { pack: DiveKey }) {
     setOpen(true);
   };
 
+  /* Whether this page may sell. Keys on the server, and a price the owner has
+     actually filled in: a package still waiting for its figure is one to ask
+     about, and `priceTurtle` refuses it on the way through anyway. */
+  const canBuy = payable && divePrice(pack) > 0;
+  const [booking, setBooking] = useState(false);
+  const router = useRouter();
+
+  /* The same two steps the front page takes: stash what was chosen in this
+     tab, then go and look it over. Nothing is priced here. */
+  const confirmBooking = (o: BookOrder) => {
+    const stashed = saveDraft({
+      kind: "dive",
+      pack,
+      from: o.from,
+      to: o.to,
+      count: o.count,
+      name: o.name,
+      phone: o.phone,
+      email: o.email,
+    });
+    if (!stashed) return false;
+    router.push("/turtle/checkout");
+    return true;
+  };
+
   const stages = facts.stages.map((s) => ({
     label: d.stages[s.key] ?? s.key,
     minutes: s.minutes,
@@ -132,25 +168,7 @@ export function DiveDetail({ pack }: { pack: DiveKey }) {
                 onPick={pickCurrency}
                 srLabel={t.currencyLabel}
               />
-              <div className="flex items-center gap-[2px] rounded-full border border-white/25 p-[2px]">
-                {LANGS.map((l) => (
-                  <button
-                    key={l.key}
-                    type="button"
-                    lang={l.key}
-                    onClick={() => pickLang(l.key as Lang)}
-                    aria-label={l.label}
-                    aria-pressed={lang === l.key}
-                    className={`cursor-pointer rounded-full border-none px-[10px] py-[5px] text-[12px] font-medium ${
-                      lang === l.key
-                        ? "bg-white text-ink"
-                        : "bg-transparent text-white/70 hover:text-white"
-                    }`}
-                  >
-                    {l.short}
-                  </button>
-                ))}
-              </div>
+              <LangSwitch lang={lang} onPick={pickLang} label={t.langLabel} />
             </div>
           </div>
 
@@ -173,19 +191,43 @@ export function DiveDetail({ pack }: { pack: DiveKey }) {
             </div>
 
             <div className="shrink-0 rounded-[18px] bg-white/10 px-6 py-5 backdrop-blur-md">
-              <Price
-                rupiah={DIVE_PRICE[pack]}
-                lang={lang}
-                currency={currency}
-                rates={rates}
-                tone="light"
-                className="text-white"
-              />
+              {/* Unpriced asks rather than showing Rp 0: on this page the
+                  figure is the biggest thing in the panel, and a zero there
+                  is a promise nobody made. */}
+              {divePrice(pack) > 0 ? (
+                <Price
+                  rupiah={divePrice(pack)}
+                  lang={lang}
+                  currency={currency}
+                  rates={rates}
+                  tone="light"
+                  className="text-white"
+                />
+              ) : (
+                <div className="text-[20px] font-bold text-white">{t.dive.askPrice}</div>
+              )}
               <div className="mt-[2px] text-[12px] text-white/75">{p.unit}</div>
+              {/* Booking is the solid button once there is one; asking keeps
+                  its place under it as an outline. Somebody who opened a page
+                  this long has usually decided, and the panel they decided in
+                  is where the button belongs. */}
+              {canBuy && (
+                <button
+                  type="button"
+                  onClick={() => setBooking(true)}
+                  className="mt-4 flex w-full cursor-pointer items-center justify-center rounded-full border-none bg-white px-6 py-[12px] text-[14px] font-medium text-ink hover:bg-surface-hover"
+                >
+                  {t.booking.cta}
+                </button>
+              )}
               <button
                 type="button"
                 onClick={ask}
-                className="mt-4 flex w-full cursor-pointer items-center justify-center rounded-full border-none bg-white px-6 py-[12px] text-[14px] font-medium text-ink hover:bg-surface-hover"
+                className={`flex w-full cursor-pointer items-center justify-center rounded-full px-6 py-[12px] text-[14px] font-medium ${
+                  canBuy
+                    ? "mt-[10px] border border-white/35 bg-transparent text-white hover:bg-white/10"
+                    : "mt-4 border-none bg-white text-ink hover:bg-surface-hover"
+                }`}
               >
                 {d.cta}
               </button>
@@ -265,10 +307,23 @@ export function DiveDetail({ pack }: { pack: DiveKey }) {
         </p>
 
         <div className="mt-10 flex flex-wrap items-center gap-4">
+          {canBuy && (
+            <button
+              type="button"
+              onClick={() => setBooking(true)}
+              className="inline-flex cursor-pointer items-center justify-center rounded-full border-none bg-ink px-7 py-[13px] text-[14px] font-medium text-white hover:bg-ink-soft"
+            >
+              {t.booking.cta}
+            </button>
+          )}
           <button
             type="button"
             onClick={ask}
-            className="inline-flex cursor-pointer items-center justify-center rounded-full border-none bg-ink px-7 py-[13px] text-[14px] font-medium text-white hover:bg-ink-soft"
+            className={`inline-flex cursor-pointer items-center justify-center rounded-full px-7 py-[13px] text-[14px] font-medium ${
+              canBuy
+                ? "border border-line-strong bg-surface text-ink hover:bg-surface-hover"
+                : "border-none bg-ink text-white hover:bg-ink-soft"
+            }`}
           >
             {d.cta}
           </button>
@@ -293,6 +348,25 @@ export function DiveDetail({ pack }: { pack: DiveKey }) {
         lang={lang}
         activities={TURTLE_ACTIVITIES}
       />
+
+      {booking && (
+        <BookModal
+          open
+          onClose={() => setBooking(false)}
+          t={t}
+          what={p.name}
+          /* Gear leaves with one diver for a stretch of days; everything else
+             on this page is sold by the head for one morning. */
+          shape={DIVE_PER[pack] === "day" ? "hire" : "dived"}
+          unitPrice={divePrice(pack)}
+          unitLabel={p.unit}
+          maxCount={MAX_DIVERS}
+          lang={lang}
+          currency={currency}
+          rates={rates}
+          onConfirm={confirmBooking}
+        />
+      )}
     </div>
   );
 }

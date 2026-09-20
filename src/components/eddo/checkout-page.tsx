@@ -16,8 +16,9 @@ import {
   serviceProducts,
   type ServiceKey,
 } from "@/lib/eddo-content";
-import { daysBetween, todayISO } from "@/lib/eddo-days";
+import { daysBetween, todayISO } from "@/lib/days";
 import { clearDraft, readDraft, type PayDraft } from "@/lib/eddo-order";
+import { loadSnap, niceDay } from "@/lib/snap";
 
 /**
  * The page an order is looked over on, between choosing and paying.
@@ -42,48 +43,6 @@ import { clearDraft, readDraft, type PayDraft } from "@/lib/eddo-order";
  * looks it up a third time before charging anything. Three readings of one
  * number, no copies passed between them.
  */
-
-/**
- * An ISO day, written the way the reader's language writes days.
- *
- * `timeZone: "UTC"` is not optional here. The day is parsed as UTC midnight,
- * and formatting that in a zone behind UTC prints the day before: a guest in
- * Jakarta would see their own check-in dated one day earlier than the one they
- * picked. Same trap as the nights arithmetic, one line further on.
- */
-function niceDay(iso: string, locale: string) {
-  const t = Date.parse(`${iso}T00:00:00Z`);
-  if (!Number.isFinite(t)) return iso;
-  try {
-    return new Intl.DateTimeFormat(locale, {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-      timeZone: "UTC",
-    }).format(t);
-  } catch {
-    /* An unknown tag is not worth a blank date. */
-    return iso;
-  }
-}
-
-declare global {
-  interface Window {
-    snap?: { pay: (token: string, opts?: Record<string, unknown>) => void };
-  }
-}
-
-function loadSnap(src: string) {
-  return new Promise<void>((resolve, reject) => {
-    if (window.snap) return resolve();
-    const s = document.createElement("script");
-    s.src = src;
-    s.setAttribute("data-client-key", process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY ?? "");
-    s.onload = () => resolve();
-    s.onerror = () => reject(new Error("snap"));
-    document.head.appendChild(s);
-  });
-}
 
 const ROW = "flex items-baseline justify-between gap-6 py-[9px]";
 const KEY_ = "shrink-0 text-[12.5px] text-slate";

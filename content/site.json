@@ -1,21 +1,36 @@
 {
   "contact": {
-    "whatsapp": "6281200000000",
-    "email": "halo@turtlehomestay.com",
-    "ownerEmail": "halo@turtlehomestay.com"
+    "whatsapp": "6281243237470",
+    "email": "turtlediversrajaampat@gmail.com",
+    "ownerEmail": "turtlediversrajaampat@gmail.com"
   },
   "social": {
-    "facebook": "https://www.facebook.com",
-    "instagram": "https://www.instagram.com",
-    "tiktok": "https://www.tiktok.com"
+    "facebook": "",
+    "instagram": "https://www.instagram.com/turtlediversrajaampat",
+    "tiktok": ""
   },
   "divePrices": {
-    "fun2": 1400000,
-    "fun3": 1850000,
-    "dsd": 1600000,
-    "ow": 7500000,
-    "snorkel": 750000,
-    "gear": 350000
+    "fun2": 1600000,
+    "fun3": 2250000,
+    "dsd": 1300000,
+    "ow": 0,
+    "snorkel": 0,
+    "guide": 400000,
+    "one": 900000,
+    "piaynemo2": 1700000,
+    "manta2": 1900000,
+    "mantaPm": 0,
+    "yangefo2": 2200000,
+    "p47": 2000000,
+    "nightYenbuba": 1100000,
+    "nightSawandarek": 1200000,
+    "houseReef": 400000,
+    "refresh": 1200000,
+    "tank": 150000,
+    "boatPiaynemo": 7000000,
+    "boatPiaynemoJoin": 8167000,
+    "boatYangefo": 7000000,
+    "boatBatanta": 7000000
   },
   "maintenance": false,
   "founded": {
@@ -25,14 +40,14 @@
   "sites": {
     "turtle": {
       "contact": {
-        "whatsapp": "6281200000000",
-        "email": "halo@turtlehomestay.com",
-        "ownerEmail": "halo@turtlehomestay.com"
+        "whatsapp": "6281243237470",
+        "email": "turtlediversrajaampat@gmail.com",
+        "ownerEmail": "turtlediversrajaampat@gmail.com"
       },
       "social": {
-        "facebook": "https://www.facebook.com",
-        "instagram": "https://www.instagram.com",
-        "tiktok": "https://www.tiktok.com"
+        "facebook": "",
+        "instagram": "https://www.instagram.com/turtlediversrajaampat",
+        "tiktok": ""
       },
       "maintenance": false
     },

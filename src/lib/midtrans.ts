@@ -19,6 +19,26 @@
  */
 import { createHash } from "node:crypto";
 
+import type { PublicSite } from "@/lib/site-domains";
+
+/**
+ * Which homestay an order id belongs to.
+ *
+ * Midtrans's notification carries the order id, the amount and the status, and
+ * the two homestays are answered by two different families with two different
+ * inboxes. So the site has to be readable from the id itself, and `/api/pay`
+ * writes it into the front of every Turtle one.
+ *
+ * Eddo's ids are not prefixed and do not need to be. Theirs begin either with
+ * `EDDO` or with one of the service keys — `TRANSFER`, `MOTORBIKE`, `MERCH`
+ * and so on — and none of that closed list is `TURTLE`, so "anything else" is
+ * Eddo rather than a guess. It also keeps every order id issued before this
+ * existed pointing where it always did.
+ */
+export function orderSite(orderId: string | undefined): PublicSite {
+  return (orderId ?? "").startsWith("TURTLE-") ? "turtle" : "eddo";
+}
+
 export function midtransConfigured() {
   return Boolean(process.env.MIDTRANS_SERVER_KEY);
 }

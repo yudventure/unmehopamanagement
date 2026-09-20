@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 import { PREVIEW_COOKIE } from "@/lib/preview";
+import { isSecureRequest } from "@/lib/request-url";
 import { redirectTo } from "@/lib/redirect";
 import { SESSION_COOKIE, valid } from "@/lib/session";
 import { isPublicSite } from "@/lib/site-domains";
@@ -72,8 +73,11 @@ export async function GET(req: Request) {
       httpOnly: true,
       sameSite: "lax",
       /* Secure on https and not on plain http, so this still works against a
-         local server while never travelling in the clear in production. */
-      secure: url.protocol === "https:",
+         local server while never travelling in the clear in production. Read
+         from the forwarding header first: behind a proxy that terminates TLS
+         the request itself arrives as plain http, and trusting that would
+         leave the flag off on every deployment that has one. */
+      secure: isSecureRequest(req),
       path: "/",
       maxAge: YEAR,
     });

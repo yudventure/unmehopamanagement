@@ -16,8 +16,8 @@ berkas prototype di `project/` dan di transkrip desain, yang sengaja tidak
 diubah karena arsip.)
 
 Konteks bisnisnya: pemilik (Yud) mengelola dua homestay sendiri —
-**Turtle Homestay** (10 kamar, Yenbuba, Pulau Mansuar) dan **Eddo Homestay**
-(2 kamar, Sawinggrai, Pulau Gam). Booking masuk dari empat saluran sekaligus:
+**Turtle Dive Homestay** (10 bungalow, Mansuar Kecil / Pulau Kri) dan
+**Eddo Homestay** (5 rumah, Yenbuba, Pulau Mansuar). Booking masuk dari empat saluran sekaligus:
 Booking.com, Traveloka, Agoda, dan WhatsApp/walk-in.
 
 Masalah yang dipecahkan (dari PRD di `project/uploads/PRD-booking-manager-homestay.md`):
@@ -217,7 +217,7 @@ src/
     pricing.ts                satu-satunya tempat nilai booking dihitung
     derive.ts                 sel kalender, statistik bulan, tren, deteksi bentrok
     report-export.ts          penyusun CSV + penggambar PDF laporan
-    web-content.ts            ★ seluruh teks website publik, dua bahasa
+    web-content.ts            ★ seluruh teks website publik, tujuh bahasa
     site-config.ts            pembaca content/site.json + penjaga bentuknya
     currency.ts               daftar mata uang, konversi, pembulatan
     dive-detail.ts            bentuk hari & kedalaman tiap paket (lihat catatannya)
@@ -386,16 +386,37 @@ satunya gerbang mutu saat ini; keduanya lolos bersih per commit terakhir.
 Menambahkan Vitest + Testing Library adalah pekerjaan yang masuk akal
 berikutnya (lihat TODO).
 
-### Demo login
+### Masuk
 
-Kata sandi tidak divalidasi — isi apa saja, asal tidak kosong.
+Kata sandi diperiksa di server, di `/api/login`, dan yang dibandingkan adalah
+`DASHBOARD_PASSWORD`. **Tanpa variabel itu tidak ada yang bisa masuk**, dan
+layarnya mengatakan begitu apa adanya ("Login belum disiapkan di server").
 
-| Peran | Email (terisi otomatis) | Akses |
+Emailnya tidak lagi terisi otomatis. Kedua kotaknya kosong dengan tulisan abu
+abu, dan tombol *Owner* / *Staf* di bawah tombol Masuk cuma mengisikan alamat
+ketika ditekan — bukan sebagai keadaan awal. Alasannya dua: layar masuk yang
+sudah berisi alamat orang lain mengumumkan nama akun di sini kepada siapa pun
+yang membukanya, dan staf harus menghapus alamat pemilik sebelum mengetik
+alamatnya sendiri.
+
+| Peran | Email | Akses |
 |---|---|---|
 | Owner | `yud@rumahpapua.id` | Kalender, Laporan, Properti & Kamar, Pengguna & Peran + semua rupiah |
 | Staf | `marthen@rumahpapua.id` | Kalender, Properti & Kamar; tanpa nominal uang |
 
+Ada tombol mata di kotak kata sandi untuk menampilkan isinya. Mati secara
+default dan tidak diingat antar kunjungan.
+
 Keluar lewat kartu profil kanan atas → **Keluar dari akun**.
+
+**Kalau login sepertinya berhasil tapi layarnya kembali ke halaman masuk**,
+itu bug yang sudah diperbaiki, bukan salah ketik: kunci penanda tangan cookie
+dulu dibuat acak per modul. Next membundel halaman dan route handler secara
+terpisah, jadi keduanya memegang kunci yang berbeda — `/api/login` menjawab
+200 dan memasang cookie, lalu halaman berikutnya menolak cookie itu tanpa
+sepatah kata pun. Sekarang kuncinya disimpan di `globalThis` supaya satu
+proses hanya punya satu, dan `SESSION_SECRET` tetap sebaiknya diisi di
+produksi supaya sesi selamat dari deploy.
 
 ### Foto panel login
 
@@ -617,13 +638,21 @@ domain ke situs sekarang ada di `next.config.ts`, mati kalau tidak diisi, dan
 caranya ada di `DEPLOY.md`.
 
 Isinya: hero foto, bagian nilai, kamar, dive center, musim, cara sampai, FAQ,
-footer. Dua bahasa, default Inggris, tombol ID/EN di header.
+footer. **Tujuh bahasa** — Inggris, Indonesia, Prancis, Jepang, Jerman, Rusia,
+Mandarin — dengan Inggris sebagai default, dipilih lewat satu dropdown di
+header. Daftarnya sama persis dengan Eddo dan berbagi satu kunci penyimpanan,
+jadi tamu yang memilih bahasanya di satu situs lalu menyeberang ke situs
+satunya tidak perlu memilih lagi. Tiap bahasa disebut dengan namanya sendiri
+(`Français`, `日本語`, `Русский`), karena orang mencari bentuk katanya sendiri,
+bukan kata Inggrisnya.
 
-**Setiap tombol pesan membuka satu popup** (`web/enquiry-modal.tsx`) berisi
-nama, WhatsApp, email, mau apa, rencana bulan, jumlah orang, lama menginap,
-dan catatan. Tombolnya cuma satu: Kirim. Kamar tetap diarahkan ke OTA karena
-di sanalah kalendernya hidup; yang benar-benar dipesan lewat situs ini adalah
-paket menyelam.
+**Ada dua pintu, dan keduanya pintu depan.** Tombol tanya membuka popup
+(`web/enquiry-modal.tsx`) berisi nama, WhatsApp, email, mau apa, rencana bulan,
+jumlah orang, lama menginap, dan catatan; tombolnya cuma satu: Kirim. Di
+sebelahnya, kamar dan paket selam sekarang bisa **dipesan dan dibayar langsung**
+lewat Midtrans — lihat bagian di bawah. Kamar tetap ikut tercantum di OTA karena
+di sanalah kalendernya hidup; bedanya, tamu yang sudah memutuskan tidak lagi
+harus menunggu balasan untuk membayar.
 
 ### Ke mana pesan itu pergi
 
@@ -651,6 +680,63 @@ Butuh dua variabel di Vercel:
 Selama keduanya belum ada, endpoint menjawab 503 dan tombol Kirim otomatis
 beralih membuka WhatsApp dengan pesan yang sama. Jadi kunci yang belum
 dipasang tidak menghilangkan satu pesan pun.
+
+### Pesan langsung dan bayar
+
+Jalannya tiga langkah, dan tidak satu pun membawa angka dari browser:
+
+1. **Dialog** (`web/book-modal.tsx`), dibuka dari kartu kamar, kartu paket,
+   atau halaman paket. Bentuknya tiga, karena yang dijual tiga rupa: kamar
+   minta dua tanggal dan jumlah tamu, paket selam minta satu tanggal dan
+   jumlah penyelam, sewa alat minta dua tanggal lalu harinya dihitung sendiri.
+   Mana yang dipakai ditentukan `DIVE_PER` di `web-content.ts` — fakta, bukan
+   kata: membacanya dari tulisan "per day" di bawah harga akan salah hitung
+   begitu halamannya dibaca dalam bahasa Indonesia.
+2. **Halaman ringkasan** `/turtle/checkout` (`web/checkout-page.tsx`). Pesanan
+   dititipkan di `sessionStorage` tab itu (`lib/turtle-order.ts`), bukan di URL,
+   karena isinya nama, nomor dan alamat email — di URL ketiganya masuk riwayat
+   browser, log server, dan header referer. Halaman ini menghitung ulang
+   harganya sendiri; draf yang diutak-atik akan menampilkan total yang tidak
+   pernah ditagihkan, bukan tagihan yang tidak pernah disetujui.
+3. **`POST /api/pay`** dengan `site: "turtle"`, menghitung untuk ketiga kalinya
+   lewat `priceTurtle()`, lalu meminta token Snap. Harga selalu dibaca dari
+   tabel kamar milik manager dan `divePrices` di `content/site.json`.
+
+**Harga bungalow ikut jumlah tamunya.** Keluarga ini menjual per orang, bukan
+per kamar, dan orang kedua tidak seharga orang pertama: 850.000 untuk satu,
+1.550.000 untuk dua. Jadi `priceTurtle()` minta jumlah tamu dan mencari
+tarifnya di tabel, bukan mengalikan — `850.000 × 2` akan menagih satu pasangan
+1.700.000, lebih 150.000 tiap malam. Jumlah tamunya juga ikut ke nama item di
+Midtrans ("Deluxe Bungalow, 2 guests"), karena bungalow yang sama pada malam
+yang sama punya dua angka, dan kuitansi yang tidak menyebut berapa orang tidak
+bisa dicocokkan dengan daftar harga.
+
+Orang ketiga (extra bed) **tidak dijual di situs**: harganya tergantung usia
+dan seseorang harus setuju bahwa kasurnya muat, jadi halamannya mencetak
+angkanya dan meminta tamunya berkirim pesan.
+
+Yang ditolak di server, bukan cuma di browser: menginap nol malam atau lebih
+dari 30 malam, jumlah tamu di luar 1–2 (ditolak, bukan dibulatkan ke bawah
+jadi dua — empat orang yang diam-diam ditagih untuk dua adalah empat orang di
+depan pintu berkasur dua, sesudah uangnya pindah), penyelam lebih dari enam
+(batas perahu, sama alasannya), paket yang harganya belum diisi owner, dan
+bungalow atau paket yang namanya tidak dikenal. Semuanya 422.
+
+`/api/pay/notify` mengirim email ke inbox yang benar dengan membaca awalan
+order id: yang berawalan `TURTLE-` milik Turtle, sisanya milik Eddo. Isi
+pesanannya ikut di tiga custom field Midtrans, karena notifikasi Midtrans
+sendiri cuma membawa order id, jumlah, dan status.
+
+**Tidak ada kamar yang dikunci.** Tidak ada database, jadi dua orang bisa
+membayar minggu yang sama. Situsnya mengatakan itu di bawah tombol, apa adanya,
+dan konfirmasi tetap lewat WhatsApp.
+
+**Tanpa kunci Midtrans, situsnya persis seperti sebelumnya**: tidak ada tombol
+bayar sama sekali, semua kartu cuma menawarkan bertanya. `midtransConfigured()`
+dibaca di halaman server lalu diturunkan sebagai prop `payable`. Karena
+halaman Turtle di-*prerender*, kuncinya dibaca **saat build** — memasang kunci
+di panel Vercel baru terlihat setelah deploy berikutnya, sama seperti mode
+perbaikan dan harga.
 
 ### Halaman detail tiap paket selam
 
@@ -766,7 +852,7 @@ menyamakan keduanya itulah yang menghapus titik-titiknya.
 
 Saklar di sub-tab **Status situs**. Menyala berarti `/turtle`, `/turtle/about`,
 dan keenam halaman paket selam diganti satu halaman tunggu berisi lencana
-homestay, judul dua bahasa, nomor WhatsApp, dan email. Dashboard `/` **tidak**
+homestay, judulnya dalam bahasa yang dipilih pembaca, nomor WhatsApp, dan email. Dashboard `/` **tidak**
 ikut mati, jadi pemiliknya tetap bisa bekerja selagi situsnya ditutup.
 
 Halaman tunggunya membawa nomor dan email, dan itu inti dari halamannya.
@@ -784,10 +870,10 @@ var, bukan di berkas ini.
 Selama menyala, ketiga rute itu juga menambahkan `robots: noindex, nofollow`
 supaya mesin pencari tidak mencatat "sedang diperbaiki" sebagai isi situs ini.
 
-Tulisannya ada di `web-content.ts` kunci `maintenance`, dua bahasa dan
-bertipe, jadi tidak mungkin ada versi yang cuma terisi satu bahasa. Sengaja
+Tulisannya ada di `web-content.ts` kunci `maintenance`, tujuh bahasa dan
+bertipe, jadi tidak mungkin ada versi yang cuma terisi sebagian. Sengaja
 tidak ada kolom teks bebas di CMS untuk ini: satu kotak teks berarti satu
-bahasa, dan situs ini dua bahasa.
+bahasa, dan situs ini tujuh bahasa.
 
 `maintenance` yang tidak ada di berkas dianggap **mati**. Berkas yang ditulis
 sebelum kolom ini ada tidak boleh mematikan situs pada deploy berikutnya.
@@ -812,21 +898,74 @@ browser. Itu yang membuat tab lama tidak bisa menimpa perubahan yang disimpan
 orang lain semenit sebelumnya: kalau berkasnya sudah bergerak, SHA-nya salah
 dan GitHub menolak.
 
-Teks situs tidak ada di CMS. Salinan dua bahasa, dengan pemenggalan baris dan
+Teks situs tidak ada di CMS. Salinan tujuh bahasa, dengan pemenggalan baris dan
 nadanya, jauh lebih baik disunting lewat code review daripada lewat textarea.
 Menaruhnya di form berarti memilih antara setengah terjemahan tayang atau
 pekerjaan penerjemah di dalam formulir.
+
+### Konten disamakan dengan situs lama klien
+
+Turtle sudah punya situs sendiri di **turtledivehomestay.com**, dan yang
+diminta klien adalah desain ulang — bukan isi baru. Jadi isi situs ini
+disamakan dengan isi situs itu, sejauh yang bisa dibaca dari tangkapan layar
+yang dikirim klien (halaman Accommodation, Packages, Contact Us, dan footer).
+
+Yang diambil apa adanya dari sana:
+
+| Fakta | Nilai | Di mana ia tinggal sekarang |
+|---|---|---|
+| Nama tipe | satu saja: **Deluxe Bungalow** | `ROOM_KEYS`, `COPY[*].rooms.types` |
+| Tarif | **850.000** satu orang, **1.550.000** dua orang, per malam | `TURTLE_RATES` di `lib/data.ts`; yang dua orang juga jadi `rate` di tabel kamar manager |
+| Extra bed | 3–9 th 200.000 · 10–16 th 400.000 · 17+ 600.000, per orang per malam, satu per bungalow | `TURTLE_RATES.extraBed` |
+| Jam | check-in 12:30, check-out 11:00, listrik 18:00–24:00, makan 07:00/12:00/19:00 | `HOUSE` |
+| Aturan | tidak ada refund setelah hari check-in; pantangan/alergi dikabari sebelum datang | `COPY[*].rooms.rules` |
+| Alamat | Mansuar Kecil (Pulau Kri), Distrik Meos Mansar, Kepulauan Raja Ampat, Papua Barat Daya 98472 | `LOCATION`, `PROPERTY` |
+| Kontak | WhatsApp 081243237470 · turtlediversrajaampat@gmail.com · IG turtlediversrajaampat | `content/site.json` |
+| OTA | stayrajaampat.com dan Booking.com | `COPY[*].rooms.otaNote` |
+| Harga selam | daftar harga 2025 lengkap: 15 baris + 4 perahu excursion + 5 catatan | `divePrices` di `content/site.json`, barisnya di `PRICE_ROWS`/`BOAT_ROWS`, kata-katanya di `COPY[*].dive.list` |
+| Nomor kantor | +62 812 4323 7470 untuk reservasi selam | sama dengan `contact.whatsapp` |
+
+**Situs lama menyebut Pulau Kri, bukan Yenbuba.** Sebelum ini, seluruh copy
+Turtle dalam tujuh bahasa menempatkan homestay-nya di Yenbuba, Pulau Mansuar —
+kampung di seberang selat, tempat Eddo berada. Sekarang semuanya berbunyi
+Pulau Kri / Mansuar Kecil, termasuk judul halaman dan peta sketsanya.
+Akibatnya: copy **Eddo** masih menulis Turtle sebagai "di kampung yang sama",
+dan itu perlu dikonfirmasi ke pemiliknya — file Eddo sengaja tidak disentuh.
+
+**Daftar harga selam 2025** menyusul dalam bentuk yang terbaca, dan sekarang
+ada di situs sebagai tabel di bawah kartu paket. Tiga angka di kartu yang dulu
+karangan jadi angka mereka (dua fun dive 1.600.000, tiga penyelaman 2.250.000,
+try dive 1.300.000), dan kartu keenam — dulu "sewa alat lengkap" seharga
+350.000/hari — diganti **Pemandu Pribadi** 400.000/hari, karena sewa alat
+seperti itu tidak ada: alat dan perahu sudah termasuk di tiap penyelaman
+lokal, dan yang bawa alat sendiri justru dapat potongan 100.000.
+
+**Yang masih belum bisa disamakan:**
+
+- **Kursus** (Open Water dan sejenisnya) dan **trip snorkeling** — tidak ada
+  di daftar harga selam yang dikirim. Keduanya diisi `0`, yang di situs berarti
+  "tanya harga", bukan gratis.
+- **Satu baris di daftar harga aslinya salah ketik**: "1 Fun afternoon dive in
+  Manta Cleaning Station ... IDR 1.00,000". Angka itu tidak diisi (`mantaPm: 0`)
+  dan barisnya tampil sebagai "tanya harga" sampai ada yang memastikan.
+- **Satu baris mungkin terpotong** di antara dua tangkapan layar daftar harga,
+  antara "2 Fun Dive in P47 Wreck" dan "One night dive in Yenbuba".
+- Halaman **Home** dan **Policy & Gallery** situs lama — tangkapan layarnya
+  cuma 147 px dan 164 px, tulisannya tidak terbaca walau diperbesar.
+- Halaman **Packages** di situs lama memang kosong ("we have no package
+  avaliable now"), jadi tidak ada yang hilang di sana.
 
 ### Yang wajib diganti sebelum dipakai
 
 | Isi | Status |
 |---|---|
-| `contact.whatsapp`, `contact.email`, `contact.ownerEmail` | **placeholder**, ganti lewat tab Website |
-| `social.facebook`, `social.instagram`, `social.tiktok` | **placeholder**, sekarang mengarah ke beranda platformnya, bukan ke akun homestay. Ganti lewat tab Website |
+| `contact.whatsapp`, `contact.email`, `contact.ownerEmail` | **nyata**, diambil dari situs klien. Catatan: halaman Contact Us situs lama memakai nomor lain (082291311277) dan footer memakai 081243237470 — yang dipakai di sini yang kedua, perlu dikonfirmasi |
+| `social.instagram` | **nyata** (`turtlediversrajaampat`). `facebook` dan `tiktok` dikosongkan, karena situs lama tidak menyebut keduanya dan ikon yang menuju ke mana-mana lebih buruk daripada tidak ada ikon |
 | `founded.homestay`, `founded.diveCenter` | **kosong**, tahun berdirinya belum diketahui. Selama kosong, tidak ada tahun yang ditampilkan di mana pun |
-| `divePrices` (enam angka) | **placeholder**, ganti lewat tab Website |
-| Nama, durasi, dan level paket selam | **placeholder**, ada di `web-content.ts` |
-| Tarif kamar | **nyata**, dibaca dari `seedRooms()`, sumber yang sama dengan manager |
+| `divePrices` (21 angka) | **nyata**, dari daftar harga selam 2025 mereka. Dua yang kosong — kursus dan trip snorkeling — tampil sebagai "tanya harga"; satu lagi (`mantaPm`) menunggu angka yang salah ketik di daftar aslinya |
+| Nama, durasi, dan level paket selam | **campuran**: harganya nyata, tapi durasi ("~4 jam") dan susunan harinya masih rekonstruksi — lihat `lib/dive-detail.ts` |
+| Tarif bungalow | **nyata**, dari daftar harga klien |
+| Klaim Starlink dan "tanpa biaya kebersihan" | **belum terverifikasi** — tidak ada di situs lama, dan jam listrik 18:00–24:00 membuat klaim Starlink layak ditanyakan ulang |
 | Musim, cara sampai, FAQ | tulisan wajar, perlu dikoreksi pemilik |
 
 ### Foto

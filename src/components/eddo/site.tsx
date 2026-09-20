@@ -63,7 +63,7 @@ import {
   waLink,
   type EddoCopy,
 } from "@/lib/eddo-content";
-import { daysBetween, MAX_SPAN, shiftDay, todayISO } from "@/lib/eddo-days";
+import { daysBetween, MAX_SPAN, shiftDay, todayISO } from "@/lib/days";
 import { saveDraft } from "@/lib/eddo-order";
 import { siteConfig, type ServiceProduct } from "@/lib/site-config";
 import { type ActivityKey } from "@/lib/web-content";

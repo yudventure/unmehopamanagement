@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
 
+import { EDDO } from "@/lib/eddo-content";
 import { GUEST_MAIL, guestLang, guestMailHtml, guestMailText } from "@/lib/eddo-mail";
-import { outcome, signatureOk } from "@/lib/midtrans";
+import { orderSite, outcome, signatureOk } from "@/lib/midtrans";
 import { mailGuest, mailOwner, rowsToHtml, type Row } from "@/lib/notify";
+import type { PublicSite } from "@/lib/site-domains";
+import { PROPERTY } from "@/lib/web-content";
 
 /**
  * Where Midtrans says what happened to a payment.
@@ -134,16 +137,29 @@ export async function POST(req: Request) {
     ["Status Midtrans", body.transaction_status ?? "—"],
   ];
 
-  /* Payment only exists on Eddo's rooms, so a payment notice is Eddo's by
-     construction. Named rather than assumed, so adding payment to the other
-     site is a compile error here instead of a misdelivered email. */
+  /*
+   * Whose payment this is, read out of the order id.
+   *
+   * Both homestays take payments now, and they are answered by two different
+   * families with two different inboxes. Midtrans sends back the order id, the
+   * amount and the status and nothing that names a site, so the id is where
+   * the answer has to be: `/api/pay` writes `TURTLE-` into the front of one
+   * site's ids and `orderSite` reads it back. This used to be the constant
+   * "eddo" with a note saying a second payable site would be a compile error
+   * here; it was not a compile error, so the note is now a function.
+   */
+  const site: PublicSite = orderSite(body.order_id);
+  /* `homestay` rather than `name`, because the guest has a name of their own a
+     few lines down and one of the two would have quietly shadowed the other. */
+  const homestay = site === "turtle" ? PROPERTY.name : EDDO.name;
+
   const sent = await mailOwner({
-    site: "eddo",
-    subject: `Pembayaran Eddo ${label[state]} · ${body.order_id ?? ""}`,
+    site,
+    subject: `Pembayaran ${site === "turtle" ? "Turtle" : "Eddo"} ${label[state]} · ${body.order_id ?? ""}`,
     html: rowsToHtml(
       state === "paid"
-        ? "Satu pemesanan Eddo Homestay sudah dibayar. Cek kalendernya sebelum memastikan tanggalnya ke tamu."
-        : "Ada perubahan status pembayaran di Eddo Homestay.",
+        ? `Satu pemesanan ${homestay} sudah dibayar. Cek kalendernya sebelum memastikan tanggalnya ke tamu.`
+        : `Ada perubahan status pembayaran di ${homestay}.`,
       rows,
     ),
     text: rows.map(([k, v]) => `${k}: ${v}`).join("\n"),
@@ -159,8 +175,17 @@ export async function POST(req: Request) {
    * started: who they are, what they booked, which language they were reading
    * the site in. An order made before those existed simply has none, and is
    * skipped rather than guessed at.
+   *
+   * Eddo's guests only, for now. Every word of this letter is Eddo's — its
+   * name in the subject, its green at the top, its WhatsApp number on the
+   * button, its signature at the bottom — and a Turtle guest who paid Turtle
+   * must not be thanked by another homestay. Turtle's guests get the Midtrans
+   * receipt and the confirmation on the page they paid from until somebody
+   * writes Turtle's version of these words; the family is told either way.
+   * Making this letter belong to whichever homestay was paid is the next piece
+   * of work, and it is a piece of writing rather than a condition to loosen.
    */
-  if (state === "paid") {
+  if (state === "paid" && site === "eddo") {
     const to = (body.custom_field3 ?? "").trim();
     const who = (body.custom_field2 ?? "").trim();
     /* "Name / phone / LANG". Read from the end, so a name with a slash in it
@@ -182,7 +207,7 @@ export async function POST(req: Request) {
     } else {
       const input = { lang, name: name || to, booking: body.custom_field1 ?? "", order };
       const guest = await mailGuest({
-        site: "eddo",
+        site,
         to,
         subject: GUEST_MAIL[lang].subject(order),
         html: guestMailHtml(input),

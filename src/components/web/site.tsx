@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { BookModal, type BookOrder } from "@/components/web/book-modal";
 import {
@@ -54,9 +54,12 @@ import {
   WHATSAPP,
   type ActivityKey,
   type DiveKey,
+  type SiteCopy,
   type ExtraBedKey,
   type RoomKey,
+  PRICE_GROUPS,
   PRICE_ROWS,
+  PRICE_SHOWN,
   divePrice,
   money,
   monthOptions,
@@ -133,6 +136,18 @@ const EXTRA_ROWS: { key: ExtraBedKey; rupiah: number }[] = [
 
 /** Sits behind the dive section, under a scrim. */
 const DIVE_PHOTO = "/manta.jpg";
+
+/**
+ * The clip above the booking bar, and the still it shows before it plays.
+ *
+ * Both optional and both a file in `public/`, named rather than numbered so
+ * replacing the clip is overwriting `dive.mp4`. Point the environment
+ * variables somewhere else to serve them from a CDN instead; empty means the
+ * band is not drawn at all, which is the state this ships in until somebody
+ * has a clip worth showing. `assets/README.md` says what to put there.
+ */
+const DIVE_VIDEO = process.env.NEXT_PUBLIC_DIVE_VIDEO ?? "/dive.mp4";
+const DIVE_POSTER = process.env.NEXT_PUBLIC_DIVE_POSTER ?? "";
 
 /**
  * Which sea runs behind each season card, in the order the copy lists them:
@@ -229,67 +244,202 @@ function Frame({
 const FILL = "absolute inset-0 h-full w-full";
 
 /**
- * One line of the dive price list: what it is on the left, what it costs on
- * the right.
+ * The clip above the booking bar, when there is one.
  *
- * Not the `Price` component, which stacks the rupiah figure over its
- * conversion and holds a line's height open for a conversion that may never
- * load. That is right for a card, where the price is the loudest thing on it,
- * and wrong for fifteen rows in a row: it doubled the height of the table and
- * left every "per person" floating away from the figure it belongs to. Here
- * the three parts sit on one line, and the conversion simply is not there
- * when there is nothing honest to put in it.
+ * Its own component because of the one thing that is not obvious here: the
+ * element is server-rendered, so the browser starts fetching the file and
+ * gives up on it **before React has hydrated**. An `onError` prop is attached
+ * after that has already happened and never fires, which left an empty player
+ * on a site with no video in it — the exact failure this was written to avoid.
+ * So the error is read off the element on mount, and listened for as well in
+ * case the fetch is still running.
  */
-function PriceRow({
-  label,
-  min,
-  rupiah,
-  unit,
-  ask,
-  lang,
-  currency,
-  rates,
-}: {
+function DiveVideo({ label }: { label: string }) {
+  const ref = useRef<HTMLVideoElement>(null);
+  const [broken, setBroken] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const check = () => {
+      if (el.error) setBroken(true);
+    };
+    /* Already failed while the page was still HTML. */
+    check();
+    el.addEventListener("error", check);
+    return () => el.removeEventListener("error", check);
+  }, []);
+
+  if (!DIVE_VIDEO || broken) return null;
+
+  return (
+    <div
+      data-reveal
+      className="mt-10 overflow-hidden rounded-[22px] border border-white/12 bg-black/40"
+    >
+      <video
+        ref={ref}
+        src={DIVE_VIDEO}
+        poster={DIVE_POSTER || undefined}
+        controls
+        playsInline
+        /* Metadata, not the whole clip and not nothing: `none` leaves a
+           150-pixel black bar until somebody presses play, because the
+           browser does not yet know the shape of the thing. This is a few
+           tens of kilobytes, and it buys the real dimensions and the first
+           frame — a still of the diving with a play button on it, which is
+           what a band like this should look like before it is pressed. */
+        preload="metadata"
+        aria-label={label}
+        /* Capped, and letterboxed rather than cropped. A 16:9 clip at this
+           width is six hundred pixels tall, which pushes the booking bar off
+           the screen on a laptop; a tall clip would be worse. `object-contain`
+           means the cap never cuts anyone out of frame — it puts water at the
+           sides instead. */
+        className="block h-auto max-h-[460px] w-full bg-black/40 object-contain"
+      />
+    </div>
+  );
+}
+
+/** One line of the price list, as a card. */
+interface PriceItem {
+  key: string;
   label: string;
   /** "minimum 3 divers", for the rows the boat will not go out under. */
   min: string | null;
   /** Zero where the owner has not filled the figure in. */
   rupiah: number;
   unit: string;
+}
+
+/**
+ * One thing the dive centre sells, priced.
+ *
+ * A card rather than a row in a table, because the labels are sentences —
+ * "two fun dives at the manta cleaning station and Arborek, Manta Ridge or
+ * Manta Sandy" — and a table of fifteen sentences with a figure at the far
+ * right is a column of text and a column of numbers that the eye has to pair
+ * up by height. Here the figure sits under the words it belongs to.
+ *
+ * The price is not the `Price` component: that one stacks rupiah over its
+ * conversion and holds a line open for a conversion that may never load,
+ * which is right for a card somebody is buying from and too tall for fifteen
+ * of these. The three parts sit on one line, and the conversion is simply not
+ * there when there is nothing honest to put in it.
+ */
+function PriceCard({
+  item,
+  ask,
+  lang,
+  currency,
+  rates,
+}: {
+  item: PriceItem;
   ask: string;
   lang: string;
   currency: CurrencyCode;
   rates: Rates | null;
 }) {
-  const approx = rupiah > 0 ? convert(rupiah, currency, rates) : null;
+  const approx = item.rupiah > 0 ? convert(item.rupiah, currency, rates) : null;
   return (
-    <li className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-[2px] border-b border-white/10 py-[9px]">
-      <span className="max-w-[56ch] min-w-0 text-[13.5px] leading-[1.5] text-white/85">
-        {label}
-        {min ? (
-          <span className="ml-[8px] text-[11.5px] whitespace-nowrap text-white/45">
-            {min}
-          </span>
-        ) : null}
+    <li className="flex h-full flex-col rounded-[18px] border border-white/12 bg-white/[.05] px-5 py-[17px]">
+      <span className="text-[13.5px] leading-[1.45] text-white/85">
+        {item.label}
       </span>
-      {rupiah > 0 ? (
-        <span className="shrink-0 text-right text-[14px] font-bold text-white">
-          {money(rupiah, lang)}
-          <span className="ml-[7px] text-[11.5px] font-normal text-white/45">
-            {unit}
-          </span>
-          {approx ? (
-            <span className="ml-[7px] text-[11.5px] font-normal text-white/40">
-              ≈ {approx}
+      {item.min ? (
+        <span className="mt-[7px] text-[11.5px] text-white/45">{item.min}</span>
+      ) : null}
+      {/* Pushed to the bottom, so every price in a row sits on one line
+          whatever the label above it does. */}
+      <span className="mt-auto flex flex-wrap items-baseline gap-x-[8px] pt-4">
+        {item.rupiah > 0 ? (
+          <>
+            <span className="text-[17px] font-bold text-white">
+              {money(item.rupiah, lang)}
             </span>
-          ) : null}
-        </span>
-      ) : (
-        <span className="shrink-0 text-[13px] text-white/60">{ask}</span>
-      )}
+            <span className="text-[11.5px] text-white/45">{item.unit}</span>
+            {approx ? (
+              <span className="text-[11.5px] text-white/40">≈ {approx}</span>
+            ) : null}
+          </>
+        ) : (
+          /* Not priced is not free: the card asks instead of quoting. */
+          <span className="text-[14px] font-medium text-white/70">{ask}</span>
+        )}
+      </span>
     </li>
   );
 }
+
+/**
+ * A group of them, with the rest behind a button once there are more than six.
+ *
+ * The hidden cards are not rendered at all rather than hidden with CSS, so a
+ * reader on a phone is not paying to download prices they have not asked for,
+ * and a screen reader is not reading out a list that is not on screen. They
+ * arrive without the section's reveal animation: a thing that appears because
+ * you pressed a button should be there when you look, not fade in afterwards.
+ */
+function PriceGroup({
+  title,
+  note,
+  items,
+  t,
+  lang,
+  currency,
+  rates,
+}: {
+  title: string;
+  note?: string;
+  items: PriceItem[];
+  t: SiteCopy;
+  lang: string;
+  currency: CurrencyCode;
+  rates: Rates | null;
+}) {
+  const [open, setOpen] = useState(false);
+  const hidden = Math.max(0, items.length - PRICE_SHOWN);
+  const shown = open ? items : items.slice(0, PRICE_SHOWN);
+
+  return (
+    <section className="mt-8 first:mt-7">
+      <h4 className="m-0 text-[14.5px] font-bold tracking-[-.01em] text-white">
+        {title}
+      </h4>
+      {note ? (
+        <p className="mt-1 mb-0 max-w-[560px] text-[12.5px] leading-[1.55] text-white/50">
+          {note}
+        </p>
+      ) : null}
+
+      <ul className="mt-4 mb-0 grid list-none grid-cols-1 gap-[14px] p-0 sm:grid-cols-2 lg:grid-cols-3">
+        {shown.map((item) => (
+          <PriceCard
+            key={item.key}
+            item={item}
+            ask={t.dive.askPrice}
+            lang={lang}
+            currency={currency}
+            rates={rates}
+          />
+        ))}
+      </ul>
+
+      {hidden > 0 && (
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          aria-expanded={open}
+          className="mt-4 cursor-pointer rounded-full border border-white/25 bg-transparent px-[16px] py-[8px] text-[12.5px] font-medium text-white/80 transition-colors hover:border-white/50 hover:text-white"
+        >
+          {open ? t.dive.list.less : t.dive.list.more(hidden)}
+        </button>
+      )}
+    </section>
+  );
+}
+
 
 /**
  * A photograph over the drawn scene inside a `Frame`. Lazy, because these sit
@@ -1009,6 +1159,8 @@ export function TurtleSite({ payable = false }: { payable?: boolean }) {
             </div>
           </div>
 
+          <DiveVideo label={t.dive.videoLabel} />
+
           {/* The booking bar the hero used to carry, rebuilt for diving.
               It belongs here and not up there: the hero's version asked the
               same three questions the enquiry form asks and answered none of
@@ -1258,21 +1410,29 @@ export function TurtleSite({ payable = false }: { payable?: boolean }) {
               {t.dive.list.intro}
             </p>
 
-            <ul className="mt-6 mb-0 flex list-none flex-col p-0">
-              {PRICE_ROWS.map((row) => (
-                <PriceRow
-                  key={row.key}
-                  label={t.dive.list.rows[row.key]}
-                  min={row.min ? t.dive.list.min(row.min) : null}
-                  rupiah={divePrice(row.key)}
-                  unit={t.dive.list.per[row.per]}
-                  ask={t.dive.askPrice}
-                  lang={lang}
-                  currency={currency}
-                  rates={rates}
-                />
-              ))}
-            </ul>
+            {/* A group per kind of sale, six cards at a time. The family
+                sells fifteen things and four boats; all nineteen at once is a
+                wall, and the order inside each group is the order on their
+                own list rather than one chosen to sell. */}
+            {PRICE_GROUPS.map((group) => (
+              <PriceGroup
+                key={group}
+                title={t.dive.list.groups[group]}
+                items={PRICE_ROWS.filter((row) => row.group === group).map(
+                  (row) => ({
+                    key: row.key,
+                    label: t.dive.list.rows[row.key],
+                    min: row.min ? t.dive.list.min(row.min) : null,
+                    rupiah: divePrice(row.key),
+                    unit: t.dive.list.per[row.per],
+                  }),
+                )}
+                t={t}
+                lang={lang}
+                currency={currency}
+                rates={rates}
+              />
+            ))}
 
             <ul className="mt-5 mb-0 flex list-none flex-col gap-[7px] p-0">
               {t.dive.list.notes.map((note) => (
@@ -1289,27 +1449,23 @@ export function TurtleSite({ payable = false }: { payable?: boolean }) {
               ))}
             </ul>
 
-            <h4 className="mt-9 mb-0 text-[15px] font-bold tracking-[-.01em] text-white">
-              {t.dive.list.boatHeading}
-            </h4>
-            <p className="mt-1 mb-0 max-w-[560px] text-[12.5px] leading-[1.55] text-white/55">
-              {t.dive.list.boatNote}
-            </p>
-            <ul className="mt-4 mb-0 flex list-none flex-col p-0">
-              {BOAT_ROWS.map((key) => (
-                <PriceRow
-                  key={key}
-                  label={t.dive.list.boats[key]}
-                  min={null}
-                  rupiah={divePrice(key)}
-                  unit={t.dive.list.per.boat}
-                  ask={t.dive.askPrice}
-                  lang={lang}
-                  currency={currency}
-                  rates={rates}
-                />
-              ))}
-            </ul>
+            {/* The boats are their own group because they are their own kind
+                of sale: chartered whole, and separate from the diving. */}
+            <PriceGroup
+              title={t.dive.list.boatHeading}
+              note={t.dive.list.boatNote}
+              items={BOAT_ROWS.map((key) => ({
+                key,
+                label: t.dive.list.boats[key],
+                min: null,
+                rupiah: divePrice(key),
+                unit: t.dive.list.per.boat,
+              }))}
+              t={t}
+              lang={lang}
+              currency={currency}
+              rates={rates}
+            />
 
             {/* How a dive is actually reserved, which is not this website:
                 the plan for tomorrow is made after dinner, and the office

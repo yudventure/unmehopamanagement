@@ -264,6 +264,17 @@ export function divePrice(key: string): number {
 export type PriceUnit = "person" | "day" | "tank" | "boat";
 
 /**
+ * How the price list is grouped on the page.
+ *
+ * Fifteen cards in one run is a wall, and the family's own list is not one
+ * run either: it is dives you can do from here, dives that go out at night,
+ * learning to dive or getting back into it, and the two things that are
+ * neither. The groups are that, and nothing finer — a heading for every two
+ * lines is a page of headings.
+ */
+export type PriceGroup = "fun" | "night" | "learn" | "extra";
+
+/**
  * The dive price list, in the order the family prints it.
  *
  * Facts only — a key, what it is charged per, and the smallest party the boat
@@ -275,23 +286,41 @@ export type PriceUnit = "person" | "day" | "tank" | "boat";
  * is deliberate: the card and the row are the same sale, and sharing the key
  * means they cannot end up quoting different figures for it.
  */
-export const PRICE_ROWS: { key: string; per: PriceUnit; min?: number }[] = [
-  { key: "one", per: "person" },
-  { key: "fun2", per: "person" },
-  { key: "fun3", per: "person" },
-  { key: "piaynemo2", per: "person" },
-  { key: "manta2", per: "person", min: 3 },
-  { key: "mantaPm", per: "person", min: 3 },
-  { key: "yangefo2", per: "person", min: 3 },
-  { key: "p47", per: "person", min: 3 },
-  { key: "nightYenbuba", per: "person", min: 2 },
-  { key: "nightSawandarek", per: "person", min: 2 },
-  { key: "houseReef", per: "person" },
-  { key: "refresh", per: "person" },
-  { key: "dsd", per: "person" },
-  { key: "guide", per: "day" },
-  { key: "tank", per: "tank" },
+export const PRICE_ROWS: {
+  key: string;
+  per: PriceUnit;
+  min?: number;
+  group: PriceGroup;
+}[] = [
+  { key: "one", per: "person", group: "fun" },
+  { key: "fun2", per: "person", group: "fun" },
+  { key: "fun3", per: "person", group: "fun" },
+  { key: "piaynemo2", per: "person", group: "fun" },
+  { key: "manta2", per: "person", min: 3, group: "fun" },
+  { key: "mantaPm", per: "person", min: 3, group: "fun" },
+  { key: "yangefo2", per: "person", min: 3, group: "fun" },
+  { key: "p47", per: "person", min: 3, group: "fun" },
+  { key: "houseReef", per: "person", group: "fun" },
+  { key: "nightYenbuba", per: "person", min: 2, group: "night" },
+  { key: "nightSawandarek", per: "person", min: 2, group: "night" },
+  { key: "dsd", per: "person", group: "learn" },
+  { key: "refresh", per: "person", group: "learn" },
+  { key: "guide", per: "day", group: "extra" },
+  { key: "tank", per: "tank", group: "extra" },
 ];
+
+/** The groups in the order they are drawn. */
+export const PRICE_GROUPS: PriceGroup[] = ["fun", "night", "learn", "extra"];
+
+/**
+ * How many cards a group shows before the rest go behind a button.
+ *
+ * Six is two full rows at the width this grid uses, so the fold lands on a
+ * row boundary rather than in the middle of one. Only the first group is over
+ * it today; the button exists per group so that adding a night dive or a
+ * course does not mean rethinking the section.
+ */
+export const PRICE_SHOWN = 6;
 
 /**
  * The boat for an excursion, which is chartered rather than sold by the head.
@@ -648,6 +677,13 @@ export interface SiteCopy {
     /** Stands where a figure would, for anything the owner has not priced. */
     askPrice: string;
     /**
+     * Names the clip above the booking bar, for a reader who cannot see it.
+     *
+     * The video itself is a file in `public/`, not copy: if there is none,
+     * nothing is drawn and this is never read out.
+     */
+    videoLabel: string;
+    /**
      * The family's own price list, which is longer than the six cards.
      *
      * Words only: every figure comes from `content/site.json` and every unit
@@ -657,6 +693,11 @@ export interface SiteCopy {
     list: {
       heading: string;
       intro: string;
+      /** A heading per group of cards. */
+      groups: Record<PriceGroup, string>;
+      /** On the button that opens the rest of a group, and the one that shuts it. */
+      more: (n: number) => string;
+      less: string;
       /** The smallest party the boat goes out with, for the rows that have one. */
       min: (n: number) => string;
       per: Record<PriceUnit, string>;
@@ -984,10 +1025,19 @@ const EN: SiteCopy = {
     footnote:
       "Certified divers, please bring your card and logbook. For the Open Water course, let us know at least a week ahead so the materials and the instructor's schedule can be arranged.",
     askPrice: "Ask the price",
+    videoLabel: "Diving with Turtle Dive Center",
     list: {
       heading: "Dive price list 2025",
       intro:
         "The whole list, as the dive centre keeps it. The packages above are the ones that can be booked and paid for here; everything else is arranged by message, or in the evening once the plan for tomorrow is made.",
+      groups: {
+        fun: "Fun dives and day trips",
+        night: "Night dives",
+        learn: "Try dives and refreshers",
+        extra: "A guide, and a tank",
+      },
+      more: (n) => `Show ${n} more`,
+      less: "Show fewer",
       min: (n) => `minimum ${n} divers`,
       per: {
         person: "per person",
@@ -1685,10 +1735,19 @@ const ID: SiteCopy = {
     footnote:
       "Penyelam bersertifikat harap membawa kartu dan buku log. Untuk kursus Open Water, kabari minimal satu minggu sebelumnya supaya materi dan jadwal instruktur bisa disiapkan.",
     askPrice: "Tanya harga",
+    videoLabel: "Menyelam bersama Turtle Dive Center",
     list: {
       heading: "Daftar harga selam 2025",
       intro:
         "Daftar lengkapnya, persis seperti yang dipakai dive center-nya. Paket di atas yang bisa dipesan dan dibayar langsung di sini; sisanya diatur lewat pesan, atau malam hari waktu rencana besok disusun.",
+      groups: {
+        fun: "Fun dive dan trip harian",
+        night: "Night dive",
+        learn: "Coba selam dan penyegaran",
+        extra: "Pemandu dan sewa tabung",
+      },
+      more: (n) => `Lihat ${n} lainnya`,
+      less: "Tampilkan lebih sedikit",
       min: (n) => `minimal ${n} penyelam`,
       per: {
         person: "per orang",
@@ -2386,10 +2445,19 @@ const FR: SiteCopy = {
     footnote:
       "Plongeurs certifiés, merci d'apporter votre carte et votre carnet. Pour le cours Open Water, prévenez-nous au moins une semaine à l'avance afin que le matériel et l'emploi du temps de l'instructeur soient prêts.",
     askPrice: "Demander le prix",
+    videoLabel: "Plonger avec le Turtle Dive Center",
     list: {
       heading: "Tarifs plongée 2025",
       intro:
         "La liste entière, telle que le centre la tient. Les forfaits ci-dessus sont ceux que vous pouvez réserver et payer ici ; tout le reste s'organise par message, ou le soir, quand le programme du lendemain se décide.",
+      groups: {
+        fun: "Plongées loisir et sorties à la journée",
+        night: "Plongées de nuit",
+        learn: "Baptêmes et remises à niveau",
+        extra: "Un guide, et un bloc",
+      },
+      more: (n) => `Voir ${n} de plus`,
+      less: "Voir moins",
       min: (n) => `${n} plongeurs minimum`,
       per: {
         person: "par personne",
@@ -3087,10 +3155,19 @@ const DE: SiteCopy = {
     footnote:
       "Zertifizierte Taucher bringen bitte Brevet und Logbuch mit. Für den Open-Water-Kurs sagen Sie uns mindestens eine Woche vorher Bescheid, damit Material und Zeitplan des Instruktors stehen.",
     askPrice: "Nach dem Preis fragen",
+    videoLabel: "Tauchen mit dem Turtle Dive Center",
     list: {
       heading: "Tauchpreise 2025",
       intro:
         "Die ganze Liste, so wie die Basis sie führt. Die Pakete oben können Sie hier buchen und bezahlen; alles andere wird per Nachricht vereinbart oder abends, wenn der Plan für morgen gemacht wird.",
+      groups: {
+        fun: "Tauchgänge und Tagesausfahrten",
+        night: "Nachttauchgänge",
+        learn: "Schnuppern und Auffrischen",
+        extra: "Ein Guide, und eine Flasche",
+      },
+      more: (n) => `${n} weitere anzeigen`,
+      less: "Weniger anzeigen",
       min: (n) => `mindestens ${n} Taucher`,
       per: {
         person: "pro Person",
@@ -3805,10 +3882,19 @@ const RU: SiteCopy = {
     footnote:
       "Сертифицированных дайверов просим взять карточку и лог-бук. О курсе Open Water предупредите хотя бы за неделю, чтобы подготовить материалы и расписание инструктора.",
     askPrice: "Спросить цену",
+    videoLabel: "Погружения с Turtle Dive Center",
     list: {
       heading: "Цены на дайвинг, 2025",
       intro:
         "Весь список, как его ведёт дайв-центр. Пакеты выше можно забронировать и оплатить здесь; всё остальное согласуется в переписке или вечером, когда составляют план на завтра.",
+      groups: {
+        fun: "Погружения и дневные выходы",
+        night: "Ночные погружения",
+        learn: "Пробные погружения и освежение навыков",
+        extra: "Гид и баллон",
+      },
+      more: (n) => `Показать ещё ${n}`,
+      less: "Показать меньше",
       min: (n) => `минимум ${ruPlural(n, "дайвер", "дайвера", "дайверов")}`,
       per: {
         person: "с человека",
@@ -4507,10 +4593,19 @@ const JA: SiteCopy = {
     footnote:
       "認定ダイバーの方はCカードとログブックをお持ちください。オープンウォーターの講習は、教材とインストラクターの日程を整えるため、遅くとも1週間前にお知らせください。",
     askPrice: "料金を聞く",
+    videoLabel: "Turtle Dive Center で潜る",
     list: {
       heading: "2025年 ダイビング料金",
       intro:
         "ダイブセンターの料金表そのままです。上のパッケージはこのサイトで予約と支払いができます。それ以外はメッセージで、あるいは翌日の計画を決める夜の時間に手配します。",
+      groups: {
+        fun: "ファンダイブと日中の行程",
+        night: "ナイトダイブ",
+        learn: "体験とリフレッシュ",
+        extra: "ガイドとタンク",
+      },
+      more: (n) => `ほかに${n}件を表示`,
+      less: "表示を減らす",
       min: (n) => `最少${n}名から`,
       per: {
         person: "お1人あたり",
@@ -5207,10 +5302,19 @@ const ZH: SiteCopy = {
     footnote:
       "持证潜水员请带上潜水证和潜水日志。Open Water 课程请至少提前一周告诉我们，好把教材和教练的时间安排出来。",
     askPrice: "问价格",
+    videoLabel: "和 Turtle Dive Center 一起潜水",
     list: {
       heading: "2025 年潜水价目表",
       intro:
         "潜水中心的整份价目表。上面几个套餐可以在这里直接下单付款；其余的通过留言安排，或者晚上定明天计划的时候一起说。",
+      groups: {
+        fun: "Fun dive 与当天行程",
+        night: "夜潜",
+        learn: "体验与复习",
+        extra: "导潜与气瓶",
+      },
+      more: (n) => `再看 ${n} 项`,
+      less: "收起",
       min: (n) => `最少 ${n} 位潜水员`,
       per: {
         person: "每人",

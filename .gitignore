@@ -16,3 +16,6 @@ yarn-error.log*
 .vercel
 *.tsbuildinfo
 docs/*/doc.built.html
+
+# The map generator fetches 200 MB of public data in here. See scripts/peta-dampier.mjs.
+.peta-sumber/

@@ -137,7 +137,12 @@ export function HouseArt({ className }: { className?: string }) {
 }
 
 /**
- * Around us: the islands a day out goes to, birds over them, a fish under.
+ * The islands a day out goes to, birds over them, a fish under.
+ *
+ * Nothing on the page uses this today: it belonged to the "around us" section,
+ * which became "getting here". Kept because it is the only one of these drawn
+ * 460 wide, and the next section that needs a long one will want it rather
+ * than a second pass at the same thing.
  *
  * The long one, 460 wide rather than 300. It has the top-right corner of its
  * section to itself since the button moved to the foot, and the same three
@@ -218,6 +223,67 @@ export function BoatArt({ className }: { className?: string }) {
       </g>
       <g data-drift="slow">
         <S d={sea(87, 4)} at={540} />
+      </g>
+    </svg>
+  );
+}
+
+/**
+ * Getting here: the plane on its way in, which is step one of four.
+ *
+ * It exists because the section below the services was showing `BoatArt`, and
+ * so was the services section directly above it: the same drawing twice,
+ * within one scroll of each other, which reads as a page that has run out of
+ * ideas rather than as a set.
+ *
+ * A plane is also the more truthful thing to put here. The boat belongs to the
+ * section about what the family arranges; this one is about the two thousand
+ * miles before any of that, and the first line of it says Sorong.
+ *
+ * The dashes behind it carry `data-wake`, which is the boat's attribute and is
+ * kept because the effect is the same one: a broken line with the break
+ * travelling along it. Renaming it would have meant a second copy of six lines
+ * of CSS to say the same thing.
+ */
+export function PlaneArt({ className }: { className?: string }) {
+  return (
+    <svg {...ART()} className={className}>
+      <g data-bob>
+        {/* Nose to the right and a little down, because it is arriving. The
+            body is one closed line: at this size a fuselage drawn as a top
+            edge and a bottom edge reads as two unrelated strokes, and the fin
+            and the fins are closed for the same reason — left open they came
+            out as pennants flying off a tube. The body is a lens, pointed at
+            the tail and rounded at the nose, because the first attempt was an
+            even tube with a blunt end and read as a rocket. Everything sweeps
+            back, which is the only thing at this size that says which way it
+            is going. */}
+        <S d="M64 42q10-7 32-7h24q11 0 15 7q-4 7-15 7h-24q-22 0-32-7z" />
+        <S d="M78 36l-12-14 22 12z" at={180} />
+        <S d="M70 40l-10 3 12 3z" at={250} />
+        <S d="M100 48l-14 14 26-8z" at={310} />
+        <S d="M84 41h20" at={380} />
+      </g>
+      <path data-wake d="M52 39c-13-2-24-2-38 1" />
+      <path data-wake d="M54 46c-10-1-19 0-29 2" style={{ animationDelay: "-400ms" }} />
+
+      {/* Where it is going: a ridge on the water with one palm, the same shape
+          and the same solved trunk point as the islands next door, so the two
+          drawings are plainly the same hand. */}
+      <g transform="translate(150 0)">
+        <S d="M40 77c7-1 11-4 15-8 3-3 5-3 8 0 4 4 8 7 13 8" at={400} />
+        <S d="M55 69v-5" at={430} />
+        <S d="M50.5 64.5q2.25-4 4.5 0 2.25-4 4.5 0" at={445} />
+      </g>
+      <g transform="translate(196 0)">
+        <S d="M40 77c5-1 8-3 11-6 2-2 4-2 6 0 3 3 6 5 9 6" at={470} />
+      </g>
+
+      <g data-drift>
+        <S d={sea(77, 5)} at={510} />
+      </g>
+      <g data-drift="slow">
+        <S d={sea(89, 4)} at={570} />
       </g>
     </svg>
   );

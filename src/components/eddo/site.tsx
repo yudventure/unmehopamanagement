@@ -24,7 +24,7 @@ import {
   ART_BOX,
   BoatArt,
   HouseArt,
-  IslandArt,
+  PlaneArt,
   TurtleArt,
 } from "@/components/eddo/section-art";
 import { CurrencySwitch, Price } from "@/components/web/price";
@@ -1912,7 +1912,10 @@ export function EddoSite({
             </h2>
             <p className="mt-4 mb-0 text-[14.5px] leading-[1.7] text-slate">{t.journey.lead}</p>
           </div>
-          <BoatArt className={`${ART_BOX} w-[240px] lg:w-[360px]`} />
+          {/* Not `BoatArt`: the services section directly above already has
+              it, and the same drawing twice within one scroll reads as a page
+              that has run out of ideas. */}
+          <PlaneArt className={`${ART_BOX} w-[240px] lg:w-[360px]`} />
         </div>
 
         {/* Numbered, because these happen in an order and two of them cannot

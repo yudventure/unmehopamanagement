@@ -39,6 +39,26 @@ diminta. Itu yang dimaksud setelannya.
 tidak kelihatan. Kalau sebuah elemen disembunyikan sampai animasinya berjalan,
 animasi yang dimatikan berarti elemen yang hilang selamanya.
 
+**Ini sudah kambuh sekali, dan begini bentuk kambuhnya.** Aturannya dipatuhi
+di satu tempat lalu dilanggar di tempat lain, dengan satu penanda yang
+kelihatan tidak berbahaya. Di situs Turtle ada
+`@media (prefers-reduced-motion: reduce) { [data-sea], [data-move] { animation: none } }`
+— dua penanda, dan kebetulan keduanya memuat **seluruh** gerak menerus di
+halaman itu: air di balik kartu musim, perahu di gambar langkah perjalanan,
+garis putus-putus di peta sketsa. Jadi satu aturan itu tidak menenangkan satu
+adegan selebar halaman; ia membuat halaman Turtle benar-benar diam di setiap
+mesin Windows yang disetel "adjust for best performance". Pemiliknya
+melaporkannya sebagai "animasinya mati lagi".
+
+Yang benar: penandanya per animasi, bukan per komponen. Sekarang yang berhenti
+cuma `[data-cross]` — manta di kartu tenang, hujan di kartu campuran, tiga
+embusan angin di kartu berangin: benda yang betul-betul menyeberangi kartunya
+dan keluar. Sisanya jalan terus.
+
+Kalau menulis `prefers-reduced-motion` di stylesheet, hitung dulu: apa saja
+yang berhenti karena baris itu, dan apakah masih ada yang bergerak sesudahnya.
+Kalau jawabannya "tidak ada", baris itu salah.
+
 ### Membuktikannya, bukan menduganya
 
 Playwright melaporkan diri persis seperti mesin Windows yang mematikan efek

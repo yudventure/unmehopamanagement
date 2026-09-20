@@ -75,15 +75,26 @@ isian berkas; tanpa itu yang tampil frame pertama klipnya. Mau menaruhnya di
 CDN dan tidak lewat dashboard? `NEXT_PUBLIC_DIVE_VIDEO` dan
 `NEXT_PUBLIC_DIVE_POSTER` masih dibaca, tapi isian di dashboard menang.
 
-**Tidak diputar otomatis, dan itu keputusan.** Gambar bergerak selebar halaman
-yang datang tanpa diminta persis yang diminta berhenti oleh aturan gerak di
-`CLAUDE.md` — dan separuh pembaca memakai Windows yang melaporkan "reduce"
-karena pernah disetel "adjust for best performance". Jadi klipnya menunggu
-ditekan; imbalannya, ia boleh bersuara, dan menyelam tanpa suara itu setengah
-menyelam.
+**Diputar otomatis, tanpa suara, dan berulang**, begitu bandnya masuk layar —
+bukan begitu halamannya dibuka. Tiga hal menempel pada keputusan itu dan tidak
+bisa dilepas: tanpa suara memang syaratnya (tidak ada peramban yang mau
+memulai klip bersuara yang tidak diminta, dan menolaknya diam-diam), kontrolnya
+tetap ada supaya bisa dijeda dan disuarakan dengan satu tekan, dan menunggu
+sampai bandnya kelihatan berarti pembaca yang tidak pernah sampai ke bagian
+selam tidak ikut memuat pemutar YouTube yang beratnya hampir satu megabyte.
 
-Tinggi bandnya dibatasi 460 px dan memakai `object-contain`, jadi klip tegak
-pun tidak ada kepala yang terpotong — yang muncul air di kiri-kanannya.
+Autoplay-nya **tidak** digantungkan pada `prefers-reduced-motion`. Sempat
+begitu, dan itu salah untuk alasan yang sama dengan aturan gerak di
+`CLAUDE.md`: di Windows sinyal itu menyala pada mesin yang disetel "adjust for
+best performance", jadi menggantungnya di situ bukan melayani orang yang mabuk
+gerakan, melainkan menahan klipnya dari sebagian besar pembaca Windows. Yang
+menjaga keseimbangannya kontrol tadi — itu mekanisme jeda yang diminta WCAG
+2.2.2 — dan klipnya sendiri konten milik pemiliknya, bukan hiasan yang
+ditambahkan situs. Yang tetap berhenti di bawah setelan itu adalah hiasannya:
+manta yang menyeberangi kartu musim, dan kawan-kawannya.
+
+Bandnya selebar seksinya dan memakai kotak 16:9, jadi klip tegak pun tidak ada
+kepala yang terpotong — yang muncul air di kiri-kanannya.
 
 ## `standard.jpg`, `family.jpg` — foto bungalow
 

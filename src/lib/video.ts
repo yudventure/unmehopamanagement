@@ -61,10 +61,23 @@ export function youtubeThumb(id: string): string {
  * The embed address, on the domain that does not set a cookie until play.
  *
  * `youtube-nocookie.com` is YouTube's own privacy-enhanced host. The iframe is
- * only ever created after somebody presses play here, so a guest who just
- * reads the page is never handed to Google at all.
+ * only ever created when the clip is about to play — pressed, or scrolled to
+ * on a page that autoplays — so a guest who never reaches the dive section is
+ * not handed to Google at all.
+ *
+ * `loop` needs `playlist` set to the same id and there is no way around it:
+ * YouTube loops a playlist, not a video, so a single video has to be given to
+ * it as a playlist of one. Without that, `loop=1` is accepted and ignored.
+ *
+ * `mute` is not a preference either. Every browser refuses to start a video
+ * with sound in it that nobody asked for, and refuses it silently — the
+ * player simply sits there. Muted is the price of starting by itself, and the
+ * controls are left on so anyone who wants the sound can have it.
  */
-export function youtubeEmbed(id: string): string {
+export function youtubeEmbed(
+  id: string,
+  { loop = false, muted = false }: { loop?: boolean; muted?: boolean } = {},
+): string {
   const q = new URLSearchParams({
     autoplay: "1",
     /* Related videos from this channel only, rather than whatever the
@@ -73,5 +86,10 @@ export function youtubeEmbed(id: string): string {
     modestbranding: "1",
     playsinline: "1",
   });
+  if (muted) q.set("mute", "1");
+  if (loop) {
+    q.set("loop", "1");
+    q.set("playlist", id);
+  }
   return `https://www.youtube-nocookie.com/embed/${id}?${q}`;
 }

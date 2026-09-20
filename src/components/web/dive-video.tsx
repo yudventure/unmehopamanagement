@@ -53,6 +53,77 @@ export function diveVideoSet(): boolean {
 const BAND =
   "w-full overflow-hidden rounded-[22px] border border-white/12 bg-black/40";
 
+/*
+ * ## Why the clip starts by itself even for a reader who asked for less motion
+ *
+ * The rule in CLAUDE.md says to decide per animation, and this is that
+ * decision written down rather than assumed.
+ *
+ * It was built the other way first: `prefers-reduced-motion` gated the
+ * autoplay, so a reader who had asked for calm got the still and a play
+ * button. That is defensible for a page-wide scene, and it is the wrong trade
+ * here, for the reason the rule exists. On Windows that signal comes from
+ * "Animation effects", which is off on any machine set to "adjust for best
+ * performance" and on a good share of laptops out of the box — so gating on
+ * it does not serve people who get motion sick, it withholds the clip from
+ * most Windows readers, which is the exact failure the rule is written about.
+ *
+ * What makes it a fair trade without the gate:
+ *
+ * - It is muted, and has to be. No browser starts a clip with sound nobody
+ *   asked for, and each refuses silently.
+ * - The controls are on, so it can be paused. That is the mechanism WCAG
+ *   2.2.2 asks for, and it is one press.
+ * - It only starts once the band is on screen, so nothing plays behind a
+ *   reader who is three sections above it.
+ * - It is the owner's own footage of their own reef, which is content rather
+ *   than decoration. What the rule holds still is the chrome a site adds
+ *   around content: heroes that follow the scroll, sections that slide up,
+ *   a manta drifting across a card nobody asked to watch. That manta still
+ *   holds still — see `data-cross` in the stylesheet.
+ */
+
+/**
+ * Whether the band has come into view, so nothing plays off-screen.
+ *
+ * Autoplay means "starts when you reach it", not "starts while you are
+ * reading about the bungalows three sections above". It also keeps most of
+ * what the still-first approach bought: YouTube's player is the better part
+ * of a megabyte of script, and a reader who never scrolls to the dive section
+ * never loads it.
+ */
+function useInView<T extends HTMLElement>(): [React.RefObject<T | null>, boolean] {
+  const ref = useRef<T>(null);
+  const [seen, setSeen] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (!("IntersectionObserver" in window)) {
+      /* No observer, no way to know: play it. A browser this old is not the
+         one to hold a feature back for. */
+      setSeen(true);
+      return;
+    }
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) {
+            setSeen(true);
+            io.disconnect();
+          }
+        }
+      },
+      /* A quarter of the band is enough to count as arrived. */
+      { threshold: 0.25 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  return [ref, seen];
+}
+
 /**
  * A file, played here.
  *
@@ -104,6 +175,14 @@ function FileVideo({
           src={src}
           poster={DIVE_POSTER || undefined}
           controls
+          /* Muted, looping, and inline, or it does not start at all: no
+             browser will begin a clip with sound in it that nobody asked
+             for, and iOS takes it fullscreen without `playsInline`. The
+             controls stay, so the sound is one press away for anyone who
+             wants it. */
+          autoPlay
+          muted
+          loop
           playsInline
           /* Metadata, not the whole clip and not nothing: `none` leaves a
            150-pixel black bar until somebody presses play, because the
@@ -127,9 +206,24 @@ function FileVideo({
  * script, and it is a third party watching a guest read about a homestay; on
  * the connection this site is actually read on — a phone on Mansuar, or one
  * abroad deciding whether to come — that is the single heaviest thing on the
- * page, in front of a clip most readers will not press. So what loads is the
- * still image, and the iframe is created by the press itself, on the domain
- * that sets nothing until then.
+ * page. So what loads first is the still image, and the iframe is built when
+ * the clip is actually about to play, on the domain that sets nothing until
+ * then.
+ *
+ * Which is either of two moments, and they are not the same play:
+ *
+ * - **Pressed.** Somebody asked for it, so it starts with its sound and plays
+ *   once through.
+ * - **Arrived.** The band has scrolled into view on a page allowed to start
+ *   it, so it starts muted and goes round again. Muted is not a choice: no
+ *   browser will begin a clip with sound nobody asked for, and it refuses
+ *   silently, leaving a player that just sits there. The controls stay on, so
+ *   the sound is one press away.
+ *
+ * Waiting for the band to arrive is also what keeps most of what the still
+ * bought: a reader who never reaches the dive section never loads YouTube's
+ * player at all, and nothing plays three sections above where they are
+ * reading.
  */
 function YouTubeVideo({
   id,
@@ -140,14 +234,18 @@ function YouTubeVideo({
   label: string;
   play: string;
 }) {
-  const [playing, setPlaying] = useState(false);
+  const [pressed, setPressed] = useState(false);
+  const [ref, seen] = useInView<HTMLDivElement>();
+
+  const auto = seen && !pressed;
+  const playing = pressed || auto;
 
   return (
-    <div className={BAND}>
+    <div className={BAND} ref={ref}>
       <div className="relative aspect-video w-full">
         {playing ? (
           <iframe
-            src={youtubeEmbed(id)}
+            src={youtubeEmbed(id, { loop: auto, muted: auto })}
             title={label}
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowFullScreen
@@ -156,7 +254,7 @@ function YouTubeVideo({
         ) : (
           <button
             type="button"
-            onClick={() => setPlaying(true)}
+            onClick={() => setPressed(true)}
             aria-label={`${play}: ${label}`}
             className="group absolute inset-0 h-full w-full cursor-pointer border-none bg-black/40 p-0"
           >

@@ -62,7 +62,14 @@ pratinjau yang menggambar persis seperti yang akan dilihat tamu.
 | Tautan YouTube | `https://youtu.be/xxxxxxxxxxx` | juga menerima `youtube.com/watch?v=…`, `/shorts/…`, `/embed/…`. Yang dimuat cuma gambar sampulnya; video dan skrip YouTube-nya baru dimuat setelah tamu menekan putar, lewat `youtube-nocookie.com` |
 | Berkas di `public/` | `/dive.mp4` | H.264 + AAC, mendatar. Web-nya membaca metadata saja sampai ditekan, jadi ukuran berkas tidak menahan halaman — tapi tetap simpan di bawah 20 MB kalau bisa |
 
-Berkas yang dituju tidak ada? Bandnya hilang sendiri, bukan jadi pemutar
+**Selama kosong, tempatnya tetap digambar** — kotak putus-putus dengan satu
+kalimat dalam bahasa pembacanya, "klip menyelamnya akan muncul di sini", dan
+hilang begitu ada alamat yang disimpan. Menggambar apa-apa dulunya tidak
+dilakukan sama sekali, dan itu jawaban yang salah: yang paling perlu melihat
+di mana klipnya akan mendarat adalah pemiliknya sendiri, di situsnya sendiri,
+dan ia tidak melihat tanda apa pun bahwa ada tempat untuk klip di situ.
+
+Berkas yang dituju tidak ada? Sama saja — yang tampil kotak itu, bukan pemutar
 kosong. `dive-poster.jpg` di `public/` masih dipakai sebagai gambar diam untuk
 isian berkas; tanpa itu yang tampil frame pertama klipnya. Mau menaruhnya di
 CDN dan tidak lewat dashboard? `NEXT_PUBLIC_DIVE_VIDEO` dan

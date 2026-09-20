@@ -55,11 +55,11 @@ import {
   type DiveCard as DiveCardData,
   type DiveKey,
   type Lang,
+  type PriceGroup,
   type SiteCopy,
   type ExtraBedKey,
   type RoomKey,
   PRICE_GROUPS,
-  PRICE_SHOWN,
   diveCards,
   divePrice,
   money,
@@ -263,12 +263,17 @@ const FILL = "absolute inset-0 h-full w-full";
  * There is no "Details" link. There were six pages behind one, they are still
  * there at `/turtle/dive/<key>`, and none of the other fifteen has one; a link
  * on a quarter of the cards reads as though those four are the real ones.
+ *
+ * Nothing here is marked `data-reveal`. The cards live inside a panel that is
+ * keyed on the open tab, so switching tabs builds new elements — and
+ * `useReveal` collects its marks once, on mount, so an element born later is
+ * never observed and would stay at the hidden end of that animation for good.
+ * The panel's own `animate-pop-in` is what gives the switch its movement, and
+ * it is an animation that ends at opacity 1 whether or not it runs.
  */
 function DiveCard({
   card,
   featured,
-  reveal,
-  ix,
   t,
   lang,
   currency,
@@ -278,9 +283,6 @@ function DiveCard({
 }: {
   card: DiveCardData;
   featured: boolean;
-  /** Marked for the reveal animation, which only the first six can be. */
-  reveal: boolean;
-  ix: number;
   t: SiteCopy;
   lang: Lang;
   currency: CurrencyCode;
@@ -290,7 +292,6 @@ function DiveCard({
 }) {
   return (
     <article
-      {...(reveal ? { "data-reveal": "", style: step(ix) } : {})}
       /* The plain cards are dark glass rather than the white tint they were.
          A tint that pale over a photograph is barely a card at all: whatever
          the manta happens to be doing behind it decides whether the text can
@@ -412,92 +413,73 @@ function DiveCard({
   );
 }
 
-/**
- * A group of them, with the rest behind a button once there are more than six.
- *
- * The hidden cards are not rendered at all rather than hidden with CSS, so a
- * reader on a phone is not paying to download prices they have not asked for,
- * and a screen reader is not reading out a list that is not on screen.
- *
- * They also arrive unmarked. `useReveal` collects `[data-reveal]` once, on
- * mount, so a card created by pressing a button is never observed — marked, it
- * would stay at the hidden end of that animation for good. Unmarked it is
- * simply there, which is what a thing that appears because you pressed a
- * button should be.
- */
-function DiveGroup({
-  title,
-  note,
-  cards,
-  t,
-  lang,
-  currency,
-  rates,
-  payable,
-  onBook,
-}: {
-  title: string;
-  note?: string;
-  cards: DiveCardData[];
-  t: SiteCopy;
-  lang: Lang;
-  currency: CurrencyCode;
-  rates: Rates | null;
-  payable: boolean;
-  onBook: (pack: DiveKey) => void;
-}) {
-  const [open, setOpen] = useState(false);
-  const hidden = Math.max(0, cards.length - PRICE_SHOWN);
-  const shown = open ? cards : cards.slice(0, PRICE_SHOWN);
+/** The five groups, drawn small beside their names. */
+const GLYPH = {
+  viewBox: "0 0 24 24",
+  width: 24,
+  height: 24,
+  fill: "none",
+  stroke: "currentColor",
+  strokeWidth: 1.6,
+  strokeLinecap: "round",
+  strokeLinejoin: "round",
+  "aria-hidden": true,
+} as const;
 
-  return (
-    <section className="mt-10 first:mt-8">
-      <h4
-        data-reveal
-        className="m-0 text-[15px] font-bold tracking-[-.01em] text-white"
-      >
-        {title}
-      </h4>
-      {note ? (
-        <p
-          data-reveal
-          className="mt-[6px] mb-0 max-w-[620px] text-[12.5px] leading-[1.55] text-white/50"
-        >
-          {note}
-        </p>
-      ) : null}
-
-      <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {shown.map((card, i) => (
-          <DiveCard
-            key={card.key}
-            card={card}
-            featured={card.key === DIVE_FEATURED}
-            reveal={i < PRICE_SHOWN}
-            ix={i}
-            t={t}
-            lang={lang}
-            currency={currency}
-            rates={rates}
-            canBuy={payable && card.pack !== null && card.rupiah > 0}
-            onBook={() => card.pack && onBook(card.pack)}
-          />
-        ))}
-      </div>
-
-      {hidden > 0 && (
-        <button
-          type="button"
-          onClick={() => setOpen((v) => !v)}
-          aria-expanded={open}
-          className="mt-4 cursor-pointer rounded-full border border-white/25 bg-transparent px-[16px] py-[8px] text-[12.5px] font-medium text-white/80 transition-colors hover:border-white/50 hover:text-white"
-        >
-          {open ? t.dive.list.less : t.dive.list.more(hidden)}
-        </button>
-      )}
-    </section>
-  );
-}
+const GROUP_ICONS: Record<PriceGroup, React.ReactNode> = {
+  /* A whole day of it: the sun, and the water under it. Rays only above the
+     horizon, because the ones below would have run into the waves. */
+  fun: (
+    <svg {...GLYPH}>
+      <circle cx="12" cy="9.4" r="3.6" />
+      <path d="M12 2.2v1.6" />
+      <path d="M4.4 9.4H2.8" />
+      <path d="M21.2 9.4h-1.6" />
+      <path d="m6.2 3.6 1.2 1.2" />
+      <path d="m17.8 3.6-1.2 1.2" />
+      <path d="M2.8 17.2c1.5.9 3.1.9 4.6 0s3.1-.9 4.6 0 3.1.9 4.6 0 3.1-.9 4.6 0" />
+      <path d="M2.8 20.6c1.5.9 3.1.9 4.6 0s3.1-.9 4.6 0 3.1-.9 4.6 0" />
+    </svg>
+  ),
+  /* The same sky with the sun gone. A crescent reads at twenty-four pixels
+     where a moon with a face on it does not. */
+  night: (
+    <svg {...GLYPH}>
+      <path d="M12.6 3.4a6.1 6.1 0 0 0 8.2 8.2 7.6 7.6 0 1 1-8.2-8.2Z" />
+      <path d="M2.8 20.6c1.5.9 3.1.9 4.6 0s3.1-.9 4.6 0 3.1.9 4.6 0 3.1-.9 4.6 0" />
+    </svg>
+  ),
+  /* A mask, which is the first thing anybody learning is handed. */
+  learn: (
+    <svg {...GLYPH}>
+      <path d="M3.4 7.8h13.2a1.8 1.8 0 0 1 1.8 1.8v2.6a3 3 0 0 1-3 3h-2l-1.4-1.6h-2.4l-1.4 1.6h-2a3 3 0 0 1-3-3V9.6a1.8 1.8 0 0 1 .2-1.8Z" />
+      <path d="M18.4 11h2.8" />
+      <path d="M2.8 20.6c1.5.9 3.1.9 4.6 0s3.1-.9 4.6 0 3.1.9 4.6 0 3.1-.9 4.6 0" />
+    </svg>
+  ),
+  /* A tank, its valve and its band, with the two bubbles that say it is
+     underwater rather than standing in a shed. */
+  extra: (
+    <svg {...GLYPH}>
+      <rect x="6.2" y="7.2" width="8.6" height="13.4" rx="3.2" />
+      <path d="M9 7.2V4.9h3v2.3" />
+      <path d="M12 5.8h2.4" />
+      <path d="M6.2 11.4h8.6" />
+      <circle cx="18.6" cy="8.8" r="1.5" />
+      <circle cx="20.6" cy="5" r="1" />
+    </svg>
+  ),
+  /* The hull, the canopy the crew sits under, and the water. Not a sail: the
+     boat this means has an engine on the back of it. */
+  boat: (
+    <svg {...GLYPH}>
+      <path d="M3.2 14.8h17.6l-1.7 3.2a2.2 2.2 0 0 1-1.9 1.1H6.8a2.2 2.2 0 0 1-1.9-1.1Z" />
+      <path d="M7.6 14.8V9.6h8.8v5.2" />
+      <path d="M6.4 9.6h11.2" />
+      <path d="M12 9.6V6.8" />
+    </svg>
+  ),
+};
 
 /**
  * A photograph over the drawn scene inside a `Frame`. Lazy, because these sit
@@ -610,6 +592,11 @@ export function TurtleSite({ payable = false }: { payable?: boolean }) {
   /* Every row, joined to its words once for the bar, the cards and the
      message the bar sends. */
   const cards = diveCards(t);
+
+  /* Which category of the price list is open. Fun dives first, because it is
+     the one most readers came for and the one the family's own list opens
+     with. */
+  const [diveGroup, setDiveGroup] = useState<PriceGroup>("fun");
 
   const askDive = () => {
     const picked = cards.find((c) => c.key === divePack);
@@ -1226,7 +1213,14 @@ export function TurtleSite({ payable = false }: { payable?: boolean }) {
             </div>
           </div>
 
-          <DiveVideo label={t.dive.videoLabel} play={t.dive.videoPlay} />
+          <div data-reveal className="mt-10">
+            <DiveVideo
+              label={t.dive.videoLabel}
+              play={t.dive.videoPlay}
+              soon={t.dive.videoSoon}
+              tone="dark"
+            />
+          </div>
 
           {/* The booking bar the hero used to carry, rebuilt for diving.
               It belongs here and not up there: the hero's version asked the
@@ -1333,23 +1327,84 @@ export function TurtleSite({ payable = false }: { payable?: boolean }) {
               {t.dive.list.intro}
             </p>
 
-            {PRICE_GROUPS.map((group) => (
-              <DiveGroup
-                key={group}
-                title={t.dive.list.groups[group]}
-                /* The boats are the one group that needs a line under its
-                   heading: they are chartered whole, so their figure is not
-                   a price per person like every other figure above it. */
-                note={group === "boat" ? t.dive.list.boatNote : undefined}
-                cards={cards.filter((c) => c.group === group)}
-                t={t}
-                lang={lang}
-                currency={currency}
-                rates={rates}
-                payable={payable}
-                onBook={(pack) => setBooking({ kind: "dive", pack })}
-              />
-            ))}
+            {/* One category at a time, chosen from a list rather than
+                scrolled past. Twenty-one cards in one run is a wall whichever
+                way it is folded, and the fold that works is the reader's own
+                question: somebody wanting a night dive is not reading about
+                boat charters on the way to it.
+
+                The same shape as the services section on the Eddo site, and
+                deliberately so — the two sites are run by the same family and
+                a reader who has seen one should not have to learn the other.
+                A scrolling row of chips on a phone, a column beside the panel
+                from `lg` up. */}
+            <div className="mt-7 grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,276px)_1fr] lg:gap-7">
+              <div
+                role="tablist"
+                aria-label={t.dive.list.heading}
+                className="scrollbar-none -mx-5 flex gap-[8px] overflow-x-auto px-5 md:-mx-8 md:px-8 lg:mx-0 lg:flex-col lg:gap-[4px] lg:overflow-visible lg:px-0"
+              >
+                {PRICE_GROUPS.map((group) => {
+                  const on = diveGroup === group;
+                  return (
+                    <button
+                      key={group}
+                      type="button"
+                      role="tab"
+                      aria-selected={on}
+                      onClick={() => setDiveGroup(group)}
+                      className={`flex shrink-0 cursor-pointer items-center gap-[11px] rounded-full border-none px-[15px] py-[12px] text-left text-[13.5px] whitespace-nowrap transition-colors lg:w-full lg:rounded-[14px] lg:whitespace-normal ${
+                        on
+                          ? "bg-white font-medium text-ink"
+                          : "bg-white/10 text-white/80 hover:bg-white/16 hover:text-white lg:bg-transparent lg:hover:bg-white/10"
+                      }`}
+                    >
+                      <span className="flex h-[20px] w-[20px] shrink-0 items-center justify-center">
+                        <span className="scale-[.8]">{GROUP_ICONS[group]}</span>
+                      </span>
+                      {t.dive.list.groups[group]}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Keyed on the open group so the panel is a new element each
+                  time and the little settling animation runs again. */}
+              <div
+                key={diveGroup}
+                role="tabpanel"
+                className="animate-pop-in"
+              >
+                <h4 className="m-0 text-[clamp(18px,2vw,22px)] leading-[1.2] font-bold tracking-[-.02em] text-white">
+                  {t.dive.list.groups[diveGroup]}
+                </h4>
+                <p className="mt-2 mb-0 max-w-[58ch] text-[13.5px] leading-[1.7] text-white/60">
+                  {t.dive.list.groupNote[diveGroup]}
+                </p>
+
+                <div className="mt-6 grid grid-cols-1 items-start gap-4 sm:grid-cols-2">
+                  {cards
+                    .filter((c) => c.group === diveGroup)
+                    .map((card) => (
+                      <DiveCard
+                        key={card.key}
+                        card={card}
+                        featured={card.key === DIVE_FEATURED}
+                        t={t}
+                        lang={lang}
+                        currency={currency}
+                        rates={rates}
+                        canBuy={
+                          payable && card.pack !== null && card.rupiah > 0
+                        }
+                        onBook={() =>
+                          card.pack && setBooking({ kind: "dive", pack: card.pack })
+                        }
+                      />
+                    ))}
+                </div>
+              </div>
+            </div>
 
             <ul className="mt-8 mb-0 flex list-none flex-col gap-[7px] p-0">
               {t.dive.list.notes.map((note) => (

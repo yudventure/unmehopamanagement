@@ -727,6 +727,7 @@ export function WebsiteScreen({ editor }: WebsiteScreenProps) {
                   src={config.diveVideo}
                   label={copy.dive.videoLabel}
                   play={copy.dive.videoPlay}
+                  soon="Tidak bisa dimuat. Periksa nama berkasnya, atau tempel tautan YouTube."
                 />
               ) : (
                 <DiveVideoSlot text="Belum ada video. Tempel tautan YouTube atau nama berkas di atas, lalu Simpan." />

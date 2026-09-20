@@ -51,31 +51,34 @@ const BAND =
  * this was written to avoid. So the error is read off the element on mount,
  * and listened for as well in case the fetch is still running.
  */
-function FileVideo({ src, label }: { src: string; label: string }) {
+function FileVideo({
+  src,
+  label,
+  onBroken,
+}: {
+  src: string;
+  label: string;
+  /** Called once the browser has given up on this address. */
+  onBroken: () => void;
+}) {
   const ref = useRef<HTMLVideoElement>(null);
-  const [broken, setBroken] = useState(false);
 
-  /* One effect, keyed on the address, and the order inside it matters.
-     Clearing first and checking second is what makes a new address a fresh
-     attempt — typing over a broken path in the CMS should try the new one
-     rather than stay hidden — while still catching a file that had already
-     failed before this ran. Split into two effects, the clear runs after the
-     check and undoes it, and a missing file is drawn as an empty player
-     forever. It was, until this was written the other way round. */
   useEffect(() => {
-    setBroken(false);
     const el = ref.current;
     if (!el) return;
     const check = () => {
-      if (el.error) setBroken(true);
+      if (el.error) onBroken();
     };
     /* Already failed while the page was still HTML. */
     check();
     el.addEventListener("error", check);
     return () => el.removeEventListener("error", check);
-  }, [src]);
-
-  if (broken) return null;
+    /* `onBroken` is rebuilt every render by the parent and is not worth a
+       `useCallback` there: what this listens to is the element, and the
+       element is replaced whenever the address changes because the parent
+       keys it. */
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className={BAND}>
@@ -167,18 +170,41 @@ function YouTubeVideo({
 }
 
 /**
- * Where a clip goes, for a screen that should show the space even when it is
- * empty — which is the CMS and nowhere else.
+ * Where a clip goes, drawn while there is nothing to put in it.
  *
- * The public page draws nothing until there is something to draw: an empty
- * dashed rectangle on a page a guest is reading is an unfinished site, and
- * says so. The person who needs to see the empty space is the owner, in the
- * form where they are about to fill it.
+ * Drawing nothing was the first answer and the wrong one. The band only
+ * exists once an address is saved, which meant the one person who most needed
+ * to see where the clip would land — the owner, looking at their own site —
+ * saw no sign that there was a place for one at all, and asked twice where it
+ * had gone.
+ *
+ * So the space is shown and says what belongs in it, in the reader's own
+ * language, and it is gone the moment an address is saved. A guest who meets
+ * it is told a clip is coming, which is true and is the kind of thing a
+ * homestay's page is allowed to say; a black rectangle or a broken player
+ * would not be.
  */
-export function DiveVideoSlot({ text }: { text: string }) {
+export function DiveVideoSlot({
+  text,
+  tone = "light",
+}: {
+  text: string;
+  /** Dark for the dive section, light for the form in the manager. */
+  tone?: "light" | "dark";
+}) {
+  const dark = tone === "dark";
   return (
-    <div className="flex aspect-video w-full max-w-[560px] flex-col items-center justify-center gap-[10px] rounded-[18px] border border-dashed border-line-strong bg-surface-mute px-6 text-center">
-      <svg viewBox="0 0 24 24" className="h-7 w-7 text-slate-mute">
+    <div
+      className={`mx-auto flex w-full flex-col items-center justify-center gap-[10px] rounded-[18px] border border-dashed px-6 text-center ${
+        dark
+          ? "h-[188px] max-w-[818px] border-white/25 bg-white/[.04]"
+          : "h-[168px] max-w-[560px] border-line-strong bg-surface-mute"
+      }`}
+    >
+      <svg
+        viewBox="0 0 24 24"
+        className={`h-7 w-7 ${dark ? "text-white/45" : "text-slate-mute"}`}
+      >
         <rect
           x="2.5"
           y="5.5"
@@ -197,7 +223,13 @@ export function DiveVideoSlot({ text }: { text: string }) {
           strokeLinejoin="round"
         />
       </svg>
-      <span className="text-[12.5px] leading-[1.5] text-slate-soft">{text}</span>
+      <span
+        className={`text-[12.5px] leading-[1.5] ${
+          dark ? "text-white/55" : "text-slate-soft"
+        }`}
+      >
+        {text}
+      </span>
     </div>
   );
 }
@@ -207,16 +239,36 @@ export interface DiveVideoProps {
   label: string;
   /** On the button that loads a YouTube embed. */
   play: string;
+  /** Drawn in place of the clip when there is none, or none that loads. */
+  soon?: string;
+  /** Dark for the dive section, light for the form in the manager. */
+  tone?: "light" | "dark";
   /** Overrides the configured address. The CMS passes what is being typed. */
   src?: string;
 }
 
-/** The band itself, or nothing at all when there is no clip to put in it. */
-export function DiveVideo({ label, play, src }: DiveVideoProps) {
+/** The band, or the space where it will be. */
+export function DiveVideo({ label, play, soon, tone, src }: DiveVideoProps) {
+  /* Which address failed, not whether one did. An effect that cleared a flag
+     would be the wrong tool: child effects run before the parent's, so a
+     clear in the parent lands after the child has reported the failure and
+     quietly undoes it — a missing file then draws as an empty player forever,
+     which is the bug this shape exists to make impossible. */
+  const [brokenSrc, setBrokenSrc] = useState<string | null>(null);
+
   const address = diveVideoSrc(src);
-  if (!address) return null;
+  if (!address || brokenSrc === address) {
+    return soon ? <DiveVideoSlot text={soon} tone={tone} /> : null;
+  }
 
   const id = youtubeId(address);
   if (id) return <YouTubeVideo id={id} label={label} play={play} />;
-  return <FileVideo src={address} label={label} />;
+  return (
+    <FileVideo
+      key={address}
+      src={address}
+      label={label}
+      onBroken={() => setBrokenSrc(address)}
+    />
+  );
 }

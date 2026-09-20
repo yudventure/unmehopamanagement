@@ -715,6 +715,16 @@ export interface SiteCopy {
      */
     videoLabel: string;
     /**
+     * Stands in the band while nobody has put a clip in it.
+     *
+     * The slot is filled from the CMS and is empty until somebody fills it.
+     * Drawing nothing was the first answer and the wrong one: the person who
+     * most needs to see where the clip goes is the owner, on their own site,
+     * and they could not. So the space is shown and says what belongs in it.
+     * It is gone the moment an address is saved.
+     */
+    videoSoon: string;
+    /**
      * On the still that a YouTube clip shows until somebody asks for it.
      *
      * Read out with the clip's name after it, so a screen reader announces
@@ -732,11 +742,18 @@ export interface SiteCopy {
     list: {
       heading: string;
       intro: string;
-      /** A heading per group of cards. */
+      /** A heading per group of cards, and the label on its tab. */
       groups: Record<PriceGroup, string>;
-      /** On the button that opens the rest of a group, and the one that shuts it. */
-      more: (n: number) => string;
-      less: string;
+      /**
+       * The line under a group's heading, once its tab is open.
+       *
+       * Says what the group is for in the reader's own words, and names the
+       * places rather than repeating the prices underneath it. Every one of
+       * them is built out of the rows in that group — the sites, the
+       * minimums, what is neither a trip nor a course — so nothing here is a
+       * claim the price list does not already make.
+       */
+      groupNote: Record<PriceGroup, string>;
       /** The smallest party the boat goes out with, for the rows that have one. */
       min: (n: number) => string;
       per: Record<PriceUnit, string>;
@@ -758,7 +775,6 @@ export interface SiteCopy {
       names: Record<string, string>;
       rows: Record<string, string>;
       notes: string[];
-      boatNote: string;
       boats: Record<string, string>;
       /** What happens after dinner, and how a dive is actually reserved. */
       plan: string;
@@ -1080,6 +1096,7 @@ const EN: SiteCopy = {
       "Certified divers, please bring your card and logbook. For the Open Water course, let us know at least a week ahead so the materials and the instructor's schedule can be arranged.",
     askPrice: "Ask the price",
     videoLabel: "Diving with Turtle Dive Center",
+    videoSoon: "A clip of the diving is coming here.",
     videoPlay: "Play",
     list: {
       heading: "Dive price list 2025",
@@ -1092,8 +1109,13 @@ const EN: SiteCopy = {
         extra: "A guide, and a tank",
         boat: "The boat for an excursion",
       },
-      more: (n) => `Show ${n} more`,
-      less: "Show fewer",
+      groupNote: {
+        fun: "What the boat does in daylight: two tanks before lunch, a full day, or a run out to Piaynemo, the manta cleaning station, Yangefo or the P47.",
+        night: "After dark, at Yenbuba or Sawandarek, once there are two of you.",
+        learn: "Never dived, or not for a few years.",
+        extra: "Neither a trip nor a course: a guide to yourself for the day, and a tank for the reef in front of the homestay.",
+        boat: "Chartered by the boat rather than by the head, and separate from the dives above.",
+      },
       min: (n) => `minimum ${n} divers`,
       per: {
         person: "per person",
@@ -1138,8 +1160,6 @@ const EN: SiteCopy = {
         "Bring your own mask if you have one that fits your face.",
         "Insurance that covers scuba diving is recommended.",
       ],
-      boatNote:
-        "Chartered by the boat rather than by the head, and separate from the dives above.",
       boats: {
         boatPiaynemo:
           "Up to 5 divers — includes the viewpoint entry fee and a lunch box for Turtle guests",
@@ -1804,6 +1824,7 @@ const ID: SiteCopy = {
       "Penyelam bersertifikat harap membawa kartu dan buku log. Untuk kursus Open Water, kabari minimal satu minggu sebelumnya supaya materi dan jadwal instruktur bisa disiapkan.",
     askPrice: "Tanya harga",
     videoLabel: "Menyelam bersama Turtle Dive Center",
+    videoSoon: "Klip menyelamnya akan muncul di sini.",
     videoPlay: "Putar",
     list: {
       heading: "Daftar harga selam 2025",
@@ -1816,8 +1837,13 @@ const ID: SiteCopy = {
         extra: "Pemandu dan sewa tabung",
         boat: "Perahu untuk trip excursion",
       },
-      more: (n) => `Lihat ${n} lainnya`,
-      less: "Tampilkan lebih sedikit",
+      groupNote: {
+        fun: "Yang dikerjakan perahunya di siang hari: dua tabung sebelum makan siang, satu hari penuh, atau keluar ke Piaynemo, manta cleaning station, Yangefo, atau bangkai P47.",
+        night: "Sesudah gelap, di Yenbuba atau Sawandarek, begitu sudah ada dua orang.",
+        learn: "Belum pernah menyelam, atau sudah beberapa tahun tidak.",
+        extra: "Bukan trip, bukan kursus: pemandu khusus untukmu sehari, dan tabung untuk karang di depan homestay.",
+        boat: "Disewa per perahu, bukan per orang, dan terpisah dari harga penyelaman di atas.",
+      },
       min: (n) => `minimal ${n} penyelam`,
       per: {
         person: "per orang",
@@ -1862,8 +1888,6 @@ const ID: SiteCopy = {
         "Bawa masker sendiri kalau punya yang pas di wajah.",
         "Disarankan punya asuransi yang menanggung kegiatan menyelam.",
       ],
-      boatNote:
-        "Disewa per perahu, bukan per orang, dan terpisah dari harga penyelaman di atas.",
       boats: {
         boatPiaynemo:
           "Maksimal 5 penyelam — termasuk tiket masuk view point dan kotak makan untuk tamu Turtle",
@@ -2528,6 +2552,7 @@ const FR: SiteCopy = {
       "Plongeurs certifiés, merci d'apporter votre carte et votre carnet. Pour le cours Open Water, prévenez-nous au moins une semaine à l'avance afin que le matériel et l'emploi du temps de l'instructeur soient prêts.",
     askPrice: "Demander le prix",
     videoLabel: "Plonger avec le Turtle Dive Center",
+    videoSoon: "Une vidéo des plongées arrive ici.",
     videoPlay: "Lire",
     list: {
       heading: "Tarifs plongée 2025",
@@ -2540,8 +2565,13 @@ const FR: SiteCopy = {
         extra: "Un guide, et un bloc",
         boat: "Le bateau pour une excursion",
       },
-      more: (n) => `Voir ${n} de plus`,
-      less: "Voir moins",
+      groupNote: {
+        fun: "Ce que le bateau fait de jour : deux blocs avant midi, une journée entière, ou une sortie vers Piaynemo, la station de nettoyage des mantas, Yangefo ou l'épave du P47.",
+        night: "À la nuit tombée, à Yenbuba ou à Sawandarek, dès que vous êtes deux.",
+        learn: "Jamais plongé, ou plus depuis quelques années.",
+        extra: "Ni sortie ni formation : un guide rien que pour vous pour la journée, et un bloc pour le récif devant la maison.",
+        boat: "Affrété au bateau et non par personne, et séparé des plongées ci-dessus.",
+      },
       min: (n) => `${n} plongeurs minimum`,
       per: {
         person: "par personne",
@@ -2586,8 +2616,6 @@ const FR: SiteCopy = {
         "Apportez votre masque si vous en avez un qui va à votre visage.",
         "Une assurance couvrant la plongée est recommandée.",
       ],
-      boatNote:
-        "Affrété au bateau et non par personne, et séparé des plongées ci-dessus.",
       boats: {
         boatPiaynemo:
           "5 plongeurs maximum — comprend l'entrée du point de vue et un panier-repas pour les hôtes de Turtle",
@@ -3252,6 +3280,7 @@ const DE: SiteCopy = {
       "Zertifizierte Taucher bringen bitte Brevet und Logbuch mit. Für den Open-Water-Kurs sagen Sie uns mindestens eine Woche vorher Bescheid, damit Material und Zeitplan des Instruktors stehen.",
     askPrice: "Nach dem Preis fragen",
     videoLabel: "Tauchen mit dem Turtle Dive Center",
+    videoSoon: "Hier kommt ein Clip vom Tauchen hin.",
     videoPlay: "Abspielen",
     list: {
       heading: "Tauchpreise 2025",
@@ -3264,8 +3293,13 @@ const DE: SiteCopy = {
         extra: "Ein Guide, und eine Flasche",
         boat: "Das Boot für eine Ausfahrt",
       },
-      more: (n) => `${n} weitere anzeigen`,
-      less: "Weniger anzeigen",
+      groupNote: {
+        fun: "Was das Boot bei Tage macht: zwei Flaschen vor dem Mittag, ein ganzer Tag, oder eine Fahrt nach Piaynemo, zur Manta-Putzerstation, nach Yangefo oder zum P47-Wrack.",
+        night: "Nach Einbruch der Dunkelheit, bei Yenbuba oder Sawandarek, sobald Sie zu zweit sind.",
+        learn: "Noch nie getaucht, oder seit ein paar Jahren nicht mehr.",
+        extra: "Weder Ausfahrt noch Kurs: ein Guide nur für Sie, einen Tag lang, und eine Flasche für das Riff vor dem Haus.",
+        boat: "Pro Boot gechartert, nicht pro Kopf, und getrennt von den Tauchgängen oben.",
+      },
       min: (n) => `mindestens ${n} Taucher`,
       per: {
         person: "pro Person",
@@ -3310,8 +3344,6 @@ const DE: SiteCopy = {
         "Bringen Sie Ihre eigene Maske mit, wenn sie Ihnen passt.",
         "Eine Versicherung, die Gerätetauchen abdeckt, wird empfohlen.",
       ],
-      boatNote:
-        "Pro Boot gechartert, nicht pro Kopf, und getrennt von den Tauchgängen oben.",
       boats: {
         boatPiaynemo:
           "Bis zu 5 Taucher — mit Eintritt zum Aussichtspunkt und Lunchpaket für Turtle-Gäste",
@@ -3993,6 +4025,7 @@ const RU: SiteCopy = {
       "Сертифицированных дайверов просим взять карточку и лог-бук. О курсе Open Water предупредите хотя бы за неделю, чтобы подготовить материалы и расписание инструктора.",
     askPrice: "Спросить цену",
     videoLabel: "Погружения с Turtle Dive Center",
+    videoSoon: "Здесь появится видео с погружений.",
     videoPlay: "Смотреть",
     list: {
       heading: "Цены на дайвинг, 2025",
@@ -4005,8 +4038,13 @@ const RU: SiteCopy = {
         extra: "Гид и баллон",
         boat: "Лодка для выездного трипа",
       },
-      more: (n) => `Показать ещё ${n}`,
-      less: "Показать меньше",
+      groupNote: {
+        fun: "Что лодка делает днём: два баллона до обеда, целый день или выход к Пиайнемо, станции очистки мант, Янгефо или затонувшему P47.",
+        night: "После темноты, у Йенбубы или Савандарека, когда вас уже двое.",
+        learn: "Ни разу не ныряли — или не ныряли несколько лет.",
+        extra: "Ни выезд, ни курс: гид только для вас на день и баллон для рифа перед домом.",
+        boat: "Фрахтуется целиком, а не по головам, и считается отдельно от погружений выше.",
+      },
       min: (n) => `минимум ${ruPlural(n, "дайвер", "дайвера", "дайверов")}`,
       per: {
         person: "с человека",
@@ -4051,8 +4089,6 @@ const RU: SiteCopy = {
         "Возьмите свою маску, если у вас есть подходящая.",
         "Рекомендуется страховка, покрывающая погружения с аквалангом.",
       ],
-      boatNote:
-        "Фрахтуется целиком, а не по головам, и считается отдельно от погружений выше.",
       boats: {
         boatPiaynemo:
           "До 5 дайверов — включая вход на смотровую площадку и ланч-бокс для гостей Turtle",
@@ -4718,6 +4754,7 @@ const JA: SiteCopy = {
       "認定ダイバーの方はCカードとログブックをお持ちください。オープンウォーターの講習は、教材とインストラクターの日程を整えるため、遅くとも1週間前にお知らせください。",
     askPrice: "料金を聞く",
     videoLabel: "Turtle Dive Center で潜る",
+    videoSoon: "ここにダイビングの映像が入ります。",
     videoPlay: "再生",
     list: {
       heading: "2025年 ダイビング料金",
@@ -4730,8 +4767,13 @@ const JA: SiteCopy = {
         extra: "ガイドとタンク",
         boat: "遠征トリップのボート",
       },
-      more: (n) => `ほかに${n}件を表示`,
-      less: "表示を減らす",
+      groupNote: {
+        fun: "昼間にボートが向かう先です。午前に2本、まる一日、あるいはピアイネモ、マンタのクリーニングステーション、ヤンゲフォ、P47沈船への遠征。",
+        night: "暗くなってから、イェンブバかサワンダレクで。2名そろえば出ます。",
+        learn: "潜ったことがない方、しばらく潜っていない方へ。",
+        extra: "遠征でも講習でもないもの。一日つきっきりの専属ガイドと、目の前のリーフで潜るためのタンク。",
+        boat: "人数割りではなくボート1艇のチャーター料金で、上のダイビング料金とは別です。",
+      },
       min: (n) => `最少${n}名から`,
       per: {
         person: "お1人あたり",
@@ -4776,8 +4818,6 @@ const JA: SiteCopy = {
         "顔に合うマスクをお持ちでしたら、ぜひご持参ください。",
         "スキューバダイビングを補償する保険への加入をおすすめします。",
       ],
-      boatNote:
-        "人数割りではなくボート1艇のチャーター料金で、上のダイビング料金とは別です。",
       boats: {
         boatPiaynemo:
           "ダイバー5名まで — 展望台の入場料と、当ホームステイのお客さま用ランチボックス込み",
@@ -5441,6 +5481,7 @@ const ZH: SiteCopy = {
       "持证潜水员请带上潜水证和潜水日志。Open Water 课程请至少提前一周告诉我们，好把教材和教练的时间安排出来。",
     askPrice: "问价格",
     videoLabel: "和 Turtle Dive Center 一起潜水",
+    videoSoon: "这里会放一段潜水的短片。",
     videoPlay: "播放",
     list: {
       heading: "2025 年潜水价目表",
@@ -5453,8 +5494,13 @@ const ZH: SiteCopy = {
         extra: "导潜与气瓶",
         boat: "远征行程的船",
       },
-      more: (n) => `再看 ${n} 项`,
-      less: "收起",
+      groupNote: {
+        fun: "白天船去的地方：上午两支、一整天，或者远征皮阿内莫、蝠鲼清洁站、扬格福、P47 沉机。",
+        night: "天黑以后，在延布巴或萨万达雷克，凑满两位就出船。",
+        learn: "没潜过，或者好几年没下水了。",
+        extra: "既不是行程也不是课程：整天只带你一组的导潜，还有在屋前礁下水用的气瓶。",
+        boat: "按整艘船算，不按人头，和上面的潜水费用分开。",
+      },
       min: (n) => `最少 ${n} 位潜水员`,
       per: {
         person: "每人",
@@ -5499,8 +5545,6 @@ const ZH: SiteCopy = {
         "如果你有贴合自己脸型的面镜，请自己带来。",
         "建议购买能涵盖水肺潜水的保险。",
       ],
-      boatNote:
-        "按整艘船算，不按人头，和上面的潜水费用分开。",
       boats: {
         boatPiaynemo:
           "最多 5 位潜水员 — 含观景台门票和给 Turtle 客人的餐盒",

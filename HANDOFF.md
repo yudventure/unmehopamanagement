@@ -930,7 +930,7 @@ Yang diambil apa adanya dari sana:
 | Kontak | WhatsApp 081243237470 · turtlediversrajaampat@gmail.com · IG turtlediversrajaampat | `content/site.json` |
 | OTA | stayrajaampat.com dan Booking.com | `COPY[*].rooms.otaNote` |
 | Harga selam | daftar harga 2025 lengkap: 21 baris (15 + 4 perahu excursion + kursus & snorkeling yang belum berharga) + 5 catatan, semuanya jadi kartu | `divePrices` di `content/site.json`, barisnya di `PRICE_ROWS`, kata-katanya di `COPY[*].dive.list` |
-| Klip di atas bar pemesanan selam | **belum diisi**; diisi dari dashboard, tautan YouTube atau berkas di `public/`, tanpa autoplay | `diveVideo` di `content/site.json`; `assets/README.md` menerangkan slotnya |
+| Klip di atas bar pemesanan selam | **belum diisi**; slotnya digambar dan bilang klipnya menyusul. Diisi dari dashboard: tautan YouTube atau berkas di `public/`, tanpa autoplay | `diveVideo` di `content/site.json`; `assets/README.md` menerangkan slotnya |
 | Nomor kantor | +62 812 4323 7470 untuk reservasi selam | sama dengan `contact.whatsapp` |
 
 **Situs lama menyebut Pulau Kri, bukan Yenbuba.** Sebelum ini, seluruh copy
@@ -947,19 +947,30 @@ orang datangi, dan keduanya jadi baris tabel di bawah enam kartu yang dipilih
 sebelum ada yang bertanya. Sekarang **tiap baris daftar harga adalah satu
 kartu**, dan tidak ada lagi tabel.
 
-Dua puluh satu kartu, dikelompokkan seperti daftar keluarganya sendiri: fun
-dive dan trip harian, night dive, coba selam dan penyegaran, pemandu dan sewa
-tabung, lalu perahu excursion. Tiap kategori menampilkan **enam kartu**,
-sisanya di balik tombol *Lihat N lainnya* — hari ini cuma kategori pertama
-(sepuluh baris) yang melewatinya, tapi tombolnya ada per kategori supaya
-menambah satu night dive tidak berarti memikirkan ulang bagiannya. Yang
-disembunyikan tidak dirender sama sekali, bukan disembunyikan dengan CSS:
+Dua puluh satu kartu, **satu kategori pada satu waktu**, dipilih dari daftar
+di sebelah kiri: fun dive dan trip harian, night dive, coba selam dan
+penyegaran, pemandu dan sewa tabung, lalu perahu excursion. Bentuknya sama
+persis dengan bagian layanan di situs Eddo, dan itu disengaja — dua situs ini
+dijalankan keluarga yang sama, dan pembaca yang sudah melihat satu tidak
+seharusnya belajar yang satunya lagi. Di ponsel daftarnya jadi baris chip yang
+bisa digeser; dari `lg` ke atas jadi kolom di samping panelnya.
+
+Yang tidak dipilih tidak dirender sama sekali, bukan disembunyikan dengan CSS:
 pembaca di ponsel tidak membayar unduhan harga yang belum diminta, dan pembaca
-layar tidak membacakan daftar yang tidak ada di layar. Yang muncul karena
-ditekan juga **tidak diberi `data-reveal`**: `useReveal` mengumpulkan
-penandanya sekali saat mount, jadi kartu yang lahir belakangan tidak pernah
-diamati — kalau ditandai, ia akan tinggal selamanya di ujung animasi yang
-tidak terlihat.
+layar tidak membacakan daftar yang tidak ada di layar. Kartunya **tidak diberi
+`data-reveal`** satu pun: panelnya di-*key* pada tab yang terbuka, jadi
+berganti tab membuat elemen baru, sementara `useReveal` mengumpulkan
+penandanya sekali saat mount — kartu yang lahir belakangan tidak pernah
+diamati, dan kalau ditandai ia akan tinggal selamanya di ujung animasi yang
+tidak terlihat. Yang memberi gerak pada pergantian tab adalah `animate-pop-in`
+milik panelnya, animasi yang berakhir di opacity 1 entah ia berjalan atau
+tidak.
+
+Tiap kategori punya satu kalimat pengantar di bawah judulnya
+(`COPY[*].dive.list.groupNote`), dan tiap kalimat itu disusun dari baris-baris
+di kategori itu sendiri — titik selamnya, minimal penyelamnya, apa yang bukan
+trip dan bukan kursus — jadi tidak ada klaim baru yang tidak sudah ada di
+daftar harganya.
 
 Kartunya tidak sama isinya, dan justru itu yang jujur. **Enam paket** membawa
 durasi, level dan daftar "sudah termasuk" yang ditulis dan diperiksa dalam

@@ -1,0 +1,81 @@
+# Menulis keterangan properti, kamar, dan pengguna ke database — sekali, saat
+# diminta.
+#
+# ## Kenapa terpisah dari `build.yml`
+#
+# Migrasi boleh ikut tiap push karena `migrate deploy` hanya menerapkan berkas
+# yang belum pernah dijalankan; yang kedua kalinya ia tidak melakukan apa-apa.
+# Pengisian data tidak begitu. `db:seed` memakai `upsert`, jadi aman diulang
+# dalam arti tidak menggandakan — tapi "tidak menggandakan" bukan "tidak
+# mengubah". Ia menimpa. Begitu pemiliknya bisa menyunting kamar lewat
+# dashboard, seed yang ikut tiap push akan mengembalikan tarif dan nama kamar
+# ke isi `src/lib/data.ts` diam-diam, tiap kali ada yang menggabung apa pun.
+#
+# Jadi tempatnya bukan di jalur yang berjalan sendiri. Dijalankan dengan
+# ditekan, oleh orang yang tahu ia sedang menekannya.
+#
+# ## Kenapa lewat CI dan bukan dari komputer sendiri
+#
+# Alasan yang sama dengan migrasi: alamat database ada di GitHub Secrets dan di
+# panel hosting, dan tidak di tempat ketiga mana pun. Ini satu-satunya tempat
+# yang memegang sandinya tanpa siapa pun perlu melihatnya.
+#
+# ## Data karangan tidak pernah ikut
+#
+# `src/lib/data.ts` memuat dua hal: keterangan properti yang nyata, dan booking
+# Agustus 2026 yang dibangkitkan untuk mengisi kalender demo. Yang dijalankan
+# di sini `npm run db:seed` tanpa argumen, yang hanya menulis yang pertama.
+# `--demo` sengaja tidak pernah disebut di berkas ini, karena nama tamu yang
+# tidak pernah ada, di kamar yang nyata, dengan nominal yang ikut terhitung di
+# laporan pendapatan, adalah hal yang paling tidak boleh masuk ke sini.
+
+name: Isi data awal
+
+on:
+  workflow_dispatch:
+    inputs:
+      konfirmasi:
+        description: 'Ketik "isi" untuk menjalankan. Ini menulis ke database sungguhan.'
+        required: true
+        default: ""
+
+jobs:
+  isi:
+    runs-on: ubuntu-latest
+
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+    steps:
+      # Sebuah tombol yang langsung menulis ke database terlalu mudah tertekan
+      # dari halaman Actions. Satu kata yang harus diketik cukup untuk membuat
+      # penekanan yang tidak disengaja berhenti di sini, dan tidak di database.
+      - name: Periksa konfirmasi
+        if: inputs.konfirmasi != 'isi'
+        run: |
+          echo "::error::Ketik persis 'isi' pada kolom konfirmasi untuk menjalankan ini."
+          exit 1
+
+      - name: Periksa ada alamat database
+        if: env.DATABASE_URL == ''
+        run: |
+          echo "::error::DATABASE_URL belum ada di GitHub Secrets, tidak ada yang bisa diisi."
+          exit 1
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # `prisma generate` ikut di postinstall, jadi kliennya siap setelah ini.
+      - run: npm ci
+
+      - name: Isi database sebelum diisi
+        run: npm run db:ringkas
+
+      - run: npm run db:seed
+
+      - name: Isi database sesudah diisi
+        run: npm run db:ringkas

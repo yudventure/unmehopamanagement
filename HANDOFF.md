@@ -901,6 +901,8 @@ Yang diambil apa adanya dari sana:
 | Alamat | Mansuar Kecil (Pulau Kri), Distrik Meos Mansar, Kepulauan Raja Ampat, Papua Barat Daya 98472 | `LOCATION`, `PROPERTY` |
 | Kontak | WhatsApp 081243237470 · turtlediversrajaampat@gmail.com · IG turtlediversrajaampat | `content/site.json` |
 | OTA | stayrajaampat.com dan Booking.com | `COPY[*].rooms.otaNote` |
+| Harga selam | daftar harga 2025 lengkap: 15 baris + 4 perahu excursion + 5 catatan | `divePrices` di `content/site.json`, barisnya di `PRICE_ROWS`/`BOAT_ROWS`, kata-katanya di `COPY[*].dive.list` |
+| Nomor kantor | +62 812 4323 7470 untuk reservasi selam | sama dengan `contact.whatsapp` |
 
 **Situs lama menyebut Pulau Kri, bukan Yenbuba.** Sebelum ini, seluruh copy
 Turtle dalam tujuh bahasa menempatkan homestay-nya di Yenbuba, Pulau Mansuar —
@@ -909,13 +911,26 @@ Pulau Kri / Mansuar Kecil, termasuk judul halaman dan peta sketsanya.
 Akibatnya: copy **Eddo** masih menulis Turtle sebagai "di kampung yang sama",
 dan itu perlu dikonfirmasi ke pemiliknya — file Eddo sengaja tidak disentuh.
 
-**Yang belum bisa disamakan** (tangkapan layarnya cuma 147 px dan 164 px,
-tulisannya tidak terbaca walau diperbesar):
+**Daftar harga selam 2025** menyusul dalam bentuk yang terbaca, dan sekarang
+ada di situs sebagai tabel di bawah kartu paket. Tiga angka di kartu yang dulu
+karangan jadi angka mereka (dua fun dive 1.600.000, tiga penyelaman 2.250.000,
+try dive 1.300.000), dan kartu keenam — dulu "sewa alat lengkap" seharga
+350.000/hari — diganti **Pemandu Pribadi** 400.000/hari, karena sewa alat
+seperti itu tidak ada: alat dan perahu sudah termasuk di tiap penyelaman
+lokal, dan yang bawa alat sendiri justru dapat potongan 100.000.
 
-- Halaman **Diving Trip, Courses, Snorkelling & Transport** — harga selam,
-  kursus, snorkeling, excursion, island activity, dan tabel perahu transport.
-  `divePrices` di `content/site.json` masih **angka karangan**.
-- Halaman **Home** dan **Policy & Gallery**.
+**Yang masih belum bisa disamakan:**
+
+- **Kursus** (Open Water dan sejenisnya) dan **trip snorkeling** — tidak ada
+  di daftar harga selam yang dikirim. Keduanya diisi `0`, yang di situs berarti
+  "tanya harga", bukan gratis.
+- **Satu baris di daftar harga aslinya salah ketik**: "1 Fun afternoon dive in
+  Manta Cleaning Station ... IDR 1.00,000". Angka itu tidak diisi (`mantaPm: 0`)
+  dan barisnya tampil sebagai "tanya harga" sampai ada yang memastikan.
+- **Satu baris mungkin terpotong** di antara dua tangkapan layar daftar harga,
+  antara "2 Fun Dive in P47 Wreck" dan "One night dive in Yenbuba".
+- Halaman **Home** dan **Policy & Gallery** situs lama — tangkapan layarnya
+  cuma 147 px dan 164 px, tulisannya tidak terbaca walau diperbesar.
 - Halaman **Packages** di situs lama memang kosong ("we have no package
   avaliable now"), jadi tidak ada yang hilang di sana.
 
@@ -926,8 +941,8 @@ tulisannya tidak terbaca walau diperbesar):
 | `contact.whatsapp`, `contact.email`, `contact.ownerEmail` | **nyata**, diambil dari situs klien. Catatan: halaman Contact Us situs lama memakai nomor lain (082291311277) dan footer memakai 081243237470 — yang dipakai di sini yang kedua, perlu dikonfirmasi |
 | `social.instagram` | **nyata** (`turtlediversrajaampat`). `facebook` dan `tiktok` dikosongkan, karena situs lama tidak menyebut keduanya dan ikon yang menuju ke mana-mana lebih buruk daripada tidak ada ikon |
 | `founded.homestay`, `founded.diveCenter` | **kosong**, tahun berdirinya belum diketahui. Selama kosong, tidak ada tahun yang ditampilkan di mana pun |
-| `divePrices` (enam angka) | **placeholder dan belum terbaca**, ganti lewat tab Website begitu daftar harga selamnya didapat |
-| Nama, durasi, dan level paket selam | **placeholder**, ada di `web-content.ts` |
+| `divePrices` (21 angka) | **nyata**, dari daftar harga selam 2025 mereka. Dua yang kosong — kursus dan trip snorkeling — tampil sebagai "tanya harga"; satu lagi (`mantaPm`) menunggu angka yang salah ketik di daftar aslinya |
+| Nama, durasi, dan level paket selam | **campuran**: harganya nyata, tapi durasi ("~4 jam") dan susunan harinya masih rekonstruksi — lihat `lib/dive-detail.ts` |
 | Tarif bungalow | **nyata**, dari daftar harga klien |
 | Klaim Starlink dan "tanpa biaya kebersihan" | **belum terverifikasi** — tidak ada di situs lama, dan jam listrik 18:00–24:00 membuat klaim Starlink layak ditanyakan ulang |
 | Musim, cara sampai, FAQ | tulisan wajar, perlu dikoreksi pemilik |

@@ -3,7 +3,13 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { fmt } from "@/lib/format";
-import { DIVE_KEYS, COPY, DEFAULT_LANG } from "@/lib/web-content";
+import {
+  BOAT_ROWS,
+  DIVE_KEYS,
+  COPY,
+  DEFAULT_LANG,
+  PRICE_ROWS,
+} from "@/lib/web-content";
 import type { SiteConfig } from "@/lib/site-config";
 import type { PublicSite } from "@/lib/site-domains";
 
@@ -617,13 +623,17 @@ export function WebsiteScreen({ editor }: WebsiteScreenProps) {
 
         {HAS_DIVING[tab] && (
           <section className={card}>
-            <div className="mb-1 text-[15px] font-bold">Harga paket selam</div>
+            <div className="mb-1 text-[15px] font-bold">Harga selam</div>
             <Explain>
-              Nama dan keterangan tiap paket ada di kode; yang bisa diubah di
-              sini angkanya. Harga kamar tidak ada di halaman ini karena
-              diambil langsung dari Properti &amp; Kamar, supaya website dan
-              dashboard tidak pernah berbeda.
+              Nama dan keterangan tiap baris ada di kode; yang bisa diubah di
+              sini angkanya. Enam yang pertama adalah kartu paket di halaman
+              selam, sisanya daftar harga di bawahnya, dan semuanya membaca
+              berkas yang sama. Angka nol berarti &quot;tanya harga&quot; di
+              situs, bukan gratis. Harga bungalow tidak ada di halaman ini
+              karena diambil langsung dari Properti &amp; Kamar, supaya
+              website dan dashboard tidak pernah berbeda.
             </Explain>
+            <div className="mb-1 text-[14px] font-bold">Kartu paket</div>
             <div className="grid grid-cols-1 gap-[14px] sm:grid-cols-2 lg:grid-cols-3">
               {DIVE_KEYS.map((key) => (
                 <label key={key} className={LABEL}>
@@ -650,8 +660,76 @@ export function WebsiteScreen({ editor }: WebsiteScreenProps) {
                 </label>
               ))}
             </div>
+            {/* The rest of the 2025 list, which is where most of the
+                figures live: the six above are the cards, these fifteen are
+                the table under them, and both read the same file. A field
+                left at nol is not free — the page asks instead of quoting,
+                which is what carries the one line on the family's own list
+                that came through unreadable. */}
+            <div className="mt-6 mb-1 text-[14px] font-bold">
+              Daftar harga selam selengkapnya
+            </div>
+            <div className="grid grid-cols-1 gap-[14px] sm:grid-cols-2 lg:grid-cols-3">
+              {PRICE_ROWS.filter((r) => !DIVE_KEYS.includes(r.key as never)).map(
+                (row) => (
+                  <label key={row.key} className={LABEL}>
+                    {copy.dive.list.rows[row.key]}
+                    <span className="flex items-center gap-[7px]">
+                      <span className="text-[12px] text-slate-mute">Rp</span>
+                      <input
+                        value={grouped(config.divePrices[row.key] ?? 0)}
+                        onChange={(e) =>
+                          patch({
+                            divePrices: {
+                              ...config.divePrices,
+                              [row.key]: Number(digits(e.target.value)) || 0,
+                            },
+                          })
+                        }
+                        inputMode="numeric"
+                        className={`${FIELD} text-right font-mono`}
+                      />
+                    </span>
+                    <span className="text-[11.5px] text-slate-mute">
+                      {copy.dive.list.per[row.per]}
+                    </span>
+                  </label>
+                ),
+              )}
+            </div>
+
+            <div className="mt-6 mb-1 text-[14px] font-bold">
+              Perahu untuk trip excursion
+            </div>
+            <div className="grid grid-cols-1 gap-[14px] sm:grid-cols-2">
+              {BOAT_ROWS.map((key) => (
+                <label key={key} className={LABEL}>
+                  {copy.dive.list.boats[key]}
+                  <span className="flex items-center gap-[7px]">
+                    <span className="text-[12px] text-slate-mute">Rp</span>
+                    <input
+                      value={grouped(config.divePrices[key] ?? 0)}
+                      onChange={(e) =>
+                        patch({
+                          divePrices: {
+                            ...config.divePrices,
+                            [key]: Number(digits(e.target.value)) || 0,
+                          },
+                        })
+                      }
+                      inputMode="numeric"
+                      className={`${FIELD} text-right font-mono`}
+                    />
+                  </span>
+                  <span className="text-[11.5px] text-slate-mute">
+                    {copy.dive.list.per.boat}
+                  </span>
+                </label>
+              ))}
+            </div>
+
             <div className="mt-4 border-t border-line-fine pt-3 text-[12.5px] text-slate-soft">
-              Contoh harga yang sedang tayang: Fun Dive 2 tank{" "}
+              Contoh harga yang sedang tayang: dua fun dive satu pagi{" "}
               {fmt(config.divePrices.fun2 ?? 0)}.
             </div>
           </section>

@@ -26,6 +26,7 @@ import {
 } from "@/components/web/icons";
 import { LangSwitch } from "@/components/web/lang-switch";
 import { CurrencySwitch, Price } from "@/components/web/price";
+import { convert, type CurrencyCode, type Rates } from "@/lib/currency";
 import { SiteLogo } from "@/components/web/site-logo";
 import { JourneyMap } from "@/components/web/journey-map";
 import { JourneyScene, STEP_SCENES } from "@/components/web/journey-scenes";
@@ -42,8 +43,8 @@ import {
   DEFAULT_LANG,
   DIVE_FEATURED,
   DIVE_KEYS,
+  BOAT_ROWS,
   DIVE_PER,
-  DIVE_PRICE,
   EMAIL,
   EXTRA_BED,
   HOUSE,
@@ -55,6 +56,8 @@ import {
   type DiveKey,
   type ExtraBedKey,
   type RoomKey,
+  PRICE_ROWS,
+  divePrice,
   money,
   monthOptions,
   roomFacts,
@@ -224,6 +227,69 @@ function Frame({
 }
 
 const FILL = "absolute inset-0 h-full w-full";
+
+/**
+ * One line of the dive price list: what it is on the left, what it costs on
+ * the right.
+ *
+ * Not the `Price` component, which stacks the rupiah figure over its
+ * conversion and holds a line's height open for a conversion that may never
+ * load. That is right for a card, where the price is the loudest thing on it,
+ * and wrong for fifteen rows in a row: it doubled the height of the table and
+ * left every "per person" floating away from the figure it belongs to. Here
+ * the three parts sit on one line, and the conversion simply is not there
+ * when there is nothing honest to put in it.
+ */
+function PriceRow({
+  label,
+  min,
+  rupiah,
+  unit,
+  ask,
+  lang,
+  currency,
+  rates,
+}: {
+  label: string;
+  /** "minimum 3 divers", for the rows the boat will not go out under. */
+  min: string | null;
+  /** Zero where the owner has not filled the figure in. */
+  rupiah: number;
+  unit: string;
+  ask: string;
+  lang: string;
+  currency: CurrencyCode;
+  rates: Rates | null;
+}) {
+  const approx = rupiah > 0 ? convert(rupiah, currency, rates) : null;
+  return (
+    <li className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-[2px] border-b border-white/10 py-[9px]">
+      <span className="max-w-[56ch] min-w-0 text-[13.5px] leading-[1.5] text-white/85">
+        {label}
+        {min ? (
+          <span className="ml-[8px] text-[11.5px] whitespace-nowrap text-white/45">
+            {min}
+          </span>
+        ) : null}
+      </span>
+      {rupiah > 0 ? (
+        <span className="shrink-0 text-right text-[14px] font-bold text-white">
+          {money(rupiah, lang)}
+          <span className="ml-[7px] text-[11.5px] font-normal text-white/45">
+            {unit}
+          </span>
+          {approx ? (
+            <span className="ml-[7px] text-[11.5px] font-normal text-white/40">
+              ≈ {approx}
+            </span>
+          ) : null}
+        </span>
+      ) : (
+        <span className="shrink-0 text-[13px] text-white/60">{ask}</span>
+      )}
+    </li>
+  );
+}
 
 /**
  * A photograph over the drawn scene inside a `Frame`. Lazy, because these sit
@@ -1023,7 +1089,7 @@ export function TurtleSite({ payable = false }: { payable?: boolean }) {
             {DIVE_KEYS.map((key, i) => {
               const p = t.dive.packages[key];
               const featured = key === DIVE_FEATURED;
-              const canBuy = payable && DIVE_PRICE[key] > 0;
+              const canBuy = payable && divePrice(key) > 0;
               return (
               <article
                 key={key}
@@ -1095,13 +1161,27 @@ export function TurtleSite({ payable = false }: { payable?: boolean }) {
                 >
                 <div className="flex items-end justify-between gap-3">
                   <div>
-                    <Price
-                      rupiah={DIVE_PRICE[key]}
-                      lang={lang}
-                      currency={currency}
-                      rates={rates}
-                      tone={featured ? "amber" : "light"}
-                    />
+                    {/* A package the owner has not priced asks instead of
+                        showing Rp 0. The family's own list prices neither the
+                        course nor the snorkelling trip, and a zero on a card
+                        reads as free rather than as unknown. */}
+                    {divePrice(key) > 0 ? (
+                      <Price
+                        rupiah={divePrice(key)}
+                        lang={lang}
+                        currency={currency}
+                        rates={rates}
+                        tone={featured ? "amber" : "light"}
+                      />
+                    ) : (
+                      <div
+                        className={`text-[20px] font-bold ${
+                          featured ? "text-amber-deep" : "text-white"
+                        }`}
+                      >
+                        {t.dive.askPrice}
+                      </div>
+                    )}
                     <div
                       className={`text-[11.5px] ${
                         /* 70% of amber-deep on amber measured 3.6:1, under
@@ -1157,6 +1237,95 @@ export function TurtleSite({ payable = false }: { payable?: boolean }) {
               </article>
               );
             })}
+          </div>
+
+          {/* The rest of the list.
+              
+              Six cards are what somebody chooses between before they have
+              talked to anybody; the family sells fifteen things, and the
+              other nine — the manta station, the wreck, the night dives, a
+              tank for the house reef — were nowhere on this site. A card
+              each would be a wall of photographs, so the rest is a table,
+              which is also the shape the family already keeps it in. */}
+          <div
+            data-reveal
+            className="mt-12 rounded-[24px] border border-white/12 bg-white/[.04] px-6 py-7 md:px-8 md:py-8"
+          >
+            <h3 className="m-0 text-[20px] leading-[1.15] font-bold tracking-[-.02em] text-white">
+              {t.dive.list.heading}
+            </h3>
+            <p className="mt-2 mb-0 max-w-[640px] text-[13.5px] leading-[1.6] text-white/60">
+              {t.dive.list.intro}
+            </p>
+
+            <ul className="mt-6 mb-0 flex list-none flex-col p-0">
+              {PRICE_ROWS.map((row) => (
+                <PriceRow
+                  key={row.key}
+                  label={t.dive.list.rows[row.key]}
+                  min={row.min ? t.dive.list.min(row.min) : null}
+                  rupiah={divePrice(row.key)}
+                  unit={t.dive.list.per[row.per]}
+                  ask={t.dive.askPrice}
+                  lang={lang}
+                  currency={currency}
+                  rates={rates}
+                />
+              ))}
+            </ul>
+
+            <ul className="mt-5 mb-0 flex list-none flex-col gap-[7px] p-0">
+              {t.dive.list.notes.map((note) => (
+                <li
+                  key={note}
+                  className="flex gap-[10px] text-[12.5px] leading-[1.55] text-white/55"
+                >
+                  <span
+                    aria-hidden="true"
+                    className="mt-[7px] h-[4px] w-[4px] shrink-0 rounded-full bg-white/35"
+                  />
+                  {note}
+                </li>
+              ))}
+            </ul>
+
+            <h4 className="mt-9 mb-0 text-[15px] font-bold tracking-[-.01em] text-white">
+              {t.dive.list.boatHeading}
+            </h4>
+            <p className="mt-1 mb-0 max-w-[560px] text-[12.5px] leading-[1.55] text-white/55">
+              {t.dive.list.boatNote}
+            </p>
+            <ul className="mt-4 mb-0 flex list-none flex-col p-0">
+              {BOAT_ROWS.map((key) => (
+                <PriceRow
+                  key={key}
+                  label={t.dive.list.boats[key]}
+                  min={null}
+                  rupiah={divePrice(key)}
+                  unit={t.dive.list.per.boat}
+                  ask={t.dive.askPrice}
+                  lang={lang}
+                  currency={currency}
+                  rates={rates}
+                />
+              ))}
+            </ul>
+
+            {/* How a dive is actually reserved, which is not this website:
+                the plan for tomorrow is made after dinner, and the office
+                number is the one on the family's own price list. */}
+            <p className="mt-7 mb-0 border-t border-white/10 pt-5 text-[12.5px] leading-[1.65] text-white/60">
+              {t.dive.list.plan}{" "}
+              {t.dive.list.reserve}{" "}
+              <a
+                href={waLink(t.dive.list.heading)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-white underline decoration-white/40 underline-offset-[3px] hover:decoration-white"
+              >
+                +{WHATSAPP}
+              </a>
+            </p>
           </div>
 
           <p className="mt-6 text-[13px] leading-[1.6] text-white/50">
@@ -1488,7 +1657,7 @@ export function TurtleSite({ payable = false }: { payable?: boolean }) {
           unitPrice={
             booking.kind === "room"
               ? (guests) => roomRate(booking.room, guests) ?? 0
-              : DIVE_PRICE[booking.pack]
+              : divePrice(booking.pack)
           }
           unitLabel={
             booking.kind === "room"

@@ -21,8 +21,8 @@ import {
   TURTLE_ACTIVITIES,
   COPY,
   DIVE_PER,
-  DIVE_PRICE,
   MAX_DIVERS,
+  divePrice,
   monthOptions,
   type DiveKey,
 } from "@/lib/web-content";
@@ -115,7 +115,7 @@ export function DiveDetail({
   /* Whether this page may sell. Keys on the server, and a price the owner has
      actually filled in: a package still waiting for its figure is one to ask
      about, and `priceTurtle` refuses it on the way through anyway. */
-  const canBuy = payable && DIVE_PRICE[pack] > 0;
+  const canBuy = payable && divePrice(pack) > 0;
   const [booking, setBooking] = useState(false);
   const router = useRouter();
 
@@ -191,14 +191,21 @@ export function DiveDetail({
             </div>
 
             <div className="shrink-0 rounded-[18px] bg-white/10 px-6 py-5 backdrop-blur-md">
-              <Price
-                rupiah={DIVE_PRICE[pack]}
-                lang={lang}
-                currency={currency}
-                rates={rates}
-                tone="light"
-                className="text-white"
-              />
+              {/* Unpriced asks rather than showing Rp 0: on this page the
+                  figure is the biggest thing in the panel, and a zero there
+                  is a promise nobody made. */}
+              {divePrice(pack) > 0 ? (
+                <Price
+                  rupiah={divePrice(pack)}
+                  lang={lang}
+                  currency={currency}
+                  rates={rates}
+                  tone="light"
+                  className="text-white"
+                />
+              ) : (
+                <div className="text-[20px] font-bold text-white">{t.dive.askPrice}</div>
+              )}
               <div className="mt-[2px] text-[12px] text-white/75">{p.unit}</div>
               {/* Booking is the solid button once there is one; asking keeps
                   its place under it as an outline. Somebody who opened a page
@@ -351,7 +358,7 @@ export function DiveDetail({
           /* Gear leaves with one diver for a stretch of days; everything else
              on this page is sold by the head for one morning. */
           shape={DIVE_PER[pack] === "day" ? "hire" : "dived"}
-          unitPrice={DIVE_PRICE[pack]}
+          unitPrice={divePrice(pack)}
           unitLabel={p.unit}
           maxCount={MAX_DIVERS}
           lang={lang}

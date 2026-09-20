@@ -278,21 +278,16 @@ fotonya yang tampil, tanpa mengubah kode.
 | `eddo-hero-tall-800.webp` | sama, untuk layar yang tidak butuh selebar itu | 800×1422, 166 KB |
 | `eddo-kamar-1.webp` … `-10.webp` | karosel foto di bagian kamar | 4:3, 1200×900, 76 sampai 168 KB |
 | `eddo-kamar-1-720.webp` … `-10-720.webp` | sama, untuk layar sempit | 4:3, 720×540, 35 sampai 69 KB |
-| `eddo-around-1.jpg` | kartu "Dermaga Yenbuba" | 3:4 (tegak). **Belum ada** |
-| `eddo-around-2.jpg` | kartu "Burung cendrawasih" | 3:4. **Belum ada** |
-| `eddo-around-3.jpg` | kartu "Arborek" | 3:4. **Belum ada** |
-| `eddo-around-4.jpg` | kartu "Piaynemo" | 3:4. **Belum ada** |
 | `eddo-cta.webp` | kartu ajakan di bagian "Kenapa Eddo" | 4:3, 1200×900, 134 KB. Ditutup lapisan toska gelap dari kiri |
 | `eddo-cta-720.webp` | sama, untuk layar sempit | 4:3, 720×540, 54 KB |
 
 Aturannya sama seperti situs Turtle: huruf kecil semua, lebar 1080 sampai
 1920px, usahakan di bawah 300 KB per foto.
 
-Empat kartu `eddo-around-*` masih kosong karena tidak ada fotonya. Semua foto
-yang dikirim pemilik adalah foto homestay-nya sendiri, dan menaruh foto rumah
-di bawah tulisan "Piaynemo" akan membuat situsnya berbohong. Selama kosong,
-yang tampil ilustrasi, dan itu jujur. Empat slot itu masih menunggu `.jpg`,
-bukan `.webp`, karena alamatnya ditulis pasti di dalam kode.
+Empat kartu `eddo-around-*` pernah ada di sini dan sudah tidak dipakai lagi.
+Bagian "Sekitar kami" yang memuatnya diganti bagian "Cara ke sini", yang
+isinya empat langkah perjalanan dan satu peta. Petanya digambar dari data,
+bukan dari foto, jadi tidak ada slot foto baru yang perlu diisi di situ.
 
 ### Master fotonya tidak disimpan di sini
 

@@ -76,14 +76,25 @@ sudah tayang dan terbaca seolah-olah resmi.
 Cara mendapat data wilayah Indonesia yang benar, sumbernya, dan jebakan di
 tiap berkasnya ada di `.claude/skills/peta-wilayah-indonesia/`.
 
-## Peta Selat Dampier sudah jadi tapi sedang tidak dipasang
+## Dua peta, satu generator
 
-Pemiliknya menyimpannya dulu; bisa jadi dipakai di situs ini, di Turtle, atau
-di situs lain. Jangan dihapus karena terlihat tidak terpakai. Komponennya
-`src/components/eddo/dampier-map.tsx`, datanya `src/lib/dampier.ts`
-(`npm run peta` membangunnya ulang), salinannya di `map` dalam
-`eddo-content.ts` untuk tujuh bahasa, dan animasinya di `globals.css`. Cara
-memasangnya kembali ditulis di tempat seksinya dulu berada, di `site.tsx`.
+`npm run peta` membangun keduanya dari sumber yang sama dalam sekali jalan:
+
+- **`src/lib/perjalanan.ts`** dipakai di halaman Eddo, bagian "Cara ke sini",
+  lewat `src/components/eddo/journey-map.tsx`. Bingkainya memuat Sorong,
+  Waisai, dan rumahnya.
+- **`src/lib/dampier.ts`** untuk peta Selat Dampier yang bisa diklik,
+  komponennya `src/components/eddo/dampier-map.tsx`. Sudah jadi tapi sengaja
+  tidak dipasang; pemiliknya menyimpannya dulu, bisa jadi dipakai di sini, di
+  Turtle, atau di situs lain. Jangan dihapus karena terlihat tidak terpakai.
+  Cara memasangnya kembali ditulis di tempat seksinya dulu berada, di
+  `site.tsx`.
+
+Salinannya ada di `eddo-content.ts` untuk tujuh bahasa (`journey` dan `map`),
+dan animasinya di `globals.css`.
+
+Titik Eddo Homestay ada di `EDDO_LOCATION` di `eddo-content.ts`, dari pemilik
+sendiri. Kode plusnya dihitung dari titik itu, bukan diketik.
 
 ## Pekerjaan selesai berarti sudah di `main`, bukan menunggu di pull request
 

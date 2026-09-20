@@ -125,9 +125,11 @@ Every one of these was hit and verified.
 
 ## The pipeline
 
-Six steps. A complete working generator is `scripts/peta-dampier.mjs` in
+Six steps. A complete working generator is `scripts/peta.mjs` in
 yudventure/unmehopamanagement; if this skill has been copied into another repo
-without it, start from that file.
+without it, start from that file. It builds two maps from one pass over the
+sources, which is the shape to keep: the frame, the viewBox width and the list
+of named places are a per-map spec, and everything above them is read once.
 
 ### 1. Frame and projection
 

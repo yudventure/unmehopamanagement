@@ -16,6 +16,7 @@ import {
   TikTokIcon,
   WhatsAppIcon,
 } from "@/components/web/icons";
+import { JourneyMap } from "@/components/eddo/journey-map";
 import { RoomCarousel, type RoomPhoto } from "@/components/eddo/room-carousel";
 import { ServiceScene } from "@/components/eddo/service-scenes";
 import { CheckoutModal, type CheckoutOrder } from "@/components/eddo/checkout-modal";
@@ -859,8 +860,8 @@ export function EddoSite({
   const nav = [
     { id: "atas", label: t.nav.home },
     { id: "kamar", label: t.nav.rooms },
-    { id: "sekitar", label: t.nav.around },
     { id: "layanan", label: t.nav.services },
+    { id: "perjalanan", label: t.nav.journey },
     { id: "kenapa", label: t.nav.why },
     { id: "tanya", label: t.nav.faq },
   ];
@@ -1628,59 +1629,6 @@ export function EddoSite({
         </div>
       </Section>
 
-      {/* --------------------------------------------------------- around */}
-      <Section id="sekitar" className="pt-20 md:pt-24">
-        <div data-reveal className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <Eyebrow>{t.around.eyebrow}</Eyebrow>
-            <h2 className="mt-4 mb-0 text-[clamp(30px,4.6vw,48px)] leading-[1.05] font-bold tracking-[-.03em] text-eddo-ink">{t.around.title}</h2>
-          </div>
-          {/* Where the button used to be, and longer for having the corner to
-              itself: three islands and a headland instead of two islands. */}
-          <IslandArt className={`${ART_BOX} w-[280px] lg:w-[440px]`} />
-        </div>
-
-        <div className="mt-9 grid grid-cols-2 gap-4 lg:grid-cols-4 md:gap-5">
-          {t.around.places.map((p, i) => (
-            <article key={i} data-reveal style={step(i)} className="group relative aspect-[3/4] overflow-hidden rounded-[22px] bg-eddo-tint">
-              {i === 0 ? <ReefScene className={FILL} /> : i === 1 ? <IsletScene className={FILL} warm /> : i === 2 ? <JettyScene className={FILL} /> : <IsletScene className={FILL} />}
-              <Photo src={`/eddo-around-${i + 1}.jpg`} alt={p.alt} />
-              <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(18,52,58,0)_40%,rgba(18,52,58,.78)_100%)]" />
-              <span className="absolute top-3 left-3 rounded-full bg-white/92 px-[10px] py-[5px] text-[11px] font-medium text-eddo-ink">{p.tag}</span>
-              <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 p-4 text-white">
-                <div className="min-w-0">
-                  <div className="text-[15px] leading-[1.15] font-bold">{p.name}</div>
-                  <div className="mt-[3px] truncate text-[11.5px] text-white/80">{p.where}</div>
-                </div>
-                <div className="shrink-0 text-right font-mono text-[10.5px] leading-[1.3] text-white/85">{p.time}</div>
-              </div>
-            </article>
-          ))}
-        </div>
-        {/* The note and the way to ask, on one line at the foot of the
-            section. The button was at the top beside the heading, where it
-            asked the reader to decide before they had seen anything; down here
-            it comes after the four places, which is when somebody actually
-            wants it. */}
-        <div
-          data-reveal
-          className="mt-5 flex flex-col items-start gap-5 sm:flex-row sm:items-end sm:justify-between sm:gap-8"
-        >
-          <p className="m-0 max-w-[720px] text-[13px] leading-[1.6] text-slate">{t.around.note}</p>
-          {/* Not "snorkeling": the button is about a day arranged from the
-              house rather than one activity, and the whole-day excursion is
-              the nearest thing on the list to that. */}
-          <button
-            type="button"
-            onClick={() => ask("excursion", t.around.all)}
-            className={`${BTN_GHOST} shrink-0`}
-          >
-            {t.around.all}
-            <span aria-hidden="true">→</span>
-          </button>
-        </div>
-      </Section>
-
       {/*
        * The strait map is built and is not on the page.
        *
@@ -1946,6 +1894,78 @@ export function EddoSite({
         <p data-reveal className="mt-6 max-w-[760px] text-[13px] leading-[1.7] text-slate">
           {t.services.note}
         </p>
+      </Section>
+
+      {/* -------------------------------------------------------- journey */}
+      {/*
+       * How a guest gets here, after what we can arrange rather than before
+       * it. A reader who has just seen the boat, the bike and the dive trip
+       * is the reader who starts wondering how far away all this is; asked
+       * earlier, the same four steps read as an obstacle course.
+       */}
+      <Section id="perjalanan" className="pt-20 md:pt-24">
+        <div data-reveal className="flex flex-wrap items-end justify-between gap-4">
+          <div className="max-w-[640px]">
+            <Eyebrow>{t.journey.eyebrow}</Eyebrow>
+            <h2 className="mt-4 mb-0 text-[clamp(30px,4.6vw,48px)] leading-[1.05] font-bold tracking-[-.03em] text-eddo-ink">
+              {t.journey.title}
+            </h2>
+            <p className="mt-4 mb-0 text-[14.5px] leading-[1.7] text-slate">{t.journey.lead}</p>
+          </div>
+          <BoatArt className={`${ART_BOX} w-[240px] lg:w-[360px]`} />
+        </div>
+
+        {/* Numbered, because these happen in an order and two of them cannot
+            be swapped: nobody pays the park fee before the ferry lands. */}
+        <ol className="mt-9 grid list-none grid-cols-1 gap-4 p-0 sm:grid-cols-2 lg:grid-cols-4 md:gap-5">
+          {t.journey.steps.map((s, i) => (
+            <li
+              key={i}
+              data-reveal
+              style={step(i)}
+              className="flex flex-col rounded-[22px] border border-eddo-line bg-eddo-wash p-5"
+            >
+              <span className="font-mono text-[10.5px] tracking-[.1em] text-eddo-deep uppercase">
+                {s.tag}
+              </span>
+              <span
+                aria-hidden="true"
+                className="mt-3 font-mono text-[26px] leading-none font-bold text-eddo-line"
+              >
+                {i + 1}
+              </span>
+              <h3 className="mt-2 mb-0 text-[16px] leading-[1.25] font-bold text-eddo-ink">
+                {s.title}
+              </h3>
+              <p className="mt-2 mb-0 text-[13px] leading-[1.6] text-slate">{s.body}</p>
+            </li>
+          ))}
+        </ol>
+
+        {/* Capped rather than full width: the frame has to hold Sorong and
+            Mansuar, which are three quarters of a degree apart, so at the full
+            width of the page the drawing is over eight hundred pixels tall and
+            most of it is the crossing. */}
+        <div data-reveal className="mx-auto w-full max-w-[980px]">
+          <JourneyMap t={t} />
+        </div>
+
+        <div
+          data-reveal
+          className="mt-5 flex flex-col items-start gap-5 sm:flex-row sm:items-end sm:justify-between sm:gap-8"
+        >
+          <p className="m-0 max-w-[720px] text-[13px] leading-[1.6] text-slate">
+            {t.journey.note}
+          </p>
+          <button
+            type="button"
+            onClick={() => ask("transfer", t.journey.all)}
+            className={`${BTN_GHOST} shrink-0`}
+          >
+            {t.journey.all}
+            <span aria-hidden="true">→</span>
+          </button>
+        </div>
       </Section>
 
       {/* ------------------------------------------------------------ why */}

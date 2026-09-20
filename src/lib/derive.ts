@@ -227,6 +227,77 @@ export function monthStats(
   };
 }
 
+/**
+ * Dua angka sisanya dari dashboard ringkas PRD F6.1: booking baru dan piutang
+ * berjalan.
+ *
+ * Terpisah dari `monthStats` karena keduanya tidak terikat bulan yang sedang
+ * dilihat. Menggeser kalender ke Desember tidak mengubah berapa booking yang
+ * masuk minggu ini, dan tidak mengubah berapa yang belum dibayar hari ini.
+ *
+ * ## Null bukan nol, dan itu inti berkas ini
+ *
+ * Keduanya bisa memulangkan null, artinya **belum diketahui**. Itu bukan
+ * kehati-hatian berlebihan, melainkan satu-satunya jawaban yang benar:
+ *
+ * - Tidak ada satu pun booking yang membawa `createdAt` berarti tanggal
+ *   masuknya memang tidak pernah dicatat. Menjawab "0 booking baru" berarti
+ *   mengatakan tidak ada yang memesan minggu ini, dan itu pernyataan yang
+ *   berbeda.
+ * - Tidak ada satu pun pembayaran yang tercatat berarti piutangnya akan
+ *   terhitung **sebesar seluruh pendapatan**. Angka itu bukan cuma salah, ia
+ *   salah ke arah yang menakutkan, dan ia akan terlihat persis seperti angka
+ *   yang benar.
+ *
+ * Yang memanggil wajib menulis null sebagai "belum dicatat", bukan sebagai 0
+ * dan bukan sebagai Rp 0.
+ */
+export interface RingkasStats {
+  /** Booking yang masuk dalam `hari` terakhir. Null bila tidak pernah dicatat. */
+  bookingBaru: number | null;
+  /** Nilai menginap yang sudah berjalan dan belum dibayar. Null bila belum ada
+   *  satu pun pembayaran tercatat. */
+  piutang: number | null;
+}
+
+/** Berapa hari ke belakang yang dianggap "baru" di F6.1. */
+export const HARI_BARU = 7;
+
+export function ringkasStats(
+  visible: Booking[],
+  today: string,
+  hari: number = HARI_BARU,
+): RingkasStats {
+  /* Batas bawah inklusif: `hari` hari terakhir termasuk hari ini. */
+  const batas = iso(new Date(parse(today).getTime() - (hari - 1) * 86400000));
+
+  let adaTanggalMasuk = false;
+  let baru = 0;
+  let adaPembayaran = false;
+  let piutang = 0;
+
+  for (const b of visible) {
+    if (b.createdAt) {
+      adaTanggalMasuk = true;
+      if (b.createdAt >= batas && b.createdAt <= today) baru += 1;
+    }
+    if (b.paid !== undefined) adaPembayaran = true;
+
+    /* Piutang hanya dari menginap yang sudah dimulai. Booking bulan depan
+       memang belum dibayar, tapi belum jatuh tempo juga — memasukkannya
+       membuat angka ini naik tiap kali ada pesanan baru, yang membacanya
+       terbalik dari maksudnya. */
+    if (b.status === "Cancelled" || b.channel === "Blokir") continue;
+    if (b.checkIn > today) continue;
+    piutang += Math.max(0, b.total - (b.paid ?? 0));
+  }
+
+  return {
+    bookingBaru: adaTanggalMasuk ? baru : null,
+    piutang: adaPembayaran ? piutang : null,
+  };
+}
+
 /** Two bookings claiming the same room on the same nights. */
 export interface ConflictPair {
   roomId: string;

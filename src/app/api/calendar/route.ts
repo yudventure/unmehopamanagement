@@ -55,6 +55,23 @@ function tanggal(s: string | null): Date | null {
 /** DATE dari database kembali jadi `YYYY-MM-DD`, apa adanya. */
 const polos = (d: Date) => d.toISOString().slice(0, 10);
 
+/*
+ * `created_at` dikirim utuh sebagai timestamp, bukan dipotong jadi tanggal di
+ * sini, dan itu disengaja.
+ *
+ * `check_in` dan `check_out` DATE — satuan kalender, sama di mana pun ia
+ * dibaca, jadi `polos` benar untuk keduanya. `created_at` sebuah saat, dan
+ * saat yang sama jatuh pada tanggal yang berbeda tergantung zona. Dipotong di
+ * server, tanggalnya jadi menurut jam server; dibandingkan di layar dengan
+ * "hari ini" yang dihitung `iso()` dari jam browser, keduanya bisa berselisih
+ * sehari dan hitungan "booking baru" ikut meleset. Sudah terjadi waktu diuji:
+ * seluruh booking yang dibuat hari itu terhitung nol.
+ *
+ * Jadi pemotongannya diserahkan ke browser, lewat `iso()` yang sama yang
+ * dipakai seluruh layar ini untuk tanggal lainnya. Dua sisinya jadi sepakat
+ * karena konstruksinya, bukan karena kebetulan jam servernya cocok.
+ */
+
 export async function GET(req: Request) {
   const jar = await cookies();
   if (!valid(jar.get(SESSION_COOKIE)?.value)) {
@@ -95,7 +112,12 @@ export async function GET(req: Request) {
          datang akhir bulan lalu dan pulang tanggal 3 menempati tiga malam
          pertama bulan ini, dan barisnya harus ada di kisi. */
       where: { checkIn: { lt: to }, checkOut: { gt: from }, room: scope },
-      include: { guest: { select: { name: true, phone: true } } },
+      include: {
+        guest: { select: { name: true, phone: true } },
+        /* Hanya nominalnya. Siapa membayar, kapan, dan bukti transfernya tidak
+           dibutuhkan kalender, dan baris yang tidak dikirim tidak bisa bocor. */
+        payments: { select: { amount: true } },
+      },
       orderBy: [{ roomId: "asc" }, { checkIn: "asc" }],
     }),
   ]);
@@ -135,6 +157,14 @@ export async function GET(req: Request) {
       totalAmount: b.totalAmount === null ? null : Number(b.totalAmount),
       notes: b.notes,
       conflictGroup: b.conflictGroup,
+      createdAt: b.createdAt.toISOString(),
+      /* Null kalau belum ada satu pun pembayaran tercatat untuk booking ini,
+         dan itu berbeda dari nol. Yang menerima memakai bedanya untuk
+         memutuskan apakah piutang bisa dihitung sama sekali: tanpa satu pun
+         pembayaran, piutang akan terhitung sebesar seluruh pendapatan. */
+      paid: b.payments.length
+        ? b.payments.reduce((jml, p) => jml + Number(p.amount), 0)
+        : null,
     })),
   });
 }

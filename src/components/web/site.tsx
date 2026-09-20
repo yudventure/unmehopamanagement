@@ -16,6 +16,7 @@ import {
   JettyScene,
   SnorkelScene,
 } from "@/components/web/scenes";
+import { DiveVideo } from "@/components/web/dive-video";
 import { FeedbackForm } from "@/components/web/feedback-form";
 import {
   FacebookIcon,
@@ -42,8 +43,6 @@ import {
   COPY,
   DEFAULT_LANG,
   DIVE_FEATURED,
-  DIVE_KEYS,
-  BOAT_ROWS,
   DIVE_PER,
   EMAIL,
   EXTRA_BED,
@@ -53,13 +52,15 @@ import {
   ROOM_SLEEPS,
   WHATSAPP,
   type ActivityKey,
+  type DiveCard as DiveCardData,
   type DiveKey,
+  type Lang,
   type SiteCopy,
   type ExtraBedKey,
   type RoomKey,
   PRICE_GROUPS,
-  PRICE_ROWS,
   PRICE_SHOWN,
+  diveCards,
   divePrice,
   money,
   monthOptions,
@@ -244,131 +245,170 @@ function Frame({
 const FILL = "absolute inset-0 h-full w-full";
 
 /**
- * The clip above the booking bar, when there is one.
+ * One thing the dive centre sells, as a card.
  *
- * Its own component because of the one thing that is not obvious here: the
- * element is server-rendered, so the browser starts fetching the file and
- * gives up on it **before React has hydrated**. An `onError` prop is attached
- * after that has already happened and never fires, which left an empty player
- * on a site with no video in it — the exact failure this was written to avoid.
- * So the error is read off the element on mount, and listened for as well in
- * case the fetch is still running.
+ * The section used to be six cards and then a table of fifteen lines, and the
+ * split was arbitrary from the guest's side: the manta trip and the wreck are
+ * the dives people come here for, and both were table rows under six cards
+ * chosen before anybody asked. So every row of the family's list is a card
+ * now, and this draws all of them.
+ *
+ * They are not all equally furnished, and that is the honest part. The six
+ * packages carry a duration, a level and a list of what is included, written
+ * and checked in seven languages. The rest carry the sentence the family's own
+ * price list carries, which is a real description of a real dive — "two fun
+ * dives at the manta cleaning station and Arborek" — and nothing invented to
+ * make the card look as full as its neighbour.
+ *
+ * There is no "Details" link. There were six pages behind one, they are still
+ * there at `/turtle/dive/<key>`, and none of the other fifteen has one; a link
+ * on a quarter of the cards reads as though those four are the real ones.
  */
-function DiveVideo({ label }: { label: string }) {
-  const ref = useRef<HTMLVideoElement>(null);
-  const [broken, setBroken] = useState(false);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const check = () => {
-      if (el.error) setBroken(true);
-    };
-    /* Already failed while the page was still HTML. */
-    check();
-    el.addEventListener("error", check);
-    return () => el.removeEventListener("error", check);
-  }, []);
-
-  if (!DIVE_VIDEO || broken) return null;
-
-  return (
-    <div
-      data-reveal
-      className="mt-10 overflow-hidden rounded-[22px] border border-white/12 bg-black/40"
-    >
-      <video
-        ref={ref}
-        src={DIVE_VIDEO}
-        poster={DIVE_POSTER || undefined}
-        controls
-        playsInline
-        /* Metadata, not the whole clip and not nothing: `none` leaves a
-           150-pixel black bar until somebody presses play, because the
-           browser does not yet know the shape of the thing. This is a few
-           tens of kilobytes, and it buys the real dimensions and the first
-           frame — a still of the diving with a play button on it, which is
-           what a band like this should look like before it is pressed. */
-        preload="metadata"
-        aria-label={label}
-        /* Capped, and letterboxed rather than cropped. A 16:9 clip at this
-           width is six hundred pixels tall, which pushes the booking bar off
-           the screen on a laptop; a tall clip would be worse. `object-contain`
-           means the cap never cuts anyone out of frame — it puts water at the
-           sides instead. */
-        className="block h-auto max-h-[460px] w-full bg-black/40 object-contain"
-      />
-    </div>
-  );
-}
-
-/** One line of the price list, as a card. */
-interface PriceItem {
-  key: string;
-  label: string;
-  /** "minimum 3 divers", for the rows the boat will not go out under. */
-  min: string | null;
-  /** Zero where the owner has not filled the figure in. */
-  rupiah: number;
-  unit: string;
-}
-
-/**
- * One thing the dive centre sells, priced.
- *
- * A card rather than a row in a table, because the labels are sentences —
- * "two fun dives at the manta cleaning station and Arborek, Manta Ridge or
- * Manta Sandy" — and a table of fifteen sentences with a figure at the far
- * right is a column of text and a column of numbers that the eye has to pair
- * up by height. Here the figure sits under the words it belongs to.
- *
- * The price is not the `Price` component: that one stacks rupiah over its
- * conversion and holds a line open for a conversion that may never load,
- * which is right for a card somebody is buying from and too tall for fifteen
- * of these. The three parts sit on one line, and the conversion is simply not
- * there when there is nothing honest to put in it.
- */
-function PriceCard({
-  item,
-  ask,
+function DiveCard({
+  card,
+  featured,
+  reveal,
+  ix,
+  t,
   lang,
   currency,
   rates,
+  canBuy,
+  onBook,
 }: {
-  item: PriceItem;
-  ask: string;
-  lang: string;
+  card: DiveCardData;
+  featured: boolean;
+  /** Marked for the reveal animation, which only the first six can be. */
+  reveal: boolean;
+  ix: number;
+  t: SiteCopy;
+  lang: Lang;
   currency: CurrencyCode;
   rates: Rates | null;
+  canBuy: boolean;
+  onBook: () => void;
 }) {
-  const approx = item.rupiah > 0 ? convert(item.rupiah, currency, rates) : null;
   return (
-    <li className="flex h-full flex-col rounded-[18px] border border-white/12 bg-white/[.05] px-5 py-[17px]">
-      <span className="text-[13.5px] leading-[1.45] text-white/85">
-        {item.label}
-      </span>
-      {item.min ? (
-        <span className="mt-[7px] text-[11.5px] text-white/45">{item.min}</span>
+    <article
+      {...(reveal ? { "data-reveal": "", style: step(ix) } : {})}
+      /* The plain cards are dark glass rather than the white tint they were.
+         A tint that pale over a photograph is barely a card at all: whatever
+         the manta happens to be doing behind it decides whether the text can
+         be read. Tinting dark and blurring makes each card carry its own
+         backdrop, which is also what lets the scrim stay light enough to see
+         the photograph through. */
+      /* The featured card carries a transparent border rather than none.
+         Without it its content box starts 1px higher than its neighbours',
+         and that 1px is visible once the footers are pinned and the prices
+         are meant to sit on one line. */
+      className={`flex flex-col rounded-[20px] border px-6 py-6 ${
+        featured
+          ? "border-transparent bg-amber text-amber-deep"
+          : "border-white/10 bg-[#06141a]/62 text-white backdrop-blur-md"
+      }`}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <h5 className="m-0 text-[17px] leading-[1.25] font-bold">
+          {card.name}
+        </h5>
+        {card.badge ? (
+          <span
+            className={`shrink-0 rounded-full px-[10px] py-[4px] text-[11px] whitespace-nowrap ${
+              featured ? "bg-amber-deep/12" : "bg-white/12"
+            }`}
+          >
+            {card.badge}
+          </span>
+        ) : null}
+      </div>
+
+      {card.blurb ? (
+        <p
+          className={`mt-[10px] text-[13.5px] leading-[1.6] ${
+            featured ? "text-amber-deep/80" : "text-white/65"
+          }`}
+        >
+          {card.blurb}
+        </p>
       ) : null}
-      {/* Pushed to the bottom, so every price in a row sits on one line
-          whatever the label above it does. */}
-      <span className="mt-auto flex flex-wrap items-baseline gap-x-[8px] pt-4">
-        {item.rupiah > 0 ? (
-          <>
-            <span className="text-[17px] font-bold text-white">
-              {money(item.rupiah, lang)}
-            </span>
-            <span className="text-[11.5px] text-white/45">{item.unit}</span>
-            {approx ? (
-              <span className="text-[11.5px] text-white/40">≈ {approx}</span>
-            ) : null}
-          </>
+
+      {card.includes.length > 0 && (
+        <ul className="mt-4 mb-0 flex list-none flex-wrap gap-[6px] p-0">
+          {card.includes.map((inc) => (
+            <li
+              key={inc}
+              className={`rounded-full px-[10px] py-[4px] text-[11.5px] ${
+                featured ? "bg-amber-deep/10" : "bg-white/10 text-white/75"
+              }`}
+            >
+              {inc}
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {/* mt-auto is what lines the prices up. The cards already stretch to the
+          tallest in their row, but a blurb that runs to two lines instead of
+          three used to leave the footer floating halfway up. Pushed to the
+          bottom instead, every price and every button sits on the same line
+          across the row, whatever the text above them does. */}
+      <div
+        className={`mt-auto border-t pt-4 ${
+          featured ? "border-amber-deep/15" : "border-white/12"
+        }`}
+      >
+        {/* A row the owner has not priced asks instead of showing Rp 0. The
+            family's own list leaves the course and the snorkelling trip
+            unpriced and has one line that came through unreadable, and a zero
+            on a card reads as free rather than as unknown. */}
+        {card.rupiah > 0 ? (
+          <Price
+            rupiah={card.rupiah}
+            lang={lang}
+            currency={currency}
+            rates={rates}
+            tone={featured ? "amber" : "light"}
+          />
         ) : (
-          /* Not priced is not free: the card asks instead of quoting. */
-          <span className="text-[14px] font-medium text-white/70">{ask}</span>
+          <div
+            className={`text-[20px] font-bold ${
+              featured ? "text-amber-deep" : "text-white"
+            }`}
+          >
+            {t.dive.askPrice}
+          </div>
         )}
-      </span>
-    </li>
+        <div
+          className={`text-[11.5px] ${
+            /* 70% of amber-deep on amber measured 3.6:1, under the 4.5 this
+               11.5px line needs. Predates the photograph; caught while
+               checking the section. */
+            featured ? "text-amber-deep/90" : "text-white/55"
+          }`}
+        >
+          {card.unit}
+          {card.level ? ` · ${card.level}` : ""}
+        </div>
+
+        {/* A row the dive centre does not sell through this site is not for
+            sale here, and the card says "ask us" by simply not offering this.
+            The same refusal is in `priceTurtle`, where it is the one that
+            counts. */}
+        {canBuy && (
+          <button
+            type="button"
+            onClick={onBook}
+            className={`mt-4 w-full cursor-pointer rounded-full border-none px-[16px] py-[10px] text-[13.5px] font-medium transition-colors ${
+              featured
+                ? "bg-amber-deep text-amber hover:bg-amber-ink"
+                : "bg-white text-ink hover:bg-surface-hover"
+            }`}
+          >
+            {t.booking.cta}
+          </button>
+        )}
+      </div>
+    </article>
   );
 }
 
@@ -377,54 +417,73 @@ function PriceCard({
  *
  * The hidden cards are not rendered at all rather than hidden with CSS, so a
  * reader on a phone is not paying to download prices they have not asked for,
- * and a screen reader is not reading out a list that is not on screen. They
- * arrive without the section's reveal animation: a thing that appears because
- * you pressed a button should be there when you look, not fade in afterwards.
+ * and a screen reader is not reading out a list that is not on screen.
+ *
+ * They also arrive unmarked. `useReveal` collects `[data-reveal]` once, on
+ * mount, so a card created by pressing a button is never observed — marked, it
+ * would stay at the hidden end of that animation for good. Unmarked it is
+ * simply there, which is what a thing that appears because you pressed a
+ * button should be.
  */
-function PriceGroup({
+function DiveGroup({
   title,
   note,
-  items,
+  cards,
   t,
   lang,
   currency,
   rates,
+  payable,
+  onBook,
 }: {
   title: string;
   note?: string;
-  items: PriceItem[];
+  cards: DiveCardData[];
   t: SiteCopy;
-  lang: string;
+  lang: Lang;
   currency: CurrencyCode;
   rates: Rates | null;
+  payable: boolean;
+  onBook: (pack: DiveKey) => void;
 }) {
   const [open, setOpen] = useState(false);
-  const hidden = Math.max(0, items.length - PRICE_SHOWN);
-  const shown = open ? items : items.slice(0, PRICE_SHOWN);
+  const hidden = Math.max(0, cards.length - PRICE_SHOWN);
+  const shown = open ? cards : cards.slice(0, PRICE_SHOWN);
 
   return (
-    <section className="mt-8 first:mt-7">
-      <h4 className="m-0 text-[14.5px] font-bold tracking-[-.01em] text-white">
+    <section className="mt-10 first:mt-8">
+      <h4
+        data-reveal
+        className="m-0 text-[15px] font-bold tracking-[-.01em] text-white"
+      >
         {title}
       </h4>
       {note ? (
-        <p className="mt-1 mb-0 max-w-[560px] text-[12.5px] leading-[1.55] text-white/50">
+        <p
+          data-reveal
+          className="mt-[6px] mb-0 max-w-[620px] text-[12.5px] leading-[1.55] text-white/50"
+        >
           {note}
         </p>
       ) : null}
 
-      <ul className="mt-4 mb-0 grid list-none grid-cols-1 gap-[14px] p-0 sm:grid-cols-2 lg:grid-cols-3">
-        {shown.map((item) => (
-          <PriceCard
-            key={item.key}
-            item={item}
-            ask={t.dive.askPrice}
+      <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {shown.map((card, i) => (
+          <DiveCard
+            key={card.key}
+            card={card}
+            featured={card.key === DIVE_FEATURED}
+            reveal={i < PRICE_SHOWN}
+            ix={i}
+            t={t}
             lang={lang}
             currency={currency}
             rates={rates}
+            canBuy={payable && card.pack !== null && card.rupiah > 0}
+            onBook={() => card.pack && onBook(card.pack)}
           />
         ))}
-      </ul>
+      </div>
 
       {hidden > 0 && (
         <button
@@ -439,7 +498,6 @@ function PriceGroup({
     </section>
   );
 }
-
 
 /**
  * A photograph over the drawn scene inside a `Frame`. Lazy, because these sit
@@ -541,12 +599,21 @@ export function TurtleSite({ payable = false }: { payable?: boolean }) {
      turn the dials here and never press the button, and the dialog should not
      have quietly changed underneath them if they later press Book on a card
      instead. Pressing the bar's button is what copies them across. */
-  const [divePack, setDivePack] = useState<DiveKey>(DIVE_FEATURED);
+  /* A key from the whole list rather than one of the six packages: the bar
+     sits directly above the cards, and a bar that can only ask about six of
+     the twenty-one is a bar that cannot ask about the manta trip. Asking is
+     free — the enquiry is a message, and nothing here takes money. */
+  const [divePack, setDivePack] = useState<string>(DIVE_FEATURED);
   const [diveMonthIx, setDiveMonthIx] = useState(0);
   const [diveDivers, setDiveDivers] = useState("2");
 
+  /* Every row, joined to its words once for the bar, the cards and the
+     message the bar sends. */
+  const cards = diveCards(t);
+
   const askDive = () => {
-    const name = t.dive.packages[divePack].name;
+    const picked = cards.find((c) => c.key === divePack);
+    const name = picked?.name ?? divePack;
     patchEnquiry({
       activity: divePack === "snorkel" ? "snorkeling" : "diving",
       monthIx: diveMonthIx,
@@ -1159,7 +1226,7 @@ export function TurtleSite({ payable = false }: { payable?: boolean }) {
             </div>
           </div>
 
-          <DiveVideo label={t.dive.videoLabel} />
+          <DiveVideo label={t.dive.videoLabel} play={t.dive.videoPlay} />
 
           {/* The booking bar the hero used to carry, rebuilt for diving.
               It belongs here and not up there: the hero's version asked the
@@ -1178,13 +1245,24 @@ export function TurtleSite({ payable = false }: { payable?: boolean }) {
               </span>
               <select
                 value={divePack}
-                onChange={(e) => setDivePack(e.target.value as DiveKey)}
+                onChange={(e) => setDivePack(e.target.value)}
                 className="cursor-pointer border-none bg-transparent p-0 text-[14.5px] font-medium text-ink outline-none"
               >
-                {DIVE_KEYS.map((k) => (
-                  <option key={k} value={k}>
-                    {t.dive.packages[k].name}
-                  </option>
+                {/* Grouped the way the cards below are grouped, because a
+                    flat list of twenty-one is a list nobody reads to the
+                    bottom of. `optgroup` is the browser's own control for
+                    this: it scrolls, it searches and it reads out correctly
+                    on a phone, all of which a rebuilt dropdown loses. */}
+                {PRICE_GROUPS.map((group) => (
+                  <optgroup key={group} label={t.dive.list.groups[group]}>
+                    {cards
+                      .filter((c) => c.group === group)
+                      .map((c) => (
+                        <option key={c.key} value={c.key}>
+                          {c.name}
+                        </option>
+                      ))}
+                  </optgroup>
                 ))}
               </select>
             </label>
@@ -1237,171 +1315,16 @@ export function TurtleSite({ payable = false }: { payable?: boolean }) {
             </div>
           </div>
 
-          <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {DIVE_KEYS.map((key, i) => {
-              const p = t.dive.packages[key];
-              const featured = key === DIVE_FEATURED;
-              const canBuy = payable && divePrice(key) > 0;
-              return (
-              <article
-                key={key}
-                data-reveal
-                style={step(i)}
-                /* The plain cards are dark glass rather than the white tint
-                   they were. A tint that pale over a photograph is barely a
-                   card at all: whatever the manta happens to be doing behind
-                   it decides whether the text can be read. Tinting dark and
-                   blurring makes each card carry its own backdrop, which is
-                   also what lets the scrim stay light enough to see the
-                   photograph through. */
-                /* The featured card carries a transparent border rather than
-                   none. Without it its content box starts 1px higher than its
-                   neighbours', and that 1px is visible once the footers are
-                   pinned and the prices are meant to sit on one line. */
-                className={`flex flex-col rounded-[20px] border px-6 py-6 ${
-                  featured
-                    ? "border-transparent bg-amber text-amber-deep"
-                    : "border-white/10 bg-[#06141a]/62 text-white backdrop-blur-md"
-                }`}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <h3 className="m-0 text-[17px] leading-[1.25] font-bold">
-                    {p.name}
-                  </h3>
-                  <span
-                    className={`shrink-0 rounded-full px-[10px] py-[4px] text-[11px] whitespace-nowrap ${
-                      featured ? "bg-amber-deep/12" : "bg-white/12"
-                    }`}
-                  >
-                    {p.duration}
-                  </span>
-                </div>
+          {/* The family's whole list, as cards.
 
-                <p
-                  className={`mt-[10px] text-[13.5px] leading-[1.6] ${
-                    featured ? "text-amber-deep/80" : "text-white/65"
-                  }`}
-                >
-                  {p.blurb}
-                </p>
-
-                <ul className="mt-4 mb-0 flex list-none flex-wrap gap-[6px] p-0">
-                  {p.includes.map((inc: string) => (
-                    <li
-                      key={inc}
-                      className={`rounded-full px-[10px] py-[4px] text-[11.5px] ${
-                        featured
-                          ? "bg-amber-deep/10"
-                          : "bg-white/10 text-white/75"
-                      }`}
-                    >
-                      {inc}
-                    </li>
-                  ))}
-                </ul>
-
-                {/* mt-auto is what lines the prices up. The cards already
-                    stretch to the tallest in their row, but a blurb that runs
-                    to two lines instead of three used to leave the footer
-                    floating halfway up. Pushed to the bottom instead, every
-                    price and every button sits on the same line across the
-                    row, whatever the text above them does. */}
-                <div
-                  className={`mt-auto border-t pt-4 ${
-                    featured ? "border-amber-deep/15" : "border-white/12"
-                  }`}
-                >
-                <div className="flex items-end justify-between gap-3">
-                  <div>
-                    {/* A package the owner has not priced asks instead of
-                        showing Rp 0. The family's own list prices neither the
-                        course nor the snorkelling trip, and a zero on a card
-                        reads as free rather than as unknown. */}
-                    {divePrice(key) > 0 ? (
-                      <Price
-                        rupiah={divePrice(key)}
-                        lang={lang}
-                        currency={currency}
-                        rates={rates}
-                        tone={featured ? "amber" : "light"}
-                      />
-                    ) : (
-                      <div
-                        className={`text-[20px] font-bold ${
-                          featured ? "text-amber-deep" : "text-white"
-                        }`}
-                      >
-                        {t.dive.askPrice}
-                      </div>
-                    )}
-                    <div
-                      className={`text-[11.5px] ${
-                        /* 70% of amber-deep on amber measured 3.6:1, under
-                           the 4.5 this 11.5px line needs. Predates the
-                           photograph; caught while checking the section. */
-                        featured ? "text-amber-deep/90" : "text-white/55"
-                      }`}
-                    >
-                      {p.unit} · {p.level}
-                    </div>
-                  </div>
-                  {/* A link, not a button: it goes to a page, so it should
-                      middle-click, open in a tab, and be crawlable like one.
-
-                      Solid while it is the only thing to press, and plain text
-                      once the card can be booked: two solid pills on one card
-                      is two primary actions, and the one that takes money
-                      should not have to share the emphasis with the one that
-                      reads more about it. */}
-                  <Link
-                    href={`/turtle/dive/${key}`}
-                    className={`shrink-0 text-[13px] font-medium no-underline hover:no-underline ${
-                      canBuy
-                        ? featured
-                          ? "text-amber-deep/85 hover:text-amber-deep"
-                          : "text-white/75 hover:text-white"
-                        : featured
-                          ? "rounded-full bg-amber-deep px-[16px] py-[9px] text-amber"
-                          : "rounded-full bg-white px-[16px] py-[9px] text-ink hover:bg-surface-hover"
-                    }`}
-                  >
-                    {t.dive.details}
-                  </Link>
-                </div>
-                {/* A package the owner has not priced is not for sale, and the
-                    card says "ask us" by simply not offering this. The same
-                    refusal is in `priceTurtle`, where it is the one that
-                    counts. */}
-                {canBuy && (
-                  <button
-                    type="button"
-                    onClick={() => setBooking({ kind: "dive", pack: key })}
-                    className={`mt-4 w-full cursor-pointer rounded-full border-none px-[16px] py-[10px] text-[13.5px] font-medium transition-colors ${
-                      featured
-                        ? "bg-amber-deep text-amber hover:bg-amber-ink"
-                        : "bg-white text-ink hover:bg-surface-hover"
-                    }`}
-                  >
-                    {t.booking.cta}
-                  </button>
-                )}
-                </div>
-              </article>
-              );
-            })}
-          </div>
-
-          {/* The rest of the list.
-              
-              Six cards are what somebody chooses between before they have
-              talked to anybody; the family sells fifteen things, and the
-              other nine — the manta station, the wreck, the night dives, a
-              tank for the house reef — were nowhere on this site. A card
-              each would be a wall of photographs, so the rest is a table,
-              which is also the shape the family already keeps it in. */}
+              There used to be six cards here and a table of fifteen lines
+              under them, which asked a guest to compare a card against a table
+              row and asked us to keep four shared keys quoting the same
+              figure by hand. One list, grouped the way the family groups it,
+              six cards at a time. */}
           <div
             data-reveal
-            className="mt-12 rounded-[24px] border border-white/12 bg-white/[.04] px-6 py-7 md:px-8 md:py-8"
+            className="mt-12 rounded-[24px] border border-white/12 bg-white/[.04] px-5 py-7 md:px-8 md:py-8"
           >
             <h3 className="m-0 text-[20px] leading-[1.15] font-bold tracking-[-.02em] text-white">
               {t.dive.list.heading}
@@ -1410,31 +1333,25 @@ export function TurtleSite({ payable = false }: { payable?: boolean }) {
               {t.dive.list.intro}
             </p>
 
-            {/* A group per kind of sale, six cards at a time. The family
-                sells fifteen things and four boats; all nineteen at once is a
-                wall, and the order inside each group is the order on their
-                own list rather than one chosen to sell. */}
             {PRICE_GROUPS.map((group) => (
-              <PriceGroup
+              <DiveGroup
                 key={group}
                 title={t.dive.list.groups[group]}
-                items={PRICE_ROWS.filter((row) => row.group === group).map(
-                  (row) => ({
-                    key: row.key,
-                    label: t.dive.list.rows[row.key],
-                    min: row.min ? t.dive.list.min(row.min) : null,
-                    rupiah: divePrice(row.key),
-                    unit: t.dive.list.per[row.per],
-                  }),
-                )}
+                /* The boats are the one group that needs a line under its
+                   heading: they are chartered whole, so their figure is not
+                   a price per person like every other figure above it. */
+                note={group === "boat" ? t.dive.list.boatNote : undefined}
+                cards={cards.filter((c) => c.group === group)}
                 t={t}
                 lang={lang}
                 currency={currency}
                 rates={rates}
+                payable={payable}
+                onBook={(pack) => setBooking({ kind: "dive", pack })}
               />
             ))}
 
-            <ul className="mt-5 mb-0 flex list-none flex-col gap-[7px] p-0">
+            <ul className="mt-8 mb-0 flex list-none flex-col gap-[7px] p-0">
               {t.dive.list.notes.map((note) => (
                 <li
                   key={note}
@@ -1449,30 +1366,11 @@ export function TurtleSite({ payable = false }: { payable?: boolean }) {
               ))}
             </ul>
 
-            {/* The boats are their own group because they are their own kind
-                of sale: chartered whole, and separate from the diving. */}
-            <PriceGroup
-              title={t.dive.list.boatHeading}
-              note={t.dive.list.boatNote}
-              items={BOAT_ROWS.map((key) => ({
-                key,
-                label: t.dive.list.boats[key],
-                min: null,
-                rupiah: divePrice(key),
-                unit: t.dive.list.per.boat,
-              }))}
-              t={t}
-              lang={lang}
-              currency={currency}
-              rates={rates}
-            />
-
             {/* How a dive is actually reserved, which is not this website:
                 the plan for tomorrow is made after dinner, and the office
                 number is the one on the family's own price list. */}
             <p className="mt-7 mb-0 border-t border-white/10 pt-5 text-[12.5px] leading-[1.65] text-white/60">
-              {t.dive.list.plan}{" "}
-              {t.dive.list.reserve}{" "}
+              {t.dive.list.plan} {t.dive.list.reserve}{" "}
               <a
                 href={waLink(t.dive.list.heading)}
                 target="_blank"

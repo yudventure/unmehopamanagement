@@ -47,20 +47,26 @@ sekitar 3 MB untuk satu halaman. Dimuat malas (`loading="lazy"`) jadi tidak
 menahan tampilan pertama, tapi di sinyal pulau tetap terasa. Simpan ulang di
 lebar 1080px dengan kualitas 80 biasanya turun ke 150–250 KB per foto.
 
-## `dive.mp4` — klip di atas bar pemesanan selam
+## Klip di atas bar pemesanan selam
 
 Slot video di bagian Selam, tepat di atas bar "cek ketersediaan". **Belum ada
-berkasnya**, dan selama belum ada bandnya memang tidak digambar sama sekali —
+isinya**, dan selama belum ada bandnya memang tidak digambar sama sekali —
 bukan kotak hitam, bukan ikon rusak.
 
-| Berkas | Wajib? | Catatan |
-|---|---|---|
-| `dive.mp4` | untuk memunculkan bandnya | H.264 + AAC, mendatar. Web-nya membaca metadata saja sampai ditekan, jadi ukuran berkas tidak menahan halaman — tapi tetap simpan di bawah 20 MB kalau bisa |
-| `dive-poster.jpg` | opsional | gambar diam sebelum diputar. Tanpa ini yang tampil frame pertama klipnya |
+**Diisi dari dashboard**, bukan dari sini: Website → Turtle Dive → *Video di
+halaman selam*. Kotaknya menerima dua macam isian, dan di bawahnya ada
+pratinjau yang menggambar persis seperti yang akan dilihat tamu.
 
-Mau menaruhnya di tempat lain (CDN, Cloudflare Stream)? Isi
-`NEXT_PUBLIC_DIVE_VIDEO` dan `NEXT_PUBLIC_DIVE_POSTER` dengan URL-nya; nilai
-kosong berarti bandnya mati.
+| Isian | Contoh | Catatan |
+|---|---|---|
+| Tautan YouTube | `https://youtu.be/xxxxxxxxxxx` | juga menerima `youtube.com/watch?v=…`, `/shorts/…`, `/embed/…`. Yang dimuat cuma gambar sampulnya; video dan skrip YouTube-nya baru dimuat setelah tamu menekan putar, lewat `youtube-nocookie.com` |
+| Berkas di `public/` | `/dive.mp4` | H.264 + AAC, mendatar. Web-nya membaca metadata saja sampai ditekan, jadi ukuran berkas tidak menahan halaman — tapi tetap simpan di bawah 20 MB kalau bisa |
+
+Berkas yang dituju tidak ada? Bandnya hilang sendiri, bukan jadi pemutar
+kosong. `dive-poster.jpg` di `public/` masih dipakai sebagai gambar diam untuk
+isian berkas; tanpa itu yang tampil frame pertama klipnya. Mau menaruhnya di
+CDN dan tidak lewat dashboard? `NEXT_PUBLIC_DIVE_VIDEO` dan
+`NEXT_PUBLIC_DIVE_POSTER` masih dibaca, tapi isian di dashboard menang.
 
 **Tidak diputar otomatis, dan itu keputusan.** Gambar bergerak selebar halaman
 yang datang tanpa diminta persis yang diminta berhenti oleh aturan gerak di

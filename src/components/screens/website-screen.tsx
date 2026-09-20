@@ -2,14 +2,9 @@
 
 import { useEffect, useMemo, useState } from "react";
 
+import { DiveVideo, DiveVideoSlot } from "@/components/web/dive-video";
 import { fmt } from "@/lib/format";
-import {
-  BOAT_ROWS,
-  DIVE_KEYS,
-  COPY,
-  DEFAULT_LANG,
-  PRICE_ROWS,
-} from "@/lib/web-content";
+import { COPY, DEFAULT_LANG, PRICE_GROUPS, diveCards } from "@/lib/web-content";
 import type { SiteConfig } from "@/lib/site-config";
 import type { PublicSite } from "@/lib/site-domains";
 
@@ -207,7 +202,7 @@ const LABEL_OF: Record<TabKey, string> = {
    owns the two settings that belong to the dive centre rather than to a site. */
 const OWNS: Record<TabKey, (c: SiteConfig) => unknown> = {
   eddo: (c) => c.sites?.eddo,
-  turtle: (c) => [c.sites?.turtle, c.founded, c.divePrices],
+  turtle: (c) => [c.sites?.turtle, c.founded, c.divePrices, c.diveVideo],
 };
 
 /* The two public sites, named here so every tab that lists them lists them
@@ -385,6 +380,9 @@ export function WebsiteScreen({ editor }: WebsiteScreenProps) {
   };
 
   const copy = COPY[DEFAULT_LANG];
+  /* The same join the website uses, so a field here is labelled with the
+     heading of the card it changes rather than with a key. */
+  const cards = diveCards(copy);
   const card = "rounded-[20px] border border-line-soft bg-surface px-5 py-[18px]";
 
   return (
@@ -626,111 +624,113 @@ export function WebsiteScreen({ editor }: WebsiteScreenProps) {
             <div className="mb-1 text-[15px] font-bold">Harga selam</div>
             <Explain>
               Nama dan keterangan tiap baris ada di kode; yang bisa diubah di
-              sini angkanya. Enam yang pertama adalah kartu paket di halaman
-              selam, sisanya daftar harga di bawahnya, dan semuanya membaca
-              berkas yang sama. Angka nol berarti &quot;tanya harga&quot; di
-              situs, bukan gratis. Harga bungalow tidak ada di halaman ini
-              karena diambil langsung dari Properti &amp; Kamar, supaya
-              website dan dashboard tidak pernah berbeda.
+              sini angkanya. Tiap baris di sini adalah satu kartu di halaman
+              selam, dengan urutan dan kelompok yang sama persis. Angka nol
+              berarti &quot;tanya harga&quot; di situs, bukan gratis — jadi
+              baris yang belum ada harganya jangan diisi nol pura-pura.
+              Harga bungalow tidak ada di halaman ini karena diambil langsung
+              dari Properti &amp; Kamar, supaya website dan dashboard tidak
+              pernah berbeda.
             </Explain>
-            <div className="mb-1 text-[14px] font-bold">Kartu paket</div>
-            <div className="grid grid-cols-1 gap-[14px] sm:grid-cols-2 lg:grid-cols-3">
-              {DIVE_KEYS.map((key) => (
-                <label key={key} className={LABEL}>
-                  {copy.dive.packages[key].name}
-                  <span className="flex items-center gap-[7px]">
-                    <span className="text-[12px] text-slate-mute">Rp</span>
-                    <input
-                      value={grouped(config.divePrices[key] ?? 0)}
-                      onChange={(e) =>
-                        patch({
-                          divePrices: {
-                            ...config.divePrices,
-                            [key]: Number(digits(e.target.value)) || 0,
-                          },
-                        })
-                      }
-                      inputMode="numeric"
-                      className={`${FIELD} text-right font-mono`}
-                    />
-                  </span>
-                  <span className="text-[11.5px] text-slate-mute">
-                    {copy.dive.packages[key].unit}
-                  </span>
-                </label>
-              ))}
-            </div>
-            {/* The rest of the 2025 list, which is where most of the
-                figures live: the six above are the cards, these fifteen are
-                the table under them, and both read the same file. A field
-                left at nol is not free — the page asks instead of quoting,
-                which is what carries the one line on the family's own list
-                that came through unreadable. */}
-            <div className="mt-6 mb-1 text-[14px] font-bold">
-              Daftar harga selam selengkapnya
-            </div>
-            <div className="grid grid-cols-1 gap-[14px] sm:grid-cols-2 lg:grid-cols-3">
-              {PRICE_ROWS.filter((r) => !DIVE_KEYS.includes(r.key as never)).map(
-                (row) => (
-                  <label key={row.key} className={LABEL}>
-                    {copy.dive.list.rows[row.key]}
-                    <span className="flex items-center gap-[7px]">
-                      <span className="text-[12px] text-slate-mute">Rp</span>
-                      <input
-                        value={grouped(config.divePrices[row.key] ?? 0)}
-                        onChange={(e) =>
-                          patch({
-                            divePrices: {
-                              ...config.divePrices,
-                              [row.key]: Number(digits(e.target.value)) || 0,
-                            },
-                          })
-                        }
-                        inputMode="numeric"
-                        className={`${FIELD} text-right font-mono`}
-                      />
-                    </span>
-                    <span className="text-[11.5px] text-slate-mute">
-                      {copy.dive.list.per[row.per]}
-                    </span>
-                  </label>
-                ),
-              )}
-            </div>
+            {/* Grouped exactly as the website groups them, from the same
+                list: every row of the family's 2025 price list is a card on
+                the dive page now, so a field here is a card there, in the
+                same order, under the same heading. A field left at nol is
+                not free — the page asks instead of quoting, which is what
+                carries the one line on the family's own list that came
+                through unreadable. */}
+            {PRICE_GROUPS.map((group) => (
+              <div key={group} className="mt-5 first:mt-2">
+                <div className="mb-[10px] text-[14px] font-bold">
+                  {copy.dive.list.groups[group]}
+                </div>
+                <div className="grid grid-cols-1 gap-[14px] sm:grid-cols-2 lg:grid-cols-3">
+                  {cards
+                    .filter((c) => c.group === group)
+                    .map((c) => (
+                      <label key={c.key} className={LABEL}>
+                        {c.name}
+                        <span className="flex items-center gap-[7px]">
+                          <span className="text-[12px] text-slate-mute">
+                            Rp
+                          </span>
+                          <input
+                            value={grouped(config.divePrices[c.key] ?? 0)}
+                            onChange={(e) =>
+                              patch({
+                                divePrices: {
+                                  ...config.divePrices,
+                                  [c.key]: Number(digits(e.target.value)) || 0,
+                                },
+                              })
+                            }
+                            inputMode="numeric"
+                            className={`${FIELD} text-right font-mono`}
+                          />
+                        </span>
+                        <span className="text-[11.5px] text-slate-mute">
+                          {c.unit}
+                        </span>
+                      </label>
+                    ))}
+                </div>
+              </div>
+            ))}
 
-            <div className="mt-6 mb-1 text-[14px] font-bold">
-              Perahu untuk trip excursion
-            </div>
-            <div className="grid grid-cols-1 gap-[14px] sm:grid-cols-2">
-              {BOAT_ROWS.map((key) => (
-                <label key={key} className={LABEL}>
-                  {copy.dive.list.boats[key]}
-                  <span className="flex items-center gap-[7px]">
-                    <span className="text-[12px] text-slate-mute">Rp</span>
-                    <input
-                      value={grouped(config.divePrices[key] ?? 0)}
-                      onChange={(e) =>
-                        patch({
-                          divePrices: {
-                            ...config.divePrices,
-                            [key]: Number(digits(e.target.value)) || 0,
-                          },
-                        })
-                      }
-                      inputMode="numeric"
-                      className={`${FIELD} text-right font-mono`}
-                    />
-                  </span>
-                  <span className="text-[11.5px] text-slate-mute">
-                    {copy.dive.list.per.boat}
-                  </span>
-                </label>
-              ))}
-            </div>
-
-            <div className="mt-4 border-t border-line-fine pt-3 text-[12.5px] text-slate-soft">
+            <div className="mt-6 border-t border-line-fine pt-3 text-[12.5px] text-slate-soft">
               Contoh harga yang sedang tayang: dua fun dive satu pagi{" "}
               {fmt(config.divePrices.fun2 ?? 0)}.
+            </div>
+          </section>
+        )}
+
+        {HAS_DIVING[tab] && (
+          <section className={card}>
+            <div className="mb-1 text-[15px] font-bold">
+              Video di halaman selam
+            </div>
+            <Explain>
+              Klip yang muncul tepat di atas bar &quot;Cek ketersediaan&quot;.
+              Bisa diisi dua macam: tempel tautan YouTube (youtube.com/watch,
+              youtu.be, atau Shorts), atau tulis nama berkas video yang ada di
+              folder <code>public/</code>, misalnya <code>/dive.mp4</code>.
+              Kalau tautannya YouTube, yang dimuat cuma gambar sampulnya —
+              videonya baru betul-betul dimuat setelah tamu menekan tombol
+              putar, jadi halaman ini tidak jadi berat untuk yang tidak
+              menontonnya. Kalau kotak ini dikosongkan, tidak ada apa-apa yang
+              digambar di sana: lebih baik tidak ada video daripada ada kotak
+              hitam kosong.
+            </Explain>
+            <label className={LABEL}>
+              Tautan YouTube atau nama berkas
+              <input
+                value={config.diveVideo ?? ""}
+                onChange={(e) => patch({ diveVideo: e.target.value })}
+                placeholder="https://youtu.be/… atau /dive.mp4"
+                inputMode="url"
+                className={FIELD}
+              />
+            </label>
+
+            {/* The same component the website draws, with what is being
+                typed. An owner filling this in should be looking at the
+                thing itself rather than at a text field and a promise —
+                and a link that turns out to be a playlist or a channel is
+                worth finding out about here rather than after a deploy. */}
+            <div className="mt-4">
+              <div className="mb-[10px] text-[12.5px] text-slate">
+                Yang akan dilihat tamu
+              </div>
+              {(config.diveVideo ?? "").trim() ? (
+                <DiveVideo
+                  key={config.diveVideo}
+                  src={config.diveVideo}
+                  label={copy.dive.videoLabel}
+                  play={copy.dive.videoPlay}
+                />
+              ) : (
+                <DiveVideoSlot text="Belum ada video. Tempel tautan YouTube atau nama berkas di atas, lalu Simpan." />
+              )}
             </div>
           </section>
         )}

@@ -17,6 +17,7 @@ import {
   WhatsAppIcon,
 } from "@/components/web/icons";
 import { RoomCarousel, type RoomPhoto } from "@/components/eddo/room-carousel";
+import { ServiceScene } from "@/components/eddo/service-scenes";
 import { CheckoutModal, type CheckoutOrder } from "@/components/eddo/checkout-modal";
 import {
   ART_BOX,
@@ -1818,18 +1819,25 @@ export function EddoSite({
                           className="h-full w-full object-cover"
                         />
                       ) : (
-                        /* The glyph for its kind, at size, rather than an empty
-                           grey box. A card with a hole in it reads as broken;
-                           a card with a drawing reads as one whose photograph
-                           has not been taken, which is the truth. */
-                        <span className="flex flex-col items-center gap-[10px] px-3 text-center">
-                          <span className="flex scale-[1.7] items-center justify-center text-eddo-deep/70">
-                            {SERVICE_ICONS[service]}
-                          </span>
-                          <span className="text-[11.5px] leading-[1.35] text-eddo-deep/70">
+                        /* A drawing of the kind of thing this is, filling the
+                           box, rather than a glyph floating in the middle of
+                           it. The glyph was honest and it read as a hole: the
+                           eye goes to the empty rectangle instead of to what is
+                           written beside it, seventeen times down the section.
+
+                           The words stay. A flat vector shape cannot be taken
+                           for a photograph, but somebody paying to hire a
+                           motorbike should be told in words that nobody has
+                           photographed theirs yet. */
+                        <>
+                          <ServiceScene
+                            service={service}
+                            className="absolute inset-0 h-full w-full object-cover"
+                          />
+                          <span className="absolute inset-x-0 bottom-0 bg-[linear-gradient(180deg,rgba(9,26,24,0)_0%,rgba(9,26,24,.62)_100%)] px-3 pt-6 pb-[9px] text-center text-[11px] leading-[1.35] font-medium text-white/90">
                             {t.services.noPhoto}
                           </span>
-                        </span>
+                        </>
                       )}
                     </div>
 

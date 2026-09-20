@@ -92,8 +92,15 @@ export function BookModal({
   /** The room type or the package, named as the card named it. */
   what: string;
   shape: BookShape;
-  /** Per night, per person or per day. Shown, and never sent. */
-  unitPrice: number;
+  /**
+   * Per night, per person or per day. Shown, and never sent.
+   *
+   * A function when what it costs depends on what was chosen here, which is
+   * true of a bungalow: one person pays one figure and two pay another, and
+   * the total under the guest picker has to move when the picker does. A
+   * number for everything sold at one price whoever turns up.
+   */
+  unitPrice: number | ((count: number) => number);
   /** What that price is per, in the reader's own language. */
   unitLabel: string;
   /** How many guests a room sleeps, or how many divers the boat takes. */
@@ -176,6 +183,10 @@ export function BookModal({
    */
   const span = spans ? spanInRange(from, to) : 0;
   const multiplier = spans ? span || 1 : count;
+  /* The rate, once the number that moves it has been chosen. Still only a
+     quote: the summary page looks it up again and the endpoint looks it up a
+     third time, from the same table this one reads. */
+  const unit = typeof unitPrice === "function" ? unitPrice(count) : unitPrice;
 
   const submit = () => {
     /* A set of gaps rather than the first one, so somebody who left three
@@ -321,10 +332,12 @@ export function BookModal({
               </label>
             )}
 
-            {/* Guests, for a room. Not a price — the rate is per room — but the
-                family has to know how many beds to make, and the list stops
-                where the room does rather than offering a number that would
-                have to be turned down after the money moved. */}
+            {/* Guests, for a room — and half of the price, because the
+                bungalow is sold by how many sleep in it. The list stops where
+                the bungalow does rather than offering a number that would
+                have to be turned down after the money moved; a third person
+                is an extra bed, arranged by message, and the rooms section
+                says so beside the figures. */}
             {shape === "stay" && (
               <label className={`${LABEL} sm:col-span-2`}>
                 {b.guests}
@@ -390,7 +403,7 @@ export function BookModal({
               </span>
             </span>
             <Price
-              rupiah={unitPrice * multiplier}
+              rupiah={unit * multiplier}
               lang={lang}
               currency={currency}
               rates={rates}

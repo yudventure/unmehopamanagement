@@ -44,8 +44,7 @@ import {
 const MONTH_ANCHOR = new Date(2026, 7, 1);
 
 const ROOM_PHOTO: Record<RoomKey, string> = {
-  standard: "/standard.jpg",
-  family: "/family.jpg",
+  deluxe: "/standard.jpg",
 };
 
 export function AboutPage() {
@@ -159,7 +158,10 @@ export function AboutPage() {
             </p>
           </div>
 
-          <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2">
+          {/* One kind of bungalow, so one wide card rather than a grid with a
+              gap where the second kind used to be. Same shape as the card on
+              the front page. */}
+          <div className="mt-10 flex flex-col gap-6">
             {rooms.map((r, i) => {
               const rc = t.rooms.types[r.key];
               return (
@@ -167,9 +169,9 @@ export function AboutPage() {
                   key={r.key}
                   data-reveal
                   style={{ "--i": i } as React.CSSProperties}
-                  className="overflow-hidden rounded-[24px] border border-line-soft bg-surface"
+                  className="overflow-hidden rounded-[24px] border border-line-soft bg-surface md:grid md:grid-cols-2"
                 >
-                  <div className="relative aspect-[16/10] overflow-hidden bg-surface-tint">
+                  <div className="relative aspect-[16/10] overflow-hidden bg-surface-tint md:aspect-auto md:h-full">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={ROOM_PHOTO[r.key]}
@@ -183,22 +185,32 @@ export function AboutPage() {
                     </span>
                   </div>
 
-                  <div className="flex flex-col px-6 py-6">
+                  <div className="flex flex-col px-6 py-6 md:px-7 md:py-7">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <h3 className="m-0 text-[21px] font-bold tracking-[-.015em]">
                         {rc.name}
                       </h3>
-                      <div className="text-right">
-                        <Price
-                          rupiah={r.rate}
-                          lang={lang}
-                          currency={currency}
-                          rates={rates}
-                          size="sm"
-                        />
-                        <div className="text-[11.5px] text-slate">
-                          {t.rooms.perNight}
-                        </div>
+                      {/* Both figures, because the bungalow is sold by how
+                          many sleep in it and either one on its own is the
+                          wrong number for half the people reading it. */}
+                      <div className="flex gap-5">
+                        {[
+                          { rupiah: r.rateOne, who: t.rooms.forOne },
+                          { rupiah: r.rateTwo, who: t.rooms.forTwo },
+                        ].map((p) => (
+                          <div key={p.who} className="text-right">
+                            <Price
+                              rupiah={p.rupiah}
+                              lang={lang}
+                              currency={currency}
+                              rates={rates}
+                              size="sm"
+                            />
+                            <div className="text-[11.5px] leading-[1.35] text-slate">
+                              {t.rooms.perNight} · {p.who}
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     </div>
 

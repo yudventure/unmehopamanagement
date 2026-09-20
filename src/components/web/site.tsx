@@ -45,16 +45,20 @@ import {
   DIVE_PER,
   DIVE_PRICE,
   EMAIL,
+  EXTRA_BED,
+  HOUSE,
   MAX_DIVERS,
   PROPERTY,
   ROOM_SLEEPS,
   WHATSAPP,
   type ActivityKey,
   type DiveKey,
+  type ExtraBedKey,
   type RoomKey,
   money,
   monthOptions,
   roomFacts,
+  roomRate,
   waLink,
 } from "@/lib/web-content";
 
@@ -102,16 +106,27 @@ const LANG_KEY = "turtle-lang";
 const HERO_PHOTO = "/hero.jpg";
 
 /**
- * One photograph per room type, named after the type rather than numbered, so
- * replacing the family room's picture is a matter of overwriting a file called
- * `family.jpg` and nothing has to be counted. Same case-sensitivity warning as
- * the hero, and the same fallback: a missing file leaves the drawn scene
- * showing rather than a broken image.
+ * One photograph per kind of bungalow, named after the kind rather than
+ * numbered, so replacing it is a matter of overwriting a file and nothing has
+ * to be counted. Same case-sensitivity warning as the hero, and the same
+ * fallback: a missing file leaves the drawn scene showing rather than a
+ * broken image.
  */
 const ROOM_PHOTO: Record<RoomKey, string> = {
-  standard: "/standard.jpg",
-  family: "/family.jpg",
+  deluxe: "/standard.jpg",
 };
+
+/**
+ * The three extra-bed bands, in the order the family's price list prints
+ * them, each tied to its own figure here rather than in the markup: an age
+ * band and the money beside it are one fact, and a list that pairs them by
+ * position is one reordering away from charging a nine-year-old as an adult.
+ */
+const EXTRA_ROWS: { key: ExtraBedKey; rupiah: number }[] = [
+  { key: "child", rupiah: EXTRA_BED.child },
+  { key: "teen", rupiah: EXTRA_BED.teen },
+  { key: "adult", rupiah: EXTRA_BED.adult },
+];
 
 /** Sits behind the dive section, under a scrim. */
 const DIVE_PHOTO = "/manta.jpg";
@@ -645,102 +660,196 @@ export function TurtleSite({ payable = false }: { payable?: boolean }) {
           </div>
         </div>
 
-        <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2">
+        {/* One kind of bungalow, so one card rather than a grid of two — and
+            a wide one, because a lone card in a two-column grid reads as a
+            column with something missing beside it. The list survives: a
+            second kind, if the family ever builds one, is a line of data
+            rather than a rewrite of this section. */}
+        <div className="mt-10 flex flex-col gap-6">
           {rooms.map((r, i) => {
             const rc = t.rooms.types[r.key];
             return (
-            <article
-              key={r.key}
-              data-reveal
-              style={step(i)}
-              className="overflow-hidden rounded-[24px] border border-line-soft bg-surface"
-            >
-              <Frame ratio="16 / 10" className="rounded-none">
-                {i === 0 ? (
+              <article
+                key={r.key}
+                data-reveal
+                style={step(i)}
+                className="overflow-hidden rounded-[24px] border border-line-soft bg-surface md:grid md:grid-cols-2"
+              >
+                {/* Not a `Frame`: that one sets its ratio inline, and an
+                    inline ratio cannot be turned off for the wide layout,
+                    where the photograph has to fill the column's height
+                    instead of dictating its width. Here the ratio is a class,
+                    so `md:aspect-auto` can override it. */}
+                <div className="relative overflow-hidden bg-surface-tint aspect-[16/10] md:aspect-auto md:h-full">
                   <JettyScene className={FILL} />
-                ) : (
-                  <IsletScene className={FILL} />
-                )}
-                {/* Keyed off the room, not the card's position, so the
-                    family photograph cannot end up over the standard room
-                    if the two are ever reordered. */}
-                <PhotoFill src={ROOM_PHOTO[r.key]} alt={rc.alt} />
-                <span className="absolute top-4 left-4 rounded-full bg-white/92 px-[12px] py-[6px] text-[12px] font-medium">
-                  {t.rooms.roomsLabel(r.count)}
-                </span>
-              </Frame>
+                  <PhotoFill src={ROOM_PHOTO[r.key]} alt={rc.alt} />
+                  <span className="absolute top-4 left-4 rounded-full bg-white/92 px-[12px] py-[6px] text-[12px] font-medium">
+                    {t.rooms.roomsLabel(r.count)}
+                  </span>
+                </div>
 
-              <div className="px-6 py-6">
-                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                <div className="px-6 py-6 md:px-7 md:py-7">
                   <h3 className="m-0 text-[21px] font-bold tracking-[-.015em]">
                     {rc.name}
                   </h3>
-                  <div className="text-right">
-                    <Price
-                      rupiah={r.rate}
-                      lang={lang}
-                      currency={currency}
-                      rates={rates}
-                      size="sm"
-                    />
-                    <div className="text-[11.5px] text-slate-soft">
-                      {t.rooms.perNight}
-                    </div>
+
+                  <p className="mt-2 text-[14px] leading-[1.6] text-slate">
+                    {rc.blurb}
+                  </p>
+
+                  <ul className="mt-4 mb-0 grid list-none grid-cols-1 gap-x-4 gap-y-[7px] p-0 sm:grid-cols-2">
+                    {rc.features.map((f) => (
+                      <li
+                        key={f}
+                        className="flex items-start gap-[9px] text-[13px] text-ink-soft"
+                      >
+                        <span className="mt-[6px] h-[6px] w-[6px] shrink-0 rounded-full bg-teal" />
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+
+                  {/* Both figures, side by side and equally loud. The family
+                      charges by how many sleep in the bungalow, so one price
+                      with the other in a footnote would be the wrong number
+                      for half the people reading it. */}
+                  <div className="mt-5 grid grid-cols-2 gap-4 rounded-[16px] bg-surface-mute px-[18px] py-[14px]">
+                    {[
+                      { rupiah: r.rateOne, who: t.rooms.forOne },
+                      { rupiah: r.rateTwo, who: t.rooms.forTwo },
+                    ].map((p) => (
+                      <div key={p.who}>
+                        <Price
+                          rupiah={p.rupiah}
+                          lang={lang}
+                          currency={currency}
+                          rates={rates}
+                          size="sm"
+                        />
+                        <div className="text-[11.5px] leading-[1.35] text-slate-soft">
+                          {t.rooms.perNight} · {p.who}
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                </div>
 
-                <p className="mt-2 text-[14px] leading-[1.6] text-slate">
-                  {rc.blurb}
-                </p>
-
-                <ul className="mt-4 mb-0 grid list-none grid-cols-1 gap-x-4 gap-y-[7px] p-0 sm:grid-cols-2">
-                  {rc.features.map((f) => (
-                    <li
-                      key={f}
-                      className="flex items-start gap-[9px] text-[13px] text-ink-soft"
-                    >
-                      <span className="mt-[6px] h-[6px] w-[6px] shrink-0 rounded-full bg-teal" />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-
-                {/* Two doors. Booking is the solid one when it is open at
-                    all, and asking steps back to an outline beside it — a card
-                    with two equally loud buttons asks the reader to weigh a
-                    decision they have already made by pressing the card. With
-                    no Midtrans keys there is only ever one button, and it is
-                    the one that was always there. */}
-                <div className="mt-6 flex flex-wrap gap-[10px]">
-                  {payable && (
+                  {/* Two doors. Booking is the solid one when it is open at
+                      all, and asking steps back to an outline beside it — a
+                      card with two equally loud buttons asks the reader to
+                      weigh a decision they have already made by pressing the
+                      card. With no Midtrans keys there is only ever one
+                      button, and it is the one that was always there. */}
+                  <div className="mt-6 flex flex-wrap gap-[10px]">
+                    {payable && (
+                      <button
+                        type="button"
+                        onClick={() => setBooking({ kind: "room", room: r.key })}
+                        className={`${PILL_DARK} cursor-pointer border-none`}
+                      >
+                        {t.booking.cta}
+                      </button>
+                    )}
                     <button
                       type="button"
-                      onClick={() => setBooking({ kind: "room", room: r.key })}
-                      className={`${PILL_DARK} cursor-pointer border-none`}
+                      onClick={() => ask("stay", t.rooms.askNote(rc.name))}
+                      className={`cursor-pointer ${
+                        payable ? PILL_LIGHT : `${PILL_DARK} border-none`
+                      }`}
                     >
-                      {t.booking.cta}
+                      {t.rooms.ask}
                     </button>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => ask("stay", t.rooms.askNote(rc.name))}
-                    className={`cursor-pointer ${
-                      payable ? PILL_LIGHT : `${PILL_DARK} border-none`
-                    }`}
-                  >
-                    {t.rooms.ask}
-                  </button>
-                  <span className="inline-flex items-center text-[12.5px] text-slate-soft">
-                    {rc.cap}
-                  </span>
+                    <span className="inline-flex items-center text-[12.5px] text-slate-soft">
+                      {rc.cap}
+                    </span>
+                  </div>
                 </div>
-              </div>
-            </article>
+              </article>
             );
           })}
         </div>
 
-        <p className="mt-6 rounded-[16px] border border-line-soft bg-surface-mute px-5 py-4 text-[13.5px] leading-[1.6] text-slate">
+        {/* The two things the price list says next to the rates: what a third
+            person costs, and the hours the day runs to. They were missing
+            from this site entirely, and they are the questions a guest asks
+            on arrival — after the money has moved. */}
+        <div className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-2">
+          <div
+            data-reveal
+            className="rounded-[20px] border border-line-soft bg-surface px-5 py-5 md:px-6"
+          >
+            <h3 className="m-0 text-[15px] font-bold tracking-[-.01em]">
+              {t.rooms.extra.heading}
+            </h3>
+            <p className="mt-[3px] mb-0 text-[11.5px] tracking-[.01em] text-slate-soft">
+              {t.rooms.extra.per}
+            </p>
+            <ul className="mt-4 mb-0 flex list-none flex-col gap-[6px] p-0">
+              {EXTRA_ROWS.map((row) => (
+                <li
+                  key={row.key}
+                  className="flex items-baseline justify-between gap-4 border-b border-line-soft pb-[7px]"
+                >
+                  <span className="text-[13px] text-ink-soft">
+                    {t.rooms.extra.ages[row.key]}
+                  </span>
+                  <Price
+                    rupiah={row.rupiah}
+                    lang={lang}
+                    currency={currency}
+                    rates={rates}
+                    size="sm"
+                    className="text-right"
+                  />
+                </li>
+              ))}
+            </ul>
+            <p className="mt-4 mb-0 text-[12.5px] leading-[1.55] text-slate">
+              {t.rooms.extra.note}
+            </p>
+          </div>
+
+          <div
+            data-reveal
+            style={step(1)}
+            className="rounded-[20px] border border-line-soft bg-surface px-5 py-5 md:px-6"
+          >
+            <h3 className="m-0 text-[15px] font-bold tracking-[-.01em]">
+              {t.rooms.rules.heading}
+            </h3>
+            {/* The times come from `HOUSE`, not from the copy: 12:30 is 12:30
+                in all seven languages, and seven copies of a clock is how a
+                site ends up serving breakfast an hour later in German. */}
+            <dl className="mt-4 mb-0 flex flex-col gap-[6px]">
+              {[
+                { k: t.rooms.rules.checkIn, v: HOUSE.checkIn },
+                { k: t.rooms.rules.checkOut, v: HOUSE.checkOut },
+                { k: t.rooms.rules.power, v: `${HOUSE.power.from}–${HOUSE.power.to}` },
+                {
+                  k: t.rooms.rules.meals,
+                  v: `${HOUSE.meals.breakfast} · ${HOUSE.meals.lunch} · ${HOUSE.meals.dinner}`,
+                },
+              ].map((row) => (
+                <div
+                  key={row.k}
+                  className="flex items-baseline justify-between gap-4 border-b border-line-soft pb-[7px]"
+                >
+                  <dt className="text-[13px] text-ink-soft">{row.k}</dt>
+                  <dd className="m-0 font-mono text-[13px] font-medium text-ink">
+                    {row.v}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+            <p className="mt-4 mb-0 text-[12.5px] leading-[1.55] text-slate">
+              {t.rooms.rules.diet}
+            </p>
+            <p className="mt-2 mb-0 text-[12.5px] leading-[1.55] text-slate">
+              {t.rooms.rules.refund}
+            </p>
+          </div>
+        </div>
+
+        <p className="mt-5 rounded-[16px] border border-line-soft bg-surface-mute px-5 py-4 text-[13.5px] leading-[1.6] text-slate">
           {t.rooms.otaNote}
         </p>
       </Section>
@@ -1372,9 +1481,13 @@ export function TurtleSite({ payable = false }: { payable?: boolean }) {
                 ? "hire"
                 : "dived"
           }
+          /* A room's rate is a function of how many sleep in it, so the
+             dialog is handed the lookup rather than a figure: the total
+             under the guest picker has to move when the picker does. A dive
+             package has one price whoever is on the boat. */
           unitPrice={
             booking.kind === "room"
-              ? (rooms.find((r) => r.key === booking.room)?.rate ?? 0)
+              ? (guests) => roomRate(booking.room, guests) ?? 0
               : DIVE_PRICE[booking.pack]
           }
           unitLabel={

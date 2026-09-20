@@ -42,7 +42,7 @@ export const PROPERTIES: {
   {
     key: "turtle",
     name: "Turtle Homestay",
-    location: "Yenbuba, Pulau Mansuar",
+    location: "Mansuar Kecil (Pulau Kri)",
   },
   { key: "eddo", name: "Eddo Homestay", location: "Yenbuba, Pulau Mansuar" },
 ];
@@ -94,15 +94,47 @@ const NOTES = [
   "Rombongan diving, butuh tempat bilas alat.",
 ];
 
+/**
+ * What Turtle charges for a bungalow, from the family's own price list.
+ *
+ * The bungalow is priced by how many people sleep in it rather than by the
+ * room, and the second head is not the same price as the first: 850 for one,
+ * 1,550 for two. Two numbers, not a rate and a multiplication — writing it as
+ * `850_000 * guests` would charge a couple 1,700,000 and be wrong by 150,000
+ * every night of every double booking.
+ *
+ * An extra bed is the third person, priced by age, and the price list allows
+ * one of them per bungalow. It is not sold on the site: the ages have to be
+ * said out loud and somebody has to agree there is room, so the page prints
+ * the figures and asks the guest to message. These are here so the figures on
+ * the page and the figures in the manager come from one place.
+ */
+export const TURTLE_RATES = {
+  /** Per night, one person in the bungalow. */
+  one: 850_000,
+  /** Per night, two people. */
+  two: 1_550_000,
+  /** Per extra person, per night, by age on the day of arrival. */
+  extraBed: { child: 200_000, teen: 400_000, adult: 600_000 },
+} as const;
+
 export function seedRooms(): Room[] {
   const rooms: Room[] = [];
+  /* Ten bungalows of one kind. The family's price list offers one type,
+     the Deluxe Bungalow, so the table is ten of it rather than two kinds
+     invented to fill a grid; the calendar still has ten rows to fill.
+
+     The rate here is the two-person one, because that is what a bungalow is
+     usually sold as and the manager prices a booking from this column. The
+     single rate lives beside it in `TURTLE_RATES` and the website reads it
+     there. */
   for (let i = 1; i <= 10; i++) {
     rooms.push({
       id: "T" + i,
       prop: "turtle",
       name: "Turtle " + String(i).padStart(2, "0"),
-      cap: i <= 6 ? "2 dewasa" : "2 dewasa + 2 anak",
-      rate: i <= 6 ? 450000 : 650000,
+      cap: "2 dewasa",
+      rate: TURTLE_RATES.two,
       // Turtle 07 sits out the month under renovation (PRD F1.5).
       active: i !== 7,
     });

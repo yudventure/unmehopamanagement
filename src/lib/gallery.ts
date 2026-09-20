@@ -35,8 +35,8 @@ export interface GalleryItem {
 export const STAY_GALLERY: GalleryItem[] = [
   { src: "/hero.jpg", caption: "aerial" },
   { src: "/3.jpg", caption: "boardwalk" },
-  { src: "/standard.jpg", caption: "standardRow" },
-  { src: "/family.jpg", caption: "familyFront" },
+  { src: "/standard.jpg", caption: "bungalowRow" },
+  { src: "/family.jpg", caption: "bungalowFront" },
   { src: "/2.jpg", caption: "lunch" },
   { src: "/1.jpg", caption: "dusk" },
 ];

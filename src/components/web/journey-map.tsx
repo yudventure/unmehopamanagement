@@ -10,7 +10,7 @@ import { LOCATION, MAP_LINKS, type SiteCopy } from "@/lib/web-content";
  * The thumbnail is a sketch and says so. It is not trying to be a map you
  * navigate by; it is trying to answer the question the section is already
  * asking, which is what the four steps look like laid out in space: Sorong on
- * the mainland, a ferry north-east to Waisai, and a boat back down to Mansuar.
+ * the mainland, a ferry north-east to Waisai, and a boat back down to Kri.
  * A real map at this size shows almost none of that.
  *
  * Pressing it opens the real thing: an OpenStreetMap frame at the exact
@@ -273,11 +273,14 @@ function Sketch({ t }: { t: SiteCopy }) {
       {island({ x: S.x - 96, y: S.y + 18 }, 58, 30, 6)}
       {/* The Sorong peninsula, bottom right. */}
       {island({ x: S.x + 34, y: S.y + 30 }, 62, 34, -4)}
-      {/* Mansuar, with the homestay on it, and Kri alongside. */}
-      {island({ x: HO.x + 6, y: HO.y + 3 }, 34, 14, -6)}
+      {/* Mansuar, the long one, with Kri — the islet the homestay stands on —
+          off its north-east end. The pin sits on Kri, which is why the small
+          shape is the one under it: the homestay is not on Mansuar, and a
+          sketch that puts it there is still a map saying the wrong island. */}
+      {island({ x: HO.x + 54, y: HO.y + 10 }, 38, 15, -6)}
       <ellipse
-        cx={HO.x + 52}
-        cy={HO.y - 6}
+        cx={HO.x + 4}
+        cy={HO.y + 2}
         rx="15"
         ry="7"
         fill="#cbe7d7"

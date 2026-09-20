@@ -91,14 +91,16 @@ ke yang lain.
 **2. Isi dua variabel berikut**, lalu deploy ulang sekali supaya terbaca:
 
 ```
-SITE_DOMAIN_EDDO   = eddohomestay.com,www.eddohomestay.com   <- sudah dibeli
-SITE_DOMAIN_TURTLE = turtlehomestay.com,www.turtlehomestay.com
+SITE_DOMAIN_EDDO   = eddohomestay.com,www.eddohomestay.com          <- sudah dibeli
+SITE_DOMAIN_TURTLE = turtledivehomestay.com,www.turtledivehomestay.com  <- domain klien
 ```
 
-Baris pertama bukan contoh lagi: `eddohomestay.com` adalah domain yang sudah
-dibeli, dan nilai di atas itu yang dipakai apa adanya. Baris kedua masih
-contoh sampai domain Turtle dibeli, dan selama variabelnya kosong Turtle tetap
-hidup di `/turtle` tanpa ada yang rusak.
+Keduanya bukan contoh lagi. `eddohomestay.com` sudah dibeli, dan
+`turtledivehomestay.com` adalah domain yang sudah dipakai klien Turtle untuk
+situs lamanya — situs yang sedang diganti ini. Artinya pemindahannya perlu
+dijadwalkan bersama klien: begitu DNS-nya diarahkan ke sini, situs lama tidak
+bisa diakses lagi di alamat itu. Selama variabelnya kosong, Turtle tetap hidup
+di `/turtle` tanpa ada yang rusak.
 
 Daftar lengkap semua variabel beserta bentuk nilainya ada di `.env.example`,
 terpisah antara yang dibaca saat build dan yang dibaca saat jalan.
@@ -136,9 +138,9 @@ Sesudah itu:
 
 | Yang diminta | Yang disajikan |
 |---|---|
-| `turtlehomestay.com/` | situs Turtle |
-| `turtlehomestay.com/about` | halaman profil Turtle |
-| `turtlehomestay.com/turtle` | memantul ke `turtlehomestay.com/` |
+| `turtledivehomestay.com/` | situs Turtle |
+| `turtledivehomestay.com/about` | halaman profil Turtle |
+| `turtledivehomestay.com/turtle` | memantul ke `turtledivehomestay.com/` |
 | `eddohomestay.com/` | situs Eddo |
 | `unmehopamanagement.com/` | dashboard |
 | `eddohomestay.com/turtle` | situs Turtle |

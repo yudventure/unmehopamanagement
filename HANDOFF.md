@@ -16,8 +16,8 @@ berkas prototype di `project/` dan di transkrip desain, yang sengaja tidak
 diubah karena arsip.)
 
 Konteks bisnisnya: pemilik (Yud) mengelola dua homestay sendiri —
-**Turtle Homestay** (10 kamar, Yenbuba, Pulau Mansuar) dan **Eddo Homestay**
-(2 kamar, Sawinggrai, Pulau Gam). Booking masuk dari empat saluran sekaligus:
+**Turtle Dive Homestay** (10 bungalow, Mansuar Kecil / Pulau Kri) dan
+**Eddo Homestay** (5 rumah, Yenbuba, Pulau Mansuar). Booking masuk dari empat saluran sekaligus:
 Booking.com, Traveloka, Agoda, dan WhatsApp/walk-in.
 
 Masalah yang dipecahkan (dari PRD di `project/uploads/PRD-booking-manager-homestay.md`):
@@ -681,11 +681,25 @@ Jalannya tiga langkah, dan tidak satu pun membawa angka dari browser:
    lewat `priceTurtle()`, lalu meminta token Snap. Harga selalu dibaca dari
    tabel kamar milik manager dan `divePrices` di `content/site.json`.
 
+**Harga bungalow ikut jumlah tamunya.** Keluarga ini menjual per orang, bukan
+per kamar, dan orang kedua tidak seharga orang pertama: 850.000 untuk satu,
+1.550.000 untuk dua. Jadi `priceTurtle()` minta jumlah tamu dan mencari
+tarifnya di tabel, bukan mengalikan — `850.000 × 2` akan menagih satu pasangan
+1.700.000, lebih 150.000 tiap malam. Jumlah tamunya juga ikut ke nama item di
+Midtrans ("Deluxe Bungalow, 2 guests"), karena bungalow yang sama pada malam
+yang sama punya dua angka, dan kuitansi yang tidak menyebut berapa orang tidak
+bisa dicocokkan dengan daftar harga.
+
+Orang ketiga (extra bed) **tidak dijual di situs**: harganya tergantung usia
+dan seseorang harus setuju bahwa kasurnya muat, jadi halamannya mencetak
+angkanya dan meminta tamunya berkirim pesan.
+
 Yang ditolak di server, bukan cuma di browser: menginap nol malam atau lebih
-dari 30 malam, tamu melebihi kapasitas kamar (`too-many-guests`), penyelam
-lebih dari enam (batas perahu — ditolak, bukan dipotong diam-diam jadi enam),
-paket yang harganya belum diisi owner, dan kamar atau paket yang namanya tidak
-dikenal. Semuanya 422.
+dari 30 malam, jumlah tamu di luar 1–2 (ditolak, bukan dibulatkan ke bawah
+jadi dua — empat orang yang diam-diam ditagih untuk dua adalah empat orang di
+depan pintu berkasur dua, sesudah uangnya pindah), penyelam lebih dari enam
+(batas perahu, sama alasannya), paket yang harganya belum diisi owner, dan
+bungalow atau paket yang namanya tidak dikenal. Semuanya 422.
 
 `/api/pay/notify` mengirim email ke inbox yang benar dengan membaca awalan
 order id: yang berawalan `TURTLE-` milik Turtle, sisanya milik Eddo. Isi
@@ -868,16 +882,54 @@ nadanya, jauh lebih baik disunting lewat code review daripada lewat textarea.
 Menaruhnya di form berarti memilih antara setengah terjemahan tayang atau
 pekerjaan penerjemah di dalam formulir.
 
+### Konten disamakan dengan situs lama klien
+
+Turtle sudah punya situs sendiri di **turtledivehomestay.com**, dan yang
+diminta klien adalah desain ulang — bukan isi baru. Jadi isi situs ini
+disamakan dengan isi situs itu, sejauh yang bisa dibaca dari tangkapan layar
+yang dikirim klien (halaman Accommodation, Packages, Contact Us, dan footer).
+
+Yang diambil apa adanya dari sana:
+
+| Fakta | Nilai | Di mana ia tinggal sekarang |
+|---|---|---|
+| Nama tipe | satu saja: **Deluxe Bungalow** | `ROOM_KEYS`, `COPY[*].rooms.types` |
+| Tarif | **850.000** satu orang, **1.550.000** dua orang, per malam | `TURTLE_RATES` di `lib/data.ts`; yang dua orang juga jadi `rate` di tabel kamar manager |
+| Extra bed | 3–9 th 200.000 · 10–16 th 400.000 · 17+ 600.000, per orang per malam, satu per bungalow | `TURTLE_RATES.extraBed` |
+| Jam | check-in 12:30, check-out 11:00, listrik 18:00–24:00, makan 07:00/12:00/19:00 | `HOUSE` |
+| Aturan | tidak ada refund setelah hari check-in; pantangan/alergi dikabari sebelum datang | `COPY[*].rooms.rules` |
+| Alamat | Mansuar Kecil (Pulau Kri), Distrik Meos Mansar, Kepulauan Raja Ampat, Papua Barat Daya 98472 | `LOCATION`, `PROPERTY` |
+| Kontak | WhatsApp 081243237470 · turtlediversrajaampat@gmail.com · IG turtlediversrajaampat | `content/site.json` |
+| OTA | stayrajaampat.com dan Booking.com | `COPY[*].rooms.otaNote` |
+
+**Situs lama menyebut Pulau Kri, bukan Yenbuba.** Sebelum ini, seluruh copy
+Turtle dalam tujuh bahasa menempatkan homestay-nya di Yenbuba, Pulau Mansuar —
+kampung di seberang selat, tempat Eddo berada. Sekarang semuanya berbunyi
+Pulau Kri / Mansuar Kecil, termasuk judul halaman dan peta sketsanya.
+Akibatnya: copy **Eddo** masih menulis Turtle sebagai "di kampung yang sama",
+dan itu perlu dikonfirmasi ke pemiliknya — file Eddo sengaja tidak disentuh.
+
+**Yang belum bisa disamakan** (tangkapan layarnya cuma 147 px dan 164 px,
+tulisannya tidak terbaca walau diperbesar):
+
+- Halaman **Diving Trip, Courses, Snorkelling & Transport** — harga selam,
+  kursus, snorkeling, excursion, island activity, dan tabel perahu transport.
+  `divePrices` di `content/site.json` masih **angka karangan**.
+- Halaman **Home** dan **Policy & Gallery**.
+- Halaman **Packages** di situs lama memang kosong ("we have no package
+  avaliable now"), jadi tidak ada yang hilang di sana.
+
 ### Yang wajib diganti sebelum dipakai
 
 | Isi | Status |
 |---|---|
-| `contact.whatsapp`, `contact.email`, `contact.ownerEmail` | **placeholder**, ganti lewat tab Website |
-| `social.facebook`, `social.instagram`, `social.tiktok` | **placeholder**, sekarang mengarah ke beranda platformnya, bukan ke akun homestay. Ganti lewat tab Website |
+| `contact.whatsapp`, `contact.email`, `contact.ownerEmail` | **nyata**, diambil dari situs klien. Catatan: halaman Contact Us situs lama memakai nomor lain (082291311277) dan footer memakai 081243237470 — yang dipakai di sini yang kedua, perlu dikonfirmasi |
+| `social.instagram` | **nyata** (`turtlediversrajaampat`). `facebook` dan `tiktok` dikosongkan, karena situs lama tidak menyebut keduanya dan ikon yang menuju ke mana-mana lebih buruk daripada tidak ada ikon |
 | `founded.homestay`, `founded.diveCenter` | **kosong**, tahun berdirinya belum diketahui. Selama kosong, tidak ada tahun yang ditampilkan di mana pun |
-| `divePrices` (enam angka) | **placeholder**, ganti lewat tab Website |
+| `divePrices` (enam angka) | **placeholder dan belum terbaca**, ganti lewat tab Website begitu daftar harga selamnya didapat |
 | Nama, durasi, dan level paket selam | **placeholder**, ada di `web-content.ts` |
-| Tarif kamar | **nyata**, dibaca dari `seedRooms()`, sumber yang sama dengan manager |
+| Tarif bungalow | **nyata**, dari daftar harga klien |
+| Klaim Starlink dan "tanpa biaya kebersihan" | **belum terverifikasi** — tidak ada di situs lama, dan jam listrik 18:00–24:00 membuat klaim Starlink layak ditanyakan ulang |
 | Musim, cara sampai, FAQ | tulisan wajar, perlu dikoreksi pemilik |
 
 ### Foto

@@ -151,30 +151,42 @@ export async function POST(req: Request) {
     const pack = clean(body.pack) as DiveKey;
     const room = clean(body.room) as RoomKey;
     const byDay = kind === "room" || (kind === "dive" && DIVE_PER[pack] === "day");
+    /*
+     * How many sleep in the bungalow, floored and never clamped.
+     *
+     * `whole` above pins a number to a range, which is right for a field whose
+     * worst case is a silly total and wrong for this one, the way it is wrong
+     * for divers: a party of four clamped to two is a bungalow with two beds
+     * sold to four people, paid for, and discovered at the door. It is also
+     * half the price now — the family charges 850 for one and 1,550 for two —
+     * so a head count nobody checked is a figure nobody agreed to.
+     *
+     * `priceTurtle` refuses anything the bungalow is not sold for, which is
+     * what makes the 422 below cover this as well.
+     */
+    const roomGuests = Math.floor(Number(body.guests));
     const sale = priceTurtle({
       kind,
       room,
       pack,
-      /* Floored, never clamped. `whole` above pins a number to a range, which
-         is right for a field whose worst case is a silly total and wrong for
-         this one: eight divers clamped to six is six places on a boat sold to
-         a party of eight, paid for, and discovered at the jetty. Out of range
-         is refused below instead. */
+      /* Floored, never clamped, for the same reason: eight divers clamped to
+         six is six places on a boat sold to a party of eight, paid for, and
+         discovered at the jetty. Out of range is refused below instead. */
       count: byDay ? daysBetween(checkIn, until) : Math.floor(Number(body.divers)),
+      guests: roomGuests,
     });
     if (!sale) {
       return NextResponse.json({ error: "not-payable" }, { status: 422 });
     }
     /*
-     * The room sleeps what it sleeps.
+     * The bungalow sleeps what it sleeps.
      *
-     * The picker in the dialog already stops at this number, which makes this
-     * the second check rather than the first — and the first one runs in a
-     * browser, where it is a suggestion. Six people paying for a room with two
-     * beds is a conversation the family would have to have on arrival, after
-     * the money had moved.
+     * `priceTurtle` has already refused a head count outside it, so this is
+     * the same answer said twice — and it stays because it says out loud what
+     * the 422 above means, and because the day somebody prices a room without
+     * asking for guests, this is the check that is still standing.
      */
-    if (kind === "room" && guests > (ROOM_SLEEPS[room] ?? 0)) {
+    if (kind === "room" && roomGuests > (ROOM_SLEEPS[room] ?? 0)) {
       return NextResponse.json({ error: "too-many-guests" }, { status: 422 });
     }
     gross = sale.total;
@@ -189,7 +201,7 @@ export async function POST(req: Request) {
       PROPERTY.name,
       sale.name,
       kind === "room"
-        ? `check-in ${checkIn}, check-out ${until}, ${many(sale.count, "night")}, ${many(guests, "guest")}`
+        ? `check-in ${checkIn}, check-out ${until}, ${many(sale.count, "night")}, ${many(roomGuests, "guest")}`
         : sale.per === "day"
           ? `${checkIn} to ${until}, ${many(sale.count, "day")}`
           : `on ${checkIn}, ${many(sale.count, "diver")}`,

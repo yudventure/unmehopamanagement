@@ -78,7 +78,14 @@ export function TurtleCheckout() {
   let sale = null as ReturnType<typeof priceTurtle>;
 
   if (draft?.kind === "room") {
-    sale = priceTurtle({ kind: "room", room: draft.room, count: span });
+    /* Both numbers, because both are in the price: the nights come from the
+       dates and the rate comes from how many sleep in it. */
+    sale = priceTurtle({
+      kind: "room",
+      room: draft.room,
+      count: span,
+      guests: draft.guests,
+    });
     title = t.rooms.types[draft.room].name;
     unitLabel = t.rooms.perNight;
     back = "/turtle#kamar";

@@ -1,4 +1,4 @@
-import { seedRooms } from "./data";
+import { seedRooms, TURTLE_RATES } from "./data";
 import { MAX_SPAN } from "./days";
 import { SITE_CONFIG, siteConfig } from "./site-config";
 
@@ -66,11 +66,21 @@ const TURTLE = siteConfig("turtle");
 export const WHATSAPP = TURTLE.contact.whatsapp;
 export const EMAIL = TURTLE.contact.email;
 
-/** Proper nouns, which stay as they are in either language. */
+/**
+ * Proper nouns, which stay as they are in every language.
+ *
+ * The place is written the way the family writes it on their own pages:
+ * Mansuar Kecil, the islet, which is the one everybody else calls Pulau Kri.
+ * It used to say Yenbuba, Pulau Mansuar — the village across the channel,
+ * where Eddo is — and that put this homestay on the wrong island in seven
+ * languages, in the page title, and in the line under the map.
+ */
 export const PROPERTY = {
   name: "Turtle Dive Homestay",
-  village: "Yenbuba",
-  island: "Pulau Mansuar",
+  /** The hamlet, as the address on their own site names it. */
+  village: "Mansuar Kecil",
+  /** The island a diver would recognise it by. */
+  island: "Pulau Kri",
 };
 
 /**
@@ -89,8 +99,10 @@ export const LOCATION = {
   plusCode: "CMP9+HJR",
   lat: -0.563516,
   lng: 130.669038,
-  area: "Pulau Mansuar Kecil (Kri)",
-  admin: "Meos Mansar, Raja Ampat Regency, West Papua",
+  area: "Mansuar Kecil (Pulau Kri)",
+  /* Word for word from the family's own contact page, province and postcode
+     included: an address is a thing somebody copies into a form. */
+  admin: "Distrik Meos Mansar, Kepulauan Raja Ampat, Papua Barat Daya 98472",
 };
 
 export const MAP_LINKS = {
@@ -127,42 +139,83 @@ export function money(n: number, locale: string) {
 }
 
 /**
- * The two room types, as a list as well as a union, because a room key that
- * arrives in a request body has to be checked against something at runtime and
- * a type is gone by then.
+ * The one kind of bungalow, as a list as well as a union, because a room key
+ * that arrives in a request body has to be checked against something at
+ * runtime and a type is gone by then.
+ *
+ * One rather than two: the family's own price list offers the Deluxe Bungalow
+ * and nothing else. A "standard" and a "family" room lived here before, at
+ * 450 and 650 thousand, and neither was ever theirs — they were invented to
+ * fill a two-column grid while the site was being designed. A list is kept
+ * rather than a single value so that a second kind, if they ever build one,
+ * is a line of data instead of a rewrite.
  */
-export const ROOM_KEYS = ["standard", "family"] as const;
+export const ROOM_KEYS = ["deluxe"] as const;
 export type RoomKey = (typeof ROOM_KEYS)[number];
 
 export interface RoomFacts {
   key: RoomKey;
-  rate: number;
+  /** Per night, with one person in it. */
+  rateOne: number;
+  /** Per night, with two. */
+  rateTwo: number;
   count: number;
 }
 
 /**
- * Two room types, priced from the room table the manager uses. Individual
- * rooms are deliberately not listed: which of the ten a guest gets is an
- * operational decision, and a room out for renovation must never appear here
- * as something to book.
+ * The bungalow, priced from the table the manager prices bookings from.
+ *
+ * Individual bungalows are deliberately not listed: which of the ten a guest
+ * gets is an operational decision, and one out for renovation must never
+ * appear here as something to book.
+ *
+ * Two figures rather than one, because the family charges by how many people
+ * sleep in it and the second head is cheaper than the first. The two-person
+ * figure is the room table's own column, so the site and the manager cannot
+ * disagree about the usual sale; the single figure sits beside it in
+ * `TURTLE_RATES`, where the manager has no column for it.
  */
 export function roomFacts(): RoomFacts[] {
   const rooms = seedRooms().filter((r) => r.prop === "turtle");
-  const standard = rooms.filter((r) => r.cap === "2 dewasa");
-  const family = rooms.filter((r) => r.cap !== "2 dewasa");
   return [
     {
-      key: "standard",
-      rate: Math.min(...standard.map((r) => r.rate)),
-      count: standard.length,
-    },
-    {
-      key: "family",
-      rate: Math.min(...family.map((r) => r.rate)),
-      count: family.length,
+      key: "deluxe",
+      rateOne: TURTLE_RATES.one,
+      rateTwo: rooms[0]?.rate ?? 0,
+      count: rooms.length,
     },
   ];
 }
+
+/**
+ * What an extra bed costs, by the age of whoever sleeps in it.
+ *
+ * Printed on the page and never charged by it. Adding a third person means
+ * saying an age out loud and somebody agreeing there is room for the bed, so
+ * the site states the figures and asks for a message. The price list allows
+ * one extra bed per bungalow.
+ */
+export const EXTRA_BED = TURTLE_RATES.extraBed;
+
+/** The three age bands, so the words and the figures cannot fall out of step. */
+export type ExtraBedKey = keyof typeof EXTRA_BED;
+
+/**
+ * The hours the day runs to, from the notes on the family's own price list.
+ *
+ * Facts, not words: 12:30 is 12:30 in all seven languages, and the labels
+ * beside these — "check-in", "the generator runs" — are the part that gets
+ * translated. Written once here so that seven copies of a time cannot drift
+ * apart, which is how a site ends up promising breakfast at 07:00 in English
+ * and 08:00 in German.
+ */
+export const HOUSE = {
+  checkIn: "12:30",
+  checkOut: "11:00",
+  /** The generator's hours. There is no power outside them. */
+  power: { from: "18:00", to: "24:00" },
+  meals: { breakfast: "07:00", lunch: "12:00", dinner: "19:00" },
+} as const;
 
 export const DIVE_KEYS = [
   "fun2",
@@ -203,16 +256,38 @@ export const DIVE_PER: Record<DiveKey, "person" | "day"> = {
 };
 
 /**
- * How many people a room type sleeps.
+ * How many people a bungalow sleeps, before an extra bed is arranged.
  *
- * The same numbers as the `cap` line in the room table and the `cap` line in
+ * The same number as the `cap` line in the room table and the `cap` line in
  * the copy, written once more here because this is the one of the three that
- * is arithmetic: it is the top of the guest picker. Reading it out of either
- * of the others would mean parsing "2 dewasa + 2 anak" for its digits, which
- * is a sentence, not a number, and is one rewording away from letting six
- * people book a room that sleeps four.
+ * is arithmetic: it is the top of the guest picker, and it is what the price
+ * list has a figure for. Reading it out of either of the others would mean
+ * parsing "2 dewasa" for its digits, which is a sentence, not a number.
+ *
+ * A third person is not refused, only not sold here: the page prints the
+ * extra-bed prices and asks for a message, because the figure depends on an
+ * age nobody has been told.
  */
-export const ROOM_SLEEPS: Record<RoomKey, number> = { standard: 2, family: 4 };
+export const ROOM_SLEEPS: Record<RoomKey, number> = { deluxe: 2 };
+
+/**
+ * Per night, for that many people in the bungalow. Null when it is not a
+ * number of people this bungalow is sold for.
+ *
+ * Two prices and a lookup rather than a rate multiplied by heads: one person
+ * pays 850 and two pay 1,550, and `850 × 2` would take 1,700,000 from a
+ * couple — 150,000 a night more than the family charges, every night, in a
+ * way a guest only notices against the price list.
+ */
+export function roomRate(key: RoomKey, guests: number): number | null {
+  const facts = roomFacts().find((r) => r.key === key);
+  if (!facts) return null;
+  if (!Number.isInteger(guests) || guests < 1 || guests > ROOM_SLEEPS[key]) {
+    return null;
+  }
+  const rate = guests === 1 ? facts.rateOne : facts.rateTwo;
+  return rate > 0 ? rate : null;
+}
 
 /** Six divers per guide is the boat's limit, and the copy says so out loud. */
 export const MAX_DIVERS = 6;
@@ -259,6 +334,14 @@ export function priceTurtle(v: {
   pack?: string;
   /** Nights, divers or days, depending on which of the two this is. */
   count: number;
+  /**
+   * For a room, how many people sleep in it — which is half of what it costs,
+   * not a detail for the housekeeping note. Anything the bungalow is not sold
+   * for is priced as nothing at all rather than rounded down to two: a party
+   * of four quietly charged for two is four people at a door with two beds,
+   * after the money has moved.
+   */
+  guests?: number;
 }): TurtleSale | null {
   const count = Math.floor(v.count);
   if (!Number.isFinite(count) || count < 1) return null;
@@ -267,10 +350,15 @@ export function priceTurtle(v: {
     const key = ROOM_KEYS.find((k) => k === v.room);
     if (!key) return null;
     if (count > MAX_SPAN) return null;
-    const rate = roomFacts().find((r) => r.key === key)?.rate ?? 0;
-    if (rate <= 0) return null;
+    const guests = Math.floor(Number(v.guests));
+    const rate = roomRate(key, guests);
+    if (!rate) return null;
     return {
-      name: EN.rooms.types[key].name,
+      /* The head count is part of the name because it is part of the price:
+         the same bungalow on the same night is two different figures, and a
+         receipt that says only "Deluxe Bungalow" cannot be checked against
+         the price list by the family or by the guest. */
+      name: `${EN.rooms.types[key].name}, ${guests === 1 ? "1 guest" : `${guests} guests`}`,
       unitPrice: rate,
       count,
       total: rate * count,
@@ -438,11 +526,38 @@ export interface SiteCopy {
     title: string;
     intro: string;
     perNight: string;
+    /** Beside each of the two figures, saying which one it is. */
+    forOne: string;
+    forTwo: string;
     roomsLabel: (n: number) => string;
     ask: string;
     askNote: (name: string) => string;
     otaNote: string;
     types: Record<RoomKey, RoomCopy>;
+    /**
+     * The third person in a bungalow. The figures are in `EXTRA_BED`; these
+     * are the words that go beside them.
+     */
+    extra: {
+      heading: string;
+      ages: Record<ExtraBedKey, string>;
+      per: string;
+      note: string;
+    };
+    /**
+     * The house rules from the family's own price list. Labels only: the
+     * times themselves are in `HOUSE`, where they are written once for all
+     * seven languages rather than seven times.
+     */
+    rules: {
+      heading: string;
+      checkIn: string;
+      checkOut: string;
+      power: string;
+      meals: string;
+      diet: string;
+      refund: string;
+    };
   };
   dive: {
     badge: string;
@@ -669,7 +784,7 @@ const EN: SiteCopy = {
   meta: {
     title: `${PROPERTY.name} · Homestay & Dive Center in Raja Ampat`,
     description:
-      "A family homestay and dive centre in Yenbuba, Pulau Mansuar. Rooms on stilts at the water's edge, three meals a day, and daily diving in the Dampier Strait.",
+      "A family homestay and dive centre on Pulau Kri, Raja Ampat. Bungalows on stilts at the water's edge, three meals a day, and daily diving in the Dampier Strait.",
   },
   maintenance: {
     eyebrow: "Back shortly",
@@ -680,7 +795,7 @@ const EN: SiteCopy = {
     email: "Send an email",
   },
   hero: {
-    sub: "A homestay in Yenbuba, on Pulau Mansuar, built by hand from local timber and standing at the edge of a reef we leave the way we found it. Kept by the family who has always lived in this bay, at the pace the tide sets.",
+    sub: "A homestay on Pulau Kri, built by hand from local timber and standing at the edge of a reef we leave the way we found it. Kept by the family who has always lived in this bay, at the pace the tide sets.",
   },
   value: {
     heading: "One jetty, one family,",
@@ -707,48 +822,56 @@ const EN: SiteCopy = {
     {
       title: "Rooms at the water's edge",
       sub: "Ten rooms along one boardwalk",
-      badge: "Yenbuba",
+      badge: "Pulau Kri",
       alt: "The boardwalk in front of a row of thatched bungalows",
     },
   ],
   rooms: {
-    eyebrow: "Rooms & rates",
-    title: "Pick Your Room",
+    eyebrow: "The bungalow & rates",
+    title: "Where You Sleep",
     intro:
-      "Per room, per night, three meals included. We charge no cleaning fee and no service fee.",
+      "One kind of bungalow, ten of them, three meals a day included. What a night costs depends on whether one or two of you sleep in it.",
     perNight: "per night",
-    roomsLabel: (n) => `${n} rooms`,
-    ask: "Ask about this room",
+    forOne: "one person",
+    forTwo: "two people",
+    roomsLabel: (n) => `${n} bungalows`,
+    ask: "Ask about the bungalow",
     askNote: (name) => `I am interested in the ${name}.`,
     otaNote:
-      "The rooms are also listed on Booking.com, Agoda and Traveloka. If you would rather book there, please do. The price is the same; booking with us directly only skips the platform's commission. What no OTA can sell you is a dive package, and those are arranged here.",
+      "The bungalows are also listed on stayrajaampat.com and on Booking.com. If you would rather book there, please do. What no platform can sell you is a place on the dive boat, and that is arranged here.",
     types: {
-      standard: {
-        name: "Standard Room",
+      deluxe: {
+        name: "Deluxe Bungalow",
         blurb:
-          "A timber room on stilts at the top of the sand, with a small deck facing the strait. Open the door in the morning and the water is a few steps away.",
-        cap: "2 adults",
+          "Traditional homestay work, built from the timber and thatch that grow around it. Its own terrace faces the sea, with a sun bed on it, and the bathroom is inside rather than across the sand.",
+        cap: "Up to 2 people",
         features: [
-          "Double bed with mosquito net",
-          "Shared bathroom, fresh water",
-          "Private deck facing the sea",
+          "Own terrace facing the sea",
+          "Sun bed on the terrace",
+          "Bathroom inside the bungalow",
           "Three meals a day included",
         ],
-        alt: "A row of timber rooms standing on stilts at the edge of the sand, shaded by trees, the water a few steps away.",
+        alt: "A row of timber bungalows standing on stilts at the edge of the sand, shaded by trees, the water a few steps away.",
       },
-      family: {
-        name: "Family Room",
-        blurb:
-          "Larger, sleeping two adults and two children. Right for a family, or for two couples travelling together.",
-        cap: "2 adults + 2 children",
-        features: [
-          "One double bed and two singles",
-          "Private bathroom",
-          "Wide deck, hammock",
-          "Three meals a day included",
-        ],
-        alt: "The family room seen head on: a wide deck under a thatched roof, with a hammock slung across it, a table and chairs, and trees on both sides.",
+    },
+    extra: {
+      heading: "Adding a third person",
+      ages: {
+        child: "3 to 9 years old",
+        teen: "10 to 16 years old",
+        adult: "17 and over",
       },
+      per: "per person, per night",
+      note: "One extra bed per bungalow. Tell us the ages when you write and we will say what fits — an extra bed is arranged by message rather than booked here.",
+    },
+    rules: {
+      heading: "Good to know",
+      checkIn: "Check-in from",
+      checkOut: "Check-out by",
+      power: "Power",
+      meals: "Breakfast, lunch, dinner",
+      diet: "Vegetarian, a restricted diet or an allergy: tell us before you arrive, so the kitchen knows.",
+      refund: "After the day you check in, a stay is not refunded.",
     },
   },
   dive: {
@@ -1027,7 +1150,7 @@ const EN: SiteCopy = {
       },
       {
         title: "We collect you",
-        body: "Our boat meets you at Waisai harbour, about an hour to Yenbuba. Send us your ferry time on WhatsApp.",
+        body: "Our boat meets you at Waisai harbour, about an hour to Pulau Kri. Send us your ferry time on WhatsApp.",
       },
     ],
     map: {
@@ -1037,7 +1160,7 @@ const EN: SiteCopy = {
       sorong: "Sorong",
       waisai: "Waisai",
       sketchAlt:
-        "A sketch map of the route: Sorong on the mainland, a ferry north-east to Waisai on Waigeo, then a boat south-west to the homestay on Pulau Mansuar.",
+        "A sketch map of the route: Sorong on the mainland, a ferry north-east to Waisai on Waigeo, then a boat south-west to the homestay on Pulau Kri.",
       copy: "Copy the address",
       copied: "Copied",
       google: "Open in Google Maps",
@@ -1121,17 +1244,17 @@ const EN: SiteCopy = {
     back: "Back to the homestay",
     title: "The family, the rooms,\nand the dive centre",
     lede:
-      "Turtle Dive Homestay is one family's house and the ten rooms they built beside it, on the north shore of Pulau Mansuar. This page is the long version: who runs it, what each room actually gives you, and how the dive centre came to sit at the end of the same jetty.",
+      "Turtle Dive Homestay is one family's house and the ten bungalows they built beside it, on Pulau Kri in the Dampier Strait. This page is the long version: who runs it, what a bungalow actually gives you, and how the dive centre came to sit at the end of the same jetty.",
     storyHeading: "Who you are staying with",
     story: [
       "The family who built this homestay live here, in the house at the top of the sand. They were born in this bay and so were their parents, and the reef in front of the jetty is the one they grew up swimming over. Nobody is on shift. If you need something, you are asking the person whose home it is.",
       "The rooms are traditional Papuan work, timber and thatch, put up by hand and repaired the same way when a storm takes a panel. That is a choice rather than a shortage: a room built like this can be mended with what is on the island, which matters four hours from the nearest hardware shop.",
       "What the family will not do is tidy the reef. It is left the way it was found, which is why the snorkelling starts at the bottom of the steps.",
     ],
-    roomsHeading: "The rooms",
+    roomsHeading: "The bungalows",
     roomsIntro: (total) =>
-      `${total} rooms in two types, all of them along one boardwalk, all of them facing the same water. Which one you get is worked out when you book; a room out for repair never appears as available.`,
-    roomsTotal: (total) => `${total} rooms in total`,
+      `${total} bungalows, all of one kind, all of them along one boardwalk, all of them facing the same water. Which one you get is worked out when you book; one out for repair never appears as available.`,
+    roomsTotal: (total) => `${total} bungalows in total`,
     serviceHeading: "What comes with the room",
     serviceIntro:
       "No cleaning fee, no service charge, no resort fee. The rate is the rate.",
@@ -1146,7 +1269,7 @@ const EN: SiteCopy = {
       },
       {
         title: "Fresh water and power",
-        body: "Fresh water for washing. Power runs from evening until morning, which is enough to charge a camera and a phone overnight.",
+        body: "Fresh water for washing. Power is on in the evening only — the hours are on the front page, beside the rates — so that is when a camera and a phone get charged.",
       },
       {
         title: "The boat",
@@ -1186,10 +1309,10 @@ const EN: SiteCopy = {
           "The whole place from above. The jetty, the sand, and the reef that starts a few metres out.",
         boardwalk:
           "The boardwalk that runs in front of every room, and the water at the end of it.",
-        standardRow:
-          "The standard rooms, on stilts at the top of the sand under the trees.",
-        familyFront:
-          "The family room, seen head on: a wide deck, a hammock across it, and room for four.",
+        bungalowRow:
+          "The bungalows, on stilts at the top of the sand under the trees.",
+        bungalowFront:
+          "A bungalow seen head on: a wide terrace, a hammock across it, and the water in front.",
         lunch:
           "Lunch under the dining hut, with the hammocks strung behind and the bungalows beyond.",
         dusk: "The jetty in the last of the light, looking back across the bay.",
@@ -1209,11 +1332,11 @@ const EN: SiteCopy = {
     items: [
       {
         q: "Is there electricity and internet?",
-        a: "Power runs from evening until morning. Alongside the phone signal there is Starlink, fast enough for a video call, and it reaches almost every room. If a reliable connection matters to your stay, say so when you book and we will put you in one of the rooms where the signal is strongest.",
+        a: "There is power in the evening only — the hours are with the rates above, and that is when everything gets charged. Alongside the phone signal there is Starlink, fast enough for a video call, and it reaches almost every bungalow. If a reliable connection matters to your stay, say so when you book and we will put you in one of the bungalows where the signal is strongest.",
       },
       {
         q: "What about food?",
-        a: "Three meals a day are included in the room rate. Fresh fish most days. Tell us when you book if you have allergies or anything you do not eat.",
+        a: "Three meals a day are included: breakfast, lunch and dinner, at the times listed with the rates above, and the kitchen does not serve outside them. Local food, cooked the way the family cooks it. Tell us before you arrive if you are vegetarian, have a restricted diet, or any allergy.",
       },
       {
         q: "Do I need to swim well to snorkel?",
@@ -1221,18 +1344,18 @@ const EN: SiteCopy = {
       },
       {
         q: "Can I pay by card?",
-        a: "There is no card machine on the island. Pay by transfer before you arrive, or in cash at check-in. Bring enough cash from Sorong or Waisai.",
+        a: "There is no card machine on the island. If the booking button took you to a payment page, that page takes cards, bank transfer and the usual e-wallets; otherwise pay by transfer before you arrive or in cash at check-in — and bring enough cash from Sorong or Waisai either way.",
       },
       {
         q: "Are children welcome?",
-        a: "Yes. The Family Room sleeps two children, and the snorkelling trip is safe for children who are comfortable in the water.",
+        a: "Yes. A bungalow sleeps two, and a third person sleeps on an extra bed — one per bungalow, priced by age, and the figures are with the rates above. Tell us the ages when you write. The snorkelling trip is safe for children who are comfortable in the water.",
       },
     ],
   },
   footer: {
     contact: "Contact",
     manager: "Manager sign-in",
-    colophon: `© ${PROPERTY.name}, ${PROPERTY.village}. Run together with Eddo Homestay in Sawinggrai, Pulau Gam.`,
+    colophon: `© ${PROPERTY.name}, ${PROPERTY.island}. Run together with Eddo Homestay in Yenbuba, Pulau Mansuar.`,
     tagline: (year) => (year ? `Raja Ampat · est. ${year}` : "Raja Ampat"),
     social: "Follow us",
     feedback: {
@@ -1309,7 +1432,7 @@ const ID: SiteCopy = {
   meta: {
     title: `${PROPERTY.name} · Homestay & Dive Center di Raja Ampat`,
     description:
-      "Homestay keluarga dan dive center di Yenbuba, Pulau Mansuar. Kamar berpanggung di tepi air, tiga kali makan, dan penyelaman harian di Selat Dampier.",
+      "Homestay keluarga dan dive center di Pulau Kri, Raja Ampat. Bungalow berpanggung di tepi air, tiga kali makan, dan penyelaman harian di Selat Dampier.",
   },
   maintenance: {
     eyebrow: "Sebentar lagi kembali",
@@ -1320,7 +1443,7 @@ const ID: SiteCopy = {
     email: "Kirim email",
   },
   hero: {
-    sub: "Homestay di Yenbuba, Pulau Mansuar, dibangun dengan tangan dari kayu setempat dan berdiri di tepi karang yang kami jaga apa adanya. Dirawat keluarga yang memang lahir dan besar di teluk ini, dengan irama yang diatur pasang surut.",
+    sub: "Homestay di Pulau Kri, dibangun dengan tangan dari kayu setempat dan berdiri di tepi karang yang kami jaga apa adanya. Dirawat keluarga yang memang lahir dan besar di teluk ini, dengan irama yang diatur pasang surut.",
   },
   value: {
     heading: "Satu dermaga, satu keluarga,",
@@ -1347,48 +1470,56 @@ const ID: SiteCopy = {
     {
       title: "Kamar di tepi air",
       sub: "Sepuluh kamar, satu jalur papan",
-      badge: "Yenbuba",
+      badge: "Pulau Kri",
       alt: "Jalur papan di depan deretan bungalow beratap rumbia",
     },
   ],
   rooms: {
-    eyebrow: "Kamar & harga",
-    title: "Pilih Kamarmu",
+    eyebrow: "Bungalow & harga",
+    title: "Tempat Kamu Tidur",
     intro:
-      "Harga per kamar per malam, sudah termasuk tiga kali makan. Kami tidak memungut biaya kebersihan atau biaya layanan.",
+      "Satu jenis bungalow, sepuluh unit, sudah termasuk tiga kali makan. Harga semalamnya tergantung kamu menginap sendiri atau berdua.",
     perNight: "per malam",
-    roomsLabel: (n) => `${n} kamar`,
-    ask: "Tanya kamar ini",
+    forOne: "satu orang",
+    forTwo: "dua orang",
+    roomsLabel: (n) => `${n} bungalow`,
+    ask: "Tanya bungalow ini",
     askNote: (name) => `Saya tertarik ${name}.`,
     otaNote:
-      "Kamar juga terdaftar di Booking.com, Agoda dan Traveloka. Kalau kamu lebih nyaman pesan lewat sana, silakan. Harganya sama; lewat kami saja yang tanpa komisi platform. Yang belum bisa dipesan di OTA mana pun adalah paket menyelam, dan itu diatur langsung di sini.",
+      "Bungalow-nya juga ada di stayrajaampat.com dan Booking.com. Kalau kamu lebih nyaman pesan lewat sana, silakan. Yang tidak dijual platform mana pun adalah tempat di perahu selam, dan itu diatur langsung di sini.",
     types: {
-      standard: {
-        name: "Kamar Standar",
+      deluxe: {
+        name: "Deluxe Bungalow",
         blurb:
-          "Kamar kayu berpanggung di tepi pasir, dengan teras kecil menghadap selat. Buka pintu pagi hari, air cuma beberapa langkah dari teras.",
-        cap: "2 dewasa",
+          "Homestay tradisional, dibangun dari kayu dan daun yang tumbuh di sekitarnya. Terasnya sendiri menghadap laut, ada sun bed di situ, dan kamar mandinya di dalam — bukan menyeberang pasir.",
+        cap: "Maksimal 2 orang",
         features: [
-          "Kasur double + kelambu",
-          "Kamar mandi bersama, air tawar",
-          "Teras pribadi menghadap laut",
+          "Teras sendiri menghadap laut",
+          "Sun bed di teras",
+          "Kamar mandi di dalam",
           "Termasuk 3x makan sehari",
         ],
-        alt: "Deretan kamar kayu berpanggung di tepi pasir, teduh di bawah pepohonan, air hanya beberapa langkah dari teras.",
+        alt: "Deretan bungalow kayu berpanggung di tepi pasir, teduh di bawah pepohonan, air hanya beberapa langkah dari teras.",
       },
-      family: {
-        name: "Kamar Keluarga",
-        blurb:
-          "Lebih luas, muat dua dewasa dan dua anak. Cocok untuk keluarga atau dua pasang yang bepergian bersama.",
-        cap: "2 dewasa + 2 anak",
-        features: [
-          "Satu kasur double + dua single",
-          "Kamar mandi dalam",
-          "Teras luas, hammock",
-          "Termasuk 3x makan sehari",
-        ],
-        alt: "Kamar keluarga dilihat dari depan: teras lebar beratap daun, hammock terbentang, meja dan kursi, pepohonan di kedua sisi.",
+    },
+    extra: {
+      heading: "Kalau ada orang ketiga",
+      ages: {
+        child: "Usia 3–9 tahun",
+        teen: "Usia 10–16 tahun",
+        adult: "17 tahun ke atas",
       },
+      per: "per orang, per malam",
+      note: "Satu extra bed per bungalow. Sebutkan usianya waktu menghubungi kami, nanti kami kabari muat atau tidak — extra bed diatur lewat pesan, bukan dipesan di sini.",
+    },
+    rules: {
+      heading: "Yang perlu diketahui",
+      checkIn: "Check-in mulai",
+      checkOut: "Check-out sebelum",
+      power: "Listrik",
+      meals: "Sarapan, makan siang, makan malam",
+      diet: "Vegetarian, ada pantangan, atau alergi: kabari sebelum datang supaya dapurnya tahu.",
+      refund: "Setelah hari check-in, menginap tidak bisa direfund.",
     },
   },
   dive: {
@@ -1667,7 +1798,7 @@ const ID: SiteCopy = {
       },
       {
         title: "Kami jemput",
-        body: "Perahu kami menjemput di dermaga Waisai, ±1 jam ke Yenbuba. Kabari jadwal kapalmu lewat WhatsApp.",
+        body: "Perahu kami menjemput di dermaga Waisai, ±1 jam ke Pulau Kri. Kabari jadwal kapalmu lewat WhatsApp.",
       },
     ],
     map: {
@@ -1677,7 +1808,7 @@ const ID: SiteCopy = {
       sorong: "Sorong",
       waisai: "Waisai",
       sketchAlt:
-        "Peta sketsa rutenya: Sorong di daratan, kapal ke timur laut menuju Waisai di Waigeo, lalu perahu ke barat daya menuju homestay di Pulau Mansuar.",
+        "Peta sketsa rutenya: Sorong di daratan, kapal ke timur laut menuju Waisai di Waigeo, lalu perahu ke barat daya menuju homestay di Pulau Kri.",
       copy: "Salin alamat",
       copied: "Tersalin",
       google: "Buka di Google Maps",
@@ -1761,17 +1892,17 @@ const ID: SiteCopy = {
     back: "Kembali ke homestay",
     title: "Keluarganya, kamarnya,\ndan dive center-nya",
     lede:
-      "Turtle Dive Homestay adalah rumah satu keluarga dan sepuluh kamar yang mereka bangun di sebelahnya, di pesisir utara Pulau Mansuar. Halaman ini versi panjangnya: siapa yang mengelola, apa yang sebenarnya kamu dapat di tiap kamar, dan bagaimana dive center-nya sampai berdiri di ujung dermaga yang sama.",
+      "Turtle Dive Homestay adalah rumah satu keluarga dan sepuluh bungalow yang mereka bangun di sebelahnya, di Pulau Kri, Selat Dampier. Halaman ini versi panjangnya: siapa yang mengelola, apa yang sebenarnya kamu dapat di satu bungalow, dan bagaimana dive center-nya sampai berdiri di ujung dermaga yang sama.",
     storyHeading: "Kamu menginap bersama siapa",
     story: [
       "Keluarga yang membangun homestay ini tinggal di sini juga, di rumah di ujung atas pasir. Mereka lahir di teluk ini, begitu juga orang tua mereka, dan karang di depan dermaga adalah karang tempat mereka berenang sejak kecil. Tidak ada yang sedang bertugas shift. Kalau kamu butuh sesuatu, kamu sedang meminta kepada orang yang rumahnya ini.",
       "Kamarnya kerja tradisional Papua, kayu dan daun, dibangun dengan tangan dan diperbaiki dengan cara yang sama kalau angin mencopot satu panel. Itu pilihan, bukan keterbatasan: kamar yang dibangun begini bisa diperbaiki dengan apa yang ada di pulau, dan itu penting kalau toko bangunan terdekat empat jam jauhnya.",
       "Yang tidak akan dilakukan keluarga ini adalah merapikan karangnya. Karangnya dibiarkan apa adanya, dan itu sebabnya snorkeling di sini dimulai dari anak tangga terakhir.",
     ],
-    roomsHeading: "Kamarnya",
+    roomsHeading: "Bungalow-nya",
     roomsIntro: (total) =>
-      `${total} kamar dalam dua tipe, semuanya di sepanjang satu jalur papan, semuanya menghadap air yang sama. Kamar mana yang kamu dapat diatur saat pemesanan; kamar yang sedang diperbaiki tidak pernah muncul sebagai tersedia.`,
-    roomsTotal: (total) => `Total ${total} kamar`,
+      `${total} bungalow, satu tipe saja, semuanya di sepanjang satu jalur papan, semuanya menghadap air yang sama. Bungalow mana yang kamu dapat diatur saat pemesanan; yang sedang diperbaiki tidak pernah muncul sebagai tersedia.`,
+    roomsTotal: (total) => `Total ${total} bungalow`,
     serviceHeading: "Yang sudah termasuk",
     serviceIntro:
       "Tidak ada biaya kebersihan, biaya layanan, atau biaya resor. Harganya ya segitu.",
@@ -1786,7 +1917,7 @@ const ID: SiteCopy = {
       },
       {
         title: "Air tawar dan listrik",
-        body: "Air tawar untuk mandi. Listrik menyala dari sore sampai pagi, cukup untuk mengisi kamera dan ponsel semalaman.",
+        body: "Air tawar untuk mandi. Listrik cuma menyala malam hari — jamnya ada di halaman depan, di bagian harga — jadi di jam itulah kamera dan ponsel diisi.",
       },
       {
         title: "Perahunya",
@@ -1826,10 +1957,10 @@ const ID: SiteCopy = {
           "Seluruh tempatnya dari atas. Dermaganya, pasirnya, dan karang yang mulai beberapa meter dari bibir pantai.",
         boardwalk:
           "Jalur papan yang membentang di depan semua kamar, dan air di ujungnya.",
-        standardRow:
-          "Kamar-kamar standar, berpanggung di tepi atas pasir, teduh di bawah pepohonan.",
-        familyFront:
-          "Kamar keluarga dilihat dari depan: teras lebar, hammock terbentang, muat berempat.",
+        bungalowRow:
+          "Bungalow-bungalownya, berpanggung di tepi atas pasir, teduh di bawah pepohonan.",
+        bungalowFront:
+          "Satu bungalow dilihat dari depan: teras lebar, hammock terbentang, laut di depannya.",
         lunch:
           "Makan siang di pondok makan, dengan hammock terpasang di belakang dan bungalow di kejauhan.",
         dusk: "Dermaga di sisa cahaya terakhir, memandang balik ke seberang teluk.",
@@ -1849,11 +1980,11 @@ const ID: SiteCopy = {
     items: [
       {
         q: "Apakah ada listrik dan internet?",
-        a: "Listrik menyala dari sore sampai pagi. Selain sinyal telepon, ada Starlink yang cukup cepat untuk panggilan video, dan jangkauannya sampai hampir semua kamar. Kalau koneksi penting untuk perjalananmu, beri tahu saat memesan dan kami tempatkan di kamar dengan sinyal paling kuat.",
+        a: "Listrik hanya menyala malam hari — jamnya ada di bagian harga di atas, dan itu waktunya mengisi daya semua alat. Selain sinyal telepon, ada Starlink yang cukup cepat untuk panggilan video, dan jangkauannya sampai hampir semua bungalow. Kalau koneksi penting untuk perjalananmu, beri tahu saat memesan dan kami tempatkan di bungalow dengan sinyal paling kuat.",
       },
       {
         q: "Makan bagaimana?",
-        a: "Tiga kali makan sehari sudah termasuk harga kamar. Ikan segar hampir tiap hari. Kalau ada alergi atau pantangan, beri tahu saat pesan.",
+        a: "Tiga kali makan sehari sudah termasuk: sarapan, makan siang, dan makan malam, pada jam yang tertulis di bagian harga di atas, dan dapur tidak melayani di luar jam itu. Masakan lokal, dimasak seperti keluarga ini memasak sehari-hari. Kabari sebelum datang kalau kamu vegetarian, punya pantangan, atau alergi.",
       },
       {
         q: "Perlu bisa berenang untuk snorkeling?",
@@ -1861,18 +1992,18 @@ const ID: SiteCopy = {
       },
       {
         q: "Bisa bayar pakai kartu?",
-        a: "Tidak ada mesin kartu di pulau. Pembayaran lewat transfer sebelum datang, atau tunai saat check-in. Bawa uang tunai secukupnya dari Sorong atau Waisai.",
+        a: "Tidak ada mesin kartu di pulau. Kalau tombol pesan tadi membawamu ke halaman pembayaran, di situ bisa kartu, transfer bank, dan e-wallet yang biasa; kalau tidak, bayar lewat transfer sebelum datang atau tunai saat check-in — dan bawa uang tunai secukupnya dari Sorong atau Waisai.",
       },
       {
         q: "Anak-anak boleh ikut?",
-        a: "Boleh. Kamar Keluarga muat dua anak, dan trip snorkeling aman untuk anak yang sudah nyaman di air.",
+        a: "Boleh. Satu bungalow muat dua orang, dan orang ketiga pakai extra bed — satu per bungalow, harganya menurut usia, angkanya ada di bagian harga di atas. Sebutkan usianya waktu menghubungi kami. Trip snorkeling aman untuk anak yang sudah nyaman di air.",
       },
     ],
   },
   footer: {
     contact: "Kontak",
     manager: "Masuk pengelola",
-    colophon: `© ${PROPERTY.name}, ${PROPERTY.village}. Dikelola bersama Eddo Homestay di Sawinggrai, Pulau Gam.`,
+    colophon: `© ${PROPERTY.name}, ${PROPERTY.island}. Dikelola bersama Eddo Homestay di Yenbuba, Pulau Mansuar.`,
     tagline: (year) => (year ? `Raja Ampat · sejak ${year}` : "Raja Ampat"),
     social: "Ikuti kami",
     feedback: {
@@ -1949,7 +2080,7 @@ const FR: SiteCopy = {
   meta: {
     title: `${PROPERTY.name} · Homestay et centre de plongée à Raja Ampat`,
     description:
-      "Un homestay familial et un centre de plongée à Yenbuba, Pulau Mansuar. Des chambres sur pilotis au bord de l'eau, trois repas par jour, et de la plongée quotidienne dans le détroit de Dampier.",
+      "Un homestay familial et un centre de plongée sur Pulau Kri, Raja Ampat. Des bungalows sur pilotis au bord de l'eau, trois repas par jour, et de la plongée quotidienne dans le détroit de Dampier.",
   },
   maintenance: {
     eyebrow: "De retour bientôt",
@@ -1960,7 +2091,7 @@ const FR: SiteCopy = {
     email: "Envoyer un e-mail",
   },
   hero: {
-    sub: "Un homestay à Yenbuba, sur Pulau Mansuar, construit à la main en bois local, au bord d'un récif que nous laissons tel que nous l'avons trouvé. Tenu par la famille qui a toujours vécu dans cette baie, au rythme de la marée.",
+    sub: "Un homestay sur Pulau Kri, construit à la main en bois local, au bord d'un récif que nous laissons tel que nous l'avons trouvé. Tenu par la famille qui a toujours vécu dans cette baie, au rythme de la marée.",
   },
   value: {
     heading: "Un ponton, une famille,",
@@ -1987,48 +2118,56 @@ const FR: SiteCopy = {
     {
       title: "Des chambres au bord de l'eau",
       sub: "Dix chambres le long d'un même ponton de bois",
-      badge: "Yenbuba",
+      badge: "Pulau Kri",
       alt: "La passerelle devant une rangée de bungalows au toit de chaume",
     },
   ],
   rooms: {
-    eyebrow: "Chambres et tarifs",
-    title: "Choisissez votre chambre",
+    eyebrow: "Le bungalow et les tarifs",
+    title: "Où vous dormez",
     intro:
-      "Par chambre, par nuit, trois repas compris. Nous ne facturons ni frais de ménage ni frais de service.",
+      "Un seul type de bungalow, dix en tout, trois repas par jour compris. Le prix d'une nuit dépend de si vous y dormez seul ou à deux.",
     perNight: "par nuit",
-    roomsLabel: (n) => `${n} chambres`,
-    ask: "Poser une question sur cette chambre",
-    askNote: (name) => `Je suis intéressé par la ${name}.`,
+    forOne: "une personne",
+    forTwo: "deux personnes",
+    roomsLabel: (n) => `${n} bungalows`,
+    ask: "Poser une question sur le bungalow",
+    askNote: (name) => `Je suis intéressé par le ${name}.`,
     otaNote:
-      "Les chambres sont aussi sur Booking.com, Agoda et Traveloka. Si vous préférez réserver là-bas, faites-le. Le prix est le même ; réserver directement chez nous évite seulement la commission de la plateforme. Ce qu'aucune de ces plateformes ne peut vous vendre, c'est un forfait de plongée : cela s'organise ici.",
+      "Les bungalows sont aussi sur stayrajaampat.com et sur Booking.com. Si vous préférez réserver là-bas, faites-le. Ce qu'aucune plateforme ne peut vous vendre, c'est une place sur le bateau de plongée : cela s'organise ici.",
     types: {
-      standard: {
-        name: "Chambre Standard",
+      deluxe: {
+        name: "Deluxe Bungalow",
         blurb:
-          "Une chambre en bois sur pilotis en haut du sable, avec une petite terrasse face au détroit. Ouvrez la porte le matin et l'eau est à quelques pas.",
-        cap: "2 adultes",
+          "Un homestay traditionnel, bâti avec le bois et les palmes qui poussent autour. Sa propre terrasse face à la mer, un transat dessus, et la salle de bain à l'intérieur plutôt que de l'autre côté du sable.",
+        cap: "2 personnes maximum",
         features: [
-          "Lit double avec moustiquaire",
-          "Salle de bain partagée, eau douce",
           "Terrasse privée face à la mer",
+          "Transat sur la terrasse",
+          "Salle de bain à l'intérieur",
           "Trois repas par jour compris",
         ],
-        alt: "Une rangée de chambres en bois sur pilotis au bord du sable, à l'ombre des arbres, l'eau à quelques pas.",
+        alt: "Une rangée de bungalows en bois sur pilotis au bord du sable, à l'ombre des arbres, l'eau à quelques pas.",
       },
-      family: {
-        name: "Chambre Familiale",
-        blurb:
-          "Plus grande, pour deux adultes et deux enfants. Ce qu'il faut pour une famille, ou pour deux couples qui voyagent ensemble.",
-        cap: "2 adultes + 2 enfants",
-        features: [
-          "Un lit double et deux lits simples",
-          "Salle de bain privée",
-          "Large terrasse, hamac",
-          "Trois repas par jour compris",
-        ],
-        alt: "La chambre familiale vue de face : une large terrasse sous un toit de chaume, un hamac tendu en travers, une table et des chaises, des arbres des deux côtés.",
+    },
+    extra: {
+      heading: "Ajouter une troisième personne",
+      ages: {
+        child: "De 3 à 9 ans",
+        teen: "De 10 à 16 ans",
+        adult: "17 ans et plus",
       },
+      per: "par personne et par nuit",
+      note: "Un lit d'appoint par bungalow. Dites-nous les âges quand vous écrivez et nous vous dirons ce qui rentre — un lit d'appoint s'arrange par message, il ne se réserve pas ici.",
+    },
+    rules: {
+      heading: "Bon à savoir",
+      checkIn: "Arrivée à partir de",
+      checkOut: "Départ avant",
+      power: "Électricité",
+      meals: "Petit-déjeuner, déjeuner, dîner",
+      diet: "Végétarien, régime particulier ou allergie : dites-le-nous avant d'arriver, pour que la cuisine soit au courant.",
+      refund: "Passé le jour de l'arrivée, un séjour n'est pas remboursé.",
     },
   },
   dive: {
@@ -2307,7 +2446,7 @@ const FR: SiteCopy = {
       },
       {
         title: "Nous venons vous chercher",
-        body: "Notre bateau vous attend au port de Waisai, environ une heure jusqu'à Yenbuba. Envoyez-nous l'heure de votre ferry sur WhatsApp.",
+        body: "Notre bateau vous attend au port de Waisai, environ une heure jusqu'à Pulau Kri. Envoyez-nous l'heure de votre ferry sur WhatsApp.",
       },
     ],
     map: {
@@ -2317,7 +2456,7 @@ const FR: SiteCopy = {
       sorong: "Sorong",
       waisai: "Waisai",
       sketchAlt:
-        "Un croquis de l'itinéraire : Sorong sur la grande terre, un ferry vers le nord-est jusqu'à Waisai sur Waigeo, puis un bateau vers le sud-ouest jusqu'au homestay sur Pulau Mansuar.",
+        "Un croquis de l'itinéraire : Sorong sur la grande terre, un ferry vers le nord-est jusqu'à Waisai sur Waigeo, puis un bateau vers le sud-ouest jusqu'au homestay sur Pulau Kri.",
       copy: "Copier l'adresse",
       copied: "Copié",
       google: "Ouvrir dans Google Maps",
@@ -2401,17 +2540,17 @@ const FR: SiteCopy = {
     back: "Retour au homestay",
     title: "La famille, les chambres,\net le centre de plongée",
     lede:
-      "Turtle Dive Homestay, c'est la maison d'une famille et les dix chambres qu'elle a bâties à côté, sur la côte nord de Pulau Mansuar. Cette page est la version longue : qui tient les lieux, ce que chaque chambre offre vraiment, et comment le centre de plongée en est venu à s'installer au bout du même ponton.",
+      "Turtle Dive Homestay, c'est la maison d'une famille et les dix bungalows qu'elle a bâtis à côté, sur Pulau Kri, dans le détroit de Dampier. Cette page est la version longue : qui tient les lieux, ce qu'un bungalow offre vraiment, et comment le centre de plongée en est venu à s'installer au bout du même ponton.",
     storyHeading: "Chez qui vous logez",
     story: [
       "La famille qui a bâti ce homestay vit ici, dans la maison en haut du sable. Ses membres sont nés dans cette baie, leurs parents aussi, et le récif devant le ponton est celui au-dessus duquel ils ont appris à nager. Personne n'est de service. Si vous avez besoin de quelque chose, vous le demandez à la personne dont c'est la maison.",
       "Les chambres sont un travail papou traditionnel, bois et chaume, montées à la main et réparées de la même façon quand une tempête emporte un panneau. C'est un choix, pas un manque : une chambre bâtie ainsi se répare avec ce qu'il y a sur l'île, ce qui compte à quatre heures de la première quincaillerie.",
       "Ce que la famille ne fera pas, c'est ranger le récif. Il est laissé tel qu'il a été trouvé, et c'est pour cela que le snorkeling commence au bas des marches.",
     ],
-    roomsHeading: "Les chambres",
+    roomsHeading: "Les bungalows",
     roomsIntro: (total) =>
-      `${total} chambres en deux types, toutes le long d'un même ponton de bois, toutes face à la même eau. Laquelle vous aurez se décide à la réservation ; une chambre en réparation n'apparaît jamais comme disponible.`,
-    roomsTotal: (total) => `${total} chambres en tout`,
+      `${total} bungalows, tous du même type, tous le long d'un même ponton de bois, tous face à la même eau. Lequel vous aurez se décide à la réservation ; un bungalow en réparation n'apparaît jamais comme disponible.`,
+    roomsTotal: (total) => `${total} bungalows en tout`,
     serviceHeading: "Ce qui vient avec la chambre",
     serviceIntro:
       "Pas de frais de ménage, pas de frais de service, pas de frais de séjour. Le tarif est le tarif.",
@@ -2426,7 +2565,7 @@ const FR: SiteCopy = {
       },
       {
         title: "Eau douce et électricité",
-        body: "De l'eau douce pour se laver. L'électricité tourne du soir au matin, assez pour recharger un appareil photo et un téléphone pendant la nuit.",
+        body: "De l'eau douce pour se laver. Il n'y a de l'électricité que le soir — les horaires sont sur la page d'accueil, avec les tarifs — c'est donc à ce moment-là qu'on recharge appareil photo et téléphone.",
       },
       {
         title: "Le bateau",
@@ -2466,10 +2605,10 @@ const FR: SiteCopy = {
           "L'ensemble vu d'en haut. Le ponton, le sable, et le récif qui commence à quelques mètres.",
         boardwalk:
           "La passerelle qui court devant chaque chambre, et l'eau au bout.",
-        standardRow:
-          "Les chambres standard, sur pilotis en haut du sable sous les arbres.",
-        familyFront:
-          "La chambre familiale, vue de face : une large terrasse, un hamac en travers, et de la place pour quatre.",
+        bungalowRow:
+          "Les bungalows, sur pilotis en haut du sable sous les arbres.",
+        bungalowFront:
+          "Un bungalow vu de face : une large terrasse, un hamac en travers, et l'eau devant.",
         lunch:
           "Le déjeuner sous la paillote, les hamacs tendus derrière et les bungalows au-delà.",
         dusk: "Le ponton dans les dernières lueurs, en regardant vers la baie.",
@@ -2489,11 +2628,11 @@ const FR: SiteCopy = {
     items: [
       {
         q: "Y a-t-il de l'électricité et internet ?",
-        a: "L'électricité tourne du soir au matin. À côté du réseau téléphonique il y a Starlink, assez rapide pour un appel vidéo, et cela atteint presque toutes les chambres. Si une connexion fiable compte pour votre séjour, dites-le à la réservation et nous vous mettrons dans l'une des chambres où le signal est le plus fort.",
+        a: "Il n'y a de l'électricité que le soir — les horaires sont indiqués avec les tarifs plus haut, et c'est le moment où tout se recharge. À côté du réseau téléphonique il y a Starlink, assez rapide pour un appel vidéo, et cela atteint presque tous les bungalows. Si une connexion fiable compte pour votre séjour, dites-le à la réservation et nous vous mettrons dans l'un des bungalows où le signal est le plus fort.",
       },
       {
         q: "Et les repas ?",
-        a: "Trois repas par jour sont compris dans le tarif. Du poisson frais la plupart des jours. Dites-nous à la réservation si vous avez des allergies ou quelque chose que vous ne mangez pas.",
+        a: "Trois repas par jour sont compris : petit-déjeuner, déjeuner et dîner, aux heures indiquées avec les tarifs plus haut, et la cuisine ne sert pas en dehors. Cuisine locale, telle que la famille la fait. Dites-nous avant d'arriver si vous êtes végétarien, si vous suivez un régime particulier ou si vous avez une allergie.",
       },
       {
         q: "Faut-il bien nager pour faire du snorkeling ?",
@@ -2501,18 +2640,18 @@ const FR: SiteCopy = {
       },
       {
         q: "Puis-je payer par carte ?",
-        a: "Il n'y a pas de terminal de paiement sur l'île. Payez par virement avant d'arriver, ou en espèces à l'arrivée. Prenez assez d'espèces à Sorong ou Waisai.",
+        a: "Il n'y a pas de terminal de paiement sur l'île. Si le bouton de réservation vous a mené à une page de paiement, celle-ci accepte les cartes, le virement et les portefeuilles électroniques habituels ; sinon, payez par virement avant d'arriver ou en espèces à l'arrivée — et prenez de toute façon assez d'espèces à Sorong ou Waisai.",
       },
       {
         q: "Les enfants sont-ils les bienvenus ?",
-        a: "Oui. La Chambre Familiale couche deux enfants, et la sortie snorkeling convient aux enfants à l'aise dans l'eau.",
+        a: "Oui. Un bungalow couche deux personnes, et une troisième dort sur un lit d'appoint — un par bungalow, au tarif selon l'âge, et les chiffres sont avec les tarifs plus haut. Dites-nous les âges quand vous écrivez. La sortie snorkeling convient aux enfants à l'aise dans l'eau.",
       },
     ],
   },
   footer: {
     contact: "Contact",
     manager: "Connexion gestion",
-    colophon: `© ${PROPERTY.name}, ${PROPERTY.village}. Tenu avec Eddo Homestay à Sawinggrai, Pulau Gam.`,
+    colophon: `© ${PROPERTY.name}, ${PROPERTY.island}. Tenu avec Eddo Homestay à Yenbuba, Pulau Mansuar.`,
     tagline: (year) => (year ? `Raja Ampat · depuis ${year}` : "Raja Ampat"),
     social: "Nous suivre",
     feedback: {
@@ -2589,7 +2728,7 @@ const DE: SiteCopy = {
   meta: {
     title: `${PROPERTY.name} · Homestay und Tauchbasis in Raja Ampat`,
     description:
-      "Ein Familien-Homestay und eine Tauchbasis in Yenbuba, Pulau Mansuar. Zimmer auf Stelzen am Wasser, drei Mahlzeiten am Tag und täglich Tauchgänge in der Dampier-Straße.",
+      "Ein Familien-Homestay und eine Tauchbasis auf Pulau Kri, Raja Ampat. Bungalows auf Stelzen am Wasser, drei Mahlzeiten am Tag und täglich Tauchgänge in der Dampier-Straße.",
   },
   maintenance: {
     eyebrow: "Gleich zurück",
@@ -2600,7 +2739,7 @@ const DE: SiteCopy = {
     email: "E-Mail schreiben",
   },
   hero: {
-    sub: "Ein Homestay in Yenbuba auf Pulau Mansuar, von Hand aus einheimischem Holz gebaut, am Rand eines Riffs, das wir so lassen, wie wir es vorgefunden haben. Geführt von der Familie, die schon immer in dieser Bucht lebt, im Takt der Gezeiten.",
+    sub: "Ein Homestay auf Pulau Kri, von Hand aus einheimischem Holz gebaut, am Rand eines Riffs, das wir so lassen, wie wir es vorgefunden haben. Geführt von der Familie, die schon immer in dieser Bucht lebt, im Takt der Gezeiten.",
   },
   value: {
     heading: "Ein Steg, eine Familie,",
@@ -2627,48 +2766,56 @@ const DE: SiteCopy = {
     {
       title: "Zimmer am Wasser",
       sub: "Zehn Zimmer an einem Holzsteg",
-      badge: "Yenbuba",
+      badge: "Pulau Kri",
       alt: "Der Holzsteg vor einer Reihe von Bungalows mit Palmdach",
     },
   ],
   rooms: {
-    eyebrow: "Zimmer und Preise",
-    title: "Wählen Sie Ihr Zimmer",
+    eyebrow: "Der Bungalow und die Preise",
+    title: "Wo Sie schlafen",
     intro:
-      "Pro Zimmer, pro Nacht, drei Mahlzeiten inklusive. Wir berechnen keine Reinigungsgebühr und keine Servicegebühr.",
+      "Ein Bungalowtyp, zehn davon, drei Mahlzeiten am Tag inklusive. Was eine Nacht kostet, hängt davon ab, ob einer oder zwei darin schlafen.",
     perNight: "pro Nacht",
-    roomsLabel: (n) => `${n} Zimmer`,
-    ask: "Nach diesem Zimmer fragen",
-    askNote: (name) => `Ich interessiere mich für das ${name}.`,
+    forOne: "eine Person",
+    forTwo: "zwei Personen",
+    roomsLabel: (n) => `${n} Bungalows`,
+    ask: "Nach dem Bungalow fragen",
+    askNote: (name) => `Ich interessiere mich für den ${name}.`,
     otaNote:
-      "Die Zimmer stehen auch auf Booking.com, Agoda und Traveloka. Wenn Sie lieber dort buchen, tun Sie das ruhig. Der Preis ist derselbe; direkt bei uns zu buchen spart nur die Provision der Plattform. Was Ihnen kein Portal verkaufen kann, ist ein Tauchpaket — das wird hier arrangiert.",
+      "Die Bungalows stehen auch auf stayrajaampat.com und auf Booking.com. Wenn Sie lieber dort buchen, tun Sie das ruhig. Was Ihnen kein Portal verkaufen kann, ist ein Platz im Tauchboot — der wird hier arrangiert.",
     types: {
-      standard: {
-        name: "Standardzimmer",
+      deluxe: {
+        name: "Deluxe Bungalow",
         blurb:
-          "Ein Holzzimmer auf Stelzen oben am Sand, mit einer kleinen Terrasse zur Meerenge. Morgens die Tür öffnen, und das Wasser ist ein paar Schritte entfernt.",
-        cap: "2 Erwachsene",
+          "Traditionelle Homestay-Arbeit, gebaut aus dem Holz und dem Blattwerk, das ringsum wächst. Eigene Terrasse zum Meer, eine Sonnenliege darauf, und das Bad im Bungalow statt drüben über dem Sand.",
+        cap: "Maximal 2 Personen",
         features: [
-          "Doppelbett mit Moskitonetz",
-          "Gemeinschaftsbad, Süßwasser",
           "Eigene Terrasse zum Meer",
+          "Sonnenliege auf der Terrasse",
+          "Bad im Bungalow",
           "Drei Mahlzeiten am Tag inklusive",
         ],
-        alt: "Eine Reihe Holzzimmer auf Stelzen am Rand des Sandes, im Schatten der Bäume, das Wasser ein paar Schritte entfernt.",
+        alt: "Eine Reihe Holzbungalows auf Stelzen am Rand des Sandes, im Schatten der Bäume, das Wasser ein paar Schritte entfernt.",
       },
-      family: {
-        name: "Familienzimmer",
-        blurb:
-          "Größer, für zwei Erwachsene und zwei Kinder. Richtig für eine Familie oder für zwei Paare, die zusammen reisen.",
-        cap: "2 Erwachsene + 2 Kinder",
-        features: [
-          "Ein Doppelbett und zwei Einzelbetten",
-          "Eigenes Bad",
-          "Breite Terrasse, Hängematte",
-          "Drei Mahlzeiten am Tag inklusive",
-        ],
-        alt: "Das Familienzimmer von vorn: eine breite Terrasse unter einem Palmdach, eine Hängematte quer darüber, Tisch und Stühle, Bäume auf beiden Seiten.",
+    },
+    extra: {
+      heading: "Eine dritte Person",
+      ages: {
+        child: "3 bis 9 Jahre",
+        teen: "10 bis 16 Jahre",
+        adult: "Ab 17 Jahren",
       },
+      per: "pro Person und Nacht",
+      note: "Ein Zustellbett pro Bungalow. Schreiben Sie uns die Alter, dann sagen wir, was hineinpasst — ein Zustellbett wird per Nachricht vereinbart und nicht hier gebucht.",
+    },
+    rules: {
+      heading: "Gut zu wissen",
+      checkIn: "Anreise ab",
+      checkOut: "Abreise bis",
+      power: "Strom",
+      meals: "Frühstück, Mittag, Abendessen",
+      diet: "Vegetarisch, eine eingeschränkte Ernährung oder eine Allergie: sagen Sie es uns vor der Anreise, damit die Küche Bescheid weiß.",
+      refund: "Nach dem Anreisetag wird ein Aufenthalt nicht erstattet.",
     },
   },
   dive: {
@@ -2947,7 +3094,7 @@ const DE: SiteCopy = {
       },
       {
         title: "Wir holen Sie ab",
-        body: "Unser Boot erwartet Sie im Hafen von Waisai, etwa eine Stunde bis Yenbuba. Schicken Sie uns Ihre Fährzeit über WhatsApp.",
+        body: "Unser Boot erwartet Sie im Hafen von Waisai, etwa eine Stunde bis Pulau Kri. Schicken Sie uns Ihre Fährzeit über WhatsApp.",
       },
     ],
     map: {
@@ -2957,7 +3104,7 @@ const DE: SiteCopy = {
       sorong: "Sorong",
       waisai: "Waisai",
       sketchAlt:
-        "Eine Skizze der Route: Sorong auf dem Festland, mit der Fähre nach Nordosten nach Waisai auf Waigeo, dann mit dem Boot nach Südwesten zum Homestay auf Pulau Mansuar.",
+        "Eine Skizze der Route: Sorong auf dem Festland, mit der Fähre nach Nordosten nach Waisai auf Waigeo, dann mit dem Boot nach Südwesten zum Homestay auf Pulau Kri.",
       copy: "Adresse kopieren",
       copied: "Kopiert",
       google: "In Google Maps öffnen",
@@ -3041,17 +3188,17 @@ const DE: SiteCopy = {
     back: "Zurück zum Homestay",
     title: "Die Familie, die Zimmer\nund die Tauchbasis",
     lede:
-      "Turtle Dive Homestay ist das Haus einer Familie und die zehn Zimmer, die sie daneben gebaut hat, an der Nordküste von Pulau Mansuar. Diese Seite ist die lange Fassung: wer das hier führt, was jedes Zimmer wirklich bietet, und wie die Tauchbasis ans Ende desselben Stegs kam.",
+      "Turtle Dive Homestay ist das Haus einer Familie und die zehn Bungalows, die sie daneben gebaut hat, auf Pulau Kri in der Dampier-Straße. Diese Seite ist die lange Fassung: wer das hier führt, was ein Bungalow wirklich bietet, und wie die Tauchbasis ans Ende desselben Stegs kam.",
     storyHeading: "Bei wem Sie wohnen",
     story: [
       "Die Familie, die dieses Homestay gebaut hat, wohnt hier, im Haus oben am Sand. Sie ist in dieser Bucht geboren, ihre Eltern auch, und das Riff vor dem Steg ist das, über dem sie schwimmen gelernt hat. Niemand hat hier Schicht. Wenn Sie etwas brauchen, fragen Sie die Person, der das Haus gehört.",
       "Die Zimmer sind traditionelle papuanische Arbeit, Holz und Palmdach, von Hand gebaut und genauso repariert, wenn ein Sturm eine Platte mitnimmt. Das ist eine Entscheidung, kein Mangel: Ein so gebautes Zimmer lässt sich mit dem flicken, was es auf der Insel gibt — und das zählt vier Stunden vom nächsten Baumarkt entfernt.",
       "Was die Familie nicht tut, ist das Riff aufzuräumen. Es bleibt, wie es vorgefunden wurde, und deshalb fängt das Schnorcheln am Fuß der Treppe an.",
     ],
-    roomsHeading: "Die Zimmer",
+    roomsHeading: "Die Bungalows",
     roomsIntro: (total) =>
-      `${total} Zimmer in zwei Typen, alle an einem Holzsteg, alle zum selben Wasser hin. Welches Sie bekommen, klärt sich bei der Buchung; ein Zimmer in Reparatur erscheint nie als frei.`,
-    roomsTotal: (total) => `${total} Zimmer insgesamt`,
+      `${total} Bungalows, alle vom selben Typ, alle an einem Holzsteg, alle zum selben Wasser hin. Welchen Sie bekommen, klärt sich bei der Buchung; einer in Reparatur erscheint nie als frei.`,
+    roomsTotal: (total) => `${total} Bungalows insgesamt`,
     serviceHeading: "Was im Zimmerpreis steckt",
     serviceIntro:
       "Keine Reinigungsgebühr, keine Servicepauschale, keine Resortgebühr. Der Preis ist der Preis.",
@@ -3066,7 +3213,7 @@ const DE: SiteCopy = {
       },
       {
         title: "Süßwasser und Strom",
-        body: "Süßwasser zum Waschen. Der Strom läuft von abends bis morgens, genug, um Kamera und Telefon über Nacht zu laden.",
+        body: "Süßwasser zum Waschen. Strom gibt es nur abends — die Zeiten stehen auf der Startseite bei den Preisen —, dann werden Kamera und Telefon geladen.",
       },
       {
         title: "Das Boot",
@@ -3106,10 +3253,10 @@ const DE: SiteCopy = {
           "Das Ganze von oben. Der Steg, der Sand und das Riff, das ein paar Meter draußen beginnt.",
         boardwalk:
           "Der Holzsteg, der vor jedem Zimmer entlangläuft, und das Wasser an seinem Ende.",
-        standardRow:
-          "Die Standardzimmer, auf Stelzen oben am Sand unter den Bäumen.",
-        familyFront:
-          "Das Familienzimmer von vorn: eine breite Terrasse, eine Hängematte quer darüber, und Platz für vier.",
+        bungalowRow:
+          "Die Bungalows, auf Stelzen oben am Sand unter den Bäumen.",
+        bungalowFront:
+          "Ein Bungalow von vorn: eine breite Terrasse, eine Hängematte quer darüber, und davor das Wasser.",
         lunch:
           "Mittagessen unter der Essenshütte, die Hängematten dahinter gespannt und die Bungalows weiter hinten.",
         dusk: "Der Steg im letzten Licht, mit Blick zurück über die Bucht.",
@@ -3129,11 +3276,11 @@ const DE: SiteCopy = {
     items: [
       {
         q: "Gibt es Strom und Internet?",
-        a: "Der Strom läuft von abends bis morgens. Neben dem Mobilfunknetz gibt es Starlink, schnell genug für einen Videoanruf, und es reicht in fast jedes Zimmer. Wenn eine verlässliche Verbindung für Ihren Aufenthalt zählt, sagen Sie es bei der Buchung, dann legen wir Sie in eines der Zimmer mit dem stärksten Signal.",
+        a: "Strom gibt es nur abends — die Zeiten stehen oben bei den Preisen, und dann wird alles geladen. Neben dem Mobilfunknetz gibt es Starlink, schnell genug für einen Videoanruf, und es reicht in fast jeden Bungalow. Wenn eine verlässliche Verbindung für Ihren Aufenthalt zählt, sagen Sie es bei der Buchung, dann legen wir Sie in einen der Bungalows mit dem stärksten Signal.",
       },
       {
         q: "Wie ist das mit dem Essen?",
-        a: "Drei Mahlzeiten am Tag sind im Zimmerpreis enthalten. Frischer Fisch an den meisten Tagen. Sagen Sie uns bei der Buchung Bescheid, wenn Sie Allergien haben oder etwas nicht essen.",
+        a: "Drei Mahlzeiten am Tag sind enthalten: Frühstück, Mittag- und Abendessen zu den Zeiten, die oben bei den Preisen stehen; außerhalb davon kocht die Küche nicht. Einheimisches Essen, so wie die Familie es kocht. Sagen Sie uns vor der Anreise Bescheid, wenn Sie vegetarisch essen, eine eingeschränkte Ernährung haben oder allergisch sind.",
       },
       {
         q: "Muss ich gut schwimmen können, um zu schnorcheln?",
@@ -3141,18 +3288,18 @@ const DE: SiteCopy = {
       },
       {
         q: "Kann ich mit Karte zahlen?",
-        a: "Es gibt kein Kartengerät auf der Insel. Zahlen Sie vor der Anreise per Überweisung oder bar bei der Ankunft. Nehmen Sie genug Bargeld aus Sorong oder Waisai mit.",
+        a: "Es gibt kein Kartengerät auf der Insel. Wenn der Buchungsknopf Sie auf eine Bezahlseite geführt hat, nimmt diese Karten, Überweisung und die üblichen E-Wallets; sonst zahlen Sie vor der Anreise per Überweisung oder bar bei der Ankunft — und nehmen Sie ohnehin genug Bargeld aus Sorong oder Waisai mit.",
       },
       {
         q: "Sind Kinder willkommen?",
-        a: "Ja. Im Familienzimmer schlafen zwei Kinder, und der Schnorchelausflug ist sicher für Kinder, die sich im Wasser wohlfühlen.",
+        a: "Ja. Ein Bungalow schläft zwei, eine dritte Person schläft auf einem Zustellbett — eines pro Bungalow, der Preis richtet sich nach dem Alter, und die Zahlen stehen oben bei den Preisen. Schreiben Sie uns die Alter. Der Schnorchelausflug ist sicher für Kinder, die sich im Wasser wohlfühlen.",
       },
     ],
   },
   footer: {
     contact: "Kontakt",
     manager: "Anmeldung Verwaltung",
-    colophon: `© ${PROPERTY.name}, ${PROPERTY.village}. Gemeinsam geführt mit Eddo Homestay in Sawinggrai, Pulau Gam.`,
+    colophon: `© ${PROPERTY.name}, ${PROPERTY.island}. Gemeinsam geführt mit Eddo Homestay in Yenbuba, Pulau Mansuar.`,
     tagline: (year) => (year ? `Raja Ampat · seit ${year}` : "Raja Ampat"),
     social: "Folgen Sie uns",
     feedback: {
@@ -3246,7 +3393,7 @@ const RU: SiteCopy = {
   meta: {
     title: `${PROPERTY.name} · Семейный хоумстей и дайв-центр в Раджа-Ампат`,
     description:
-      "Семейный хоумстей и дайв-центр в Йенбуба на острове Мансуар. Домики на сваях у самой воды, трёхразовое питание и ежедневные погружения в проливе Дампир.",
+      "Семейный хоумстей и дайв-центр на острове Кри, Раджа-Ампат. Бунгало на сваях у самой воды, трёхразовое питание и ежедневные погружения в проливе Дампир.",
   },
   maintenance: {
     eyebrow: "Скоро вернёмся",
@@ -3257,7 +3404,7 @@ const RU: SiteCopy = {
     email: "Отправить письмо",
   },
   hero: {
-    sub: "Хоумстей в деревне Йенбуба на острове Мансуар, построенный вручную из местного дерева на краю рифа, который мы оставляем таким, каким нашли. Его держит семья, всегда жившая в этой бухте, в ритме прилива.",
+    sub: "Хоумстей на острове Кри, построенный вручную из местного дерева на краю рифа, который мы оставляем таким, каким нашли. Его держит семья, всегда жившая в этой бухте, в ритме прилива.",
   },
   value: {
     heading: "Один причал, одна семья,",
@@ -3284,48 +3431,56 @@ const RU: SiteCopy = {
     {
       title: "Номера у самой воды",
       sub: "Десять номеров вдоль одних мостков",
-      badge: "Йенбуба",
+      badge: "Остров Кри",
       alt: "Деревянные мостки перед рядом бунгало с пальмовыми крышами",
     },
   ],
   rooms: {
-    eyebrow: "Номера и цены",
-    title: "Выберите номер",
+    eyebrow: "Бунгало и цены",
+    title: "Где вы будете спать",
     intro:
-      "За номер, за ночь, с трёхразовым питанием. Мы не берём ни плату за уборку, ни сервисный сбор.",
+      "Один тип бунгало, их десять, трёхразовое питание включено. Цена за ночь зависит от того, один вы в нём или вдвоём.",
     perNight: "за ночь",
-    roomsLabel: (n) => ruPlural(n, "номер", "номера", "номеров"),
-    ask: "Спросить об этом номере",
+    forOne: "один человек",
+    forTwo: "двое",
+    roomsLabel: (n) => `${n} бунгало`,
+    ask: "Спросить о бунгало",
     askNote: (name) => `Меня интересует «${name}».`,
     otaNote:
-      "Номера есть и на Booking.com, Agoda и Traveloka. Если вам удобнее бронировать там — пожалуйста. Цена та же; напрямую у нас вы просто минуете комиссию площадки. Чего ни один сервис вам не продаст — это дайв-пакет, он собирается здесь.",
+      "Бунгало есть и на stayrajaampat.com, и на Booking.com. Если вам удобнее бронировать там — пожалуйста. Чего ни одна площадка вам не продаст — это место на дайв-боте, оно собирается здесь.",
     types: {
-      standard: {
-        name: "Стандартный номер",
+      deluxe: {
+        name: "Deluxe Bungalow",
         blurb:
-          "Деревянный номер на сваях в верхней части пляжа, с небольшой террасой к проливу. Утром открываете дверь — и до воды несколько шагов.",
-        cap: "2 взрослых",
+          "Традиционный дом, срубленный из того дерева и листа, что растут вокруг. Своя терраса к морю, шезлонг на ней, а ванная внутри, а не через песок.",
+        cap: "Не более 2 человек",
         features: [
-          "Двуспальная кровать с москитной сеткой",
-          "Общая душевая, пресная вода",
           "Своя терраса с видом на море",
+          "Шезлонг на террасе",
+          "Ванная внутри бунгало",
           "Трёхразовое питание включено",
         ],
-        alt: "Ряд деревянных домиков на сваях у кромки песка, в тени деревьев, вода в нескольких шагах.",
+        alt: "Ряд деревянных бунгало на сваях у кромки песка, в тени деревьев, вода в нескольких шагах.",
       },
-      family: {
-        name: "Семейный номер",
-        blurb:
-          "Больше по размеру, на двоих взрослых и двоих детей. Подходит семье или двум парам, которые едут вместе.",
-        cap: "2 взрослых + 2 детей",
-        features: [
-          "Одна двуспальная и две односпальные кровати",
-          "Своя ванная комната",
-          "Широкая терраса, гамак",
-          "Трёхразовое питание включено",
-        ],
-        alt: "Семейный номер спереди: широкая терраса под пальмовой крышей, натянутый поперёк гамак, стол и стулья, деревья с обеих сторон.",
+    },
+    extra: {
+      heading: "Если вас трое",
+      ages: {
+        child: "От 3 до 9 лет",
+        teen: "От 10 до 16 лет",
+        adult: "От 17 лет",
       },
+      per: "с человека за ночь",
+      note: "Одна дополнительная кровать на бунгало. Напишите нам возраст — скажем, что поместится; дополнительная кровать согласуется в переписке, а не бронируется здесь.",
+    },
+    rules: {
+      heading: "Что стоит знать",
+      checkIn: "Заезд с",
+      checkOut: "Выезд до",
+      power: "Электричество",
+      meals: "Завтрак, обед, ужин",
+      diet: "Вегетарианство, ограничения в еде или аллергия: скажите до приезда, чтобы на кухне знали.",
+      refund: "После дня заезда проживание не возвращается.",
     },
   },
   dive: {
@@ -3605,7 +3760,7 @@ const RU: SiteCopy = {
       },
       {
         title: "Мы вас встречаем",
-        body: "Наша лодка ждёт в порту Вайсая, около часа до Йенбубы. Пришлите время парома в WhatsApp.",
+        body: "Наша лодка ждёт в порту Вайсая, около часа до острова Кри. Пришлите время парома в WhatsApp.",
       },
     ],
     map: {
@@ -3615,7 +3770,7 @@ const RU: SiteCopy = {
       sorong: "Соронг",
       waisai: "Вайсай",
       sketchAlt:
-        "Схема маршрута: Соронг на материке, паром на северо-восток до Вайсая на острове Вайгео, затем лодка на юго-запад до хоумстея на острове Мансуар.",
+        "Схема маршрута: Соронг на материке, паром на северо-восток до Вайсая на острове Вайгео, затем лодка на юго-запад до хоумстея на острове Кри.",
       copy: "Скопировать адрес",
       copied: "Скопировано",
       google: "Открыть в Google Maps",
@@ -3699,17 +3854,17 @@ const RU: SiteCopy = {
     back: "Вернуться в хоумстей",
     title: "Семья, номера\nи дайв-центр",
     lede:
-      "Turtle Dive Homestay — это дом одной семьи и десять номеров, которые они построили рядом, на северном берегу острова Мансуар. Эта страница — длинная версия: кто здесь хозяева, что на самом деле даёт каждый номер и как дайв-центр оказался в конце того же причала.",
+      "Turtle Dive Homestay — это дом одной семьи и десять бунгало, которые они построили рядом, на острове Кри в проливе Дампир. Эта страница — длинная версия: кто здесь хозяева, что на самом деле даёт бунгало и как дайв-центр оказался в конце того же причала.",
     storyHeading: "У кого вы остановитесь",
     story: [
       "Семья, построившая этот хоумстей, живёт здесь же, в доме выше по песку. Они родились в этой бухте, и их родители тоже, а риф перед причалом — тот самый, над которым они учились плавать. Здесь никто не на смене. Если вам что-то нужно, вы просите человека, для которого это дом.",
       "Номера — традиционная папуасская работа, дерево и пальмовая крыша, поставленные вручную и так же чинящиеся, когда шторм срывает панель. Это выбор, а не нехватка: такой номер чинится тем, что есть на острове, — а это важно в четырёх часах от ближайшего хозяйственного магазина.",
       "Чего семья делать не станет — так это «прибираться» на рифе. Он остаётся таким, каким его нашли, и поэтому снорклинг начинается прямо у нижней ступеньки.",
     ],
-    roomsHeading: "Номера",
+    roomsHeading: "Бунгало",
     roomsIntro: (total) =>
-      `${ruPlural(total, "номер", "номера", "номеров")} двух типов, все вдоль одних мостков, все к одной и той же воде. Какой достанется вам, решается при бронировании; номер в ремонте никогда не показывается свободным.`,
-    roomsTotal: (total) => `${ruPlural(total, "номер", "номера", "номеров")} всего`,
+      `${total} бунгало, все одного типа, все вдоль одних мостков, все к одной и той же воде. Какое достанется вам, решается при бронировании; бунгало в ремонте никогда не показывается свободным.`,
+    roomsTotal: (total) => `${total} бунгало всего`,
     serviceHeading: "Что входит в стоимость номера",
     serviceIntro:
       "Без платы за уборку, без сервисного сбора, без курортного сбора. Цена — это цена.",
@@ -3724,7 +3879,7 @@ const RU: SiteCopy = {
       },
       {
         title: "Пресная вода и электричество",
-        body: "Пресная вода для мытья. Электричество работает с вечера до утра — этого хватает, чтобы за ночь зарядить камеру и телефон.",
+        body: "Пресная вода для мытья. Электричество есть только вечером — часы указаны на главной, рядом с ценами, — и заряжать камеру и телефон нужно в это время.",
       },
       {
         title: "Лодка",
@@ -3764,10 +3919,10 @@ const RU: SiteCopy = {
           "Всё место сверху. Причал, песок и риф, который начинается в нескольких метрах.",
         boardwalk:
           "Мостки, идущие перед каждым номером, и вода в их конце.",
-        standardRow:
-          "Стандартные номера, на сваях в верхней части песка под деревьями.",
-        familyFront:
-          "Семейный номер спереди: широкая терраса, гамак поперёк и место для четверых.",
+        bungalowRow:
+          "Бунгало на сваях в верхней части песка, под деревьями.",
+        bungalowFront:
+          "Бунгало спереди: широкая терраса, гамак поперёк и вода перед ним.",
         lunch:
           "Обед под обеденной хижиной, за ней натянуты гамаки, дальше бунгало.",
         dusk: "Причал в последнем свете, вид обратно через бухту.",
@@ -3787,11 +3942,11 @@ const RU: SiteCopy = {
     items: [
       {
         q: "Есть ли электричество и интернет?",
-        a: "Электричество работает с вечера до утра. Кроме мобильной сети есть Starlink, его хватает на видеозвонок, и он добивает почти до каждого номера. Если надёжная связь важна для поездки, скажите при бронировании, и мы поселим вас в один из номеров с самым сильным сигналом.",
+        a: "Электричество есть только вечером — часы указаны выше, рядом с ценами, и это время, когда всё заряжают. Кроме мобильной сети есть Starlink, его хватает на видеозвонок, и он добивает почти до каждого бунгало. Если надёжная связь важна для поездки, скажите при бронировании, и мы поселим вас в одно из бунгало с самым сильным сигналом.",
       },
       {
         q: "А как с едой?",
-        a: "Три приёма пищи в день входят в стоимость номера. Свежая рыба почти каждый день. Сообщите при бронировании об аллергиях или о том, чего вы не едите.",
+        a: "Три приёма пищи в день включены: завтрак, обед и ужин в часы, указанные выше рядом с ценами; вне этих часов кухня не готовит. Местная еда, приготовленная так, как её готовит сама семья. Скажите до приезда, если вы вегетарианец, если у вас ограничения в еде или аллергия.",
       },
       {
         q: "Нужно ли хорошо плавать для снорклинга?",
@@ -3799,18 +3954,18 @@ const RU: SiteCopy = {
       },
       {
         q: "Можно оплатить картой?",
-        a: "Терминала на острове нет. Оплатите переводом до приезда или наличными при заселении. Возьмите достаточно наличных в Соронге или Вайсае.",
+        a: "Терминала на острове нет. Если кнопка бронирования привела вас на страницу оплаты, там принимают карты, банковский перевод и обычные электронные кошельки; если нет — переведите до приезда или заплатите наличными при заселении. Наличные из Соронга или Вайсая возьмите в любом случае.",
       },
       {
         q: "Можно приехать с детьми?",
-        a: "Да. В семейном номере спят двое детей, а снорклинг-выход безопасен для детей, которым спокойно в воде.",
+        a: "Да. В бунгало спят двое, третий — на дополнительной кровати: одна на бунгало, цена зависит от возраста, а цифры указаны выше рядом с ценами. Напишите нам возраст. Снорклинг-выход безопасен для детей, которым спокойно в воде.",
       },
     ],
   },
   footer: {
     contact: "Контакты",
     manager: "Вход для управляющих",
-    colophon: `© ${PROPERTY.name}, ${PROPERTY.village}. Работаем вместе с Eddo Homestay в Савинграи, остров Гам.`,
+    colophon: `© ${PROPERTY.name}, ${PROPERTY.island}. Работаем вместе с Eddo Homestay в Йенбубе на острове Мансуар.`,
     tagline: (year) => (year ? `Раджа-Ампат · с ${year} года` : "Раджа-Ампат"),
     social: "Мы в соцсетях",
     feedback: {
@@ -3887,7 +4042,7 @@ const JA: SiteCopy = {
   meta: {
     title: `${PROPERTY.name} · ラジャ・アンパットのホームステイ＆ダイブセンター`,
     description:
-      "マンスアル島イェンブバにある家族経営のホームステイとダイブセンター。水辺に建つ高床式の客室、1日3食、そしてダンピア海峡での毎日のダイビング。",
+      "ラジャアンパット、クリ島にある家族経営のホームステイとダイブセンター。水辺に建つ高床式のバンガロー、1日3食、そしてダンピア海峡での毎日のダイビング。",
   },
   maintenance: {
     eyebrow: "まもなく戻ります",
@@ -3898,7 +4053,7 @@ const JA: SiteCopy = {
     email: "メールを送る",
   },
   hero: {
-    sub: "マンスアル島イェンブバのホームステイ。地元の木材で手づくりし、見つけたままの姿で残しているリーフのきわに建っています。この湾にずっと暮らしてきた家族が、潮の速さにあわせて営んでいます。",
+    sub: "クリ島のホームステイ。地元の木材で手づくりし、見つけたままの姿で残しているリーフのきわに建っています。この湾にずっと暮らしてきた家族が、潮の速さにあわせて営んでいます。",
   },
   value: {
     heading: "桟橋がひとつ、家族がひとつ、",
@@ -3925,48 +4080,56 @@ const JA: SiteCopy = {
     {
       title: "水辺の客室",
       sub: "ひとつの木道に沿って10室",
-      badge: "イェンブバ",
+      badge: "クリ島",
       alt: "椰子葺きのバンガローが並ぶ前の木道",
     },
   ],
   rooms: {
-    eyebrow: "客室と料金",
-    title: "お部屋をお選びください",
+    eyebrow: "バンガローと料金",
+    title: "お泊まりいただく場所",
     intro:
-      "1室1泊あたりの料金で、1日3食込みです。清掃料もサービス料もいただきません。",
+      "バンガローは1種類、全10棟。1日3食込みです。1泊の料金は、おひとりで使うか、おふたりで使うかで変わります。",
     perNight: "1泊あたり",
-    roomsLabel: (n) => `${n}室`,
-    ask: "この部屋について聞く",
+    forOne: "1名",
+    forTwo: "2名",
+    roomsLabel: (n) => `${n}棟`,
+    ask: "このバンガローについて聞く",
     askNote: (name) => `${name}に興味があります。`,
     otaNote:
-      "客室はBooking.com、Agoda、Travelokaにも出しています。そちらのほうが安心でしたら、どうぞご利用ください。料金は同じで、直接ご予約いただくとプラットフォームの手数料が省けるだけです。どのサイトでも買えないのはダイビングのパッケージで、それはここで手配します。",
+      "バンガローは stayrajaampat.com と Booking.com にも出しています。そちらのほうが安心でしたら、どうぞご利用ください。どのサイトでも買えないのはダイビングボートの席で、それはここで手配します。",
     types: {
-      standard: {
-        name: "スタンダードルーム",
+      deluxe: {
+        name: "Deluxe Bungalow",
         blurb:
-          "砂浜の上手に建つ高床式の木造の部屋。海峡に面した小さなテラスがついています。朝、扉を開ければ水は数歩先です。",
-        cap: "大人2名",
+          "まわりに生えている木と葉で建てた、昔ながらのホームステイです。海に面した専用テラスにサンベッドがあり、バスルームは砂の向こうではなく棟の中にあります。",
+        cap: "最大2名",
         features: [
-          "蚊帳つきダブルベッド",
-          "共用シャワー、真水",
           "海に面した専用テラス",
+          "テラスのサンベッド",
+          "棟内のバスルーム",
           "1日3食込み",
         ],
-        alt: "砂のきわに高床で並ぶ木造の客室。木陰にあり、水は数歩先。",
+        alt: "砂のきわに高床で並ぶ木造のバンガロー。木陰にあり、水は数歩先。",
       },
-      family: {
-        name: "ファミリールーム",
-        blurb:
-          "より広く、大人2名と子ども2名で。ご家族に、あるいはご一緒に旅をする2組のご夫婦に。",
-        cap: "大人2名＋子ども2名",
-        features: [
-          "ダブルベッド1台とシングル2台",
-          "専用バスルーム",
-          "広いテラス、ハンモック",
-          "1日3食込み",
-        ],
-        alt: "正面から見たファミリールーム。椰子葺きの屋根の下に広いテラス、横切るハンモック、テーブルと椅子、両側に木々。",
+    },
+    extra: {
+      heading: "3人目を追加する場合",
+      ages: {
+        child: "3〜9歳",
+        teen: "10〜16歳",
+        adult: "17歳以上",
       },
+      per: "お1人1泊あたり",
+      note: "エキストラベッドは1棟に1台まで。ご連絡の際に年齢をお知らせいただければ、入るかどうかお伝えします。エキストラベッドはメッセージでの手配となり、ここからは予約できません。",
+    },
+    rules: {
+      heading: "知っておいていただきたいこと",
+      checkIn: "チェックイン",
+      checkOut: "チェックアウト",
+      power: "電気",
+      meals: "朝食・昼食・夕食",
+      diet: "ベジタリアン、食事制限、アレルギーのある方は、到着前にお知らせください。厨房に伝えておきます。",
+      refund: "チェックイン当日以降の返金はいたしません。",
     },
   },
   dive: {
@@ -4245,7 +4408,7 @@ const JA: SiteCopy = {
       },
       {
         title: "お迎えにあがります",
-        body: "私たちのボートがワイサイ港でお待ちし、イェンブバまで約1時間です。フェリーの時間をWhatsAppでお送りください。",
+        body: "私たちのボートがワイサイ港でお待ちし、クリ島まで約1時間です。フェリーの時間をWhatsAppでお送りください。",
       },
     ],
     map: {
@@ -4255,7 +4418,7 @@ const JA: SiteCopy = {
       sorong: "ソロン",
       waisai: "ワイサイ",
       sketchAlt:
-        "ルートの略図。本土のソロンから北東へフェリーでワイゲオ島のワイサイ、そこから南西へボートでマンスアル島のホームステイへ。",
+        "ルートの略図。本土のソロンから北東へフェリーでワイゲオ島のワイサイ、そこから南西へボートでクリ島のホームステイへ。",
       copy: "住所をコピー",
       copied: "コピーしました",
       google: "Google マップで開く",
@@ -4339,17 +4502,17 @@ const JA: SiteCopy = {
     back: "ホームステイに戻る",
     title: "家族と、客室と、\nダイブセンター",
     lede:
-      "Turtle Dive Homestayは、ある家族の家と、そのとなりに建てた10室です。場所はマンスアル島の北岸。このページはその長い版です。誰が営んでいるのか、それぞれの客室が実際に何を与えてくれるのか、そしてダイブセンターがどうして同じ桟橋の先にあるのか。",
+      "Turtle Dive Homestayは、ある家族の家と、そのとなりに建てた10棟です。場所はダンピア海峡のクリ島。このページはその長い版です。誰が営んでいるのか、バンガローが実際に何を与えてくれるのか、そしてダイブセンターがどうして同じ桟橋の先にあるのか。",
     storyHeading: "どんな家に泊まるのか",
     story: [
       "このホームステイを建てた家族は、砂浜の上手の家に暮らしています。彼らはこの湾で生まれ、その親たちもそうで、桟橋の前のリーフは彼らが泳ぎを覚えた場所です。誰もシフトで働いてはいません。何かご入用のときは、そこを家としている人に頼むことになります。",
       "客室は木と椰子葺きの伝統的なパプアの仕事で、手で建て、嵐が板を持っていけば同じやり方で直します。それは不足ではなく選択です。こうして建てた部屋は島にあるもので直せます。いちばん近い金物屋まで4時間の場所では、それが効いてきます。",
       "家族がしないのは、リーフを「片づける」ことです。見つけたままにしてあります。だからシュノーケリングは階段を降りたところから始まります。",
     ],
-    roomsHeading: "客室",
+    roomsHeading: "バンガロー",
     roomsIntro: (total) =>
-      `2タイプ、合わせて${total}室。すべてひとつの木道沿いにあり、すべて同じ海に面しています。どの部屋になるかは予約時に決まります。修繕中の部屋が空室として出ることはありません。`,
-    roomsTotal: (total) => `全${total}室`,
+      `全${total}棟、すべて同じタイプです。すべてひとつの木道沿いにあり、すべて同じ海に面しています。どの棟になるかは予約時に決まります。修繕中の棟が空室として出ることはありません。`,
+    roomsTotal: (total) => `全${total}棟`,
     serviceHeading: "客室料金に含まれるもの",
     serviceIntro:
       "清掃料なし、サービス料なし、リゾート料なし。表示の料金がそのまま料金です。",
@@ -4364,7 +4527,7 @@ const JA: SiteCopy = {
       },
       {
         title: "真水と電気",
-        body: "体を洗う真水があります。電気は夕方から朝まで。カメラと携帯を一晩で充電するには十分です。",
+        body: "体を洗う真水があります。電気は夜だけで、時間はトップページの料金のところに書いてあります。カメラと携帯の充電はその時間に。",
       },
       {
         title: "ボート",
@@ -4403,10 +4566,10 @@ const JA: SiteCopy = {
           "全体を上から。桟橋、砂浜、そして数メートル先から始まるリーフ。",
         boardwalk:
           "どの部屋の前も通る木道と、その先の海。",
-        standardRow:
-          "スタンダードルーム。木々の下、砂浜の上手に高床で建っています。",
-        familyFront:
-          "正面から見たファミリールーム。広いテラス、横切るハンモック、4名分の広さ。",
+        bungalowRow:
+          "バンガロー。木々の下、砂浜の上手に高床で建っています。",
+        bungalowFront:
+          "正面から見たバンガロー。広いテラス、横切るハンモック、目の前は海。",
         lunch:
           "食堂小屋での昼食。奥にハンモックが張られ、その先にバンガローが並びます。",
         dusk: "最後の光のなかの桟橋。湾のほうを振り返って。",
@@ -4426,11 +4589,11 @@ const JA: SiteCopy = {
     items: [
       {
         q: "電気とインターネットはありますか？",
-        a: "電気は夕方から朝まで使えます。携帯の電波に加えてStarlinkがあり、ビデオ通話に十分な速さで、ほぼすべての客室に届きます。滞在中に安定した通信が必要でしたらご予約時にお知らせください。電波のいちばん強い部屋をご用意します。",
+        a: "電気は夜だけです。時間は上の料金のところに書いてあります。充電はその時間にお願いします。携帯の電波に加えてStarlinkがあり、ビデオ通話に十分な速さで、ほぼすべての棟に届きます。滞在中に安定した通信が必要でしたらご予約時にお知らせください。電波のいちばん強い棟をご用意します。",
       },
       {
         q: "食事はどうなりますか？",
-        a: "1日3食が客室料金に含まれます。ほとんどの日は新鮮な魚が出ます。アレルギーや召し上がらないものがあれば、ご予約時にお知らせください。",
+        a: "1日3食込みです。朝食・昼食・夕食の時間は上の料金のところに書いてあり、その時間以外にお出しすることはできません。地元の料理を、この家族がふだん作るとおりにお出しします。ベジタリアンの方、食事制限やアレルギーのある方は、到着前にお知らせください。",
       },
       {
         q: "シュノーケリングに泳力は必要ですか？",
@@ -4438,18 +4601,18 @@ const JA: SiteCopy = {
       },
       {
         q: "カードで支払えますか？",
-        a: "島にカード端末はありません。ご到着前のお振込みか、チェックイン時の現金でお願いします。ソロンかワイサイで十分な現金をご用意ください。",
+        a: "島にカード端末はありません。予約ボタンから決済ページに進めた場合は、カード・銀行振込・主要な電子マネーがお使いいただけます。そうでない場合は、ご到着前のお振込みか、チェックイン時の現金でお願いします。いずれにせよ、ソロンかワイサイで現金をご用意ください。",
       },
       {
         q: "子ども連れでも大丈夫ですか？",
-        a: "はい。ファミリールームはお子さま2名までお休みいただけますし、シュノーケリングは水に慣れたお子さまなら安全です。",
+        a: "はい。1棟に2名まで、3人目はエキストラベッドになります。1棟に1台まで、料金は年齢によって変わり、金額は上の料金のところに書いてあります。ご連絡の際に年齢をお知らせください。シュノーケリングは水に慣れたお子さまなら安全です。",
       },
     ],
   },
   footer: {
     contact: "連絡先",
     manager: "管理者ログイン",
-    colophon: `© ${PROPERTY.name}、${PROPERTY.village}。ガム島サウィングライのEddo Homestayと共同で営んでいます。`,
+    colophon: `© ${PROPERTY.name}、${PROPERTY.island}。マンスアル島イェンブバのEddo Homestayと共同で営んでいます。`,
     tagline: (year) => (year ? `ラジャ・アンパット · ${year}年創業` : "ラジャ・アンパット"),
     social: "フォローする",
     feedback: {
@@ -4526,7 +4689,7 @@ const ZH: SiteCopy = {
   meta: {
     title: `${PROPERTY.name} · 四王群岛的家庭民宿与潜水中心`,
     description:
-      "位于曼苏尔岛延布巴村的家庭民宿与潜水中心。高脚屋就在水边，每天三餐，天天在丹皮尔海峡下水。",
+      "位于拉贾安帕特克里岛的家庭民宿与潜水中心。木屋就在水边，每天三餐，天天在丹皮尔海峡下水。",
   },
   maintenance: {
     eyebrow: "很快回来",
@@ -4537,7 +4700,7 @@ const ZH: SiteCopy = {
     email: "发邮件",
   },
   hero: {
-    sub: "位于曼苏尔岛延布巴村的家庭民宿，用当地木材一手一脚搭起来，就在一片我们保持原样的珊瑚礁边上。由世代住在这个海湾的家庭打理，跟着潮水的节奏过日子。",
+    sub: "位于克里岛的家庭民宿，用当地木材一手一脚搭起来，就在一片我们保持原样的珊瑚礁边上。由世代住在这个海湾的家庭打理，跟着潮水的节奏过日子。",
   },
   value: {
     heading: "一座栈桥，一个家庭，",
@@ -4564,48 +4727,56 @@ const ZH: SiteCopy = {
     {
       title: "水边的房间",
       sub: "十间房沿着同一条木栈道",
-      badge: "延布巴",
+      badge: "克里岛",
       alt: "一排茅草顶小屋前的木栈道",
     },
   ],
   rooms: {
-    eyebrow: "房型与价格",
-    title: "挑一间房",
+    eyebrow: "木屋与价格",
+    title: "你住的地方",
     intro:
-      "按房按晚计价，含一日三餐。我们不收清洁费，也不收服务费。",
+      "只有一种木屋，一共十间，含一日三餐。一晚多少钱，看你是一个人住，还是两个人住。",
     perNight: "每晚",
+    forOne: "1 人",
+    forTwo: "2 人",
     roomsLabel: (n) => `${n} 间`,
-    ask: "咨询这间房",
+    ask: "咨询这间木屋",
     askNote: (name) => `我对${name}有兴趣。`,
     otaNote:
-      "这些房间在 Booking.com、Agoda 和 Traveloka 上也有。你要是更习惯在那边订，尽管去订。价格一样；直接找我们只是省下平台的佣金。任何平台都卖不了的是潜水套餐，那得在这里安排。",
+      "这些木屋在 stayrajaampat.com 和 Booking.com 上也有。你要是更习惯在那边订，尽管去订。任何平台都卖不了的是潜水船上的位置，那得在这里安排。",
     types: {
-      standard: {
-        name: "标准房",
+      deluxe: {
+        name: "Deluxe Bungalow",
         blurb:
-          "沙滩上方的木质高脚屋，带一个面朝海峡的小露台。早上推开门，海就在几步之外。",
-        cap: "2 位成人",
+          "传统民宿的做法，用周围长出来的木头和棕叶盖成。自带面海的露台，露台上有日光床，浴室在屋里，不用穿过沙滩。",
+        cap: "最多 2 人",
         features: [
-          "双人床带蚊帐",
-          "公用浴室，淡水",
-          "面海的专属露台",
+          "自带面海露台",
+          "露台上的日光床",
+          "屋内浴室",
           "含一日三餐",
         ],
         alt: "一排木质高脚屋立在沙滩边缘，树荫遮着，海水就在几步之外。",
       },
-      family: {
-        name: "家庭房",
-        blurb:
-          "更宽敞，住两位成人加两个孩子。适合一家人，也适合结伴同行的两对。",
-        cap: "2 位成人 + 2 个孩子",
-        features: [
-          "一张双人床和两张单人床",
-          "独立浴室",
-          "宽露台，吊床",
-          "含一日三餐",
-        ],
-        alt: "正面看家庭房：茅草顶下的宽露台，横着一张吊床，一套桌椅，两侧都是树。",
+    },
+    extra: {
+      heading: "加第三个人",
+      ages: {
+        child: "3 至 9 岁",
+        teen: "10 至 16 岁",
+        adult: "17 岁及以上",
       },
+      per: "每人每晚",
+      note: "每间木屋最多加一张床。写信时告诉我们年龄，我们会说住不住得下——加床通过留言安排，不在这里下单。",
+    },
+    rules: {
+      heading: "先说清楚几件事",
+      checkIn: "入住时间",
+      checkOut: "退房时间",
+      power: "供电",
+      meals: "早餐、午餐、晚餐",
+      diet: "素食、忌口或过敏，请在抵达前告诉我们，好让厨房知道。",
+      refund: "入住当天之后，住宿费不退。",
     },
   },
   dive: {
@@ -4884,7 +5055,7 @@ const ZH: SiteCopy = {
       },
       {
         title: "我们来接你",
-        body: "我们的船在外赛港口等你，到延布巴约一小时。请把船班时间用 WhatsApp 发给我们。",
+        body: "我们的船在外赛港口等你，到克里岛约一小时。请把船班时间用 WhatsApp 发给我们。",
       },
     ],
     map: {
@@ -4894,7 +5065,7 @@ const ZH: SiteCopy = {
       sorong: "索龙",
       waisai: "外赛",
       sketchAlt:
-        "路线示意图：大陆上的索龙，往东北坐船到威盖奥岛的外赛，再往西南坐船到曼苏尔岛上的民宿。",
+        "路线示意图：大陆上的索龙，往东北坐船到威盖奥岛的外赛，再往西南坐船到克里岛上的民宿。",
       copy: "复制地址",
       copied: "已复制",
       google: "在 Google 地图打开",
@@ -4978,17 +5149,17 @@ const ZH: SiteCopy = {
     back: "回到民宿页面",
     title: "这家人、这些房间，\n还有潜水中心",
     lede:
-      "Turtle Dive Homestay 就是一家人的房子，加上他们在旁边盖起来的十间房，位置在曼苏尔岛北岸。这一页是详细版：谁在打理，每间房实际能给你什么，以及潜水中心怎么会落在同一座栈桥的尽头。",
+      "Turtle Dive Homestay 就是一家人的房子，加上他们在旁边盖起来的十间木屋，位置在丹皮尔海峡的克里岛。这一页是详细版：谁在打理，一间木屋实际能给你什么，以及潜水中心怎么会落在同一座栈桥的尽头。",
     storyHeading: "你住在谁家",
     story: [
       "盖起这间民宿的一家人就住在这里，住在沙滩上方的那栋房子里。他们在这个海湾出生，父母也是；栈桥前的这片礁，就是他们学会游泳的地方。这里没有人在「值班」。你需要什么，问的就是把这里当家的人。",
       "房间是传统的巴布亚做法，木头和茅草顶，一手一脚搭起来；风暴掀掉一块板，也照原样修回去。这是选择，不是将就：这样盖的房子，用岛上有的东西就能修——在离最近的五金店四小时的地方，这一点很要紧。",
       "这家人不会做的一件事，是把珊瑚礁「收拾干净」。它保持着原来的样子，所以浮潜从台阶下面就开始了。",
     ],
-    roomsHeading: "房间",
+    roomsHeading: "木屋",
     roomsIntro: (total) =>
-      `${total} 间房，两种房型，全都沿着同一条木栈道，全都面向同一片海。具体住哪一间在预订时定下来；正在维修的房间绝不会出现在可订列表里。`,
-    roomsTotal: (total) => `共 ${total} 间房`,
+      `${total} 间木屋，只有一种房型，全都沿着同一条木栈道，全都面向同一片海。具体住哪一间在预订时定下来；正在维修的那间绝不会出现在可订列表里。`,
+    roomsTotal: (total) => `共 ${total} 间`,
     serviceHeading: "房价里包含什么",
     serviceIntro:
       "不收清洁费，不收服务费，不收度假村附加费。写多少就是多少。",
@@ -5003,7 +5174,7 @@ const ZH: SiteCopy = {
       },
       {
         title: "淡水和电",
-        body: "有淡水洗漱。电从傍晚供到早上，够给相机和手机充一夜。",
+        body: "有淡水洗漱。只有晚上有电，时间写在首页的价格那一段，相机和手机趁那会儿充。",
       },
       {
         title: "船",
@@ -5042,10 +5213,10 @@ const ZH: SiteCopy = {
           "从空中看整片地方。栈桥、沙滩，还有几米外就开始的珊瑚礁。",
         boardwalk:
           "从每间房前经过的木栈道，以及尽头的海。",
-        standardRow:
-          "标准房，在树下、沙滩上方的高脚屋。",
-        familyFront:
-          "正面看家庭房：宽露台，横着一张吊床，住得下四个人。",
+        bungalowRow:
+          "木屋在树下、沙滩上方的高脚屋里。",
+        bungalowFront:
+          "正面看一间木屋：宽露台，横着一张吊床，前面就是海。",
         lunch:
           "餐棚下的午饭，后面挂着吊床，再往后是小屋。",
         dusk: "最后一点光里的栈桥，回头望向海湾。",
@@ -5065,11 +5236,11 @@ const ZH: SiteCopy = {
     items: [
       {
         q: "有电和网络吗？",
-        a: "电从傍晚供到早上。除了手机信号，还有 Starlink，视频通话够用，而且几乎每间房都能覆盖。要是稳定的网络对这趟行程重要，预订时说一声，我们把你安排在信号最强的那几间房之一。",
+        a: "只有晚上有电——时间写在上面的价格那一段，充电请趁那会儿。除了手机信号，还有 Starlink，视频通话够用，而且几乎每间木屋都能覆盖。要是稳定的网络对这趟行程重要，预订时说一声，我们把你安排在信号最强的那几间之一。",
       },
       {
         q: "吃饭怎么安排？",
-        a: "一日三餐已含在房价里。多数日子都有新鲜的鱼。有过敏或者不吃的东西，预订时告诉我们。",
+        a: "一日三餐已经含在房价里：早餐、午餐、晚餐的时间写在上面的价格那一段，过了点厨房就不开火了。做的是本地菜，家里人平时怎么做就怎么做。素食、忌口或者过敏，请在抵达前告诉我们。",
       },
       {
         q: "浮潜需要很会游泳吗？",
@@ -5077,18 +5248,18 @@ const ZH: SiteCopy = {
       },
       {
         q: "可以刷卡吗？",
-        a: "岛上没有刷卡机。请在抵达前转账，或者入住时付现金。请在索龙或外赛带足现金。",
+        a: "岛上没有刷卡机。如果预订按钮把你带到了付款页，那里可以用银行卡、转账和常见的电子钱包；如果没有，请在抵达前转账，或者入住时付现金——不管哪种，都请在索龙或外赛带足现金。",
       },
       {
         q: "可以带孩子吗？",
-        a: "可以。家庭房能住下两个孩子，浮潜行程对在水里不怕的孩子来说也是安全的。",
+        a: "可以。一间木屋住两个人，第三个人加一张床：每间最多加一张，价钱按年龄算，数字写在上面的价格那一段。写信时告诉我们年龄。浮潜行程对在水里不怕的孩子来说是安全的。",
       },
     ],
   },
   footer: {
     contact: "联系",
     manager: "管理端登录",
-    colophon: `© ${PROPERTY.name}，${PROPERTY.village}。与甘岛沙温格莱的 Eddo Homestay 一同经营。`,
+    colophon: `© ${PROPERTY.name}，${PROPERTY.island}。与曼苏尔岛延布巴的 Eddo Homestay 一同经营。`,
     tagline: (year) => (year ? `四王群岛 · ${year} 年至今` : "四王群岛"),
     social: "关注我们",
     feedback: {

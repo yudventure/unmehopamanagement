@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { isSecureRequest } from "@/lib/request-url";
 import { SESSION_COOKIE, issue, loginConfigured, passwordOk } from "@/lib/session";
 
 /**
@@ -48,8 +49,11 @@ export async function POST(req: Request) {
     httpOnly: true,
     sameSite: "lax",
     /* Secure over https and not over plain http, so a local server still works
-       while the cookie never travels in the clear in production. */
-    secure: new URL(req.url).protocol === "https:",
+       while the cookie never travels in the clear in production. Taken from
+       the forwarding header where there is one: behind a proxy that speaks TLS
+       to the browser and http to us, the request's own scheme says http and
+       the session cookie would go out unmarked. */
+    secure: isSecureRequest(req),
     path: "/",
     maxAge,
   });

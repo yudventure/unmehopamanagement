@@ -19,9 +19,13 @@ import type { Role } from "@/lib/types";
  * this page can hand that cookie to anyone.
  */
 export function SignIn() {
-  const [email, setEmail] = useState(OWNER_EMAIL);
+  /* Both boxes start empty, and the role chooser starts on neither. A sign-in
+     that opens with somebody's address already in it is a demo: it publishes
+     what an account here is called, and it makes a member of staff clear the
+     owner's address before typing their own. */
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState<Role>("owner");
+  const [role, setRole] = useState<Role | null>(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [narrow, setNarrow] = useState(false);
@@ -36,8 +40,9 @@ export function SignIn() {
     return () => window.removeEventListener("resize", check);
   }, []);
 
-  /* The chooser only prefills an address. What a signed-in person may see is
-     decided from the account the address belongs to, never from this. */
+  /* The chooser only fills an address in, and only when somebody presses it.
+     What a signed-in person may see is decided from the account the address
+     belongs to, never from this. */
   const pickRole = (next: Role) => {
     setRole(next);
     setEmail(next === "owner" ? OWNER_EMAIL : STAFF_EMAIL);

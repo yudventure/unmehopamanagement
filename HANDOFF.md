@@ -386,16 +386,37 @@ satunya gerbang mutu saat ini; keduanya lolos bersih per commit terakhir.
 Menambahkan Vitest + Testing Library adalah pekerjaan yang masuk akal
 berikutnya (lihat TODO).
 
-### Demo login
+### Masuk
 
-Kata sandi tidak divalidasi — isi apa saja, asal tidak kosong.
+Kata sandi diperiksa di server, di `/api/login`, dan yang dibandingkan adalah
+`DASHBOARD_PASSWORD`. **Tanpa variabel itu tidak ada yang bisa masuk**, dan
+layarnya mengatakan begitu apa adanya ("Login belum disiapkan di server").
 
-| Peran | Email (terisi otomatis) | Akses |
+Emailnya tidak lagi terisi otomatis. Kedua kotaknya kosong dengan tulisan abu
+abu, dan tombol *Owner* / *Staf* di bawah tombol Masuk cuma mengisikan alamat
+ketika ditekan — bukan sebagai keadaan awal. Alasannya dua: layar masuk yang
+sudah berisi alamat orang lain mengumumkan nama akun di sini kepada siapa pun
+yang membukanya, dan staf harus menghapus alamat pemilik sebelum mengetik
+alamatnya sendiri.
+
+| Peran | Email | Akses |
 |---|---|---|
 | Owner | `yud@rumahpapua.id` | Kalender, Laporan, Properti & Kamar, Pengguna & Peran + semua rupiah |
 | Staf | `marthen@rumahpapua.id` | Kalender, Properti & Kamar; tanpa nominal uang |
 
+Ada tombol mata di kotak kata sandi untuk menampilkan isinya. Mati secara
+default dan tidak diingat antar kunjungan.
+
 Keluar lewat kartu profil kanan atas → **Keluar dari akun**.
+
+**Kalau login sepertinya berhasil tapi layarnya kembali ke halaman masuk**,
+itu bug yang sudah diperbaiki, bukan salah ketik: kunci penanda tangan cookie
+dulu dibuat acak per modul. Next membundel halaman dan route handler secara
+terpisah, jadi keduanya memegang kunci yang berbeda — `/api/login` menjawab
+200 dan memasang cookie, lalu halaman berikutnya menolak cookie itu tanpa
+sepatah kata pun. Sekarang kuncinya disimpan di `globalThis` supaya satu
+proses hanya punya satu, dan `SESSION_SECRET` tetap sebaiknya diisi di
+produksi supaya sesi selamat dari deploy.
 
 ### Foto panel login
 

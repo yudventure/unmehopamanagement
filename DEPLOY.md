@@ -476,7 +476,18 @@ Cookie-nya `httpOnly`, jadi tidak ada skrip di halaman yang bisa membacanya,
 dan `sameSite=lax`, jadi ikut pada kunjungan biasa tapi tidak pada permintaan
 yang dibuat situs lain atas namamu. `secure` menyala sendiri di https dan mati
 di http, supaya pengujian lokal tetap bisa jalan tanpa token pernah lewat
-terbuka di produksi.
+terbuka di produksi. Yang dibaca `x-forwarded-proto` lebih dulu: di belakang
+proxy yang mengakhiri TLS — Vercel salah satunya — permintaannya sampai ke
+aplikasi sebagai http biasa, dan menilai dari situ saja berarti `secure` tidak
+pernah menyala di mana pun yang punya proxy.
+
+**Tautannya tidak perlu disalin dari panel server.** Tab Website di manager
+menampilkannya untuk tiap situs, lengkap dengan tokennya, siap dikirim.
+Alamatnya diambil dari domain yang sudah dipasang untuk situs itu; kalau belum
+ada, dari alamat yang dipakai browser saat membuka manager — bukan dari alamat
+yang di-*bind* server. Bedanya kelihatan waktu `next start` versi standalone
+dipakai: server itu bind ke `0.0.0.0`, dan tautan yang membawa host itu ditolak
+Chrome (`ERR_ADDRESS_INVALID`) — di ponsel klien, sesudah dikirim.
 
 Token yang salah dan token yang tidak diisi dijawab sama persis, 404, dan
 keduanya tidak menyebutkan yang mana. Tidak ada yang bisa dipelajari dari

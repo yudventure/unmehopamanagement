@@ -604,6 +604,64 @@ input[type="search"]::-webkit-search-decoration {
  * that looks broken.
  */
 
+/* ===================================================== the strait map moves */
+
+/*
+ * Two things move on the Dampier Strait map, and both keep moving when the
+ * machine has asked for less motion, for the reason set out just above.
+ *
+ * The swell is two bands drifting fourteen pixels inside a box. The ping is a
+ * ring that opens once where the reader has pressed, so it is not uninvited:
+ * it is the answer to a press. Neither crosses the screen and neither follows
+ * the scroll, which is what the setting is actually about.
+ */
+[data-anim] [data-swell] > path {
+  animation: mapSwell 13s ease-in-out infinite;
+}
+
+[data-anim] [data-swell] > path:nth-child(2) {
+  animation-duration: 17s;
+  animation-delay: -6s;
+}
+
+@keyframes mapSwell {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(-14px, -4px, 0);
+  }
+}
+
+/*
+ * The ring starts invisible and ends invisible, which is what makes it safe
+ * to leave running: with no JavaScript there is no `[data-anim]`, nothing
+ * animates, and an opacity of nought is all that is left. Nothing a reader
+ * needs is ever carried by this. The chosen island changes colour and so does
+ * its label, and those are plain state, not animation.
+ */
+[data-ping] {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+[data-anim] [data-ping] {
+  animation: mapPing 1500ms cubic-bezier(0.16, 1, 0.3, 1) 2 forwards;
+}
+
+@keyframes mapPing {
+  0% {
+    transform: scale(0.35);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1.7);
+    opacity: 0;
+  }
+}
+
 /* ============================================================ scroll motion */
 
 /*

@@ -395,6 +395,39 @@ export interface EddoCopy {
     places: { name: string; where: string; tag: string; time: string; alt: string }[];
     note: string;
   };
+  /**
+   * The strait, island by island.
+   *
+   * There is no per-language list of island names, on purpose: the islands
+   * keep their official Indonesian spelling everywhere, because that is what
+   * is printed on the boat ticket and said at the harbour.
+   */
+  map: {
+    eyebrow: string;
+    title: string;
+    lead: string;
+    /** What a reader who cannot see the picture is told it is. */
+    alt: string;
+    emptyTitle: string;
+    emptyBody: string;
+    area: string;
+    km2: string;
+    /** Stands in until the family has written the island up themselves. */
+    soon: string;
+    ask: (island: string) => string;
+    /** Said on the island the house is on, which `EDDO.island` names. */
+    home: string;
+    credit: string;
+    /**
+     * One paragraph per island, keyed by the id in `src/lib/dampier.ts`.
+     *
+     * Empty today, and empty on purpose: how long the crossing takes and what
+     * the reef is doing this month are facts about this family's water, and
+     * they belong to the family. Until one is written the panel says so and
+     * offers to ask them instead of filling the space with something plausible.
+     */
+    places: Partial<Record<string, string>>;
+  };
   why: {
     title: string;
     script: string;
@@ -544,6 +577,15 @@ export interface EddoCopy {
   }) => string;
 }
 
+/**
+ * Just the strait map's words.
+ *
+ * Narrowed like `EnquiryModal`'s own prop was: the map has no business reading
+ * the room prices or the payment dialog, and a component handed the whole copy
+ * object ends up quietly depending on half of it.
+ */
+export type MapCopy = EddoCopy["map"];
+
 const EN: EddoCopy = {
   htmlLang: "en",
   meta: {
@@ -624,6 +666,21 @@ const EN: EddoCopy = {
       { name: "Piaynemo", where: "Karst islands", tag: "Viewpoint", time: "Half a day by boat", alt: "The karst islands of Piaynemo from the viewpoint" },
     ],
     note: "Boat trips are arranged at the house and shared between guests when it works out. Times and prices depend on the tide and the fuel, so ask when you book.",
+  },
+  map: {
+    eyebrow: "The strait",
+    title: "Dampier Strait, island by island",
+    lead: "This is the water everything here happens on. The coastline is the real one, traced from Indonesia's own maps. Press an island to see what we can tell you about it.",
+    alt: "Map of the Dampier Strait, from Waigeo and Gam in the north to Batanta in the south",
+    emptyTitle: "Pick an island",
+    emptyBody: "Press any name on the water and we will tell you what we know about it.",
+    area: "Official area",
+    km2: "km2",
+    soon: "We have not written this one up yet. Ask us and we will tell you what it is like this week, which is the part that changes.",
+    ask: (island) => `Ask about ${island}`,
+    home: "The house",
+    places: {},
+    credit: "Coastline from Indonesia's village boundary records, island names from the national island register.",
   },
   why: {
     title: "Why stay at",
@@ -843,6 +900,21 @@ const ID: EddoCopy = {
       { name: "Piaynemo", where: "Gugusan karst", tag: "Puncak pandang", time: "Setengah hari naik perahu", alt: "Gugusan karst Piaynemo dari puncak pandang" },
     ],
     note: "Trip perahu diatur dari rumah dan dibagi antar tamu kalau jadwalnya cocok. Waktu dan harganya tergantung pasang dan bahan bakar, jadi tanyakan saat memesan.",
+  },
+  map: {
+    eyebrow: "Selat",
+    title: "Selat Dampier, pulau demi pulau",
+    lead: "Inilah perairan tempat semua kegiatan di sini berlangsung. Garis pantainya asli, diambil dari peta resmi Indonesia. Tekan satu pulau untuk melihat apa yang bisa kami ceritakan.",
+    alt: "Peta Selat Dampier, dari Waigeo dan Gam di utara sampai Batanta di selatan",
+    emptyTitle: "Pilih satu pulau",
+    emptyBody: "Tekan nama mana pun di atas air, nanti kami ceritakan apa yang kami tahu.",
+    area: "Luas resmi",
+    km2: "km2",
+    soon: "Yang ini belum kami tulis. Tanyakan saja, nanti kami ceritakan keadaannya minggu ini, karena justru bagian itu yang berubah.",
+    ask: (island) => `Tanya soal ${island}`,
+    home: "Rumahnya",
+    places: {},
+    credit: "Garis pantai dari data batas desa Indonesia, nama pulau dari gazetir pulau nasional.",
   },
   why: {
     title: "Kenapa menginap di",
@@ -1080,6 +1152,21 @@ const FR: EddoCopy = {
     ],
     note: "Les sorties en bateau s'organisent à la maison et se partagent entre hôtes quand cela tombe bien. Les horaires et les prix dépendent de la marée et du carburant, alors demandez au moment de réserver.",
   },
+  map: {
+    eyebrow: "Le détroit",
+    title: "Le détroit de Dampier, île par île",
+    lead: "C'est l'eau sur laquelle tout se passe ici. Le trait de côte est le vrai, relevé sur les cartes officielles indonésiennes. Appuyez sur une île pour voir ce que nous pouvons en dire.",
+    alt: "Carte du détroit de Dampier, de Waigeo et Gam au nord jusqu'à Batanta au sud",
+    emptyTitle: "Choisissez une île",
+    emptyBody: "Appuyez sur n'importe quel nom posé sur l'eau et nous vous dirons ce que nous en savons.",
+    area: "Superficie officielle",
+    km2: "km2",
+    soon: "Celle-ci, nous ne l'avons pas encore décrite. Demandez-nous et nous vous dirons comment c'est cette semaine, car c'est justement ce qui change.",
+    ask: (island) => `Poser une question sur ${island}`,
+    home: "La maison",
+    places: {},
+    credit: "Trait de côte d'après les limites communales indonésiennes, noms des îles d'après le registre national des îles.",
+  },
   why: {
     title: "Pourquoi séjourner chez",
     script: "Eddo ?",
@@ -1298,6 +1385,21 @@ const JA: EddoCopy = {
       { name: "Piaynemo", where: "カルストの島々", tag: "展望台", time: "舟で半日", alt: "展望台から見た Piaynemo のカルストの島々" },
     ],
     note: "ボートはこの家で手配し、都合が合えばほかのお客さまと分け合います。時間も料金も潮と燃料しだいなので、ご予約のときにお尋ねください。",
+  },
+  map: {
+    eyebrow: "海峡",
+    title: "ダンピア海峡、島ごとに",
+    lead: "ここでの一日は、すべてこの海の上にあります。海岸線はインドネシアの公式地図からそのまま取ったものです。島を押すと、お伝えできることが出ます。",
+    alt: "ダンピア海峡の地図。北の Waigeo と Gam から南の Batanta まで",
+    emptyTitle: "島をひとつ選んでください",
+    emptyBody: "海の上の名前をどれか押してください。分かっていることをお伝えします。",
+    area: "公式面積",
+    km2: "km2",
+    soon: "この島はまだ書けていません。お尋ねいただければ、今週の様子をお伝えします。変わるのはそこですから。",
+    ask: (island) => `${island} について聞く`,
+    home: "宿",
+    places: {},
+    credit: "海岸線はインドネシアの村境データ、島名は国の島名登録によります。",
   },
   why: {
     title: "なぜ",
@@ -1519,6 +1621,21 @@ const DE: EddoCopy = {
     ],
     note: "Bootsfahrten werden im Haus organisiert und unter den Gästen geteilt, wenn es sich ergibt. Zeiten und Preise hängen von Gezeiten und Treibstoff ab, fragt also bei der Buchung nach.",
   },
+  map: {
+    eyebrow: "Die Meerenge",
+    title: "Die Dampier-Straße, Insel für Insel",
+    lead: "Auf diesem Wasser spielt sich hier alles ab. Die Küstenlinie ist die echte, aus den amtlichen indonesischen Karten übernommen. Tippen Sie auf eine Insel, und wir sagen Ihnen, was wir darüber wissen.",
+    alt: "Karte der Dampier-Straße, von Waigeo und Gam im Norden bis Batanta im Süden",
+    emptyTitle: "Wählen Sie eine Insel",
+    emptyBody: "Tippen Sie auf einen der Namen auf dem Wasser, dann sagen wir Ihnen, was wir wissen.",
+    area: "Amtliche Fläche",
+    km2: "km2",
+    soon: "Diese hier haben wir noch nicht beschrieben. Fragen Sie uns, dann sagen wir Ihnen, wie es diese Woche dort ist, denn genau das ändert sich.",
+    ask: (island) => `Nach ${island} fragen`,
+    home: "Das Haus",
+    places: {},
+    credit: "Küstenlinie aus den indonesischen Gemeindegrenzen, Inselnamen aus dem nationalen Inselregister.",
+  },
   why: {
     title: "Warum bei",
     script: "Eddo bleiben?",
@@ -1738,6 +1855,21 @@ const RU: EddoCopy = {
     ],
     note: "Поездки на лодке организуются прямо в доме и делятся между гостями, когда так выходит. Время и цена зависят от прилива и топлива, поэтому спрашивайте при бронировании.",
   },
+  map: {
+    eyebrow: "Пролив",
+    title: "Пролив Дампир, остров за островом",
+    lead: "Здесь всё происходит на этой воде. Береговая линия настоящая — снята с официальных индонезийских карт. Нажмите на остров, и мы расскажем, что о нём знаем.",
+    alt: "Карта пролива Дампир: от Waigeo и Gam на севере до Batanta на юге",
+    emptyTitle: "Выберите остров",
+    emptyBody: "Нажмите любое название на воде — расскажем, что знаем.",
+    area: "Официальная площадь",
+    km2: "км2",
+    soon: "Про этот мы ещё не написали. Спросите нас, и мы расскажем, как там на этой неделе, — меняется как раз это.",
+    ask: (island) => `Спросить про ${island}`,
+    home: "Дом",
+    places: {},
+    credit: "Береговая линия — по индонезийским границам деревень, названия островов — по национальному реестру островов.",
+  },
   why: {
     title: "Почему стоит остановиться в",
     script: "Eddo?",
@@ -1956,6 +2088,21 @@ const ZH: EddoCopy = {
       { name: "Piaynemo", where: "喀斯特群岛", tag: "观景台", time: "坐船半天", alt: "从观景台看 Piaynemo 的喀斯特群岛" },
     ],
     note: "出海由我们在屋里安排，时间凑得上就几位客人一起分摊。时间和价格要看潮水和油钱，所以订房时问一声。",
+  },
+  map: {
+    eyebrow: "海峡",
+    title: "丹皮尔海峡，一岛一岛看",
+    lead: "这里的一切都发生在这片水面上。海岸线是真的，取自印尼官方地图。点一座岛，我们就告诉你我们知道的。",
+    alt: "丹皮尔海峡地图，北起 Waigeo 和 Gam，南至 Batanta",
+    emptyTitle: "先选一座岛",
+    emptyBody: "点一下水面上的任何一个名字，我们就把知道的告诉你。",
+    area: "官方面积",
+    km2: "平方公里",
+    soon: "这座岛我们还没写。问我们一句，我们告诉你这一周那边是什么样子，会变的正是这一点。",
+    ask: (island) => `询问 ${island}`,
+    home: "房子",
+    places: {},
+    credit: "海岸线取自印尼村界数据，岛名取自国家岛屿名录。",
   },
   why: {
     title: "为什么住",

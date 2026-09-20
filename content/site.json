@@ -32,7 +32,7 @@
     "boatYangefo": 7000000,
     "boatBatanta": 7000000
   },
-  "diveVideo": "",
+  "diveVideo": "https://www.youtube.com/watch?v=UJiVARkYs0c",
   "maintenance": false,
   "founded": {
     "homestay": null,
@@ -513,6 +513,6 @@
       }
     ]
   },
-  "updatedAt": "2026-09-20T11:25:04.099Z",
-  "updatedBy": "Yud"
+  "updatedAt": "2026-09-20T21:23:27.677Z",
+  "updatedBy": "Owner"
 }

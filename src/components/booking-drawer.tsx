@@ -67,7 +67,7 @@ export function BookingDrawer({
             {booking.guest}
           </div>
           <div className="mt-1 font-mono text-[11.5px] text-slate-mute">
-            {booking.id} ·{" "}
+            {booking.code} ·{" "}
             {booking.src === "iCal" ? "impor iCal" : "input manual"}
           </div>
         </div>
@@ -88,7 +88,13 @@ export function BookingDrawer({
         </div>
         <div className="flex gap-4">
           <Field label="Kamar" value={roomName} />
-          <Field label="Tamu" value={`${booking.pax} tamu`} />
+          {/* Kosong bukan nol. Feed iCal OTA sering tidak membawa jumlah
+              tamu, dan "0 tamu" adalah pernyataan yang salah tentang booking
+              yang justru tidak mengatakan apa-apa soal itu. */}
+          <Field
+            label="Tamu"
+            value={booking.pax === null ? "belum dicatat" : `${booking.pax} tamu`}
+          />
         </div>
       </div>
 

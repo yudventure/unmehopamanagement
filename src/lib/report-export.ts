@@ -8,7 +8,8 @@ export interface ReportRow {
   room: string;
   guest: string;
   phone: string;
-  pax: number;
+  /** Null bila belum dicatat. Dikosongkan di berkas, bukan ditulis nol. */
+  pax: number | null;
   channel: string;
   checkIn: string;
   checkOut: string;
@@ -129,7 +130,10 @@ export function buildCsv(d: ReportData): string {
       r.room,
       r.guest,
       r.phone,
-      r.pax,
+      /* Sel kosong, bukan 0. Nol tamu adalah pernyataan yang salah, dan di
+         kolom angka ia akan ikut terjumlah oleh siapa pun yang membuka
+         berkas ini di spreadsheet. */
+      r.pax ?? "",
       r.channel,
       r.checkIn,
       r.checkOut,

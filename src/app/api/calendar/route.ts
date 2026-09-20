@@ -123,6 +123,10 @@ export async function GET(req: Request) {
       roomId: b.roomId,
       guest: b.guest?.name ?? null,
       phone: b.guest?.phone ?? null,
+      /* Boleh null, dan diteruskan begitu saja. Feed iCal OTA sering tidak
+         membawa jumlah tamu, dan angka bawaan di sini akan membuat booking
+         impor mengaku tahu sesuatu yang tidak pernah dikirim kepadanya. */
+      pax: b.pax,
       checkIn: polos(b.checkIn),
       checkOut: polos(b.checkOut),
       channel: b.channel,

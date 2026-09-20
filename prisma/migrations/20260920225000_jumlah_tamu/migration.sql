@@ -1,0 +1,14 @@
+-- Jumlah tamu pada sebuah booking.
+--
+-- Tidak ada di daftar kolom `bookings` pada handoff teknis bagian 3.3, tapi
+-- PRD F4.1 mewajibkan formnya menanyakannya: "data tamu (nama, no. WA, jumlah
+-- tamu, asal)". Tanpa kolom ini, angka yang diketik operator hilang diam-diam
+-- begitu booking disimpan — dan itu justru bentuk kesalahan yang paling sulit
+-- ketahuan, karena layarnya tetap terlihat benar sampai ada yang mencari
+-- kembali angka itu dan menemukan tempatnya kosong.
+--
+-- Boleh NULL, dan itu bukan kompromi melainkan keadaan yang sebenarnya:
+-- booking yang datang dari feed iCal OTA sering tidak membawa jumlah tamu sama
+-- sekali. NULL berarti belum diketahui. Diberi nilai bawaan 2, tiap booking
+-- impor akan mengaku tahu sesuatu yang tidak pernah dikirim kepadanya.
+ALTER TABLE "bookings" ADD COLUMN "pax" INTEGER;

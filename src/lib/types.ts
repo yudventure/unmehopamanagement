@@ -7,12 +7,19 @@ export type ChannelKey =
   | "WhatsApp"
   | "Blokir";
 
+/**
+ * "Tidak datang" ada di sini karena database bisa memuatnya (`NO_SHOW` di
+ * handoff teknis bagian 3.4) dan tiga status terdekat semuanya menyatakan
+ * sesuatu yang lain: Cancelled bilang ada yang membatalkan, Confirmed bilang
+ * tamunya ada, Checked-out bilang ia sempat menginap.
+ */
 export type BookingStatus =
   | "Tentative"
   | "Confirmed"
   | "Checked-in"
   | "Checked-out"
-  | "Cancelled";
+  | "Cancelled"
+  | "Tidak datang";
 
 export type BookingSource = "manual" | "iCal";
 
@@ -54,11 +61,19 @@ export interface Room {
 }
 
 export interface Booking {
+  /** Kunci baris. Dari database ini cuid; pada data contoh sama dengan `code`. */
   id: string;
+  /** Kode yang diucapkan ke tamu lewat telepon, dan yang muncul di layar. */
+  code: string;
   roomId: string;
   guest: string;
   phone: string;
-  pax: number;
+  /**
+   * Jumlah tamu. Null berarti belum diketahui — feed iCal OTA sering tidak
+   * membawanya, dan angka bawaan akan membuat booking impor mengaku tahu
+   * sesuatu yang tidak pernah dikirim kepadanya.
+   */
+  pax: number | null;
   channel: ChannelKey;
   /** Plain date, YYYY-MM-DD. */
   checkIn: string;

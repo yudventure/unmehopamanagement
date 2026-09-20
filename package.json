@@ -11,9 +11,13 @@
     "start:standalone": "node .next/standalone/server.js",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "peta": "node --max-old-space-size=8192 scripts/peta.mjs"
+    "peta": "node --max-old-space-size=8192 scripts/peta.mjs",
+    "postinstall": "prisma generate",
+    "db:migrate": "prisma migrate deploy",
+    "db:studio": "prisma studio"
   },
   "dependencies": {
+    "@prisma/client": "7.10.0",
     "jspdf": "^4.2.1",
     "next": "^16.3.0",
     "react": "^19.2.0",
@@ -24,6 +28,8 @@
     "@types/node": "^24.0.0",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
+    "dotenv": "18.0.1",
+    "prisma": "7.10.0",
     "tailwindcss": "^4.3.3",
     "typescript": "^5.9.0"
   }

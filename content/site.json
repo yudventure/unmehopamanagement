@@ -62,7 +62,7 @@
         "instagram": "",
         "tiktok": ""
       },
-      "maintenance": true
+      "maintenance": false
     }
   },
   "eddoServices": {
@@ -512,6 +512,6 @@
       }
     ]
   },
-  "updatedAt": "2026-09-19T15:23:19.938Z",
+  "updatedAt": "2026-09-20T11:25:04.099Z",
   "updatedBy": "Yud"
 }

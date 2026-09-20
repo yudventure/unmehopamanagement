@@ -61,6 +61,17 @@ jobs:
       DEPLOY_HOOK_URL: ${{ secrets.DEPLOY_HOOK_URL }}
       SITE_URL: ${{ vars.SITE_URL }}
 
+      # Database. Di tingkat job untuk alasan yang sama dengan blok SSH: `if`
+      # sebuah langkah tidak bisa membaca `env` miliknya sendiri, dan `if` itu
+      # yang membuat langkah migrasi tidur sampai secret-nya diisi.
+      #
+      # `DIRECT_URL` yang dipakai migrasi, bukan yang lewat pooler: migrasi
+      # mengambil kunci tingkat sesi yang tidak selamat melewati pooler
+      # transaksi. `prisma7.config.ts` sudah mendahulukannya, jadi keduanya
+      # cukup diberikan dan ia memilih sendiri.
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DIRECT_URL: ${{ secrets.DIRECT_URL }}
+
     steps:
       - uses: actions/checkout@v4
 
@@ -85,6 +96,30 @@ jobs:
       # archive. Without this the site comes up unstyled rather than broken,
       # which is the harder failure to spot.
       - run: npm run package:archive
+
+      # Menerapkan migrasi yang belum pernah dijalankan ke database.
+      #
+      # Letaknya di sini, bukan lebih awal, dan itu disengaja. Ditaruh sebelum
+      # `npm run build`, sebuah kesalahan ketik di TypeScript akan menghentikan
+      # run *sesudah* skema database sudah terlanjur berubah — tertinggal maju
+      # sendirian, tanpa kode yang memakainya. Ditaruh di sini, build harus
+      # berhasil dulu, jadi yang gagal tidak pernah sempat menyentuh database.
+      #
+      # Dan tetap sebelum penerbitan ke branch `deploy`, karena urutannya
+      # memang harus begitu: kolom yang dibutuhkan kode baru sudah ada sebelum
+      # kode itu mulai melayani permintaan.
+      #
+      # `migrate deploy`, bukan `migrate dev`: ia hanya menerapkan berkas
+      # migrasi yang sudah ada dan tidak pernah mengarang yang baru, tidak
+      # pernah menghapus data, dan tidak pernah bertanya. Sudah diterapkan
+      # berarti dilewati, jadi menjalankannya berulang aman.
+      #
+      # Tidur sampai `DIRECT_URL` diisi. Tanpa itu tidak ada database untuk
+      # dimigrasi, dan langkah yang gagal karenanya akan memerahkan build yang
+      # sebenarnya baik-baik saja.
+      - name: Terapkan migrasi database
+        if: github.ref == 'refs/heads/main' && env.DIRECT_URL != ''
+        run: npx prisma migrate deploy
 
       # Both formats, because which one an upload form will accept is not
       # knowable from here: Hostinger's lists .zip, .tar and .tar.gz and still

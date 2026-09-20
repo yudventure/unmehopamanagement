@@ -148,6 +148,16 @@ export interface SiteConfig {
   /** Rupiah, per the unit named in the copy for that package. Turtle only. */
   divePrices: Record<string, number>;
   /**
+   * The clip above the booking bar on the dive page: a YouTube address, or a
+   * file under `public/`. Turtle only.
+   *
+   * Here rather than in an environment variable because it is a thing the
+   * family changes — a better clip, a new season — and changing it should not
+   * mean opening a server panel. Empty is the normal state and draws no band
+   * at all, which is right: an empty player is worse than no player.
+   */
+  diveVideo?: string;
+  /**
    * What Eddo's family hires out and arranges, keyed by the service it belongs
    * to. Absent or empty is a normal state and not a broken one: the section
    * then shows what each service is and offers to answer, which is what it did
@@ -189,6 +199,7 @@ const parsed = raw as Partial<SiteConfig> &
 export const SITE_CONFIG: SiteConfig = {
   ...parsed,
   founded: parsed.founded ?? { homestay: null, diveCenter: null },
+  diveVideo: parsed.diveVideo ?? "",
   social: parsed.social ?? { facebook: "", instagram: "", tiktok: "" },
   /* Absent means live. A file written before this field existed must not take
      the site down on the next deploy. */
@@ -305,6 +316,7 @@ export function isSiteConfig(v: unknown): v is SiteConfig {
     isStr(c.contact.ownerEmail) &&
     !!c.divePrices &&
     Object.values(c.divePrices).every((n) => typeof n === "number" && n >= 0) &&
+    (c.diveVideo === undefined || isStr(c.diveVideo)) &&
     (c.social === undefined ||
       (typeof c.social === "object" &&
         c.social !== null &&

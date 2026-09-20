@@ -740,9 +740,16 @@ perbaikan dan harga.
 
 ### Halaman detail tiap paket selam
 
-Tombol di kartu paket bukan "Pesan" lagi, tapi **Detail**, dan mengarah ke
-`/turtle/dive/<paket>`. Keenamnya di-*prerender* jadi berkas statis, karena cuma
-ada enam dan tamu sering membukanya dengan sinyal pulau.
+`/turtle/dive/<paket>`, enam-enamnya di-*prerender* jadi berkas statis, karena
+cuma ada enam dan tamu sering membukanya dengan sinyal pulau.
+
+**Tidak ada yang menautkannya sekarang.** Tombol Detail di kartu sudah dilepas
+atas permintaan pemiliknya (alasannya di bagian daftar harga selam di bawah),
+jadi halaman-halaman ini hidup dan bisa dibuka lewat alamatnya, tapi tidak
+lagi dicapai dari halaman depan. Jangan dihapus karena terlihat tidak
+terpakai — sama seperti peta Selat Dampier. Memasangnya kembali cukup satu
+tautan `/turtle/dive/<kunci>` di `DiveCard`, dan kata-katanya sudah ada di
+`COPY[*].dive.details`.
 
 Isi tiap halaman: pengantar, dua diagram, empat kartu (sudah termasuk, belum
 termasuk, yang perlu dibawa, cocok kalau), dan formulir pesan yang sama.
@@ -922,8 +929,8 @@ Yang diambil apa adanya dari sana:
 | Alamat | Mansuar Kecil (Pulau Kri), Distrik Meos Mansar, Kepulauan Raja Ampat, Papua Barat Daya 98472 | `LOCATION`, `PROPERTY` |
 | Kontak | WhatsApp 081243237470 · turtlediversrajaampat@gmail.com · IG turtlediversrajaampat | `content/site.json` |
 | OTA | stayrajaampat.com dan Booking.com | `COPY[*].rooms.otaNote` |
-| Harga selam | daftar harga 2025 lengkap: 15 baris + 4 perahu excursion + 5 catatan | `divePrices` di `content/site.json`, barisnya di `PRICE_ROWS`/`BOAT_ROWS`, kata-katanya di `COPY[*].dive.list` |
-| Klip di atas bar pemesanan selam | **belum ada berkasnya**; slotnya `public/dive.mp4` (+ `dive-poster.jpg` opsional), tanpa autoplay | `assets/README.md` menerangkan slotnya |
+| Harga selam | daftar harga 2025 lengkap: 21 baris (15 + 4 perahu excursion + kursus & snorkeling yang belum berharga) + 5 catatan, semuanya jadi kartu | `divePrices` di `content/site.json`, barisnya di `PRICE_ROWS`, kata-katanya di `COPY[*].dive.list` |
+| Klip di atas bar pemesanan selam | **belum diisi**; diisi dari dashboard, tautan YouTube atau berkas di `public/`, tanpa autoplay | `diveVideo` di `content/site.json`; `assets/README.md` menerangkan slotnya |
 | Nomor kantor | +62 812 4323 7470 untuk reservasi selam | sama dengan `contact.whatsapp` |
 
 **Situs lama menyebut Pulau Kri, bukan Yenbuba.** Sebelum ini, seluruh copy
@@ -933,17 +940,62 @@ Pulau Kri / Mansuar Kecil, termasuk judul halaman dan peta sketsanya.
 Akibatnya: copy **Eddo** masih menulis Turtle sebagai "di kampung yang sama",
 dan itu perlu dikonfirmasi ke pemiliknya — file Eddo sengaja tidak disentuh.
 
-**Daftar harga selam 2025** menyusul dalam bentuk yang terbaca, dan sekarang
-ada di situs sebagai **kartu per kategori** di bawah kartu paket: fun dive dan
-trip harian, night dive, coba selam dan penyegaran, pemandu dan sewa tabung,
-lalu perahu excursion. Tiap kategori menampilkan **enam kartu**, sisanya di
-balik tombol *Lihat N lainnya* — hari ini cuma kategori pertama (sembilan
-baris) yang melewatinya, tapi tombolnya ada per kategori supaya menambah satu
-night dive tidak berarti memikirkan ulang bagiannya. Yang disembunyikan tidak
-dirender sama sekali, bukan disembunyikan dengan CSS: pembaca di ponsel tidak
-membayar unduhan harga yang belum diminta, dan pembaca layar tidak membacakan
-daftar yang tidak ada di layar. Batas enamnya di `PRICE_SHOWN`, kelompoknya di
-kolom `group` pada `PRICE_ROWS`. Tiga angka di kartu yang dulu
+**Daftar harga selam 2025 adalah kartu-kartunya.** Dulu bagian Selam berisi
+dua hal: enam kartu paket, lalu tabel lima belas baris di bawahnya. Pembagian
+itu tidak masuk akal dari sisi tamu — trip manta dan bangkai P47 justru yang
+orang datangi, dan keduanya jadi baris tabel di bawah enam kartu yang dipilih
+sebelum ada yang bertanya. Sekarang **tiap baris daftar harga adalah satu
+kartu**, dan tidak ada lagi tabel.
+
+Dua puluh satu kartu, dikelompokkan seperti daftar keluarganya sendiri: fun
+dive dan trip harian, night dive, coba selam dan penyegaran, pemandu dan sewa
+tabung, lalu perahu excursion. Tiap kategori menampilkan **enam kartu**,
+sisanya di balik tombol *Lihat N lainnya* — hari ini cuma kategori pertama
+(sepuluh baris) yang melewatinya, tapi tombolnya ada per kategori supaya
+menambah satu night dive tidak berarti memikirkan ulang bagiannya. Yang
+disembunyikan tidak dirender sama sekali, bukan disembunyikan dengan CSS:
+pembaca di ponsel tidak membayar unduhan harga yang belum diminta, dan pembaca
+layar tidak membacakan daftar yang tidak ada di layar. Yang muncul karena
+ditekan juga **tidak diberi `data-reveal`**: `useReveal` mengumpulkan
+penandanya sekali saat mount, jadi kartu yang lahir belakangan tidak pernah
+diamati — kalau ditandai, ia akan tinggal selamanya di ujung animasi yang
+tidak terlihat.
+
+Kartunya tidak sama isinya, dan justru itu yang jujur. **Enam paket** membawa
+durasi, level dan daftar "sudah termasuk" yang ditulis dan diperiksa dalam
+tujuh bahasa; **lima belas sisanya** membawa kalimat dari daftar harga
+keluarganya sendiri, dan tidak ada yang dikarang supaya kartunya kelihatan
+sepenuh tetangganya. Baris yang kalimatnya panjang dapat nama pendek
+(`COPY[*].dive.list.names`) dengan kalimatnya di bawahnya; baris yang
+kalimatnya sudah pendek — "satu fun dive", "night dive di Sawandarek" — tidak
+punya nama pendek sama sekali, dan `diveCards()` membaca itu sebagai "kalimatnya
+yang jadi judul", supaya kartunya tidak mengatakan hal yang sama dua kali.
+
+Penggabungan kartu dan baris itu ada di **`diveCards()`** di `web-content.ts`,
+satu tempat, karena di situlah yang bisa diam-diam salah: nama dan blurb dari
+paket kalau ada, nama pendek dan kalimat dari daftar harga kalau tidak, dan
+angkanya dari `content/site.json` untuk keduanya. Dashboard membaca fungsi yang
+sama, jadi kolom isian di sana berlabel judul kartu yang diubahnya. Batas
+enamnya di `PRICE_SHOWN`, kelompoknya di kolom `group` pada `PRICE_ROWS`.
+
+**Tombol Detail sudah tidak ada.** Pemiliknya memintanya dilepas: kartunya
+sudah menerangkan sendiri, dan cuma enam dari dua puluh satu yang punya halaman
+di baliknya — tautan di seperempat kartu terbaca seolah yang empat itu yang
+sungguhan. Halamannya **masih dilayani** di `/turtle/dive/<paket>` dan masih
+di-*prerender*; yang hilang cuma tautannya dari kartu. Kata "Detail" dalam
+tujuh bahasa juga masih ada di `COPY[*].dive.details`, menunggu kalau suatu
+saat ditautkan lagi.
+
+**Bar "cek ketersediaan" sekarang bisa menanyakan semuanya.** Dropdown
+paketnya dulu berisi enam; sekarang dua puluh satu, dikelompokkan dengan
+`optgroup` yang sama dengan kelompok kartunya. Bertanya itu gratis — yang
+dikirim pesan, bukan pembayaran — jadi tidak ada alasan bar di atas kartu
+manta tidak bisa menanyakan trip manta. Yang **bisa dibayar di sini** tetap
+enam paket itu saja, karena `priceTurtle` cuma menerima kunci itu; kartu lain
+menunjukkan harganya dan diatur lewat pesan, persis seperti yang keluarganya
+lakukan.
+
+Tiga angka di kartu yang dulu
 karangan jadi angka mereka (dua fun dive 1.600.000, tiga penyelaman 2.250.000,
 try dive 1.300.000), dan kartu keenam — dulu "sewa alat lengkap" seharga
 350.000/hari — diganti **Pemandu Pribadi** 400.000/hari, karena sewa alat

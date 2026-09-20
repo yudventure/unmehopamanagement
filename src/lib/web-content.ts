@@ -218,12 +218,17 @@ export const HOUSE = {
 } as const;
 
 /**
- * The six packages drawn as cards, each with a page of its own.
+ * The six packages that can be described at length, and paid for here.
  *
- * A subset of what the dive centre sells, not the whole list: the full 2025
- * price list is `PRICE_ROWS` below and runs to fifteen lines, which is a table
- * rather than fifteen cards with photographs. These six are the ones a guest
- * chooses between before they have talked to anybody.
+ * Not the whole list — `PRICE_ROWS` is, and every row of it is now a card on
+ * the page. These six are the ones with a name, a blurb, a duration and a list
+ * of what is included, written and checked in seven languages; the other
+ * fifteen carry the sentence the family's own list carries and nothing
+ * invented on top of it.
+ *
+ * They are also the only six `priceTurtle` will take money for. A card outside
+ * this list shows its price and is arranged by message, which is what the
+ * family does with them anyway.
  *
  * `guide` used to be `gear`, a day's equipment hire at 350,000. No such thing
  * is sold: the family's list says equipment and the boat are included in every
@@ -266,13 +271,13 @@ export type PriceUnit = "person" | "day" | "tank" | "boat";
 /**
  * How the price list is grouped on the page.
  *
- * Fifteen cards in one run is a wall, and the family's own list is not one
+ * Twenty-one cards in one run is a wall, and the family's own list is not one
  * run either: it is dives you can do from here, dives that go out at night,
- * learning to dive or getting back into it, and the two things that are
- * neither. The groups are that, and nothing finer — a heading for every two
- * lines is a page of headings.
+ * learning to dive or getting back into it, the two things that are neither,
+ * and the boat for a day that leaves the island. The groups are that, and
+ * nothing finer — a heading for every two lines is a page of headings.
  */
-export type PriceGroup = "fun" | "night" | "learn" | "extra";
+export type PriceGroup = "fun" | "night" | "learn" | "extra" | "boat";
 
 /**
  * The dive price list, in the order the family prints it.
@@ -301,22 +306,41 @@ export const PRICE_ROWS: {
   { key: "yangefo2", per: "person", min: 3, group: "fun" },
   { key: "p47", per: "person", min: 3, group: "fun" },
   { key: "houseReef", per: "person", group: "fun" },
+  /* Not on the family's 2025 list, and real all the same: they take
+     snorkellers out, and they teach the course. Both sit at the end of their
+     group rather than in the middle of it, because the order above is the
+     order the family prints and these two were never in it. Neither is
+     priced, so both cards ask. */
+  { key: "snorkel", per: "person", group: "fun" },
   { key: "nightYenbuba", per: "person", min: 2, group: "night" },
   { key: "nightSawandarek", per: "person", min: 2, group: "night" },
   { key: "dsd", per: "person", group: "learn" },
   { key: "refresh", per: "person", group: "learn" },
+  { key: "ow", per: "person", group: "learn" },
   { key: "guide", per: "day", group: "extra" },
   { key: "tank", per: "tank", group: "extra" },
+  /* Chartered whole rather than sold by the head, which is why they are their
+     own group and not a footnote under the dives. */
+  { key: "boatPiaynemo", per: "boat", group: "boat" },
+  { key: "boatPiaynemoJoin", per: "boat", group: "boat" },
+  { key: "boatYangefo", per: "boat", group: "boat" },
+  { key: "boatBatanta", per: "boat", group: "boat" },
 ];
 
 /** The groups in the order they are drawn. */
-export const PRICE_GROUPS: PriceGroup[] = ["fun", "night", "learn", "extra"];
+export const PRICE_GROUPS: PriceGroup[] = [
+  "fun",
+  "night",
+  "learn",
+  "extra",
+  "boat",
+];
 
 /**
  * How many cards a group shows before the rest go behind a button.
  *
  * Six is two full rows at the width this grid uses, so the fold lands on a
- * row boundary rather than in the middle of one. Only the first group is over
+ * row boundary rather than in the middle of one. Only the fun dives are over
  * it today; the button exists per group so that adding a night dive or a
  * course does not mean rethinking the section.
  */
@@ -325,15 +349,13 @@ export const PRICE_SHOWN = 6;
 /**
  * The boat for an excursion, which is chartered rather than sold by the head.
  *
- * Keys only: how many divers each one takes is part of what the line says, in
- * the reader's own language, rather than a number to be printed twice.
+ * Derived rather than listed, now that the boats are rows like any other: a
+ * second list would be a second place to forget. Kept as a name because the
+ * CMS and the copy both talk about the boats as a thing of their own.
  */
-export const BOAT_ROWS: string[] = [
-  "boatPiaynemo",
-  "boatPiaynemoJoin",
-  "boatYangefo",
-  "boatBatanta",
-];
+export const BOAT_ROWS: string[] = PRICE_ROWS.filter(
+  (r) => r.group === "boat",
+).map((r) => r.key);
 
 /** Drawn as the accented card. */
 export const DIVE_FEATURED: DiveKey = "fun3";
@@ -668,7 +690,16 @@ export interface SiteCopy {
     badge: string;
     title: string;
     body: string;
-    /** The card's link through to the package's own page. */
+    /**
+     * The card's link through to the package's own page.
+     *
+     * Not drawn anywhere today. The owner asked for the link off the cards —
+     * every row of the price list is a card now, only six of them have a page
+     * behind one, and a link on a quarter of the cards reads as though those
+     * four are the real ones. The pages are still served at
+     * `/turtle/dive/<key>` and this is still the word for reaching them, in
+     * seven languages, for whenever they are linked again.
+     */
     details: string;
     /** Sits over the SSI mark. Names the relationship, nothing more. */
     partner: string;
@@ -679,10 +710,18 @@ export interface SiteCopy {
     /**
      * Names the clip above the booking bar, for a reader who cannot see it.
      *
-     * The video itself is a file in `public/`, not copy: if there is none,
+     * The video itself is filled in from the CMS, not here: if there is none,
      * nothing is drawn and this is never read out.
      */
     videoLabel: string;
+    /**
+     * On the still that a YouTube clip shows until somebody asks for it.
+     *
+     * Read out with the clip's name after it, so a screen reader announces
+     * "Play: diving with Turtle Dive Center" rather than a bare "Play" that
+     * could belong to anything on the page.
+     */
+    videoPlay: string;
     /**
      * The family's own price list, which is longer than the six cards.
      *
@@ -701,9 +740,24 @@ export interface SiteCopy {
       /** The smallest party the boat goes out with, for the rows that have one. */
       min: (n: number) => string;
       per: Record<PriceUnit, string>;
+      /**
+       * The heading on a card, for the rows that need one.
+       *
+       * A long row — "two fun dives at the manta cleaning station and Arborek
+       * — Manta Ridge or Manta Sandy" — is a description, not a heading, so it
+       * gets a short form here and keeps the sentence underneath. A short one
+       * — "one fun dive", "night dive at Sawandarek" — is already its own
+       * heading, and giving it a name as well made the card say the same
+       * thing twice in a row. Those are simply not in here, and `diveCards`
+       * reads a missing entry as "the sentence is the heading".
+       *
+       * The six packages are not in here either: they have a name of their
+       * own in `packages`, written before this existed and better than a short
+       * form would be.
+       */
+      names: Record<string, string>;
       rows: Record<string, string>;
       notes: string[];
-      boatHeading: string;
       boatNote: string;
       boats: Record<string, string>;
       /** What happens after dinner, and how a dive is actually reserved. */
@@ -1026,15 +1080,17 @@ const EN: SiteCopy = {
       "Certified divers, please bring your card and logbook. For the Open Water course, let us know at least a week ahead so the materials and the instructor's schedule can be arranged.",
     askPrice: "Ask the price",
     videoLabel: "Diving with Turtle Dive Center",
+    videoPlay: "Play",
     list: {
       heading: "Dive price list 2025",
       intro:
-        "The whole list, as the dive centre keeps it. The packages above are the ones that can be booked and paid for here; everything else is arranged by message, or in the evening once the plan for tomorrow is made.",
+        "The whole list, as the dive centre keeps it. A card with a Book and pay button is one you can settle here and now; everything else is arranged by message, or in the evening once the plan for tomorrow is made.",
       groups: {
         fun: "Fun dives and day trips",
         night: "Night dives",
         learn: "Try dives and refreshers",
         extra: "A guide, and a tank",
+        boat: "The boat for an excursion",
       },
       more: (n) => `Show ${n} more`,
       less: "Show fewer",
@@ -1044,6 +1100,19 @@ const EN: SiteCopy = {
         day: "per day",
         tank: "per tank",
         boat: "per boat",
+      },
+      names: {
+        piaynemo2: "Piaynemo · 2 dives",
+        manta2: "Manta station · 2 dives",
+        mantaPm: "Manta station · afternoon",
+        yangefo2: "Yangefo · 2 dives",
+        p47: "P47 wreck · 2 dives",
+        houseReef: "House reef",
+        tank: "Tank hire",
+        boatPiaynemo: "Piaynemo",
+        boatPiaynemoJoin: "Piaynemo, shared",
+        boatYangefo: "Yangefo",
+        boatBatanta: "Batanta waterfall",
       },
       rows: {
         one: "One fun dive",
@@ -1056,11 +1125,11 @@ const EN: SiteCopy = {
         p47: "Two fun dives at the P47 wreck off Batanta, and Manta Way",
         nightYenbuba: "Night dive at Yenbuba or Ransiwor Island",
         nightSawandarek: "Night dive at Sawandarek",
-        houseReef: "House reef dive, on your own with no guide — experienced divers",
+        houseReef: "On your own with no guide — experienced divers",
         refresh: "Skill update and refresh",
         dsd: "Try dive, for anyone without a certificate",
         guide: "A guide to yourself",
-        tank: "Tank hire, for guests diving our house reef",
+        tank: "For guests diving our house reef",
       },
       notes: [
         "Equipment and the boat are included at local sites. An excursion trip is not, and no price includes a dive computer.",
@@ -1069,18 +1138,17 @@ const EN: SiteCopy = {
         "Bring your own mask if you have one that fits your face.",
         "Insurance that covers scuba diving is recommended.",
       ],
-      boatHeading: "The boat for an excursion",
       boatNote:
         "Chartered by the boat rather than by the head, and separate from the dives above.",
       boats: {
         boatPiaynemo:
-          "Piaynemo, up to 5 divers — includes the viewpoint entry fee and a lunch box for Turtle guests",
+          "Up to 5 divers — includes the viewpoint entry fee and a lunch box for Turtle guests",
         boatPiaynemoJoin:
-          "Piaynemo with snorkellers along, 6 or 7 people in all and five of them divers — same entry fee and lunch box",
+          "With snorkellers along, 6 or 7 people in all and five of them divers — same entry fee and lunch box",
         boatYangefo:
-          "Yangefo, up to 5 divers — includes the Kabuy Bay passage and a stop at the bat cave",
+          "Up to 5 divers — includes the Kabuy Bay passage and a stop at the bat cave",
         boatBatanta:
-          "Batanta waterfall, up to 5 divers — includes the waterfall entry fee",
+          "Up to 5 divers — includes the waterfall entry fee",
       },
       plan: "Where the boat goes tomorrow is decided together every evening after dinner, around 20:00.",
       reserve: "To reserve a dive, message or call the office, or come to the restaurant in the evening around 20:00.",
@@ -1736,15 +1804,17 @@ const ID: SiteCopy = {
       "Penyelam bersertifikat harap membawa kartu dan buku log. Untuk kursus Open Water, kabari minimal satu minggu sebelumnya supaya materi dan jadwal instruktur bisa disiapkan.",
     askPrice: "Tanya harga",
     videoLabel: "Menyelam bersama Turtle Dive Center",
+    videoPlay: "Putar",
     list: {
       heading: "Daftar harga selam 2025",
       intro:
-        "Daftar lengkapnya, persis seperti yang dipakai dive center-nya. Paket di atas yang bisa dipesan dan dibayar langsung di sini; sisanya diatur lewat pesan, atau malam hari waktu rencana besok disusun.",
+        "Daftar lengkapnya, persis seperti yang dipakai dive center-nya. Kartu yang ada tombol Pesan & bayar bisa dibereskan sekarang juga di sini; sisanya diatur lewat pesan, atau malam hari waktu rencana besok disusun.",
       groups: {
         fun: "Fun dive dan trip harian",
         night: "Night dive",
         learn: "Coba selam dan penyegaran",
         extra: "Pemandu dan sewa tabung",
+        boat: "Perahu untuk trip excursion",
       },
       more: (n) => `Lihat ${n} lainnya`,
       less: "Tampilkan lebih sedikit",
@@ -1754,6 +1824,19 @@ const ID: SiteCopy = {
         day: "per hari",
         tank: "per tabung",
         boat: "per perahu",
+      },
+      names: {
+        piaynemo2: "Piaynemo · 2 penyelaman",
+        manta2: "Manta cleaning station · 2 penyelaman",
+        mantaPm: "Manta cleaning station · sore",
+        yangefo2: "Yangefo · 2 penyelaman",
+        p47: "Bangkai P47 · 2 penyelaman",
+        houseReef: "House reef",
+        tank: "Sewa tabung",
+        boatPiaynemo: "Piaynemo",
+        boatPiaynemoJoin: "Piaynemo, gabungan",
+        boatYangefo: "Yangefo",
+        boatBatanta: "Air terjun Batanta",
       },
       rows: {
         one: "Satu kali fun dive",
@@ -1766,11 +1849,11 @@ const ID: SiteCopy = {
         p47: "Dua fun dive di bangkai P47 dekat Batanta, dan Manta Way",
         nightYenbuba: "Night dive di Yenbuba atau Pulau Ransiwor",
         nightSawandarek: "Night dive di Sawandarek",
-        houseReef: "House reef dive, menyelam sendiri tanpa pemandu — penyelam berpengalaman",
+        houseReef: "Menyelam sendiri tanpa pemandu — penyelam berpengalaman",
         refresh: "Skill update & refresh",
         dsd: "Try dive, untuk yang belum bersertifikat",
         guide: "Pemandu khusus untukmu sendiri",
-        tank: "Sewa tabung, untuk tamu yang menyelam di house reef kami",
+        tank: "Untuk tamu yang menyelam di house reef kami",
       },
       notes: [
         "Alat dan perahu sudah termasuk untuk titik selam lokal. Trip excursion tidak, dan tidak ada harga yang sudah termasuk komputer selam.",
@@ -1779,18 +1862,17 @@ const ID: SiteCopy = {
         "Bawa masker sendiri kalau punya yang pas di wajah.",
         "Disarankan punya asuransi yang menanggung kegiatan menyelam.",
       ],
-      boatHeading: "Perahu untuk trip excursion",
       boatNote:
         "Disewa per perahu, bukan per orang, dan terpisah dari harga penyelaman di atas.",
       boats: {
         boatPiaynemo:
-          "Piaynemo, maksimal 5 penyelam — termasuk tiket masuk view point dan kotak makan untuk tamu Turtle",
+          "Maksimal 5 penyelam — termasuk tiket masuk view point dan kotak makan untuk tamu Turtle",
         boatPiaynemoJoin:
-          "Piaynemo bersama snorkeler, total 6–7 orang dan lima di antaranya penyelam — tiket masuk dan kotak makan sama",
+          "Bersama snorkeler, total 6–7 orang dan lima di antaranya penyelam — tiket masuk dan kotak makan sama",
         boatYangefo:
-          "Yangefo, maksimal 5 penyelam — termasuk lewat Kabuy Bay Passage dan mampir ke gua kelelawar",
+          "Maksimal 5 penyelam — termasuk lewat Kabuy Bay Passage dan mampir ke gua kelelawar",
         boatBatanta:
-          "Air terjun Batanta, maksimal 5 penyelam — termasuk tiket masuk air terjunnya",
+          "Maksimal 5 penyelam — termasuk tiket masuk air terjunnya",
       },
       plan: "Besok perahunya ke mana diputuskan bersama tiap malam sesudah makan, sekitar pukul 20.00.",
       reserve: "Untuk memesan penyelaman, kirim pesan atau telepon ke nomor kantor, atau datang ke restoran malam sekitar pukul 20.00.",
@@ -2446,15 +2528,17 @@ const FR: SiteCopy = {
       "Plongeurs certifiés, merci d'apporter votre carte et votre carnet. Pour le cours Open Water, prévenez-nous au moins une semaine à l'avance afin que le matériel et l'emploi du temps de l'instructeur soient prêts.",
     askPrice: "Demander le prix",
     videoLabel: "Plonger avec le Turtle Dive Center",
+    videoPlay: "Lire",
     list: {
       heading: "Tarifs plongée 2025",
       intro:
-        "La liste entière, telle que le centre la tient. Les forfaits ci-dessus sont ceux que vous pouvez réserver et payer ici ; tout le reste s'organise par message, ou le soir, quand le programme du lendemain se décide.",
+        "La liste entière, telle que le centre la tient. Une carte avec un bouton Réserver et payer se règle ici, tout de suite ; tout le reste s'organise par message, ou le soir, quand le programme du lendemain se décide.",
       groups: {
         fun: "Plongées loisir et sorties à la journée",
         night: "Plongées de nuit",
         learn: "Baptêmes et remises à niveau",
         extra: "Un guide, et un bloc",
+        boat: "Le bateau pour une excursion",
       },
       more: (n) => `Voir ${n} de plus`,
       less: "Voir moins",
@@ -2464,6 +2548,19 @@ const FR: SiteCopy = {
         day: "par jour",
         tank: "par bloc",
         boat: "par bateau",
+      },
+      names: {
+        piaynemo2: "Piaynemo · 2 plongées",
+        manta2: "Station des mantas · 2 plongées",
+        mantaPm: "Station des mantas · après-midi",
+        yangefo2: "Yangefo · 2 plongées",
+        p47: "Épave du P47 · 2 plongées",
+        houseReef: "Récif maison",
+        tank: "Location de bloc",
+        boatPiaynemo: "Piaynemo",
+        boatPiaynemoJoin: "Piaynemo, partagé",
+        boatYangefo: "Yangefo",
+        boatBatanta: "Cascade de Batanta",
       },
       rows: {
         one: "Une plongée loisir",
@@ -2476,11 +2573,11 @@ const FR: SiteCopy = {
         p47: "Deux plongées sur l'épave du P47 au large de Batanta, et à Manta Way",
         nightYenbuba: "Plongée de nuit à Yenbuba ou sur l'île de Ransiwor",
         nightSawandarek: "Plongée de nuit à Sawandarek",
-        houseReef: "Plongée sur le récif maison, seul et sans guide — plongeurs expérimentés",
+        houseReef: "Seul et sans guide — plongeurs expérimentés",
         refresh: "Remise à niveau",
         dsd: "Baptême de plongée, sans brevet",
         guide: "Un guide rien que pour vous",
-        tank: "Location de bloc, pour les hôtes qui plongent sur notre récif maison",
+        tank: "Pour les hôtes qui plongent sur notre récif maison",
       },
       notes: [
         "L'équipement et le bateau sont compris sur les sites locaux. Une sortie excursion ne l'est pas, et aucun tarif ne comprend d'ordinateur de plongée.",
@@ -2489,18 +2586,17 @@ const FR: SiteCopy = {
         "Apportez votre masque si vous en avez un qui va à votre visage.",
         "Une assurance couvrant la plongée est recommandée.",
       ],
-      boatHeading: "Le bateau pour une excursion",
       boatNote:
         "Affrété au bateau et non par personne, et séparé des plongées ci-dessus.",
       boats: {
         boatPiaynemo:
-          "Piaynemo, 5 plongeurs maximum — comprend l'entrée du point de vue et un panier-repas pour les hôtes de Turtle",
+          "5 plongeurs maximum — comprend l'entrée du point de vue et un panier-repas pour les hôtes de Turtle",
         boatPiaynemoJoin:
-          "Piaynemo avec des snorkeleurs, 6 à 7 personnes en tout dont cinq plongeurs — mêmes entrée et panier-repas",
+          "Avec des snorkeleurs, 6 à 7 personnes en tout dont cinq plongeurs — mêmes entrée et panier-repas",
         boatYangefo:
-          "Yangefo, 5 plongeurs maximum — comprend le passage de Kabuy Bay et un arrêt à la grotte aux chauves-souris",
+          "5 plongeurs maximum — comprend le passage de Kabuy Bay et un arrêt à la grotte aux chauves-souris",
         boatBatanta:
-          "Cascade de Batanta, 5 plongeurs maximum — comprend l'entrée de la cascade",
+          "5 plongeurs maximum — comprend l'entrée de la cascade",
       },
       plan: "Où va le bateau demain se décide ensemble chaque soir après le dîner, vers 20 h.",
       reserve: "Pour réserver une plongée, écrivez ou appelez le bureau, ou passez au restaurant le soir vers 20 h.",
@@ -3156,15 +3252,17 @@ const DE: SiteCopy = {
       "Zertifizierte Taucher bringen bitte Brevet und Logbuch mit. Für den Open-Water-Kurs sagen Sie uns mindestens eine Woche vorher Bescheid, damit Material und Zeitplan des Instruktors stehen.",
     askPrice: "Nach dem Preis fragen",
     videoLabel: "Tauchen mit dem Turtle Dive Center",
+    videoPlay: "Abspielen",
     list: {
       heading: "Tauchpreise 2025",
       intro:
-        "Die ganze Liste, so wie die Basis sie führt. Die Pakete oben können Sie hier buchen und bezahlen; alles andere wird per Nachricht vereinbart oder abends, wenn der Plan für morgen gemacht wird.",
+        "Die ganze Liste, so wie die Basis sie führt. Was einen Knopf „Buchen und bezahlen“ hat, können Sie hier gleich erledigen; alles andere wird per Nachricht vereinbart oder abends, wenn der Plan für morgen gemacht wird.",
       groups: {
         fun: "Tauchgänge und Tagesausfahrten",
         night: "Nachttauchgänge",
         learn: "Schnuppern und Auffrischen",
         extra: "Ein Guide, und eine Flasche",
+        boat: "Das Boot für eine Ausfahrt",
       },
       more: (n) => `${n} weitere anzeigen`,
       less: "Weniger anzeigen",
@@ -3174,6 +3272,19 @@ const DE: SiteCopy = {
         day: "pro Tag",
         tank: "pro Flasche",
         boat: "pro Boot",
+      },
+      names: {
+        piaynemo2: "Piaynemo · 2 Tauchgänge",
+        manta2: "Manta-Putzerstation · 2 Tauchgänge",
+        mantaPm: "Manta-Putzerstation · nachmittags",
+        yangefo2: "Yangefo · 2 Tauchgänge",
+        p47: "P47-Wrack · 2 Tauchgänge",
+        houseReef: "Hausriff",
+        tank: "Flaschenmiete",
+        boatPiaynemo: "Piaynemo",
+        boatPiaynemoJoin: "Piaynemo, geteilt",
+        boatYangefo: "Yangefo",
+        boatBatanta: "Batanta-Wasserfall",
       },
       rows: {
         one: "Ein Tauchgang",
@@ -3186,11 +3297,11 @@ const DE: SiteCopy = {
         p47: "Zwei Tauchgänge am P47-Wrack vor Batanta und am Manta Way",
         nightYenbuba: "Nachttauchgang bei Yenbuba oder der Insel Ransiwor",
         nightSawandarek: "Nachttauchgang bei Sawandarek",
-        houseReef: "Hausriff-Tauchgang, allein und ohne Guide — erfahrene Taucher",
+        houseReef: "Allein und ohne Guide — erfahrene Taucher",
         refresh: "Auffrischung der Fertigkeiten",
         dsd: "Schnuppertauchen, ohne Brevet",
         guide: "Ein Guide nur für Sie",
-        tank: "Flaschenmiete, für Gäste, die an unserem Hausriff tauchen",
+        tank: "Für Gäste, die an unserem Hausriff tauchen",
       },
       notes: [
         "Ausrüstung und Boot sind an den lokalen Plätzen inklusive. Eine Ausfahrt ist es nicht, und kein Preis enthält einen Tauchcomputer.",
@@ -3199,18 +3310,17 @@ const DE: SiteCopy = {
         "Bringen Sie Ihre eigene Maske mit, wenn sie Ihnen passt.",
         "Eine Versicherung, die Gerätetauchen abdeckt, wird empfohlen.",
       ],
-      boatHeading: "Das Boot für eine Ausfahrt",
       boatNote:
         "Pro Boot gechartert, nicht pro Kopf, und getrennt von den Tauchgängen oben.",
       boats: {
         boatPiaynemo:
-          "Piaynemo, bis zu 5 Taucher — mit Eintritt zum Aussichtspunkt und Lunchpaket für Turtle-Gäste",
+          "Bis zu 5 Taucher — mit Eintritt zum Aussichtspunkt und Lunchpaket für Turtle-Gäste",
         boatPiaynemoJoin:
-          "Piaynemo mit Schnorchlern, 6 bis 7 Personen insgesamt und davon fünf Taucher — derselbe Eintritt, dasselbe Lunchpaket",
+          "Mit Schnorchlern, 6 bis 7 Personen insgesamt und davon fünf Taucher — derselbe Eintritt, dasselbe Lunchpaket",
         boatYangefo:
-          "Yangefo, bis zu 5 Taucher — mit der Passage der Kabuy-Bucht und einem Halt an der Fledermaushöhle",
+          "Bis zu 5 Taucher — mit der Passage der Kabuy-Bucht und einem Halt an der Fledermaushöhle",
         boatBatanta:
-          "Batanta-Wasserfall, bis zu 5 Taucher — mit Eintritt zum Wasserfall",
+          "Bis zu 5 Taucher — mit Eintritt zum Wasserfall",
       },
       plan: "Wohin das Boot morgen fährt, wird jeden Abend nach dem Essen gemeinsam entschieden, gegen 20:00.",
       reserve: "Für eine Tauchreservierung schreiben oder rufen Sie im Büro an, oder kommen Sie abends gegen 20:00 ins Restaurant.",
@@ -3883,15 +3993,17 @@ const RU: SiteCopy = {
       "Сертифицированных дайверов просим взять карточку и лог-бук. О курсе Open Water предупредите хотя бы за неделю, чтобы подготовить материалы и расписание инструктора.",
     askPrice: "Спросить цену",
     videoLabel: "Погружения с Turtle Dive Center",
+    videoPlay: "Смотреть",
     list: {
       heading: "Цены на дайвинг, 2025",
       intro:
-        "Весь список, как его ведёт дайв-центр. Пакеты выше можно забронировать и оплатить здесь; всё остальное согласуется в переписке или вечером, когда составляют план на завтра.",
+        "Весь список, как его ведёт дайв-центр. Карточку с кнопкой «Забронировать и оплатить» можно закрыть прямо здесь; всё остальное согласуется в переписке или вечером, когда составляют план на завтра.",
       groups: {
         fun: "Погружения и дневные выходы",
         night: "Ночные погружения",
         learn: "Пробные погружения и освежение навыков",
         extra: "Гид и баллон",
+        boat: "Лодка для выездного трипа",
       },
       more: (n) => `Показать ещё ${n}`,
       less: "Показать меньше",
@@ -3901,6 +4013,19 @@ const RU: SiteCopy = {
         day: "за день",
         tank: "за баллон",
         boat: "за лодку",
+      },
+      names: {
+        piaynemo2: "Пиайнемо · 2 погружения",
+        manta2: "Станция мант · 2 погружения",
+        mantaPm: "Станция мант · днём",
+        yangefo2: "Янгефо · 2 погружения",
+        p47: "Затонувший P47 · 2 погружения",
+        houseReef: "Домашний риф",
+        tank: "Аренда баллона",
+        boatPiaynemo: "Пиайнемо",
+        boatPiaynemoJoin: "Пиайнемо, общая",
+        boatYangefo: "Янгефо",
+        boatBatanta: "Водопад Батанта",
       },
       rows: {
         one: "Одно погружение",
@@ -3913,11 +4038,11 @@ const RU: SiteCopy = {
         p47: "Два погружения на затонувшем P47 у Батанты и на Manta Way",
         nightYenbuba: "Ночное погружение у Йенбубы или острова Рансивор",
         nightSawandarek: "Ночное погружение у Савандарека",
-        houseReef: "Погружение на домашнем рифе, самостоятельно и без гида — для опытных",
+        houseReef: "Самостоятельно и без гида — для опытных",
         refresh: "Освежить навыки",
         dsd: "Пробное погружение, без сертификата",
         guide: "Гид только для вас",
-        tank: "Аренда баллона — для гостей, которые ныряют на нашем домашнем рифе",
+        tank: "Для гостей, которые ныряют на нашем домашнем рифе",
       },
       notes: [
         "На местных точках снаряжение и лодка включены. Выездной трип — нет, и ни в одну цену не входит дайв-компьютер.",
@@ -3926,18 +4051,17 @@ const RU: SiteCopy = {
         "Возьмите свою маску, если у вас есть подходящая.",
         "Рекомендуется страховка, покрывающая погружения с аквалангом.",
       ],
-      boatHeading: "Лодка для выездного трипа",
       boatNote:
         "Фрахтуется целиком, а не по головам, и считается отдельно от погружений выше.",
       boats: {
         boatPiaynemo:
-          "Пиайнемо, до 5 дайверов — включая вход на смотровую площадку и ланч-бокс для гостей Turtle",
+          "До 5 дайверов — включая вход на смотровую площадку и ланч-бокс для гостей Turtle",
         boatPiaynemoJoin:
-          "Пиайнемо вместе со снорклерами, всего 6–7 человек и пятеро из них дайверы — тот же вход и ланч-бокс",
+          "Вместе со снорклерами, всего 6–7 человек и пятеро из них дайверы — тот же вход и ланч-бокс",
         boatYangefo:
-          "Янгефо, до 5 дайверов — включая проход Кабуй-Бэй и остановку у пещеры с летучими мышами",
+          "До 5 дайверов — включая проход Кабуй-Бэй и остановку у пещеры с летучими мышами",
         boatBatanta:
-          "Водопад Батанта, до 5 дайверов — включая вход к водопаду",
+          "До 5 дайверов — включая вход к водопаду",
       },
       plan: "Куда лодка пойдёт завтра, решают вместе каждый вечер после ужина, около 20:00.",
       reserve: "Чтобы записаться на погружение, напишите или позвоните в офис либо зайдите вечером в ресторан около 20:00.",
@@ -4594,15 +4718,17 @@ const JA: SiteCopy = {
       "認定ダイバーの方はCカードとログブックをお持ちください。オープンウォーターの講習は、教材とインストラクターの日程を整えるため、遅くとも1週間前にお知らせください。",
     askPrice: "料金を聞く",
     videoLabel: "Turtle Dive Center で潜る",
+    videoPlay: "再生",
     list: {
       heading: "2025年 ダイビング料金",
       intro:
-        "ダイブセンターの料金表そのままです。上のパッケージはこのサイトで予約と支払いができます。それ以外はメッセージで、あるいは翌日の計画を決める夜の時間に手配します。",
+        "ダイブセンターの料金表そのままです。「予約して支払う」ボタンのあるものは、このサイトでそのまま支払えます。それ以外はメッセージで、あるいは翌日の計画を決める夜の時間に手配します。",
       groups: {
         fun: "ファンダイブと日中の行程",
         night: "ナイトダイブ",
         learn: "体験とリフレッシュ",
         extra: "ガイドとタンク",
+        boat: "遠征トリップのボート",
       },
       more: (n) => `ほかに${n}件を表示`,
       less: "表示を減らす",
@@ -4612,6 +4738,19 @@ const JA: SiteCopy = {
         day: "1日あたり",
         tank: "1本あたり",
         boat: "1艇あたり",
+      },
+      names: {
+        piaynemo2: "ピアイネモ · 2本",
+        manta2: "マンタのクリーニングステーション · 2本",
+        mantaPm: "マンタのクリーニングステーション · 午後",
+        yangefo2: "ヤンゲフォ · 2本",
+        p47: "P47沈船 · 2本",
+        houseReef: "ハウスリーフ",
+        tank: "タンクレンタル",
+        boatPiaynemo: "ピアイネモ",
+        boatPiaynemoJoin: "ピアイネモ（相乗り）",
+        boatYangefo: "ヤンゲフォ",
+        boatBatanta: "バタンタの滝",
       },
       rows: {
         one: "ファンダイブ 1本",
@@ -4624,11 +4763,11 @@ const JA: SiteCopy = {
         p47: "バタンタ沖のP47沈船と Manta Way で2本",
         nightYenbuba: "イェンブバまたはランシウォール島でナイトダイブ",
         nightSawandarek: "サワンダレクでナイトダイブ",
-        houseReef: "ハウスリーフをガイドなしで自分たちだけで — 経験者向け",
+        houseReef: "ガイドなしで自分たちだけで — 経験者向け",
         refresh: "スキルアップデート／リフレッシュ",
         dsd: "体験ダイビング、ライセンス不要",
         guide: "専属ガイド",
-        tank: "タンクレンタル、当ホームステイのハウスリーフで潜るお客さま用",
+        tank: "当ホームステイのハウスリーフで潜るお客さま用",
       },
       notes: [
         "ローカルポイントは器材とボート込みです。遠征トリップは別で、どの料金にもダイブコンピューターは含みません。",
@@ -4637,18 +4776,17 @@ const JA: SiteCopy = {
         "顔に合うマスクをお持ちでしたら、ぜひご持参ください。",
         "スキューバダイビングを補償する保険への加入をおすすめします。",
       ],
-      boatHeading: "遠征トリップのボート",
       boatNote:
         "人数割りではなくボート1艇のチャーター料金で、上のダイビング料金とは別です。",
       boats: {
         boatPiaynemo:
-          "ピアイネモ、ダイバー5名まで — 展望台の入場料と、当ホームステイのお客さま用ランチボックス込み",
+          "ダイバー5名まで — 展望台の入場料と、当ホームステイのお客さま用ランチボックス込み",
         boatPiaynemoJoin:
-          "ピアイネモ、シュノーケラーも一緒に計6〜7名、うちダイバー5名 — 入場料とランチボックスは同じ",
+          "シュノーケラーも一緒に計6〜7名、うちダイバー5名 — 入場料とランチボックスは同じ",
         boatYangefo:
-          "ヤンゲフォ、ダイバー5名まで — カブイ湾の水路と、コウモリの洞窟への立ち寄り込み",
+          "ダイバー5名まで — カブイ湾の水路と、コウモリの洞窟への立ち寄り込み",
         boatBatanta:
-          "バタンタの滝、ダイバー5名まで — 滝の入場料込み",
+          "ダイバー5名まで — 滝の入場料込み",
       },
       plan: "明日どこへ向かうかは、毎晩夕食のあと20時ごろに相談して決めます。",
       reserve: "ダイビングのご予約は、オフィスへメッセージかお電話を。夜20時ごろにレストランへお越しいただいてもかまいません。",
@@ -5303,15 +5441,17 @@ const ZH: SiteCopy = {
       "持证潜水员请带上潜水证和潜水日志。Open Water 课程请至少提前一周告诉我们，好把教材和教练的时间安排出来。",
     askPrice: "问价格",
     videoLabel: "和 Turtle Dive Center 一起潜水",
+    videoPlay: "播放",
     list: {
       heading: "2025 年潜水价目表",
       intro:
-        "潜水中心的整份价目表。上面几个套餐可以在这里直接下单付款；其余的通过留言安排，或者晚上定明天计划的时候一起说。",
+        "潜水中心的整份价目表。带「预订并付款」按钮的，可以在这里直接付掉；其余的通过留言安排，或者晚上定明天计划的时候一起说。",
       groups: {
         fun: "Fun dive 与当天行程",
         night: "夜潜",
         learn: "体验与复习",
         extra: "导潜与气瓶",
+        boat: "远征行程的船",
       },
       more: (n) => `再看 ${n} 项`,
       less: "收起",
@@ -5321,6 +5461,19 @@ const ZH: SiteCopy = {
         day: "每天",
         tank: "每支气瓶",
         boat: "每艘船",
+      },
+      names: {
+        piaynemo2: "皮阿内莫 · 两支",
+        manta2: "蝠鲼清洁站 · 两支",
+        mantaPm: "蝠鲼清洁站 · 下午",
+        yangefo2: "扬格福 · 两支",
+        p47: "P47 沉机 · 两支",
+        houseReef: "自家礁",
+        tank: "租气瓶",
+        boatPiaynemo: "皮阿内莫",
+        boatPiaynemoJoin: "皮阿内莫，拼船",
+        boatYangefo: "扬格福",
+        boatBatanta: "巴坦塔瀑布",
       },
       rows: {
         one: "一支 fun dive",
@@ -5333,11 +5486,11 @@ const ZH: SiteCopy = {
         p47: "在巴坦塔外海的 P47 沉机和 Manta Way 潜两支",
         nightYenbuba: "延布巴或兰西沃岛夜潜",
         nightSawandarek: "萨万达雷克夜潜",
-        houseReef: "自己下自家礁，不带导潜 — 有经验的潜水员",
+        houseReef: "自己下水，不带导潜 — 有经验的潜水员",
         refresh: "技巧更新与复习",
         dsd: "体验潜水，无证也可以",
         guide: "只带你们一组的导潜",
-        tank: "租气瓶，给在我们自家礁下水的客人",
+        tank: "给在我们自家礁下水的客人",
       },
       notes: [
         "本地潜点含装备和船。远征行程不含，而且所有价格都不含潜水电脑。",
@@ -5346,18 +5499,17 @@ const ZH: SiteCopy = {
         "如果你有贴合自己脸型的面镜，请自己带来。",
         "建议购买能涵盖水肺潜水的保险。",
       ],
-      boatHeading: "远征行程的船",
       boatNote:
         "按整艘船算，不按人头，和上面的潜水费用分开。",
       boats: {
         boatPiaynemo:
-          "皮阿内莫，最多 5 位潜水员 — 含观景台门票和给 Turtle 客人的餐盒",
+          "最多 5 位潜水员 — 含观景台门票和给 Turtle 客人的餐盒",
         boatPiaynemoJoin:
-          "皮阿内莫，和浮潜的人一起，总共 6 到 7 人、其中 5 位潜水员 — 门票和餐盒相同",
+          "和浮潜的人一起，总共 6 到 7 人、其中 5 位潜水员 — 门票和餐盒相同",
         boatYangefo:
-          "扬格福，最多 5 位潜水员 — 含卡布伊湾水道，以及在蝙蝠洞停留",
+          "最多 5 位潜水员 — 含卡布伊湾水道，以及在蝙蝠洞停留",
         boatBatanta:
-          "巴坦塔瀑布，最多 5 位潜水员 — 含瀑布门票",
+          "最多 5 位潜水员 — 含瀑布门票",
       },
       plan: "明天船去哪儿，每天晚饭后 20:00 左右大家一起定。",
       reserve: "要订潜水，请给办公室发消息或打电话，也可以晚上 20:00 左右到餐厅来找我们。",
@@ -5909,5 +6061,72 @@ export function monthOptions(from: Date, lang: Lang, count = 12): string[] {
   return Array.from({ length: count }, (_, i) => {
     const d = new Date(from.getFullYear(), from.getMonth() + i, 1);
     return `${names[d.getMonth()]} ${d.getFullYear()}`;
+  });
+}
+
+/** Whether a price-list key is also one of the six packages. */
+export function isDiveKey(key: string): key is DiveKey {
+  return (DIVE_KEYS as readonly string[]).includes(key);
+}
+
+/**
+ * One row of the price list, ready to be drawn as a card.
+ *
+ * The section used to be two things: six cards with photographs and a table of
+ * fifteen lines underneath. That meant a guest comparing the manta trip
+ * against the three-dive day was comparing a table row against a card, and the
+ * four keys the two shared had to be kept saying the same figure by hand. Now
+ * there is one list, and a card is a row of it.
+ */
+export interface DiveCard {
+  key: string;
+  group: PriceGroup;
+  name: string;
+  blurb: string;
+  /** A package's duration, or the smallest party a boat will go out with. */
+  badge: string | null;
+  /** What is included, as chips. Only the six packages have them written. */
+  includes: string[];
+  /** "per person", "per day", "per boat". */
+  unit: string;
+  /** "Open Water and up". Only the six packages have one. */
+  level: string | null;
+  /** Rupiah, or 0 where nobody has filled the figure in. */
+  rupiah: number;
+  /** The key `priceTurtle` takes money for, or null when it will not. */
+  pack: DiveKey | null;
+}
+
+/**
+ * Every card in the dive section, in the order the family prints its list.
+ *
+ * Joined here rather than in the component, because the join is the part that
+ * can go quietly wrong: a package's own name and blurb where it has one, the
+ * price list's short name and sentence where it does not, and the figure from
+ * `content/site.json` for both. Doing it in one place is what stops a card and
+ * a row quoting different prices for the same dive — they are the same dive.
+ */
+export function diveCards(t: SiteCopy): DiveCard[] {
+  return PRICE_ROWS.map((row) => {
+    const pack = isDiveKey(row.key) ? t.dive.packages[row.key] : null;
+    const min = row.min ? t.dive.list.min(row.min) : null;
+    /* A boat's words live with the boats, because they describe a charter
+       rather than a dive: who fits on it and which fees the day covers. */
+    const sentence =
+      t.dive.list.boats[row.key] ?? t.dive.list.rows[row.key] ?? "";
+    return {
+      key: row.key,
+      group: row.group,
+      name: pack ? pack.name : (t.dive.list.names[row.key] ?? sentence),
+      /* No short name means the sentence was the heading, and a card should
+         not print it twice. */
+      blurb: pack ? pack.blurb : t.dive.list.names[row.key] ? sentence : "",
+      badge: pack ? pack.duration : min,
+      includes: pack ? pack.includes : [],
+      unit: pack ? pack.unit : t.dive.list.per[row.per],
+      level: pack ? pack.level : null,
+      rupiah: divePrice(row.key),
+      pack: isDiveKey(row.key) ? row.key : null,
+    };
   });
 }

@@ -28,6 +28,19 @@ export interface CalendarScreenProps {
   occLabel: string;
   nightsLabel: string;
   revenueLabel: string;
+  /**
+   * Tiga sisanya dari dashboard ringkas PRD F6.1. Dikirim sebagai kalimat
+   * jadi, sama seperti tiga di atasnya, supaya layar ini tidak perlu tahu
+   * apa-apa soal cara menghitungnya.
+   *
+   * `belumDicatat` menandai mana yang bukan angka melainkan ketiadaan
+   * catatan — piutang tanpa satu pun pembayaran tercatat akan terhitung
+   * sebesar seluruh pendapatan, dan angka itu salah ke arah yang menakutkan.
+   */
+  newLabel: string;
+  receivableLabel: string;
+  checkinLabel: string;
+  belumDicatat: { baru: boolean; piutang: boolean };
   cells: CalendarCell[];
   onSelect: (id: string) => void;
   selectedDate: string | null;
@@ -95,6 +108,10 @@ export function CalendarScreen({
   occLabel,
   nightsLabel,
   revenueLabel,
+  newLabel,
+  receivableLabel,
+  checkinLabel,
+  belumDicatat,
   cells,
   onSelect,
   selectedDate,
@@ -107,30 +124,72 @@ export function CalendarScreen({
     minWidth: compact ? 0 : narrow ? 700 : 0,
   };
 
+  /**
+   * Satu angka di strip ringkas.
+   *
+   * `unknown` menggambarnya beda: lebih kecil, tidak tebal, warna redup. Itu
+   * bukan hiasan — "belum dicatat" yang digambar setebal dan sebesar angka
+   * akan terbaca sebagai angka dari sudut mata, dan strip ini justru dibaca
+   * dari sudut mata.
+   */
+  const Stat = ({
+    label,
+    value,
+    unknown = false,
+    span = false,
+  }: {
+    label: string;
+    value: string;
+    unknown?: boolean;
+    span?: boolean;
+  }) => (
+    <div className={span && compact ? "col-span-2" : ""}>
+      <div className="text-[11px] text-slate-soft">{label}</div>
+      <div
+        className={
+          unknown
+            ? "text-[13px] leading-[1.45] text-slate-faint"
+            : compact
+              ? "text-[17px] font-bold"
+              : "text-[19px] font-bold"
+        }
+      >
+        {value}
+      </div>
+    </div>
+  );
+
+  /*
+   * Lima angka yang diminta PRD F6.1, ditambah malam terjual yang sudah ada.
+   *
+   * Check-in tujuh hari juga ada sebagai daftar di rail kanan, dan
+   * pengulangannya disengaja: di layar HP rail itu berada di bawah kalender,
+   * jadi angka yang paling sering ditanyakan pagi-pagi — siapa datang minggu
+   * ini — hanya terlihat setelah menggulung melewati seluruh kisi.
+   */
   const stats = (
     <>
-      <div>
-        <div className="text-[11px] text-slate-soft">Okupansi bulan ini</div>
-        <div className={compact ? "text-[17px] font-bold" : "text-[19px] font-bold"}>
-          {occLabel}
-        </div>
-      </div>
-      <div>
-        <div className="text-[11px] text-slate-soft">Malam terjual</div>
-        <div className={compact ? "text-[17px] font-bold" : "text-[19px] font-bold"}>
-          {nightsLabel}
-        </div>
-      </div>
+      <Stat label="Okupansi bulan ini" value={occLabel} />
+      <Stat label="Malam terjual" value={nightsLabel} />
       {showMoney && (
         /* Spans the row on a phone rather than squeezing into a third column:
            a month past nine figures would not fit one, and a rupiah total that
            wraps mid-number is worse than one on its own line. */
-        <div className={compact ? "col-span-2" : ""}>
-          <div className="text-[11px] text-slate-soft">Pendapatan</div>
-          <div className={compact ? "text-[17px] font-bold" : "text-[19px] font-bold"}>
-            {revenueLabel}
-          </div>
-        </div>
+        <Stat label="Pendapatan" value={revenueLabel} span />
+      )}
+      {/* Rentangnya disebut di label, sama seperti tetangganya. "Booking baru"
+          saja tidak mengatakan baru menurut apa, dan angka tanpa rentang di
+          strip yang dibaca sekilas akan ditebak — biasanya sebagai bulan ini,
+          yang bukan itu maksudnya. */}
+      <Stat label="Booking baru 7 hari" value={newLabel} unknown={belumDicatat.baru} />
+      <Stat label="Check-in 7 hari" value={checkinLabel} />
+      {showMoney && (
+        <Stat
+          label="Piutang berjalan"
+          value={receivableLabel}
+          unknown={belumDicatat.piutang}
+          span
+        />
       )}
     </>
   );

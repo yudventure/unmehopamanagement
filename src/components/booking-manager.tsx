@@ -58,6 +58,7 @@ import {
   monthStats,
   monthlyTrend,
   nightsInMonth,
+  ringkasStats,
   splitConflicts,
   visibleBookings,
   type ChannelFilter,
@@ -474,6 +475,12 @@ export function BookingManager({
     () => monthStats(visible, month, activeRooms),
     [visible, month, activeRooms],
   );
+
+  /* Dua angka sisanya dari PRD F6.1. Tidak ikut `month` di daftar
+     ketergantungannya, dan itu benar: menggeser kalender ke Desember tidak
+     mengubah berapa booking yang masuk minggu ini atau berapa yang belum
+     dibayar hari ini. */
+  const ringkas = useMemo(() => ringkasStats(visible, today), [visible, today]);
 
   /* The month before the reported one, computed whether or not the comparison
      is switched on — it is four small loops, and keeping it unconditional
@@ -1292,6 +1299,21 @@ export function BookingManager({
                     occLabel={`${stats.occPct}%`}
                     nightsLabel={`${stats.nights} malam`}
                     revenueLabel={fmt(stats.revenue)}
+                    newLabel={
+                      ringkas.bookingBaru === null
+                        ? "belum dicatat"
+                        : `${ringkas.bookingBaru} booking`
+                    }
+                    receivableLabel={
+                      ringkas.piutang === null
+                        ? "belum ada pembayaran yang dicatat"
+                        : fmt(ringkas.piutang)
+                    }
+                    checkinLabel={`${upcoming.length} tamu`}
+                    belumDicatat={{
+                      baru: ringkas.bookingBaru === null,
+                      piutang: ringkas.piutang === null,
+                    }}
                     cells={cells}
                     onSelect={setSelectedId}
                     selectedDate={selectedDate}

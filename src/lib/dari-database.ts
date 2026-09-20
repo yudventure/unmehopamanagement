@@ -1,3 +1,4 @@
+import { iso } from "./format";
 import type { Booking, ChannelKey, BookingStatus, PropertyKey, Room } from "./types";
 
 /**
@@ -68,6 +69,10 @@ export interface ApiBooking {
   totalAmount: number | null;
   notes: string | null;
   conflictGroup: string | null;
+  /** Timestamp ISO utuh. Dipotong jadi tanggal di sini, bukan di server. */
+  createdAt: string;
+  /** Null berarti belum ada pembayaran tercatat, bukan nol. */
+  paid: number | null;
 }
 
 export interface ApiKalender {
@@ -164,6 +169,13 @@ export function bookingDariApi(rows: ApiBooking[]): Booking[] {
       status,
       notes: b.notes ?? "",
       src: b.source === "ICAL" ? "iCal" : "manual",
+      /* Tanggal kalender menurut jam pembacanya, lewat `iso()` yang sama yang
+         dipakai layar ini menghitung "hari ini". Keduanya harus satu dasar:
+         beda dasar berarti booking yang baru masuk terhitung besok. */
+      createdAt: iso(new Date(b.createdAt)),
+      /* Null diterjemahkan jadi undefined, bukan 0: keduanya berarti "belum
+         ada yang dicatat", dan 0 berarti "sudah dihitung, hasilnya nol". */
+      paid: b.paid ?? undefined,
     });
   }
   return out;

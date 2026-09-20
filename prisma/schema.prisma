@@ -1,0 +1,318 @@
+// Skema database booking, diterjemahkan dari bagian 3 "Handoff Teknis Booking
+// Manager" di `project/`. Dokumen itu yang berwenang; berkas ini mengikutinya,
+// bukan sebaliknya.
+//
+// ## Dua aturan yang tidak boleh dilanggar
+//
+// **Tanggal menginap disimpan sebagai DATE, bukan timestamp.** Satu malam
+// menginap adalah satuan kalender, bukan satuan waktu, dan konversi zona waktu
+// pernah menggeser check-in ke tanggal sebelumnya pada sistem sejenis. Rentang
+// booking setengah terbuka: [check_in, check_out) — tamu keluar pada tanggal
+// check-out sehingga kamar bisa langsung dipakai tamu lain hari itu. Konvensi
+// ini sama persis dengan cara OTA mengirim DTEND di iCal, jadi impor tidak
+// perlu penyesuaian.
+//
+// **Anti-double-booking dijaga database, bukan kode.** Kolom `stay` dan
+// constraint `EXCLUDE USING gist` yang mengawalnya tidak bisa dinyatakan dalam
+// bahasa Prisma, jadi keduanya ditulis tangan di migrasi pertama. `stay`
+// muncul di sini sebagai `Unsupported` supaya Prisma tahu kolom itu ada dan
+// tidak mencoba membuangnya pada diff berikutnya — tapi ia GENERATED ALWAYS di
+// database, jadi tidak pernah ditulis dari aplikasi.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------------------------------------------------------------------------
+// Enum
+// ---------------------------------------------------------------------------
+
+enum Channel {
+  BOOKING_COM
+  TRAVELOKA
+  AGODA
+  WHATSAPP
+  WALK_IN
+  BLOCK
+}
+
+/// CONFLICT dipakai impor iCal ketika constraint menolak: booking itu sudah
+/// terjadi di OTA, jadi menolaknya berarti kehilangan data. Operator yang
+/// memutuskan penyelesaiannya.
+enum BookingStatus {
+  TENTATIVE
+  CONFIRMED
+  CHECKED_IN
+  CHECKED_OUT
+  CANCELLED
+  NO_SHOW
+  CONFLICT
+  BLOCKED
+}
+
+enum BookingSource {
+  MANUAL
+  ICAL
+}
+
+enum PaymentKind {
+  DEPOSIT
+  BALANCE
+  EXTRA
+  REFUND
+}
+
+enum PaymentMethod {
+  TRANSFER
+  CASH
+  EWALLET
+  OTA_PREPAID
+}
+
+enum Role {
+  OWNER
+  STAFF
+}
+
+enum FeedDirection {
+  IMPORT
+  EXPORT
+}
+
+// ---------------------------------------------------------------------------
+// Properti dan kamar
+// ---------------------------------------------------------------------------
+
+model Property {
+  id        String   @id @default(cuid())
+  name      String
+  island    String?
+  contact   String?
+  notes     String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  rooms Room[]
+  staff UserProperty[]
+
+  @@map("properties")
+}
+
+model Room {
+  id             String  @id @default(cuid())
+  propertyId     String  @map("property_id")
+  name           String
+  roomType       String? @map("room_type")
+  capAdult       Int     @default(2) @map("cap_adult")
+  capChild       Int     @default(0) @map("cap_child")
+  /// Tarif dasar per malam. Decimal, bukan float: uang yang dibulatkan
+  /// biner akan meleset pada penjumlahan laporan.
+  baseRate       Decimal @db.Decimal(14, 2) @map("base_rate")
+  isActive       Boolean @default(true) @map("is_active")
+  inactiveReason String? @map("inactive_reason")
+  sortOrder      Int     @default(0) @map("sort_order")
+
+  property      Property       @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  bookings      Booking[]
+  seasonalRates SeasonalRate[]
+  icalFeeds     IcalFeed[]
+
+  @@unique([propertyId, name])
+  @@index([propertyId, sortOrder])
+  @@map("rooms")
+}
+
+/// Tarif musiman. Rentangnya tertutup di kedua ujung — `[date_from, date_to]` —
+/// karena ini menandai hari-hari kalender, bukan malam menginap. Migrasi
+/// menambahkan EXCLUDE gist supaya dua tarif tidak bisa menutupi hari yang
+/// sama untuk satu kamar.
+model SeasonalRate {
+  id       String   @id @default(cuid())
+  roomId   String   @map("room_id")
+  dateFrom DateTime @db.Date @map("date_from")
+  dateTo   DateTime @db.Date @map("date_to")
+  rate     Decimal  @db.Decimal(14, 2)
+  label    String?
+
+  room Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@index([roomId, dateFrom])
+  @@map("seasonal_rates")
+}
+
+// ---------------------------------------------------------------------------
+// Tamu dan booking
+// ---------------------------------------------------------------------------
+
+model Guest {
+  id     String  @id @default(cuid())
+  name   String
+  phone  String?
+  origin String?
+  notes  String?
+
+  bookings Booking[]
+
+  @@index([name])
+  @@map("guests")
+}
+
+model Booking {
+  id     String @id @default(cuid())
+  /// Kode yang diucapkan ke tamu lewat telepon. Pendek dan unik.
+  code   String @unique
+  roomId String @map("room_id")
+  guestId String? @map("guest_id")
+
+  checkIn  DateTime @db.Date @map("check_in")
+  checkOut DateTime @db.Date @map("check_out")
+
+  /// GENERATED ALWAYS AS daterange(check_in, check_out, '[)') STORED.
+  /// Dibuat di migrasi, tidak pernah ditulis dari sini.
+  stay Unsupported("daterange")?
+
+  channel Channel
+  status  BookingStatus @default(TENTATIVE)
+  source  BookingSource @default(MANUAL)
+
+  /// UID dari feed iCal. Unik bila ada — inilah kunci idempotensi sinkron:
+  /// tanpa ini tiap siklus tarik akan menduplikasi seluruh booking OTA.
+  externalUid String? @map("external_uid")
+
+  totalAmount       Decimal? @db.Decimal(14, 2) @map("total_amount")
+  otaCommissionEst  Decimal? @db.Decimal(14, 2) @map("ota_commission_est")
+  notes             String?
+
+  /// Kapan hold TENTATIVE kedaluwarsa. Null berarti bukan hold.
+  holdExpiresAt DateTime? @map("hold_expires_at")
+  /// Menyatukan booking-booking yang saling bentrok supaya bisa ditinjau
+  /// sebagai satu perkara, bukan satu per satu.
+  conflictGroup String?   @map("conflict_group")
+
+  createdBy String?  @map("created_by")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  room     Room      @relation(fields: [roomId], references: [id], onDelete: Restrict)
+  guest    Guest?    @relation(fields: [guestId], references: [id], onDelete: SetNull)
+  payments Payment[]
+
+  @@index([roomId, checkIn])
+  @@index([status])
+  @@index([conflictGroup])
+  @@map("bookings")
+}
+
+model Payment {
+  id        String        @id @default(cuid())
+  bookingId String        @map("booking_id")
+  amount    Decimal       @db.Decimal(14, 2)
+  kind      PaymentKind
+  method    PaymentMethod
+  paidAt    DateTime      @db.Date @map("paid_at")
+  /// Foto bukti transfer, di penyimpanan objek. Bukan blob di database.
+  proofUrl   String?  @map("proof_url")
+  recordedBy String?  @map("recorded_by")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([bookingId])
+  @@map("payments")
+}
+
+// ---------------------------------------------------------------------------
+// Sinkronisasi OTA
+// ---------------------------------------------------------------------------
+
+model IcalFeed {
+  id            String        @id @default(cuid())
+  roomId        String        @map("room_id")
+  direction     FeedDirection
+  /// Diisi untuk IMPORT: alamat feed di extranet OTA.
+  url           String?
+  /// Diisi untuk EXPORT: token acak yang menjaga feed keluar kami. Feed itu
+  /// harus terbaca server OTA tanpa login, jadi token inilah pengamanannya.
+  exportToken   String?       @unique @map("export_token")
+  otaLabel      String?       @map("ota_label")
+  lastSuccessAt DateTime?     @map("last_success_at")
+  lastErrorAt   DateTime?     @map("last_error_at")
+  lastError     String?       @map("last_error")
+  failCount     Int           @default(0) @map("fail_count")
+  isActive      Boolean       @default(true) @map("is_active")
+
+  room     Room      @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  syncRuns SyncRun[]
+
+  @@index([roomId])
+  @@map("ical_feeds")
+}
+
+/// Satu baris per siklus tarik. Tanpa ini "sinkron terakhir" cuma angka yang
+/// dikarang di layar — persis keadaan yang sedang diperbaiki.
+model SyncRun {
+  id             String    @id @default(cuid())
+  feedId         String    @map("feed_id")
+  startedAt      DateTime  @default(now()) @map("started_at")
+  finishedAt     DateTime? @map("finished_at")
+  eventsSeen     Int       @default(0) @map("events_seen")
+  createdCount   Int       @default(0) @map("created_count")
+  updatedCount   Int       @default(0) @map("updated_count")
+  cancelledCount Int       @default(0) @map("cancelled_count")
+  error          String?
+
+  feed IcalFeed @relation(fields: [feedId], references: [id], onDelete: Cascade)
+
+  @@index([feedId, startedAt])
+  @@map("sync_runs")
+}
+
+// ---------------------------------------------------------------------------
+// Orang
+// ---------------------------------------------------------------------------
+
+model User {
+  id           String    @id @default(cuid())
+  name         String
+  email        String    @unique
+  /// bcrypt. Null selama undangan belum dipakai — akun ada, sandinya belum.
+  passwordHash String?   @map("password_hash")
+  role         Role      @default(STAFF)
+  isActive     Boolean   @default(true) @map("is_active")
+  invitedAt    DateTime? @map("invited_at")
+  lastLoginAt  DateTime? @map("last_login_at")
+
+  properties UserProperty[]
+
+  @@map("users")
+}
+
+/// Pembatas akses staf. Owner tidak perlu baris di sini — ia melihat semuanya.
+model UserProperty {
+  userId     String @map("user_id")
+  propertyId String @map("property_id")
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@id([userId, propertyId])
+  @@map("user_properties")
+}
+
+/// Siapa mengubah apa. Dipakai PATCH booking, yang wajib menulis ke sini.
+model AuditLog {
+  id       String   @id @default(cuid())
+  entity   String
+  entityId String   @map("entity_id")
+  action   String
+  actorId  String?  @map("actor_id")
+  diffJson Json?    @map("diff_json")
+  at       DateTime @default(now())
+
+  @@index([entity, entityId])
+  @@index([at])
+  @@map("audit_log")
+}

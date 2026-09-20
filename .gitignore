@@ -5,7 +5,12 @@ build/
 dist/
 next-env.d.ts
 
-.env*.local
+# Kredensial. `.env*.local` saja tidak cukup begitu ada database: `prisma init`
+# menulis `.env` berisi DATABASE_URL lengkap dengan sandinya, dan berkas itu
+# dulu tidak terjaring pola mana pun di sini.
+.env
+.env.*
+!.env.example
 
 npm-debug.log*
 yarn-error.log*
@@ -19,3 +24,7 @@ docs/*/doc.built.html
 
 # The map generator fetches 200 MB of public data in here. See scripts/peta-dampier.mjs.
 .peta-sumber/
+
+# Klien Prisma dibangkitkan dari skema, jadi tidak di-commit. `postinstall`
+# membuatnya ulang sesudah tiap `npm ci`, termasuk di CI.
+/generated/prisma

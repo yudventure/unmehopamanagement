@@ -84,3 +84,38 @@ di situs lain. Jangan dihapus karena terlihat tidak terpakai. Komponennya
 (`npm run peta` membangunnya ulang), salinannya di `map` dalam
 `eddo-content.ts` untuk tujuh bahasa, dan animasinya di `globals.css`. Cara
 memasangnya kembali ditulis di tempat seksinya dulu berada, di `site.tsx`.
+
+## Pekerjaan selesai berarti sudah di `main`, bukan menunggu di pull request
+
+Pemiliknya memutuskan ini pada 20 September 2026: perubahan situs digabung
+sendiri begitu selesai, supaya yang tayang selalu yang terbaru. `main` adalah
+yang tayang — `build.yml` berjalan pada tiap push ke sana, membangun,
+memublikasikan ke branch `deploy`, lalu menunggu sampai `/version.json`
+menyebut commit itu. Jadi pull request yang menganggur sama dengan situs yang
+tertinggal.
+
+Alurnya tetap lewat pull request, dan itu bukan formalitas: PR-nya yang
+menyimpan alasan sebuah perubahan, dan judul commit gabungannya yang muncul di
+riwayat. Yang hilang cuma jedanya.
+
+1. Kerjakan di branch, push.
+2. Buka PR dengan penjelasan yang utuh.
+3. **Validasi dulu, sebelum menggabung** — bukan sesudah: `npx tsc --noEmit`,
+   `npm run build`, dan skrip browser yang menyangkut bagian yang disentuh
+   (alur pesan-bayar, ketujuh bahasa, `reducedMotion` sesuai aturan gerak di
+   atas, lebar 390 px).
+4. Gabung. Lalu periksa `build.yml` di `main` sampai hijau; merah di sana
+   berarti situsnya sedang rusak, dan itu pekerjaan sekarang, bukan besok.
+
+**Yang tetap ditanyakan dulu, walau aturannya "gabung saja".** Menggabung
+berarti menayangkan, dan sebagian hal tidak bisa ditarik kembali dengan
+menekan undo:
+
+- angka yang menagih uang sungguhan — harga, tarif, kunci Midtrans;
+- apa pun yang menyentuh data klien di hosting mereka, atau memindahkan
+  domain;
+- menghapus konten yang belum tentu tidak dipakai (lihat peta Selat Dampier
+  di atas).
+
+Untuk yang seperti itu: siapkan perubahannya lengkap, PR-nya dibuka, lalu
+katakan apa yang akan berubah begitu digabung — dan tunggu jawabannya.

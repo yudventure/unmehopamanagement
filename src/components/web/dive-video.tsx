@@ -38,8 +38,20 @@ export function diveVideoSet(): boolean {
   return Boolean(CONFIGURED || FROM_ENV);
 }
 
+/**
+ * The band runs the width of the section, and keeps 16:9.
+ *
+ * It used to stop at 818px and sit centred, which was arithmetic rather than
+ * design: 818 is the width at which a sixteen-by-nine clip is 460px tall, and
+ * 460 was picked so the booking bar under it stayed on a laptop screen. The
+ * owner wants it edge to edge with everything else in the section, so the cap
+ * is gone and the height goes with the width — about 620px at the section's
+ * full 1116px. That is a whole screen on a short laptop, and it is the trade
+ * they asked for: a clip of their own reef is the one picture on this page
+ * worth stopping for.
+ */
 const BAND =
-  "mx-auto w-full max-w-[818px] overflow-hidden rounded-[22px] border border-white/12 bg-black/40";
+  "w-full overflow-hidden rounded-[22px] border border-white/12 bg-black/40";
 
 /**
  * A file, played here.
@@ -82,23 +94,28 @@ function FileVideo({
 
   return (
     <div className={BAND}>
-      <video
-        ref={ref}
-        key={src}
-        src={src}
-        poster={DIVE_POSTER || undefined}
-        controls
-        playsInline
-        /* Metadata, not the whole clip and not nothing: `none` leaves a
+      {/* The box is 16:9 and the clip is fitted inside it rather than cropped
+          to it. A clip that is already 16:9 fills it exactly; a tall one gets
+          water at its sides instead of a head cut off at the top. */}
+      <div className="relative aspect-video w-full">
+        <video
+          ref={ref}
+          key={src}
+          src={src}
+          poster={DIVE_POSTER || undefined}
+          controls
+          playsInline
+          /* Metadata, not the whole clip and not nothing: `none` leaves a
            150-pixel black bar until somebody presses play, because the
            browser does not yet know the shape of the thing. This is a few
            tens of kilobytes, and it buys the real dimensions and the first
            frame — a still of the diving with a play button on it, which is
            what a band like this should look like before it is pressed. */
-        preload="metadata"
-        aria-label={label}
-        className="block h-auto max-h-[460px] w-full bg-black/40 object-contain"
-      />
+          preload="metadata"
+          aria-label={label}
+          className="absolute inset-0 block h-full w-full bg-black/40 object-contain"
+        />
+      </div>
     </div>
   );
 }
@@ -149,6 +166,13 @@ function YouTubeVideo({
               alt=""
               loading="lazy"
               decoding="async"
+              /* A still that will not load takes itself off the page rather
+                 than leaving the browser's broken-image glyph in the middle
+                 of a band this size. What is left is the dark band and the
+                 play button, which is still a thing you can press. */
+              onError={(e) => {
+                e.currentTarget.style.display = "none";
+              }}
               /* `cover` rather than `contain`: YouTube's still is always 4:3
                  with black bars baked into the top and bottom, so contained it
                  would draw its own letterbox inside ours. */
@@ -196,8 +220,12 @@ export function DiveVideoSlot({
   return (
     <div
       className={`mx-auto flex w-full flex-col items-center justify-center gap-[10px] rounded-[18px] border border-dashed px-6 text-center ${
+        /* Full width like the band it stands in for, but not its height: an
+           empty sixteen-by-nine at this width is most of a screen of dashed
+           nothing, and this is a note about a missing clip rather than the
+           clip. */
         dark
-          ? "h-[188px] max-w-[818px] border-white/25 bg-white/[.04]"
+          ? "h-[188px] border-white/25 bg-white/[.04]"
           : "h-[168px] max-w-[560px] border-line-strong bg-surface-mute"
       }`}
     >

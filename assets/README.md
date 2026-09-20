@@ -537,6 +537,30 @@ Bahasa yang tidak ditulis diisi dari `en`, bukan dari kunci pertama, supaya
 pembaca Perancis tidak mendapat bahasa Jepang atau Indonesia tergantung urutan
 mengetiknya.
 
+### Gambar kartu produk
+
+Kartu yang belum punya foto tidak lagi menampilkan ikon kecil di tengah kotak
+kosong. Sekarang ada gambar seukuran kotaknya, dan tulisan "foto menyusul" tetap
+ada di bawahnya.
+
+Empat dari delapan layanan memakai adegan yang **sudah ada** di
+`src/components/web/scenes.tsx`, yang juga dipakai kartu "sekitar" di halaman
+yang sama: snorkeling, diving, excursion, dan antar pulau. Empat sisanya digambar
+baru di `src/components/eddo/service-scenes.tsx`, karena pustaka berisi karang
+dan pulau tidak punya alasan memuat kamera, motor, mobil, dan kaos.
+
+> **Semuanya gambar, dan tetap gambar.** Tidak satu pun ini foto motor yang
+> sebenarnya, mobil yang sebenarnya, atau kaos yang benar-benar dicetak
+> keluarganya. Bentuk vektor datar tidak mungkin disangka foto, dan itu memang
+> maksudnya. Begitu foto aslinya ada, isi `photo` di `content/site.json` dan
+> gambar ini tidak pernah dirender lagi.
+
+Satu hal yang harus diingat kalau menggambar yang baru: kotaknya **4:3** dan
+gambarnya persegi yang dipotong untuk mengisinya, jadi yang terlihat cuma pita
+tengahnya, kira-kira `y` 40 sampai 280 dari 320. Menggambar di tanah setinggi
+266 membuat rodanya duduk tepat di tepi dan separuh tertutup keterangan. Diukur
+di kartu sungguhan, bukan dikira-kira.
+
 ### Tiga bentuk barang, dan `unit` yang menentukannya
 
 Satu formulir yang bertanya "tanggal berapa" dan "berapa banyak" tidak cocok

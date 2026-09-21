@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { sejak, useSistemLama } from "@/components/sistem-lama-data";
+import { SistemLamaKalender } from "@/components/sistem-lama-kalender";
 import { Pill } from "@/components/ui/pill";
 import type { PillColors } from "@/lib/pills";
 import {
@@ -318,6 +319,11 @@ export function SistemLamaScreen() {
       {jawaban && jawaban.ok && (
         <>
           <Papan papan={papan} />
+
+          {/* Di bawah papan, bukan di atasnya: papan menjawab "hari ini",
+              kalender menjawab "bulan ini". Yang pertama ditanyakan tiap pagi
+              adalah yang pertama. */}
+          <SistemLamaKalender bookings={bookings} />
 
           <div className="overflow-hidden rounded-[20px] border border-line-soft bg-surface">
             <div className="flex flex-wrap items-center gap-3 border-b border-line-fine px-4 py-[13px]">

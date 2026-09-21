@@ -1,4 +1,4 @@
-import { dayDiff, iso } from "./format";
+import { dayDiff, iso, parse } from "./format";
 
 /**
  * Bentuk data sistem lama, dan cara membacanya — tanpa menyentuh jaringan.
@@ -310,4 +310,154 @@ export function papanPantau(
   papan.tamuDiTempat = adaYangDihitung ? kepala : null;
 
   return papan;
+}
+
+// ------------------------------------------------------------- kalender lama
+
+/**
+ * Kalender kamar × malam, seluruhnya dari sistem lama.
+ *
+ * ## Kenapa kamarnya tidak dicocokkan ke kamar kami
+ *
+ * Versi pertama menolak menggambar booking sistem lama di kalender dashboard
+ * ini, dan alasannya masih berlaku: sistem lama menulis `room: 3`, kamar di
+ * database kami punya id dan nama sendiri, dan cocok-cocokan berdasarkan angka
+ * akan benar sampai suatu hari ia menggambar tamu sungguhan di kamar yang
+ * sedang ditempati orang lain.
+ *
+ * Yang berubah bukan risikonya, melainkan cara menghindarinya. Pemiliknya
+ * menetapkan isi dan penamaan ikut sistem lama, jadi **daftar kamarnya juga
+ * diambil dari sana**: kalau di sana ada Room 1 sampai 7, kalender ini berisi
+ * Room 1 sampai 7. Tidak ada pemetaan, jadi tidak ada pemetaan yang bisa
+ * salah.
+ *
+ * ## Kenapa tidak ada uang di sini
+ *
+ * Keberatan kedua dulu: okupansi dan pendapatan di dashboard ini dihitung dari
+ * daftar booking yang sama, dan baris sistem lama tidak membawa harga — jadi
+ * menyuntikkannya membuat okupansi naik sementara pendapatan tidak.
+ *
+ * Kalender ini tidak menghitung uang sama sekali, dan itu bukan kekurangan
+ * yang ditoleransi melainkan batas yang disengaja. Ia menjawab satu
+ * pertanyaan — kamar mana terisi siapa, malam apa — dan itu pertanyaan yang
+ * datanya memang ada. Okupansi pun tidak dihitung di sini: jumlah kamar yang
+ * "ada" cuma kamar yang kebetulan muncul di booking, bukan daftar kamar
+ * sungguhan, jadi persentase apa pun akan mengarang penyebutnya.
+ */
+export interface SegmenKamar {
+  booking: BookingLama;
+  /** Tanggal pertama yang tergambar di bulan ini, YYYY-MM-DD. */
+  mulai: string;
+  /** Jumlah malam yang tergambar di bulan ini. */
+  malam: number;
+  /** Menginapnya mulai sebelum bulan ini. */
+  terpotongKiri: boolean;
+  /** Menginapnya berlanjut melewati bulan ini. */
+  terpotongKanan: boolean;
+}
+
+export interface BarisKamar {
+  /** Nama kamar persis seperti ditulis sistem lama, atau null untuk yang belum punya. */
+  kamar: string | null;
+  segmen: SegmenKamar[];
+}
+
+export interface KalenderLama {
+  /** Tanggal tiap kolom, YYYY-MM-DD, dari 1 sampai akhir bulan. */
+  hari: string[];
+  baris: BarisKamar[];
+  /** Booking yang tidak bisa digambar karena tanggalnya tidak terbaca. */
+  tanpaTanggal: number;
+}
+
+/** Nomor kamar diurutkan sebagai angka kalau bisa, sisanya menyusul abjad. */
+function urutKamar(a: string, b: string) {
+  const na = Number(a);
+  const nb = Number(b);
+  const aAngka = Number.isFinite(na);
+  const bAngka = Number.isFinite(nb);
+  if (aAngka && bAngka) return na - nb;
+  if (aAngka) return -1;
+  if (bAngka) return 1;
+  return a.localeCompare(b, "id");
+}
+
+export function kalenderLama(
+  bookings: BookingLama[],
+  tahun: number,
+  bulan: number,
+): KalenderLama {
+  const jumlahHari = new Date(tahun, bulan + 1, 0).getDate();
+  const hari: string[] = [];
+  for (let d = 1; d <= jumlahHari; d++) {
+    hari.push(iso(new Date(tahun, bulan, d)));
+  }
+  const awal = hari[0];
+  const akhir = hari[hari.length - 1];
+
+  const perKamar = new Map<string, SegmenKamar[]>();
+  /* Kunci terpisah untuk yang tak berkamar: `null` tidak bisa jadi kunci Map
+     yang dibedakan dari kamar bernama "null". */
+  const TANPA = "\u0000tanpa-kamar";
+  let tanpaTanggal = 0;
+
+  for (const b of bookings) {
+    if (dibatalkan(b)) continue;
+
+    const masuk = tanggalLama(b.checkIn);
+    if (!masuk) {
+      tanpaTanggal++;
+      continue;
+    }
+    /* Tanpa tanggal keluar, gambar satu malam saja. Menebak lamanya menginap
+       akan memblokir kamar untuk malam yang belum tentu terjual. */
+    const keluar = tanggalLama(b.checkOut);
+    const malamTerakhir = keluar
+      ? iso(new Date(parse(keluar).getTime() - 86400000))
+      : masuk;
+
+    /* Menginap yang keluar di hari yang sama atau lebih awal tidak memegang
+       malam apa pun — jangan digambar sebagai satu malam yang tidak ada. */
+    if (malamTerakhir < masuk) continue;
+    if (malamTerakhir < awal || masuk > akhir) continue;
+
+    const mulai = masuk < awal ? awal : masuk;
+    const selesai = malamTerakhir > akhir ? akhir : malamTerakhir;
+    const malam = dayDiff(mulai, selesai) + 1;
+    if (malam <= 0) continue;
+
+    const kunci = teksLadang(b.room) ?? TANPA;
+    const daftar = perKamar.get(kunci) ?? [];
+    daftar.push({
+      booking: b,
+      mulai,
+      malam,
+      terpotongKiri: masuk < awal,
+      terpotongKanan: malamTerakhir > akhir,
+    });
+    perKamar.set(kunci, daftar);
+  }
+
+  const bernama = [...perKamar.keys()]
+    .filter((k) => k !== TANPA)
+    .sort(urutKamar);
+  const baris: BarisKamar[] = bernama.map((k) => ({
+    kamar: k,
+    segmen: (perKamar.get(k) ?? []).sort((x, y) =>
+      x.mulai.localeCompare(y.mulai),
+    ),
+  }));
+
+  /* Baris "belum ada kamar" di bawah, dan cuma kalau memang ada isinya —
+     baris kosong yang selalu muncul terbaca seperti kamar yang tidak pernah
+     terjual. */
+  const tanpa = perKamar.get(TANPA);
+  if (tanpa && tanpa.length) {
+    baris.push({
+      kamar: null,
+      segmen: tanpa.sort((x, y) => x.mulai.localeCompare(y.mulai)),
+    });
+  }
+
+  return { hari, baris, tanpaTanggal };
 }

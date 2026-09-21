@@ -16,8 +16,11 @@ const SAND: PillColors = { bg: "#F7EEDD", fg: "#8A6524" };
 const CLAY: PillColors = { bg: "#FBE3DA", fg: "#B04A3A" };
 const STONE: PillColors = { bg: "#F2EBE0", fg: "#6B6357" };
 
+/* Clay untuk dua keadaan yang sama akibatnya: kamarnya dipegang dan tidak ada
+   yang menempatinya. Yang satu karena dibatalkan, yang satu karena tamunya
+   tidak datang — bedanya penting untuk laporan, bukan untuk warna. */
 export function statusColors(status: BookingStatus): PillColors {
-  return status === "Cancelled" ? CLAY : STONE;
+  return status === "Cancelled" || status === "Tidak datang" ? CLAY : STONE;
 }
 
 export function roleColors(role: "Owner" | "Staf"): PillColors {

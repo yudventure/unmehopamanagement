@@ -164,6 +164,25 @@ export function seedRooms(): Room[] {
  * Deterministic seed bookings for August 2026. The LCG is seeded so every
  * reload — and every developer's machine — produces the same calendar.
  */
+/**
+ * Tanggal sebuah booking contoh masuk ke buku.
+ *
+ * Diturunkan dari nilai yang sudah ada, bukan dari undian baru, dan itu syarat
+ * mutlak di berkas ini: satu panggilan `rnd()` tambahan menggeser seluruh
+ * urutan sesudahnya dan mengacak ulang keenam puluh satu booking, yang
+ * memutus kecocokan field-demi-field dengan pembangkit prototipenya.
+ *
+ * Jaraknya dari check-in dibuat bervariasi lewat sisa bagi nominalnya —
+ * mengambang antara lima hari sampai sekitar empat minggu, seperti campuran
+ * pesanan mendadak dan yang jauh-jauh hari. Ini data contoh, dan layar sudah
+ * mengatakannya di atas kalender; yang tidak boleh cuma mengarang untuk
+ * booking sungguhan.
+ */
+function tanggalMasukContoh(checkIn: string, total: number): string {
+  const jeda = 5 + (Math.round(total / 1000) % 23);
+  return iso(new Date(parse(checkIn).getTime() - jeda * 86400000));
+}
+
 export function seedBookings(rooms: Room[]): Booking[] {
   let seed = 7;
   const rnd = () => {
@@ -198,8 +217,12 @@ export function seedBookings(rooms: Room[]): Booking[] {
          prototype's generator. */
       rnd();
 
+      /* `id` dan `code` sama pada data contoh. Dari database keduanya berbeda:
+         yang satu cuid, yang satu kode yang diucapkan ke tamu. */
+      const kode = "BK" + String(++n).padStart(4, "0");
       bookings.push({
-        id: "BK" + String(++n).padStart(4, "0"),
+        id: kode,
+        code: kode,
         roomId: r.id,
         guest: NAMES[Math.floor(rnd() * NAMES.length)],
         phone: "0812" + Math.floor(1000000 + rnd() * 8999999),
@@ -218,6 +241,7 @@ export function seedBookings(rooms: Room[]): Booking[] {
                 : "Confirmed",
         notes: NOTES[Math.floor(rnd() * NOTES.length)],
         src: ch === "WhatsApp" ? "manual" : "iCal",
+        createdAt: tanggalMasukContoh(iso(inD), total),
       });
       day += nights + 1 + Math.floor(rnd() * 3);
     }
@@ -227,6 +251,7 @@ export function seedBookings(rooms: Room[]): Booking[] {
   // has something real to point at.
   bookings.push({
     id: "BK9001",
+    code: "BK9001",
     roomId: "T3",
     guest: "Grace Adeyemi",
     phone: "081277341200",
@@ -242,6 +267,7 @@ export function seedBookings(rooms: Room[]): Booking[] {
   });
   bookings.push({
     id: "BK9002",
+    code: "BK9002",
     roomId: "T3",
     guest: "Henrik Olsen",
     phone: "081399820011",
@@ -373,8 +399,10 @@ export function seedLedger(rooms: Room[], seeded: Booking[]): Booking[] {
 
       const ch = chans[Math.floor(rnd() * chans.length)];
       const settled = checkOut <= SEED_TODAY;
+      const kode = "BH" + String(++n).padStart(4, "0");
       out.push({
-        id: "BH" + String(++n).padStart(4, "0"),
+        id: kode,
+        code: kode,
         roomId: r.id,
         guest: NAMES[Math.floor(rnd() * NAMES.length)],
         phone: "0812" + Math.floor(1000000 + rnd() * 8999999),
@@ -390,6 +418,7 @@ export function seedLedger(rooms: Room[], seeded: Booking[]): Booking[] {
             : "Confirmed",
         notes: NOTES[Math.floor(rnd() * NOTES.length)],
         src: ch === "WhatsApp" ? "manual" : "iCal",
+        createdAt: tanggalMasukContoh(checkIn, bookingTotal(r.rate, nights, ch)),
       });
 
       /* Gap chosen so nights / (nights + gap) lands near the month's target.

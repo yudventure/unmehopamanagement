@@ -131,6 +131,44 @@ function systemHeaders() {
   ];
 }
 
+/**
+ * Tautan lama sistem stafnya, tetap hidup.
+ *
+ * Di hosting lama berkasnya duduk di akar domain, jadi yang beredar di
+ * WhatsApp dan tersimpan di bookmark orang berbentuk
+ * `turtledivehomestay.com/dashboard.html`. Begitu domain itu menyajikan
+ * aplikasi ini, alamat itu harus tetap sampai ke tempat yang benar — bukan ke
+ * halaman 404 pada Senin pagi.
+ *
+ * Sementara, bukan permanen, karena alasan yang sama seperti pengalihan di
+ * bawah: pengalihan permanen disimpan peramban lama sekali dan tidak enak
+ * ditarik kembali kalau alamatnya ternyata berubah lagi.
+ */
+const SISTEM_LAMA = [
+  "dashboard.html",
+  "staff.html",
+  "td_monitoring.html",
+  "td_activity_log.html",
+  "invoiceapp_turtle_v3.html",
+  "td_room_availability.html",
+  /* Nama aplikasi sebenarnya ikut, karena sebagian orang sudah terlanjur
+     menyimpan alamat panjangnya, bukan pemuatnya. */
+  "td_dashboard_console_31.html",
+  "turtle_staff_system_19_3.html",
+  "td_monitoring_app.html",
+  "td_activity_log_app.html",
+  "invoiceapp_turtle_v3_app.html",
+  "invoiceapp_turtle_v3_app_V32_room_occupancy.html",
+];
+
+function systemRedirects() {
+  return SISTEM_LAMA.map((berkas) => ({
+    source: `/${berkas}`,
+    destination: `/sistem/${berkas}`,
+    permanent: false,
+  }));
+}
+
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   /**
@@ -158,7 +196,7 @@ const nextConfig: NextConfig = {
     return { beforeFiles, afterFiles, fallback: [] };
   },
   async redirects() {
-    return canonicalPathRedirects();
+    return [...canonicalPathRedirects(), ...systemRedirects()];
   },
   async headers() {
     return systemHeaders();

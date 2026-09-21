@@ -2,7 +2,7 @@
 
 import type { CalendarCell } from "@/lib/derive";
 import { WARNA_AKTIVITAS } from "@/lib/dari-sistem-lama";
-import type { SesiLama } from "@/lib/sistem-lama-bentuk";
+import type { RingkasSelam, SesiLama } from "@/lib/sistem-lama-bentuk";
 import { WEEKDAYS } from "@/lib/format";
 
 export interface CalendarScreenProps {
@@ -53,8 +53,14 @@ export interface CalendarScreenProps {
    * strip-nya diganti, bukan dikosongkan.
    */
   hanyaJadwal?: boolean;
-  /** Jumlah sesi dive centre pada bulan yang sedang dilihat. */
-  sesiBulanIni?: number;
+  /**
+   * Jadwal dive centre pada bulan yang sedang dilihat.
+   *
+   * Angka sesi saja tidak menjawab apa pun — "ada 40 sesi" tidak memberi tahu
+   * berapa orang yang datang, kegiatan apa yang penuh, atau apakah perahunya
+   * perlu dua. Jadi yang dikirim ringkasan, bukan satu bilangan.
+   */
+  selamBulanIni?: RingkasSelam;
   /** Apakah sistem lama — satu-satunya sumber jadwal itu — sedang tersambung. */
   lamaTersambung?: boolean;
   cells: CalendarCell[];
@@ -197,7 +203,7 @@ export function CalendarScreen({
   checkinLabel,
   belumDicatat,
   hanyaJadwal = false,
-  sesiBulanIni = 0,
+  selamBulanIni,
   lamaTersambung = false,
   cells,
   sesiPerTanggal,
@@ -255,13 +261,30 @@ export function CalendarScreen({
    * jadi angka yang paling sering ditanyakan pagi-pagi — siapa datang minggu
    * ini — hanya terlihat setelah menggulung melewati seluruh kisi.
    */
+  const sesiBulanIni = selamBulanIni?.sesi ?? 0;
+
   const stats = hanyaJadwal ? (
-    <Stat
-      label="Sesi bulan ini"
-      value={`${sesiBulanIni} sesi`}
-      unknown={sesiBulanIni === 0}
-      span
-    />
+    <>
+      <Stat
+        label="Sesi bulan ini"
+        value={`${sesiBulanIni} sesi`}
+        unknown={sesiBulanIni === 0}
+      />
+      {/* Tamu terdaftar, bukan persentase. Sistem lama mengirim berapa yang
+          ikut, tidak berapa yang muat — tidak ada kapasitas perahu dan tidak
+          ada batas per guide, jadi penyebutnya harus dikarang untuk membuat
+          persen, dan persen berpenyebut karangan terbaca persis seperti
+          persen yang benar. */}
+      <Stat
+        label="Tamu terdaftar"
+        value={
+          selamBulanIni?.pax === null || selamBulanIni === undefined
+            ? "belum dicatat"
+            : `${selamBulanIni.pax} tamu`
+        }
+        unknown={!selamBulanIni || selamBulanIni.pax === null}
+      />
+    </>
   ) : (
     <>
       <Stat label="Okupansi bulan ini" value={occLabel} />
@@ -402,6 +425,44 @@ export function CalendarScreen({
             <div className="text-[22px] font-bold">{monthLabel}</div>
           </div>
           <div className="ml-auto flex flex-wrap gap-[22px]">{stats}</div>
+        </div>
+      )}
+
+      {/* Rincian per kegiatan. Inilah yang hilang waktu strip-nya cuma
+          menyebut jumlah sesi: yang ditanyakan orang yang menyiapkan besok
+          bukan "berapa sesi", melainkan "diving berapa orang, snorkeling
+          berapa". */}
+      {hanyaJadwal && selamBulanIni && selamBulanIni.per.length > 0 && (
+        <div className="mb-4 flex flex-wrap gap-[7px]">
+          {selamBulanIni.per.map((b) => {
+            const w = WARNA_AKTIVITAS[b.aktivitas];
+            return (
+              <span
+                key={b.aktivitas}
+                className="flex items-center gap-[7px] rounded-[10px] px-[10px] py-[6px] text-[12.5px]"
+                style={{ background: w.bg, color: w.fg }}
+              >
+                <span
+                  className="h-[8px] w-[8px] shrink-0 rounded-full"
+                  style={{ background: w.dot }}
+                />
+                <span className="font-medium">{b.aktivitas}</span>
+                <span className="font-mono text-[11.5px] opacity-80">
+                  {b.sesi} sesi
+                  {b.pax === null ? "" : ` · ${b.pax} tamu`}
+                </span>
+              </span>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Sesi yang belum mencatat jumlah tamunya disebut, bukan diam-diam
+          dilewati waktu menjumlah. */}
+      {hanyaJadwal && selamBulanIni && selamBulanIni.tanpaPax > 0 && (
+        <div className="mb-4 text-[12px] leading-[1.5] text-slate-mute">
+          {selamBulanIni.tanpaPax} sesi belum mencatat jumlah tamunya, jadi
+          tidak ikut terhitung di angka di atas.
         </div>
       )}
 

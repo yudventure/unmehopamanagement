@@ -28,7 +28,12 @@ import {
   useSistemLama,
 } from "@/components/sistem-lama-data";
 import { bookingDariLama } from "@/lib/dari-sistem-lama";
-import { AKTIVITAS, sesiPerHari } from "@/lib/sistem-lama-bentuk";
+import {
+  AKTIVITAS,
+  ringkasSelam,
+  sesiPerHari,
+  type SesiLama,
+} from "@/lib/sistem-lama-bentuk";
 import { SyncScreen } from "@/components/screens/sync-screen";
 import { UsersScreen } from "@/components/screens/users-screen";
 import { WebsiteScreen } from "@/components/screens/website-screen";
@@ -392,17 +397,38 @@ export function BookingManager({
   const sesiLama = useSesiLama(lamaAktif);
   const sesiPerTanggal = useMemo(() => sesiPerHari(sesiLama), [sesiLama]);
 
-  /* Sesi dive centre pada bulan yang sedang dilihat. Dihitung dari peta yang
-     sama yang menggambar pitanya, jadi angka di strip dan yang terlihat di
-     kisi tidak bisa berselisih. */
-  const sesiBulanIni = useMemo(() => {
+  /* Jadwal dive centre pada bulan yang sedang dilihat. Dihitung dari peta yang
+     sama yang menggambar pitanya di kisi, jadi angka di strip dan yang terlihat
+     di kalender tidak bisa berselisih. */
+  /* Sesi pada tanggal yang dipilih di kalender, dan sesi pada jendela yang
+     sama dengan daftar check-in di atasnya — supaya dua angka yang berdampingan
+     di rail menjawab rentang waktu yang sama. */
+  const selamHari = useMemo(
+    () => (selectedDate ? (sesiPerTanggal.get(selectedDate) ?? []) : []),
+    [sesiPerTanggal, selectedDate],
+  );
+
+  const selamMendatang = useMemo(() => {
+    const out: SesiLama[] = [];
+    for (const [tanggal, daftar] of sesiPerTanggal) {
+      const jarak = dayDiff(today, tanggal);
+      if (jarak >= 0 && jarak <= UPCOMING_DAYS) out.push(...daftar);
+    }
+    return out.sort(
+      (a, b) =>
+        a.tanggal.localeCompare(b.tanggal) ||
+        AKTIVITAS.indexOf(a.aktivitas) - AKTIVITAS.indexOf(b.aktivitas),
+    );
+  }, [sesiPerTanggal, today]);
+
+  const selamBulanIni = useMemo(() => {
     const awal = iso(new Date(month.getFullYear(), month.getMonth(), 1));
     const akhir = iso(new Date(month.getFullYear(), month.getMonth() + 1, 1));
-    let n = 0;
+    const dalam: SesiLama[] = [];
     for (const [tanggal, daftar] of sesiPerTanggal) {
-      if (tanggal >= awal && tanggal < akhir) n += daftar.length;
+      if (tanggal >= awal && tanggal < akhir) dalam.push(...daftar);
     }
-    return n;
+    return ringkasSelam(dalam);
   }, [sesiPerTanggal, month]);
 
   const dariLama = useMemo(
@@ -1445,7 +1471,7 @@ export function BookingManager({
                       piutang: ringkas.piutang === null,
                     }}
                     hanyaJadwal={filterProp === "divecenter"}
-                    sesiBulanIni={sesiBulanIni}
+                    selamBulanIni={selamBulanIni}
                     lamaTersambung={lamaAktif}
                     cells={cells}
                     onSelect={setSelectedId}
@@ -1533,6 +1559,11 @@ export function BookingManager({
                   dayBookings={dayBookings}
                   dayRooms={dayRooms}
                   onClearDate={() => setSelectedDate(null)}
+                  selamHari={selamHari}
+                  selamMendatang={selamMendatang}
+                  /* Aturan yang sama dengan kisi: Eddo tidak punya dive centre
+                     sendiri, jadi blok ini tidak ikut ke sana. */
+                  adaSelam={filterProp !== "eddo"}
                 />
               )}
 

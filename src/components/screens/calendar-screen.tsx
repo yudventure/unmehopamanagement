@@ -42,7 +42,13 @@ export interface CalendarScreenProps {
   newLabel: string;
   receivableLabel: string;
   checkinLabel: string;
-  belumDicatat: { baru: boolean; piutang: boolean };
+  /**
+   * Mana di antara nilai-nilai itu yang bukan angka melainkan ketiadaan
+   * catatan. Ketiganya harus ikut: "belum ada harga" yang digambar setebal
+   * Rp 12.500.000 di sebelahnya akan terbaca sebagai nominal dari sudut mata,
+   * dan strip ini justru dibaca dari sudut mata.
+   */
+  belumDicatat: { pendapatan: boolean; baru: boolean; piutang: boolean };
   /**
    * Dive centre yang sedang dipilih: yang dijadwalkannya sesi, bukan kamar.
    *
@@ -293,7 +299,12 @@ export function CalendarScreen({
         /* Spans the row on a phone rather than squeezing into a third column:
            a month past nine figures would not fit one, and a rupiah total that
            wraps mid-number is worse than one on its own line. */
-        <Stat label="Pendapatan" value={revenueLabel} span />
+        <Stat
+          label="Pendapatan"
+          value={revenueLabel}
+          unknown={belumDicatat.pendapatan}
+          span
+        />
       )}
       {/* Rentangnya disebut di label, sama seperti tetangganya. "Booking baru"
           saja tidak mengatakan baru menurut apa, dan angka tanpa rentang di

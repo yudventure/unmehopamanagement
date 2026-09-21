@@ -274,9 +274,19 @@ export function monthStats(
 export interface RingkasStats {
   /** Booking yang masuk dalam `hari` terakhir. Null bila tidak pernah dicatat. */
   bookingBaru: number | null;
-  /** Nilai menginap yang sudah berjalan dan belum dibayar. Null bila belum ada
-   *  satu pun pembayaran tercatat. */
+  /** Nilai menginap yang sudah berjalan dan belum dibayar. Null bila tidak
+   *  bisa diketahui — sebabnya di `piutangSebab`. */
   piutang: number | null;
+  /**
+   * Kenapa piutangnya tidak bisa dihitung.
+   *
+   * Dua sebab yang sangat berbeda, dan keduanya pernah menghasilkan "Rp 0"
+   * yang terbaca sebagai "tidak ada yang berutang": belum ada satu pun
+   * pembayaran yang dicatat, atau tidak satu pun booking punya nominal yang
+   * diketahui. Layar harus bisa mengatakan yang mana, karena yang pertama
+   * diperbaiki dengan mencatat pembayaran dan yang kedua dengan mengisi harga.
+   */
+  piutangSebab: "tanpa-pembayaran" | "tanpa-harga" | null;
 }
 
 /** Berapa hari ke belakang yang dianggap "baru" di F6.1. */
@@ -294,6 +304,11 @@ export function ringkasStats(
   let baru = 0;
   let adaPembayaran = false;
   let piutang = 0;
+  /* Apakah ada satu pun booking yang benar-benar ikut terhitung. Tanpa ini,
+     jumlah yang tetap nol karena semuanya dilewati tidak bisa dibedakan dari
+     jumlah yang nol karena semuanya sudah lunas — dan yang pertama dinyatakan
+     sebagai "Rp 0" adalah kebalikan dari kebenarannya. */
+  let adaTerhitung = false;
 
   for (const b of visible) {
     if (b.createdAt) {
@@ -311,12 +326,19 @@ export function ringkasStats(
        dibayar. Memasukkannya sebagai nol berarti menyatakan lunas. */
     if (b.tanpaHarga) continue;
     if (b.checkIn > today) continue;
+    adaTerhitung = true;
     piutang += Math.max(0, b.total - (b.paid ?? 0));
   }
 
+  const bisa = adaPembayaran && adaTerhitung;
   return {
     bookingBaru: adaTanggalMasuk ? baru : null,
-    piutang: adaPembayaran ? piutang : null,
+    piutang: bisa ? piutang : null,
+    piutangSebab: bisa
+      ? null
+      : adaTerhitung
+        ? "tanpa-pembayaran"
+        : "tanpa-harga",
   };
 }
 

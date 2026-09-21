@@ -166,6 +166,13 @@ export function bookingDariApi(rows: ApiBooking[]): Booking[] {
       checkIn: b.checkIn,
       checkOut: b.checkOut,
       total: b.totalAmount ?? 0,
+      /* Nominal yang tidak pernah dicatat, bukan menginap yang gratis.
+         Penandanya sama dengan yang dipakai jalur sistem lama, dan alasannya
+         sama: tanpa itu `total: 0` ikut terjumlah sebagai pendapatan nol
+         rupiah, yang di layar terbaca persis seperti kamar yang terjual
+         seharga nol. Piutangnya pun jadi salah — booking yang tagihannya
+         belum diketahui akan terhitung lunas. */
+      tanpaHarga: b.totalAmount === null,
       status,
       notes: b.notes ?? "",
       src: b.source === "ICAL" ? "iCal" : "manual",

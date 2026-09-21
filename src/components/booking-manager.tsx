@@ -588,6 +588,9 @@ export function BookingManager({
      dibayar hari ini. */
   const ringkas = useMemo(() => ringkasStats(visible, today), [visible, today]);
 
+  /** Pendapatan yang nol semata-mata karena malamnya belum berharga. */
+  const tanpaHarga = stats.malamTanpaHarga > 0 && stats.revenue === 0;
+
   /* The month before the reported one, computed whether or not the comparison
      is switched on — it is four small loops, and keeping it unconditional
      means the toggle only decides what is drawn, never what is known. */
@@ -1446,14 +1449,14 @@ export function BookingManager({
                     onNextMonth={() => setMonth(new Date(y, m + 1, 1))}
                     occLabel={`${stats.occPct}%`}
                     nightsLabel={`${stats.nights} malam`}
+                    /* Nol rupiah dari malam yang semuanya belum berharga
+                       terlihat persis seperti nol rupiah karena tidak ada yang
+                       terjual. Dua pernyataan yang sangat berbeda. Dihitung
+                       sekali di `tanpaHarga` supaya kalimat dan cara
+                       menggambarnya tidak bisa berselisih: pernah terjadi
+                       kalimatnya benar tapi tetap digambar setebal nominal. */
                     revenueLabel={
-                      /* Nol rupiah dari malam yang semuanya belum berharga
-                         terlihat persis seperti nol rupiah karena tidak ada
-                         yang terjual. Dua pernyataan yang sangat berbeda di
-                         layar yang dibaca dari sudut mata. */
-                      stats.malamTanpaHarga > 0 && stats.revenue === 0
-                        ? "belum ada harga"
-                        : fmt(stats.revenue)
+                      tanpaHarga ? "belum ada harga" : fmt(stats.revenue)
                     }
                     newLabel={
                       ringkas.bookingBaru === null
@@ -1461,12 +1464,15 @@ export function BookingManager({
                         : `${ringkas.bookingBaru} booking`
                     }
                     receivableLabel={
-                      ringkas.piutang === null
-                        ? "belum ada pembayaran yang dicatat"
-                        : fmt(ringkas.piutang)
+                      ringkas.piutang !== null
+                        ? fmt(ringkas.piutang)
+                        : ringkas.piutangSebab === "tanpa-harga"
+                          ? "belum ada harga untuk dihitung"
+                          : "belum ada pembayaran yang dicatat"
                     }
                     checkinLabel={`${upcoming.length} tamu`}
                     belumDicatat={{
+                      pendapatan: tanpaHarga,
                       baru: ringkas.bookingBaru === null,
                       piutang: ringkas.piutang === null,
                     }}

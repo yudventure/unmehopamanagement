@@ -110,6 +110,13 @@ export function SistemLamaPanel({ onBuka }: { onBuka: () => void }) {
           <code className="font-mono text-[11.5px]">adminList</code> tidak
           mengirim harga — dan menjumlahkan nol ke dalam pendapatan terlihat
           persis seperti penjualan yang memang nol.
+          <br />
+          <br />
+          Pil berwarna di tiap hari adalah <strong>jadwal dive centre</strong>:
+          Diving, Snorkeling, SSI Dive Course, Excursion Trip, dan Transport,
+          berikut jumlah pax. Arahkan kursor untuk melihat sesi dan kamarnya.
+          Jadwal itu <strong>tidak dihitung sebagai malam terjual</strong> —
+          trip menyelam tidak memegang kamar.
         </div>
       </div>
     </div>

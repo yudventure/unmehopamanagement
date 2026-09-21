@@ -83,7 +83,16 @@ export async function GET(req: Request) {
     );
   }
 
-  const hasil = await bacaSistemLama(mode);
+  /* Parameter ikut diteruskan — daftar putihnya ada di `sistem-lama.ts`, yang
+     membuang apa pun di luar itu. Tanpa ini, `adminGetUpcomingSessions`
+     dipanggil tanpa `activityPrefix` dan memulangkan jadwal aktivitas yang
+     salah tanpa mengeluh. */
+  const params: Record<string, string> = {};
+  for (const [k, v] of new URL(req.url).searchParams) {
+    if (k !== "mode") params[k] = v;
+  }
+
+  const hasil = await bacaSistemLama(mode, params);
   return NextResponse.json({
     ok: hasil.ok,
     siap: true,

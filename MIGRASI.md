@@ -391,6 +391,50 @@ Turtle di layar itu justru booking sungguhan. Catatan yang ada untuk mencegah
 data karangan dibaca sebagai kenyataan tidak boleh jadi yang menyatakan
 kenyataan sebagai karangan.
 
+### Jadwal dive centre, dan mode mana yang dipakai
+
+Akomodasi bukan satu-satunya yang dijadwalkan: dive centre-nya menjalankan
+lima kegiatan, dan namanya diambil dari sistem lama —
+`TRIP_DEST_LABEL_MAP` di `td_dashboard_console_31.html` menyebut **Diving**,
+**Snorkeling**, **SSI Dive Course**, **Excursion Trip**, dan **Transport**.
+Kelimanya juga yang muncul sebagai penanda `req…` di tiap booking.
+
+Tiga mode membawa jadwal, dan cuma satu yang cocok untuk kalender:
+
+| Mode | Cakupan | Kenapa dipakai / tidak |
+|---|---|---|
+| `adminGetDashboardTrips` | **hari ini dan besok saja** | Dashboard lamanya sendiri menulis "No trips organized for today or tomorrow yet". Membawa guide, perahu, jam berangkat — berguna nanti untuk layar harian, tidak untuk kalender sebulan. |
+| `adminGetActivityDay` | satu hari, satu aktivitas | Sebulan berisi lima aktivitas berarti **150 panggilan**. Tidak mungkin. |
+| `adminGetUpcomingSessions` | **tiga bulan ke depan**, satu aktivitas per panggilan | Dipakai. Lima panggilan menutup seluruh jadwal. |
+
+Bentuknya `{status, sessions: [{date, dayName, sessionLabel, totalGuests,
+roomsWithGuests}]}`.
+
+**Kadensnya lebih lambat dari booking: lima menit, bukan satu.** Isinya tiga
+bulan ke depan dan cuma berubah waktu ada booking yang berubah — dan
+perubahan booking-nya sendiri sudah terlihat dalam satu menit lewat
+`adminList`. Menariknya tiap menit berarti 300 panggilan per jam per tab ke
+kuota Apps Script milik client, untuk jawaban yang hampir selalu sama.
+
+**Satu bug di endpoint sendiri ketahuan waktu mengerjakan ini.** Rute
+`/api/sistem-lama` tidak pernah meneruskan parameter untuk mode selain
+`adminList`, jadi `adminGetUpcomingSessions` akan dipanggil tanpa
+`activityPrefix` — dan memulangkan jadwal aktivitas yang salah tanpa
+mengeluh. Sekarang parameternya diteruskan, tetap disaring daftar putih yang
+sama.
+
+**Jadwalnya tidak ikut ke `bookings`, dan itu bukan kelalaian.** Trip
+menyelam tidak memegang kamar; memasukkannya ke daftar booking akan
+terhitung sebagai malam terjual dan menaikkan okupansi tanpa ada kamar yang
+terisi. Ia digambar di sel harinya sendiri, dan ujinya memeriksa persis itu:
+"malam terjual" tidak berubah setelah jadwalnya muncul.
+
+Di lebar telepon kisinya sudah berhenti membawa nama — `compact` mengubahnya
+jadi peta kepadatan — jadi jadwalnya jadi titik berwarna, bukan nama yang
+dipotong jadi dua huruf. Namanya tidak pernah disingkat di mana pun ia
+ditulis penuh: "SSI Dive Course" yang dipendekkan jadi "SSI" adalah kosakata
+baru yang cuma ada di layar ini.
+
 ### Kalender kamar × malam, tetap ada di layar Sistem lama
 
 Kamar jadi baris, malam jadi kolom. Bentuk itu menjawab "kamar mana kosong

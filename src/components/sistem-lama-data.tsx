@@ -2,7 +2,13 @@
 
 import { useCallback, useEffect, useState } from "react";
 
-import type { BookingLama } from "@/lib/sistem-lama-bentuk";
+import {
+  AKTIVITAS,
+  type Aktivitas,
+  type BookingLama,
+  type SesiLama,
+  sesiDariJawaban,
+} from "@/lib/sistem-lama-bentuk";
 
 /**
  * Satu bacaan sistem lama, disegarkan sendiri, dipakai bersama seluruh
@@ -250,4 +256,100 @@ export function useKamarLama(aktif: boolean) {
   }, [aktif]);
 
   return kamar;
+}
+
+// ------------------------------------------------------- jadwal dive centre
+
+/**
+ * Jadwal dive centre, tiga bulan ke depan, lima aktivitas.
+ *
+ * Lima panggilan sekali tarik — `adminGetUpcomingSessions` menerima satu
+ * `activityPrefix` per panggilan, dan tidak ada mode yang memulangkan
+ * semuanya sekaligus. Karena itu kadensnya lebih lambat dari daftar booking:
+ * lima menit, bukan satu. Isinya tiga bulan ke depan dan cuma berubah waktu
+ * ada booking yang berubah — dan perubahan booking-nya sendiri sudah terlihat
+ * dalam satu menit lewat `adminList`. Menariknya tiap menit berarti 300
+ * panggilan per jam per tab ke kuota Apps Script milik client, untuk jawaban
+ * yang hampir selalu sama.
+ *
+ * Sama seperti booking: berhenti begitu tabnya tersembunyi.
+ */
+const JEDA_SESI_MS = 5 * 60 * 1000;
+const UMUR_SESI_MS = 4.5 * 60 * 1000;
+
+let sesiSimpanan: { waktu: number; sesi: SesiLama[] } | null = null;
+let sesiJalan: Promise<SesiLama[]> | null = null;
+let sesiPewaktu: ReturnType<typeof setInterval> | null = null;
+let sesiPemakai = 0;
+const sesiPendengar = new Set<(s: SesiLama[]) => void>();
+
+async function tarikSatuAktivitas(a: Aktivitas): Promise<SesiLama[]> {
+  try {
+    const res = await fetch(
+      `/api/sistem-lama?mode=adminGetUpcomingSessions&activityPrefix=${encodeURIComponent(a)}`,
+      { cache: "no-store" },
+    );
+    if (!res.ok) return [];
+    const isi = (await res.json()) as { ok?: boolean; data?: unknown };
+    if (!isi.ok) return [];
+    return sesiDariJawaban(isi.data, a);
+  } catch {
+    return [];
+  }
+}
+
+export async function bacaSesiLama(paksa = false): Promise<SesiLama[]> {
+  if (
+    !paksa &&
+    sesiSimpanan &&
+    Date.now() - sesiSimpanan.waktu < UMUR_SESI_MS
+  ) {
+    return sesiSimpanan.sesi;
+  }
+  if (sesiJalan) return sesiJalan;
+
+  sesiJalan = Promise.all(AKTIVITAS.map(tarikSatuAktivitas))
+    .then((semua) => semua.flat())
+    .then((sesi) => {
+      sesiSimpanan = { waktu: Date.now(), sesi };
+      sesiJalan = null;
+      for (const p of sesiPendengar) p(sesi);
+      return sesi;
+    });
+  return sesiJalan;
+}
+
+export function useSesiLama(aktif: boolean) {
+  const [sesi, setSesi] = useState<SesiLama[]>(sesiSimpanan?.sesi ?? []);
+
+  useEffect(() => {
+    if (!aktif) return;
+    sesiPendengar.add(setSesi);
+    sesiPemakai++;
+    if (!sesiPewaktu) {
+      sesiPewaktu = setInterval(() => {
+        if (bolehMenarik()) void bacaSesiLama();
+      }, JEDA_SESI_MS);
+    }
+    const bangun = () => {
+      if (bolehMenarik()) void bacaSesiLama();
+    };
+    document.addEventListener("visibilitychange", bangun);
+    void bacaSesiLama();
+
+    return () => {
+      sesiPendengar.delete(setSesi);
+      document.removeEventListener("visibilitychange", bangun);
+      sesiPemakai--;
+      if (sesiPemakai <= 0) {
+        sesiPemakai = 0;
+        if (sesiPewaktu) {
+          clearInterval(sesiPewaktu);
+          sesiPewaktu = null;
+        }
+      }
+    };
+  }, [aktif]);
+
+  return sesi;
 }

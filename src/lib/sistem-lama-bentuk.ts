@@ -488,3 +488,93 @@ export function kamarDariJadwal(data: unknown): string[] {
   }
   return nama;
 }
+
+// ------------------------------------------------------- jadwal dive centre
+
+/**
+ * Aktivitas yang dijalankan dive centre-nya, dengan nama persis dari sistem
+ * lama.
+ *
+ * Daftarnya disalin dari `TRIP_DEST_LABEL_MAP` di `td_dashboard_console_31.html`
+ * — kelimanya juga yang muncul sebagai penanda `req…` di tiap booking. Nilainya
+ * dipakai apa adanya sebagai `activityPrefix` waktu memanggil sistem lama, jadi
+ * salah satu huruf saja membuat jadwalnya kosong tanpa mengeluh.
+ */
+export const AKTIVITAS = [
+  "Diving",
+  "Snorkeling",
+  "SSI Dive Course",
+  "Excursion Trip",
+  "Transport",
+] as const;
+
+export type Aktivitas = (typeof AKTIVITAS)[number];
+
+/**
+ * Satu sesi terjadwal, dari `adminGetUpcomingSessions`.
+ *
+ * Mode itu memulangkan tiga bulan ke depan untuk satu `activityPrefix`, dan
+ * itu yang membuatnya cocok untuk kalender. Dua saudaranya tidak:
+ * `adminGetDashboardTrips` cuma hari ini dan besok — dashboard lamanya sendiri
+ * menulis "No trips organized for today or tomorrow yet" — dan
+ * `adminGetActivityDay` satu hari untuk satu aktivitas, yang berarti 150
+ * panggilan untuk sebulan berisi lima aktivitas.
+ */
+export interface SesiLama {
+  tanggal: string;
+  aktivitas: Aktivitas;
+  /** Label sesinya seperti ditulis sistem lama, mis. "Diving — 2 dives". */
+  label: string;
+  pax: number | null;
+  /** Kamar yang tamunya ikut, nama dari sistem lama. */
+  kamar: string[];
+}
+
+export function sesiDariJawaban(
+  data: unknown,
+  aktivitas: Aktivitas,
+): SesiLama[] {
+  if (typeof data !== "object" || data === null) return [];
+  const amplop = data as { status?: unknown; sessions?: unknown };
+  if (amplop.status !== "ok" || !Array.isArray(amplop.sessions)) return [];
+
+  const keluar: SesiLama[] = [];
+  for (const s of amplop.sessions) {
+    if (typeof s !== "object" || s === null) continue;
+    const row = s as Record<string, unknown>;
+    const tanggal = tanggalLama(row.date);
+    /* Sesi tanpa tanggal yang terbaca tidak bisa ditaruh di hari mana pun, dan
+       menebaknya berarti menyiapkan perahu di hari yang salah. */
+    if (!tanggal) continue;
+
+    const pax = Number(teksLadang(row.totalGuests));
+    keluar.push({
+      tanggal,
+      aktivitas,
+      label: teksLadang(row.sessionLabel) ?? aktivitas,
+      pax: Number.isFinite(pax) && pax > 0 ? pax : null,
+      kamar: Array.isArray(row.roomsWithGuests)
+        ? row.roomsWithGuests
+            .map((k) => teksLadang(k))
+            .filter((k): k is string => Boolean(k))
+        : [],
+    });
+  }
+  return keluar;
+}
+
+/** Sesi per hari, siap ditempel ke sel kalender. */
+export function sesiPerHari(sesi: SesiLama[]): Map<string, SesiLama[]> {
+  const peta = new Map<string, SesiLama[]>();
+  for (const s of sesi) {
+    const daftar = peta.get(s.tanggal) ?? [];
+    daftar.push(s);
+    peta.set(s.tanggal, daftar);
+  }
+  for (const [, daftar] of peta) {
+    daftar.sort(
+      (a, b) => AKTIVITAS.indexOf(a.aktivitas) - AKTIVITAS.indexOf(b.aktivitas),
+    );
+  }
+  return peta;
+}

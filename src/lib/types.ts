@@ -5,7 +5,17 @@ export type ChannelKey =
   | "Traveloka"
   | "Agoda"
   | "WhatsApp"
-  | "Blokir";
+  | "Blokir"
+  /**
+   * Booking yang dibaca dari sistem staf Turtle yang lama.
+   *
+   * Saluran sendiri, bukan ditebak jadi salah satu di atas. `adminList` tidak
+   * mengirim dari mana tamunya datang, dan menaruhnya di "WA / langsung"
+   * karena kebanyakan begitu berarti laporan per saluran memuat angka yang
+   * tidak pernah dicatat siapa pun. Komisinya nol, karena nol adalah yang
+   * diketahui — bukan karena dipastikan tidak ada.
+   */
+  | "Sistem lama";
 
 /**
  * "Tidak datang" ada di sini karena database bisa memuatnya (`NO_SHOW` di
@@ -99,6 +109,16 @@ export interface Booking {
    * tercatat" sama dengan seluruh pendapatan, dan angka itu akan salah besar.
    */
   paid?: number;
+  /**
+   * Harganya tidak diketahui, bukan nol.
+   *
+   * Dipasang pada booking yang dibaca dari sistem lama: `adminList` tidak
+   * mengirim harga. `total` tetap 0 supaya tipenya sederhana, tapi penanda ini
+   * yang menentukan — hitungan pendapatan, komisi, dan piutang melewatinya,
+   * dan layar mengatakan berapa malam yang belum berharga alih-alih
+   * menampilkan Rp 0 seolah itu harganya.
+   */
+  tanpaHarga?: boolean;
   /** Set only when the booking is actually changed in-session. */
   updatedAt?: string;
   updatedBy?: string;

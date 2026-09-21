@@ -329,48 +329,81 @@ angka, satu `confirmationNo` berupa angka, `displayStatus` berisi nama tab, dan
 satu booking yang kamarnya memang belum ditetapkan. Fixture yang meniru dugaan
 adalah fixture yang meluluskan bug.
 
-### Kalendernya: kamar × malam, kamarnya juga dari sistem lama
+### Kalender utamanya, dan kenapa dua penolakan sebelumnya salah
 
-Pertanyaan "kalendernya bisa terisi?" dijawab dengan kalender sendiri —
-kamar jadi baris, malam jadi kolom, seluruh isinya dari `adminList` yang sudah
-ditarik dan sudah menyegarkan diri. Bentuk itu yang menjawab pertanyaan yang
-sebenarnya ditanyakan ke kalender homestay: "kamar mana kosong tanggal
-segini", dalam satu pandangan.
+Dua kali saya menolak menaruh booking sistem lama ke kalender utama dashboard
+ini. Alasan pertama: kamarnya tidak bisa dicocokkan. Alasan kedua: angka
+uangnya akan ikut berubah. Pemiliknya menjawabnya dalam satu kalimat — ganti
+saja nama kamarnya jadi nama yang ada di sistem lama, dan jangan jadikan itu
+alasan lagi.
 
-Dua keberatan yang dulu membuat ini ditolak tetap berlaku; yang berubah cara
-menghindarinya, bukan risikonya.
+Ia benar, dan penolakan pertama memang tidak berdasar. Kamar Turtle di data
+kami bernama **"Turtle 01" sampai "Turtle 10"** — nama yang dibangkitkan
+pembangkit di masa prototipe, tidak pernah jadi nama kamar siapa pun dan tidak
+pernah diucapkan ke tamu. Tidak ada yang perlu dilindungi dari "pemetaan yang
+salah", karena tidak ada yang benar untuk dipetakan. Nama sungguhannya ada di
+sistem lama, dan aturan yang sudah ditetapkan mengatakan penamaan ikut sistem
+lama.
 
-**Kamarnya tidak dicocokkan — daftarnya diambil dari sistem lama juga.** Dulu
-alasannya: sistem lama menulis `room: 3`, kamar di database kami punya id
-sendiri, dan cocok-cocokan berdasarkan angka akan benar sampai suatu hari ia
-menggambar tamu sungguhan di kamar yang sedang ditempati orang lain. Sekarang
-tidak ada pemetaan sama sekali: kalau di sana ada Room 1 sampai 7, kalender ini
-berisi Room 1 sampai 7, dengan nama persis begitu. Tidak ada pemetaan berarti
-tidak ada pemetaan yang bisa salah — dan itu persis aturan "penamaan ikut
-sistem lama" yang ditetapkan pemiliknya.
+Jadi sekarang: **waktu sistem lamanya tersambung, kamar Turtle di seluruh
+dashboard ini adalah kamar sistem lama**, dengan nama persis seperti di sana,
+dan bookingnya tergambar di kalender utama bersama yang lain. Menggantikan,
+bukan menemani — kalau keduanya ada, okupansi dihitung atas kamar yang
+separuhnya tidak pernah ada. Eddo tidak tersentuh.
 
-**Tidak ada uang dan tidak ada okupansi di sini.** Dulu alasannya: okupansi dan
-pendapatan dihitung dari daftar booking yang sama, dan baris sistem lama tidak
-membawa harga, jadi menyuntikkannya membuat okupansi naik sementara pendapatan
-tidak. Kalender ini tidak menghitung keduanya, dan itu batas yang disengaja —
-daftar kamarnya diturunkan dari kamar yang *kebetulan muncul di booking*, bukan
-dari daftar kamar sungguhan, jadi persentase apa pun akan mengarang penyebutnya.
+Daftar kamarnya dari `adminGetRoomSchedule`, bukan diturunkan dari kamar yang
+muncul di booking. Kamar yang bulan ini tidak terjual tidak muncul di booking
+mana pun, dan kekurangan itu jatuh tepat di penyebut okupansi: sepuluh kamar
+dengan enam terjual itu 60%, tapi kalau daftarnya cuma berisi enam yang
+terjual, angkanya jadi 100% — naik justru waktu sepi. Mode itu ditarik sekali
+per sesi, bukan tiap menit: daftar kamar berubah beberapa kali setahun.
 
-**Malam kepulangan bukan malam.** Booking 18→21 memegang tiga malam, bukan
-empat: tanggal 21 kamarnya sudah kosong dan bisa dijual lagi. Kalender yang
-menggambarnya terisi akan menolak booking yang sebenarnya muat. Diuji, bukan
-diperiksa sekilas: `kalender.mjs` membaca `grid-column` tiap batang langsung
-dari DOM dan mencocokkan kolom mulai serta lebarnya. Menginap yang menembus
-batas bulan dipotong dan ujungnya dibuat siku — Chen Wei 30 Sep → 3 Okt tergambar
-satu malam di September dan dua di Oktober, dan ujinya menghitung keduanya.
+### Keberatan kedua tetap berlaku, dan begini caranya dijawab
 
-**Yang kamarnya belum ditetapkan tidak dibuang.** Ia dapat baris sendiri,
-"Belum ada kamar", dan barisnya cuma muncul kalau memang ada isinya — baris
-kosong yang selalu ada terbaca seperti kamar yang tidak pernah terjual. Baris
-itu juga tidak ikut dihitung di "N kamar terpakai".
+Harga dan saluran memang tidak dikirim `adminList`, dan itu tidak berubah
+karena ada yang meminta kalendernya terisi. Yang berubah: keduanya tidak lagi
+dipakai sebagai alasan untuk tidak menggambar apa pun, melainkan ditangani.
 
-Kalender utama dashboard ini tetap tidak dicampuri: yang satu buku milik
-dashboard ini, yang satu jendela ke buku milik orang lain.
+**Harga** → `total: 0` dengan penanda `tanpaHarga`. Penandanya yang
+menentukan. Malamnya tetap dihitung di okupansi — kamarnya memang terisi, dan
+okupansi adalah pertanyaan tentang kamar, bukan tentang uang. Yang dilewati
+cuma bagian uangnya: pendapatan, komisi, per-saluran, grafik tren, dan
+piutang. Dan waktu seluruh malam bulan itu belum berharga, layarnya menulis
+**"belum ada harga"**, bukan "Rp 0" — dua pernyataan yang sangat berbeda di
+layar yang dibaca dari sudut mata.
+
+**Saluran** → `"Sistem lama"`, salurannya sendiri, dengan komisi nol karena
+nol adalah yang diketahui. Menaruhnya di "WA / langsung" karena kebanyakan
+begitu akan membuat laporan per saluran memuat angka yang tidak pernah dicatat
+siapa pun. Saluran itu tidak ada di formulir booking baru dan tidak punya
+padanan di enum database — kalau suatu hari ada yang mencoba menyemainya,
+tipenya yang menolak.
+
+**Status** → satu-satunya pemetaan yang tersisa, dan ditulis terang-terangan:
+`checkout` → `Checked-out`, sisanya `Confirmed`. Mengikuti apa yang stafnya
+tandai, bukan apa yang tanggalnya bilang, karena komentar di dashboard lamanya
+sendiri menyebut booking yang ditandai Check-Out padahal tanggalnya masih di
+depan.
+
+**Catatan "data contoh" ikut dibetulkan.** Kalimatnya berbunyi "tidak satu pun
+berasal dari booking sungguhan", dan begitu sistem lamanya tersambung, seluruh
+Turtle di layar itu justru booking sungguhan. Catatan yang ada untuk mencegah
+data karangan dibaca sebagai kenyataan tidak boleh jadi yang menyatakan
+kenyataan sebagai karangan.
+
+### Kalender kamar × malam, tetap ada di layar Sistem lama
+
+Kamar jadi baris, malam jadi kolom. Bentuk itu menjawab "kamar mana kosong
+tanggal segini" dalam satu pandangan, yang tidak bisa dilakukan kisi tanggal.
+Ia tinggal di layar "Sistem lama" — di layar Kalender ia akan jadi kalender
+kedua dengan isi yang sama persis.
+
+**Malam kepulangan bukan malam**, di kedua kalender. Booking 18→21 memegang
+tiga malam, bukan empat: tanggal 21 kamarnya sudah kosong dan bisa dijual
+lagi. Kalender yang menggambarnya terisi akan menolak booking yang sebenarnya
+muat. `kalender.mjs` membaca `grid-column` tiap batang langsung dari DOM dan
+mencocokkan kolom mulai serta lebarnya, termasuk menginap yang menembus batas
+bulan dari kedua sisi.
 
 ### Satu bacaan, dipakai berdua
 

@@ -932,6 +932,7 @@ Yang diambil apa adanya dari sana:
 | Harga selam | daftar harga 2025 lengkap: 21 baris (15 + 4 perahu excursion + kursus & snorkeling yang belum berharga) + 5 catatan, semuanya jadi kartu | `divePrices` di `content/site.json`, barisnya di `PRICE_ROWS`, kata-katanya di `COPY[*].dive.list` |
 | Klip di atas bar pemesanan selam | diisi dari dashboard: tautan YouTube atau berkas di `public/`. Selebar seksinya, 16:9, **autoplay tanpa suara dan berulang** begitu bandnya masuk layar, dengan kontrol tetap ada | `diveVideo` di `content/site.json`; `assets/README.md` menerangkan slotnya |
 | Nomor kantor | +62 812 4323 7470 untuk reservasi selam | sama dengan `contact.whatsapp` |
+| Sistem staf kliennya | lima perkakas kerja dari hosting lama, disalin bit per bit ke `/sistem/` | `public/sistem/`, ceritanya lengkap di `MIGRASI.md` |
 
 **Situs lama menyebut Pulau Kri, bukan Yenbuba.** Sebelum ini, seluruh copy
 Turtle dalam tujuh bahasa menempatkan homestay-nya di Yenbuba, Pulau Mansuar —

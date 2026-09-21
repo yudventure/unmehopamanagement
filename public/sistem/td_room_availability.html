@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Room Availability — Turtle Dive Homestay</title>
+<style>
+  :root{
+    --ink:#0f2f3d; --muted:#6b8794; --line:#dce7ec; --bg:#eef6f9;
+    --free:#e6f7ec; --free-bd:#8fd6a6; --free-ink:#1a7a3e;
+    --occ:#fde7ef; --occ-bd:#f3c0d6; --occ-ink:#a83a67;
+    --today:#fff2c9; --brand:#0e6b7d; --wend:#f3f7f9;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);}
+  .wrap{max-width:1200px;margin:0 auto;padding:14px;}
+  h1{font-size:20px;margin:4px 0 2px;}
+  .sub{color:var(--muted);font-size:13px;margin:0 0 12px;}
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.04);}
+  .bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+  .btn{border:1px solid var(--line);background:#f5fafc;color:var(--ink);border-radius:10px;padding:9px 12px;font-size:14px;font-weight:600;cursor:pointer;}
+  .btn:hover{background:#e9f4f7}
+  .btn.brand{background:var(--brand);color:#fff;border-color:var(--brand);}
+  .btn.on{background:var(--brand);color:#fff;border-color:var(--brand);}
+  .grid-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  table{border-collapse:separate;border-spacing:0;width:100%;}
+  th,td{border-bottom:1px solid var(--line);border-right:1px solid var(--line);padding:0;text-align:center;}
+  thead th{position:sticky;top:0;background:#f5fafc;z-index:3;font-weight:700;color:var(--muted);}
+  thead th.mon{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--brand);background:#eaf4f6;}
+  th.roomcol,td.roomcol{position:sticky;left:0;background:#fff;z-index:2;text-align:left;padding:8px 10px;font-weight:800;min-width:70px;border-right:2px solid var(--line);}
+  thead th.roomcol{z-index:4;background:#f5fafc;}
+  th.day{padding:4px 2px;}
+  th.day .dow{font-size:10px;text-transform:uppercase;color:var(--muted);}
+  th.day .dnum{font-size:14px;font-weight:800;color:var(--ink);}
+  th.day .fc{font-size:10px;color:var(--free-ink);font-weight:700;}
+  tfoot td.gtot{text-align:center;font-weight:800;color:#0e4b4f;background:#EAF3F1;border-top:2px solid #0e4b4f;font-size:13px;padding:6px 2px;}
+  tfoot td.gtot.todaycol{background:var(--today);}
+  tfoot td.gtot.wend{background:#e6eef0;}
+  tfoot td.gtotlbl{font-weight:800;color:#0e4b4f;background:#EAF3F1;border-top:2px solid #0e4b4f;font-size:12px;}
+  th.today, td.todaycol{background:var(--today) !important;}
+  th.wend{background:var(--wend);}
+  .cell{display:flex;flex-direction:column;justify-content:center;align-items:center;font-size:12px;line-height:1.15;overflow:hidden;}
+  .cell.free{background:var(--free);color:var(--free-ink);}
+  .cell.occ{background:var(--occ);color:var(--occ-ink);}
+  .detailed th.day{min-width:116px}
+  .detailed .cell{min-width:116px;min-height:54px;padding:5px 6px;align-items:stretch;justify-content:flex-start;}
+  .detailed .cell .names{font-size:11px;font-weight:600;text-align:left;width:100%;}
+  .detailed .cell .names .gn{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .detailed .cell .tag{font-size:10px;opacity:.85;margin-top:2px;}
+  .detailed .cell.free{font-weight:700;align-items:center;justify-content:center;}
+  .badge{align-self:flex-start;font-size:9px;font-weight:800;padding:1px 6px;border-radius:6px;color:#fff;margin-bottom:3px;letter-spacing:.3px;}
+  /* 3 booking-method colors */
+  .cell.occ.m-bc{background:#e3efff;color:#1e3a8a;}   .badge.m-bc{background:#2563eb;}
+  .cell.occ.m-stay{background:#f0e6fc;color:#5b21b6;} .badge.m-stay{background:#7c3aed;}
+  .cell.occ.m-wa{background:#fdecd8;color:#8a4b12;}   .badge.m-wa{background:#e08a1e;}
+  .compact .cell.occ.m-bc{background:#cfe0ff;} .compact .cell.occ.m-stay{background:#e6d5fb;} .compact .cell.occ.m-wa{background:#fbdcb4;}
+  .compact th.day{min-width:26px;width:26px}
+  .compact .cell{min-width:26px;width:26px;height:30px;font-size:9px;}
+  .compact .cell.occ .ini{font-weight:800;}
+  .compact td.roomcol{padding:4px 8px;font-size:13px;}
+  .compact th.day .dow{display:none}
+  .compact th.day .dnum{font-size:11px}
+  .compact th.day .fc{display:none}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:10px;align-items:center;}
+  .swatch{display:inline-block;width:14px;height:14px;border-radius:4px;vertical-align:-2px;margin-right:5px;border:1px solid rgba(0,0,0,.08);}
+  .msg{font-size:13px;color:var(--muted);padding:4px 2px;}
+  .err{color:#b91c1c;}
+  .weeklabel{font-weight:800;font-size:15px;}
+  /* hover/tap info box */
+  #tip{position:fixed;z-index:60;display:none;max-width:250px;background:#0f2f3d;color:#fff;border-radius:10px;padding:9px 11px;font-size:12px;line-height:1.35;box-shadow:0 6px 18px rgba(0,0,0,.28);pointer-events:none;}
+  #tip .tnm{font-weight:800;font-size:13px;margin-bottom:3px;}
+  #tip .trow{opacity:.92;white-space:nowrap;}
+  td.occtd{cursor:grab;touch-action:none;}
+  td.occtd.dragging{cursor:grabbing;opacity:.35;}
+  td.occtd.blocked{outline:2px solid #2e6fd9;outline-offset:-2px;box-shadow:inset 0 0 0 2px rgba(46,111,217,.18);}
+  td.drop-ok{outline:2px dashed #2e8b57;outline-offset:-2px;background:#eafff1 !important;}
+  td.drop-bad{outline:2px dashed #c0492e;outline-offset:-2px;background:#fff0ee !important;}
+  .drag-ghost{position:fixed;z-index:9999;pointer-events:none;background:#1f2a3a;color:#fff;padding:6px 10px;border-radius:8px;font-size:12.5px;font-weight:700;box-shadow:0 6px 18px rgba(0,0,0,.25);transform:translate(-50%,-120%);white-space:nowrap;}
+  /* PIN gate */
+  #pinGate{max-width:340px;margin:8vh auto 0;text-align:center;}
+  #pinInput{font-size:30px;letter-spacing:12px;text-align:center;width:100%;padding:14px 10px;border:2px solid var(--line);border-radius:14px;font-weight:800;color:var(--ink);}
+  #pinInput:focus{outline:none;border-color:var(--brand);}
+  .pinbtn{width:100%;margin-top:12px;font-size:16px;padding:13px;}
+</style>
+</head>
+<body>
+<div id="tip"></div>
+<div class="wrap">
+
+  <!-- ================= PIN GATE ================= -->
+  <div id="pinGate">
+    <div style="font-size:40px">🛏️</div>
+    <h1 style="margin:6px 0 2px">Room Availability</h1>
+    <p class="sub">Turtle Dive Homestay · masukkan PIN 6 angka</p>
+    <div class="card">
+      <input id="pinInput" inputmode="numeric" maxlength="6" placeholder="••••••" autocomplete="off">
+      <button class="btn brand pinbtn" onclick="tryPin()">Masuk</button>
+      <div class="msg err" id="pinMsg"></div>
+    </div>
+  </div>
+
+  <!-- ================= APP ================= -->
+  <div id="app" style="display:none">
+    <h1>🛏️ Room Availability — Turtle Dive Homestay</h1>
+    <p class="sub">Hijau = kosong · merah muda = terisi. Pilih rentang: 1 minggu, 1/2/3 bulan.</p>
+
+    <div class="card">
+      <div class="bar" style="margin-bottom:8px">
+        <button class="btn range on" data-days="7"  onclick="setRange(7,this)">1 Minggu</button>
+        <button class="btn range"    data-days="30" onclick="setRange(30,this)">1 Bulan</button>
+        <button class="btn range"    data-days="60" onclick="setRange(60,this)">2 Bulan</button>
+        <button class="btn range"    data-days="90" onclick="setRange(90,this)">3 Bulan</button>
+      </div>
+      <div class="bar" style="justify-content:space-between">
+        <div class="bar">
+          <button class="btn" onclick="shiftRange(-1)">← Mundur</button>
+          <button class="btn" onclick="goToday()">Hari ini</button>
+          <button class="btn" onclick="shiftRange(1)">Maju →</button>
+        </div>
+        <div class="bar">
+          <label style="font-size:12px;color:var(--muted);margin:0 6px 0 0;font-weight:600">Mulai:</label>
+          <input id="startDate" type="date" style="border:1px solid var(--line);border-radius:10px;padding:9px 10px;font-size:14px" onchange="onDatePick()">
+          <button class="btn" onclick="reload(true)" title="Ambil ulang data terbaru dari server">⟳</button>
+          <button class="btn brand" onclick="downloadImage(this)">📷 Download</button>
+          <button class="btn brand" onclick="sendToWAGroup(this)" style="background:#25D366;border-color:#1da851">🟢 Kirim ke Grup WA</button>
+        </div>
+      </div>
+      <div class="weeklabel" id="weekLabel" style="margin-top:8px"></div>
+      <div class="msg" id="gridMsg"></div>
+    </div>
+
+    <div class="card" id="overbookCard" style="display:none; border:1px solid #f3c9be; background:#fff7f4">
+      <div style="font-weight:800;color:#c0492e;margin-bottom:4px">⚠ Over Booked</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Kamar dengan lebih dari satu booking di tanggal yang bertabrakan.</div>
+      <div id="overbookBody"></div>
+    </div>
+
+    <div class="card" id="roomChangeCard" style="display:none; border:1px solid #f0d9b3; background:#fff9f0">
+      <div style="font-weight:800;color:#c47a10;margin-bottom:4px">🔁 Pindah Kamar (Room Change)</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Tamu yang pindah kamar di tengah menginap, beserta urutan kamarnya.</div>
+      <div id="roomChangeBody"></div>
+    </div>
+
+    <div class="card" id="gridCard">
+      <div class="weeklabel" id="weekLabelImg" style="margin-bottom:8px; font-weight:800; color:#0e4b4f"></div>
+      <div class="grid-scroll"><table id="grid"></table></div>
+      <div class="legend">
+        <span><span class="swatch" style="background:var(--free);border-color:var(--free-bd)"></span>Kosong</span>
+        <span><span class="swatch" style="background:var(--occ);border-color:var(--occ-bd)"></span>Terisi</span>
+        <span><span class="swatch" style="background:var(--today);border-color:#f0c000"></span>Hari ini</span>
+        <span style="margin-left:6px;font-weight:700;color:var(--ink)">Metode:</span>
+        <span><span class="swatch" style="background:#e3efff;border-color:#2563eb"></span>BC = Booking.com</span>
+        <span><span class="swatch" style="background:#f0e6fc;border-color:#7c3aed"></span>Stay = StayRajaAmpat</span>
+        <span><span class="swatch" style="background:#fdecd8;border-color:#e08a1e"></span>WA = WhatsApp/Direct</span>
+        <span id="hint1"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   PENGATURAN — cukup ubah 1 baris PIN di bawah kalau mau ganti.
+   URL & password sudah tertanam, staf TIDAK perlu mengetiknya.
+   ============================================================ */
+var PIN        = '112233';   // <-- GANTI ke 6 angka pilihanmu
+var DATA_URL   = 'https://script.google.com/macros/s/AKfycbyGcPCLDGlBB5TzdBov_GJEWz7pms792Ifd9ENN2UmcuMAHwz20Vc7YaUI9yF5UPbX5/exec';
+var BACKEND_PW = 'turtlestaff007';   // password view-only backend (tersembunyi dari staf)
+var ADMIN_PASSWORD = 'bluemagic007';  // dipakai KHUSUS untuk fitur tahan-geser pindah kamar (adminMoveRoomBooking)
+/* ============================================================ */
+
+var LS='tdh_avail_unlocked';
+var startISO=null, rangeDays=7, lastData=null, cache=null;
+
+function pad(n){return ('0'+n).slice(-2);}
+function ymd(d){ return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+function todayISO(){ return ymd(new Date()); }
+function parseISO(s){ var p=String(s).slice(0,10).split('-'); return new Date(+p[0],+p[1]-1,+p[2]); }
+function addDays(iso,n){ var d=parseISO(iso); d.setDate(d.getDate()+n); return ymd(d); }
+function fmtDMY(iso){ var p=String(iso).slice(0,10).split('-'); return p[2]+'/'+p[1]+'/'+p[0]; }
+var DOW=['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
+var MON=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+
+/* ===== PIN gate ===== */
+(function boot(){
+  var ok=false; try{ ok=(localStorage.getItem(LS)==='1'); }catch(e){}
+  if(ok){ openApp(); }
+  var inp=document.getElementById('pinInput');
+  if(inp){ inp.focus(); inp.addEventListener('keydown',function(e){ if(e.key==='Enter') tryPin(); }); }
+})();
+function tryPin(){
+  var v=(document.getElementById('pinInput').value||'').trim();
+  if(v===PIN){ try{localStorage.setItem(LS,'1');}catch(e){} openApp(); }
+  else{ document.getElementById('pinMsg').textContent='PIN salah, coba lagi.'; }
+}
+function openApp(){
+  document.getElementById('pinGate').style.display='none';
+  document.getElementById('app').style.display='block';
+  startISO=todayISO(); document.getElementById('startDate').value=startISO;
+  initTip();
+  initDrag();
+  loadCacheFromDisk_();   // pulihkan data terakhir dari HP dulu → tampil seketika
+  reload();
+}
+
+/* Service worker: menyimpan halaman ini di HP supaya bisa dibuka seketika (bahkan tanpa
+   sinyal), dan memuat ulang sendiri sekali kalau ada versi baru di server. Sebelumnya
+   hanya Dashboard yang punya ini. */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('admin-sw.js').then(function (reg) {
+      if (reg.waiting) reg.waiting.postMessage('skipWaiting');
+      reg.addEventListener('updatefound', function () {
+        var nw = reg.installing;
+        if (nw) nw.addEventListener('statechange', function () {
+          if (nw.state === 'installed' && navigator.serviceWorker.controller) nw.postMessage('skipWaiting');
+        });
+      });
+    }).catch(function(){});
+    var swReloaded = false;
+    navigator.serviceWorker.addEventListener('controllerchange', function () {
+      if (swReloaded) return; swReloaded = true; window.location.reload();
+    });
+    navigator.serviceWorker.addEventListener('message', function (e) {
+      if (e.data && e.data.type === 'NEW_VERSION') {
+        if (swReloaded) return; swReloaded = true; window.location.reload();
+      }
+    });
+  });
+}
+
+/* ===== hover / tap info box ===== */
+function initTip(){
+  var tip=document.getElementById('tip'); var grid=document.getElementById('grid');
+  if(!grid || grid._tipInit) return; grid._tipInit=true;
+  function showFor(td,x,y){
+    var nm=td.getAttribute('data-nm'); if(!nm){ hide(); return; }
+    var ni=td.getAttribute('data-ni');
+    var all=(td.getAttribute('data-all')||nm).split('||');
+    var nmeHtml=all.map(function(n,i){ return '<div class="tnm">'+(i===0?'👤 ':'&nbsp;&nbsp;&nbsp;&nbsp;')+esc(n)+'</div>'; }).join('');
+    tip.innerHTML=nmeHtml
+      +'<div class="trow">🛏️ Room '+td.getAttribute('data-rm')+' · '+all.length+' tamu</div>'
+      +'<div class="trow">📅 '+fmtDMY(td.getAttribute('data-ci'))+' → '+fmtDMY(td.getAttribute('data-co'))+(ni?' ('+ni+' malam)':'')+'</div>'
+      +'<div class="trow">🔖 '+esc(td.getAttribute('data-mt')||'-')+'</div>'
+      // Confirmation no. shown here on purpose (2026-08-30): when a booking turns
+      // up on this calendar but not in the Dashboard tab you expected, this is the
+      // number to paste into the Dashboard search box to open — or cancel — it.
+      +'<div class="trow">🔑 No. Konfirmasi: '+esc(td.getAttribute('data-conf')||'-')+'</div>';
+    tip.style.display='block';
+    var w=tip.offsetWidth, h=tip.offsetHeight, px=x+14, py=y+14;
+    if(px+w>window.innerWidth-8) px=x-w-14;
+    if(py+h>window.innerHeight-8) py=y-h-14;
+    if(px<6)px=6; if(py<6)py=6;
+    tip.style.left=px+'px'; tip.style.top=py+'px';
+  }
+  function hide(){ tip.style.display='none'; }
+  grid.addEventListener('mousemove',function(e){ var td=e.target.closest?e.target.closest('td.occtd'):null; if(td) showFor(td,e.clientX,e.clientY); else hide(); });
+  grid.addEventListener('mouseleave',hide);
+  // touch / click (HP): tap booking → info; tap kosong → tutup
+  grid.addEventListener('click',function(e){
+    var td=e.target.closest?e.target.closest('td.occtd'):null;
+    if(handleBlockClick_(td,e)) return;   // consumed by block-adjust — don't also open the tooltip
+    if(td){ var r=td.getBoundingClientRect(); showFor(td, r.left+Math.min(r.width/2,40), r.top); } else hide();
+  });
+  window.addEventListener('scroll',hide,true);
+}
+
+/* =====================================================================================
+   TAHAN-KLIK / TAHAN-TEKAN (HP) untuk PINDAH KAMAR — dua tahap:
+   1) TAHAN pertama pada sebuah booking → "blok" seluruh malamnya (dianggap mau dipindah
+      semua). Lalu ketuk (HP) / Ctrl+klik (PC/mouse) hari lain DI BARIS YANG SAMA untuk
+      menggeser batas blok — malam sebelum yang diketuk tetap di room asal, malam itu
+      sampai checkout ikut pindah. Bisa diulang-ulang sampai pas.
+   2) TAHAN KEDUA tepat di atas blok yang sudah pas → mulai drag sesungguhnya, geser ke
+      baris Room tujuan, lepas untuk mengeksekusi (memanggil adminMoveRoomBooking dengan
+      moveDate = batas blok yang sudah diatur, TIDAK PEDULI di sel/tanggal mana persisnya
+      drag itu dilepas — hanya Room tujuannya yang dipakai).
+   Klik di luar blok (booking lain / sel kosong) = batal blok.
+   ===================================================================================== */
+var DRAG_HOLD_MS = 380, DRAG_CANCEL_PX = 9;
+var blockState = null;       // {confNo, room, checkIn, checkOut, guestName, boundary}
+var lastPointerType_ = 'mouse';
+
+function isBlockCell_(td){
+  return !!(blockState && td && td.getAttribute('data-conf')===blockState.confNo && td.getAttribute('data-room')===blockState.room);
+}
+function applyBlockHighlight(){
+  if(!blockState) return;
+  document.querySelectorAll('#grid td.occtd').forEach(function(td){
+    var on = isBlockCell_(td) && td.getAttribute('data-date') >= blockState.boundary;
+    td.classList.toggle('blocked', !!on);
+  });
+}
+function announceBlock_(){
+  if(!blockState) return;
+  var nights = Math.round((parseISO(blockState.checkOut) - parseISO(blockState.boundary)) / 86400000);
+  gridMsg('📦 '+blockState.guestName+': akan pindah '+nights+' malam mulai '+fmtDMY(blockState.boundary)+' (dari Room '+blockState.room+'). Ketuk hari lain di baris ini untuk ubah, tahan & geser ke Room tujuan untuk pindahkan, atau ketuk sel lain untuk batal.');
+}
+function startBlock_(td){
+  var nm=td.getAttribute('data-nm'); if(!nm) return;
+  blockState = {
+    confNo: td.getAttribute('data-conf')||'', room: td.getAttribute('data-room'),
+    checkIn: td.getAttribute('data-ci'), checkOut: td.getAttribute('data-co'),
+    guestName: nm, boundary: td.getAttribute('data-ci')
+  };
+  applyBlockHighlight();
+  announceBlock_();
+}
+function cancelBlock_(){
+  if(!blockState) return;
+  blockState=null;
+  document.querySelectorAll('#grid td.blocked').forEach(function(td){ td.classList.remove('blocked'); });
+}
+// Called from the grid's click handler BEFORE the tooltip logic. Returns true when the
+// click was consumed for block-adjust (tooltip must NOT also open in that case).
+function handleBlockClick_(td, e){
+  if(!blockState) return false;
+  if(td && isBlockCell_(td)){
+    var wantsAdjust = (lastPointerType_==='touch') || e.ctrlKey || e.metaKey;
+    if(!wantsAdjust) return false;             // plain desktop click on the block itself -> let the tooltip show
+    blockState.boundary = td.getAttribute('data-date');
+    applyBlockHighlight();
+    announceBlock_();
+    return true;
+  }
+  cancelBlock_();
+  gridMsg('');
+  return false;                                 // let the normal tooltip logic still run for whatever was clicked
+}
+
+function initDrag(){
+  var grid=document.getElementById('grid');
+  if(!grid || grid._dragInit) return; grid._dragInit=true;
+  var holdTimer=null, dragState=null, ghost=null, curHoverTd=null, startX=0, startY=0;
+
+  function clearHold(){ if(holdTimer){ clearTimeout(holdTimer); holdTimer=null; } }
+  function makeGhost(text){ var g=document.createElement('div'); g.className='drag-ghost'; g.textContent=text; document.body.appendChild(g); return g; }
+  function moveGhost(x,y){ if(ghost){ ghost.style.left=x+'px'; ghost.style.top=y+'px'; } }
+  function clearHover(){ if(curHoverTd){ curHoverTd.classList.remove('drop-ok'); curHoverTd=null; } }
+
+  function beginDrag(td,e){
+    if(!blockState) return;
+    dragState={ td:td, guestName:blockState.guestName, confNo:blockState.confNo,
+      fromRoom:blockState.room, checkIn:blockState.checkIn, checkOut:blockState.checkOut };
+    td.classList.add('dragging');
+    ghost=makeGhost('🛏️ '+blockState.guestName+' → geser ke Room tujuan…');
+    moveGhost(e.clientX,e.clientY);
+    try{ td.setPointerCapture(e.pointerId); }catch(err){}
+  }
+  function onPointerDown(e){
+    if(e.pointerType==='mouse' && e.button!==0) return;
+    lastPointerType_ = e.pointerType || 'mouse';
+    var td=e.target.closest?e.target.closest('td.occtd'):null; if(!td) return;
+    startX=e.clientX; startY=e.clientY; clearHold();
+    holdTimer=setTimeout(function(){
+      holdTimer=null;
+      if(isBlockCell_(td)) beginDrag(td,e);    // already blocked -> this hold starts the real move-drag
+      else startBlock_(td);                     // not blocked yet -> this hold just selects/blocks the booking
+    }, DRAG_HOLD_MS);
+  }
+  function onPointerMove(e){
+    if(holdTimer && !dragState){
+      if(Math.abs(e.clientX-startX)>DRAG_CANCEL_PX || Math.abs(e.clientY-startY)>DRAG_CANCEL_PX) clearHold();
+      return;
+    }
+    if(!dragState) return;
+    e.preventDefault();
+    moveGhost(e.clientX,e.clientY);
+    var el=document.elementFromPoint(e.clientX,e.clientY);
+    var td=el && el.closest ? el.closest('td.occtd, td.freetd') : null;
+    if(td!==curHoverTd){ clearHover(); if(td){ td.classList.add('drop-ok'); curHoverTd=td; } }
+  }
+  function onPointerUp(e){
+    clearHold();
+    if(!dragState) return;
+    var st=dragState; dragState=null;
+    st.td.classList.remove('dragging');
+    if(ghost){ ghost.remove(); ghost=null; }
+    var dropTd=curHoverTd; clearHover();
+    try{ st.td.releasePointerCapture(e.pointerId); }catch(err){}
+    if(!dropTd || !blockState) return;          // no valid target -> block stays active, try again
+    var toRoom=dropTd.getAttribute('data-room');
+    if(!toRoom) return;
+    if(String(toRoom)===String(st.fromRoom)){ gridMsg('Sudah berada di Room '+st.fromRoom+' — tidak ada perubahan.'); return; }
+    attemptMove(st,toRoom,blockState.boundary);
+  }
+  function onPointerCancel(){
+    clearHold();
+    if(dragState){ dragState.td.classList.remove('dragging'); dragState=null; }
+    if(ghost){ ghost.remove(); ghost=null; }
+    clearHover();
+  }
+  grid.addEventListener('pointerdown',onPointerDown);
+  grid.addEventListener('pointermove',onPointerMove);
+  grid.addEventListener('pointerup',onPointerUp);
+  grid.addEventListener('pointercancel',onPointerCancel);
+  grid.addEventListener('contextmenu',function(e){ if(dragState) e.preventDefault(); });
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape' && blockState){ cancelBlock_(); gridMsg(''); } });
+}
+function attemptMove(st,toRoom,toDate){
+  if(!st.confNo){ alert('Booking ini belum punya nomor konfirmasi (data lama) — tidak bisa dipindah lewat geser. Edit manual lewat form booking.'); return; }
+  var isWhole = (toDate<=st.checkIn);
+  var msg = isWhole
+    ? ('Pindahkan SELURUH booking '+st.guestName+' dari Room '+st.fromRoom+' ke Room '+toRoom+'?')
+    : ('Pecah booking '+st.guestName+' jadi 2 segmen:\n\n• Room '+st.fromRoom+' tetap sampai '+fmtDMY(toDate)+'\n• Room '+toRoom+' mulai '+fmtDMY(toDate)+' s/d '+fmtDMY(st.checkOut)+'\n\nLanjutkan?');
+  if(!confirm(msg)) return;
+  gridMsg('Memindahkan kamar…');
+  fetch(DATA_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body:JSON.stringify({action:'adminMoveRoomBooking',password:ADMIN_PASSWORD,confirmationNo:st.confNo,newRoom:toRoom,moveDate:toDate})})
+    .then(function(r){return r.json();})
+    .then(function(res){
+      if(!res||res.status!=='ok'){ gridMsg('Gagal memindahkan: '+((res&&res.message)||'coba lagi'),true); return; }
+      gridMsg(res.mode==='split' ? 'Booking dipecah & dipindah ke Room '+toRoom+'.' : 'Booking dipindah ke Room '+toRoom+'.');
+      cancelBlock_();
+      reload(true);   // data baru saja berubah di server — jangan pakai cache
+    })
+    .catch(function(e){ gridMsg('Gagal terhubung saat memindahkan kamar.',true); });
+}
+
+/* ===== controls ===== */
+function setRange(days,btn){ rangeDays=days; document.querySelectorAll('.range').forEach(function(b){b.classList.remove('on');}); if(btn)btn.classList.add('on'); reload(); }
+function shiftRange(dir){ startISO=addDays(startISO, dir*rangeDays); document.getElementById('startDate').value=startISO; reload(); }
+function goToday(){ startISO=todayISO(); document.getElementById('startDate').value=startISO; reload(); }
+function onDatePick(){ var v=document.getElementById('startDate').value; if(v){ startISO=v; reload(); } }
+function gridMsg(t,e){ var m=document.getElementById('gridMsg'); m.textContent=t||''; m.className='msg'+(e?' err':''); }
+
+/* =====================================================================================
+   WINDOW CACHE (2026-08-31)
+   Sebelumnya tiap ← Mundur / Maju → memanggil server lagi dengan jendela tanggal yang
+   persis selebar layar, jadi tiap geser minggu = satu loading penuh. Padahal server
+   membaca SELURUH sheet CheckIn setiap kali dipanggil — memintanya untuk 7 hari atau
+   untuk 5 bulan biayanya praktis sama. Jadi sekarang: sekali ambil, ambil jendela yang
+   jauh lebih lebar dari yang terlihat, simpan di memori, lalu geser minggu dilayani
+   dari memori itu — instan, tanpa menyentuh server sama sekali.
+   Server hanya dipanggil lagi kalau: (a) geser keluar dari rentang yang tersimpan,
+   (b) isinya sudah lebih tua dari CACHE_TTL_MS, atau (c) reload(true) — tombol ⟳
+   dan sesudah pindah kamar, supaya perubahan langsung terlihat.
+   ===================================================================================== */
+var SCHED_CACHE = null;                 // {start,end,rooms,overbookings,roomChanges,at}
+var CACHE_TTL_MS = 5 * 60 * 1000;       // 5 menit — cukup segar untuk pemakaian harian
+var PREFETCH_BEFORE = 30, PREFETCH_AFTER = 120;   // hari bantalan sebelum/sesudah layar
+
+function cacheCovers_(s, e){
+  return !!SCHED_CACHE && SCHED_CACHE.start <= s && e <= SCHED_CACHE.end
+      && (Date.now() - SCHED_CACHE.at) < CACHE_TTL_MS;
+}
+/* Ambil potongan yang terlihat dari cache. Daftar Over Booked & Pindah Kamar disaring
+   ke rentang yang sedang tampil, supaya isinya sama persis seperti sebelum ada cache
+   (kalau tidak, jendela lebar akan memunculkan bentrok dari bulan-bulan lain). */
+function applyFromCache_(s, e){
+  lastData = SCHED_CACHE.rooms;
+  lastOverbookings = (SCHED_CACHE.overbookings || []).filter(function(o){
+    return o.overlapStart < e && s <= o.overlapEnd;
+  });
+  lastRoomChanges = (SCHED_CACHE.roomChanges || []).filter(function(c){
+    return c.checkIn < e && s <= c.checkOut;
+  });
+  render(); renderOverbook(); renderRoomChanges();
+}
+
+/* Simpan cache ke HP supaya BERTAHAN setelah halaman ditutup. Tanpa ini, tiap kali
+   halaman dibuka lagi harus menunggu server dulu — persis kondisi yang bikin tidak bisa
+   kerja saat sinyal lemah. Dibungkus try/catch: kalau penyimpanan penuh/diblokir, itu
+   bukan kesalahan fatal, halaman tetap jalan seperti biasa. */
+var LS_KEY = 'td_avail_cache_v1';
+function saveCacheToDisk_(){
+  try { localStorage.setItem(LS_KEY, JSON.stringify(SCHED_CACHE)); } catch(e){}
+}
+function loadCacheFromDisk_(){
+  try {
+    var raw = localStorage.getItem(LS_KEY);
+    if (!raw) return;
+    var c = JSON.parse(raw);
+    if (c && c.start && c.end && c.rooms) SCHED_CACHE = c;
+  } catch(e){}
+}
+
+function ageText_(){
+  var mins = Math.floor((Date.now() - SCHED_CACHE.at) / 60000);
+  if (mins < 1) return 'baru saja';
+  if (mins < 60) return mins + ' menit lalu';
+  var h = Math.floor(mins/60);
+  return h < 24 ? h + ' jam lalu' : Math.floor(h/24) + ' hari lalu';
+}
+
+function reload(force){
+  var endISO = addDays(startISO, rangeDays);
+  var covers = !!SCHED_CACHE && SCHED_CACHE.start <= startISO && endISO <= SCHED_CACHE.end;
+
+  if (!force && covers) {
+    // OFFLINE-FIRST: apa pun umurnya, tampilkan dulu SEKARANG JUGA — nol detik menunggu.
+    applyFromCache_(startISO, endISO);
+    if (cacheCovers_(startISO, endISO)) {
+      // Masih segar → cukup, tidak usah repotkan server.
+      gridMsg('⚡ Dari data tersimpan (' + ageText_() + ') — tekan ⟳ untuk data terbaru.');
+    } else {
+      // Sudah kedaluwarsa → layar sudah terisi, perbaruinya diam-diam di belakang.
+      gridMsg('⚡ Data tersimpan (' + ageText_() + ') — memperbarui di latar belakang…');
+      fetchSchedule_(true);
+    }
+    return;
+  }
+
+  gridMsg(covers ? 'Mengambil data terbaru…' : 'Memuat…');
+  fetchSchedule_(false);
+}
+
+/* background=true → layar SUDAH terisi data tersimpan; kegagalan di sini tidak boleh
+   mengosongkan layar, cukup beri tahu bahwa pembaruan belum berhasil. */
+function fetchSchedule_(background){
+  var endISO = addDays(startISO, rangeDays);
+  var fetchStart = addDays(startISO, -PREFETCH_BEFORE);
+  var fetchEnd   = addDays(endISO,    PREFETCH_AFTER);
+  var u=DATA_URL+(DATA_URL.indexOf('?')<0?'?':'&')+'mode=adminGetRoomSchedule&password='+encodeURIComponent(BACKEND_PW)
+      +'&start='+fetchStart+'&end='+fetchEnd;
+  fetch(u).then(function(r){return r.json();}).then(function(res){
+    if(!res||res.status!=='ok'){
+      gridMsg((background?'Pembaruan gagal':'Gagal memuat data')+': '+((res&&res.message)||'coba refresh'),true);
+      return;
+    }
+    SCHED_CACHE = {
+      start: fetchStart, end: fetchEnd,
+      rooms: res.rooms || [], overbookings: res.overbookings || [], roomChanges: res.roomChanges || [],
+      at: Date.now()
+    };
+    cache = SCHED_CACHE.rooms;
+    saveCacheToDisk_();
+    // Pakai jendela yang SEDANG tampil — saat pembaruan latar belakang selesai, admin
+    // mungkin sudah menggeser ke minggu lain.
+    applyFromCache_(startISO, addDays(startISO, rangeDays));
+    gridMsg(background ? '✓ Data diperbarui.' : '');
+  }).catch(function(e){
+    if(background){ gridMsg('⚠ Belum bisa memperbarui — data tersimpan (' + ageText_() + ') tetap ditampilkan.',true); return; }
+    if(cache){ lastData=cache; gridMsg('⚠ Offline — data terakhir',true); render(); }
+    else gridMsg('Gagal terhubung. Cek internet lalu ⟳ Refresh.',true);
+  });
+}
+
+var lastOverbookings=[];
+function renderOverbook(){
+  var card=document.getElementById('overbookCard'); var body=document.getElementById('overbookBody');
+  if(!lastOverbookings || !lastOverbookings.length){ card.style.display='none'; body.innerHTML=''; return; }
+  card.style.display='block';
+  function nm(g){ return (g.guestNames && g.guestNames.length) ? g.guestNames.join(', ') : g.guestName; }
+  body.innerHTML = lastOverbookings.map(function(o){
+    return '<div style="border-left:3px solid #c0492e;padding:6px 10px;margin-bottom:8px;background:#fff;border-radius:8px">'
+      + '<div style="font-weight:700;color:#c0492e">Room '+o.room+' — bentrok '+fmtDMY(o.overlapStart)+' → '+fmtDMY(o.overlapEnd)+'</div>'
+      + '<div style="font-size:12.5px;color:var(--ink);margin-top:2px">• '+esc(nm(o.a))+' ('+fmtDMY(o.a.checkIn)+' → '+fmtDMY(o.a.checkOut)+')</div>'
+      + '<div style="font-size:12.5px;color:var(--ink)">• '+esc(nm(o.b))+' ('+fmtDMY(o.b.checkIn)+' → '+fmtDMY(o.b.checkOut)+')</div>'
+      + '</div>';
+  }).join('');
+}
+var lastRoomChanges=[];
+function renderRoomChanges(){
+  var card=document.getElementById('roomChangeCard'); var body=document.getElementById('roomChangeBody');
+  if(!lastRoomChanges || !lastRoomChanges.length){ card.style.display='none'; body.innerHTML=''; return; }
+  card.style.display='block';
+  body.innerHTML = lastRoomChanges.map(function(c){
+    var seq = c.segments.map(function(s){ return 'Room '+s.room+' ('+fmtDMY(s.checkIn)+'→'+fmtDMY(s.checkOut)+')'; }).join('  →  ');
+    return '<div style="border-left:3px solid #c47a10;padding:6px 10px;margin-bottom:8px;background:#fff;border-radius:8px">'
+      + '<div style="font-weight:700;color:#c47a10">'+esc(c.guestName)+' — '+fmtDMY(c.checkIn)+' → '+fmtDMY(c.checkOut)+' · Pindah kamar: '+c.changes+' kali</div>'
+      + '<div style="font-size:12.5px;color:var(--ink);margin-top:2px">'+esc(seq)+'</div>'
+      + '</div>';
+  }).join('');
+}
+function occupantOn(bookings,dayISO){ for(var i=0;i<bookings.length;i++){ var b=bookings[i]; if(b.checkIn<=dayISO && dayISO<b.checkOut) return b; } return null; }
+function shortName(n){ n=String(n||'').trim(); return n.length>16?n.slice(0,15)+'…':n; }
+function initials(n){ n=String(n||'').trim(); var p=n.split(/\s+/); return ((p[0]||'')[0]||'')+((p[1]||'')[0]||''); }
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function methodInfo(v){
+  v=String(v||'').toLowerCase();
+  if(v==='booking.com')       return {code:'BC',   cls:'m-bc',   full:'Booking.com'};
+  if(v==='stayrajaampat.com') return {code:'Stay', cls:'m-stay', full:'StayRajaAmpat.com'};
+  return {code:'WA', cls:'m-wa', full:'WhatsApp / Direct'}; // walkin / manual / blank
+}
+
+function render(){
+  if(!lastData) return;
+  var days=[]; for(var i=0;i<rangeDays;i++) days.push(addDays(startISO,i));
+  var tISO=todayISO();
+  var compact = rangeDays>10;
+  var grid=document.getElementById('grid'); grid.className=compact?'compact':'detailed';
+  document.getElementById('weekLabel').textContent = fmtDMY(days[0])+'  —  '+fmtDMY(days[days.length-1]);
+  document.getElementById('weekLabelImg').textContent = 'Room Availability — Turtle Dive Homestay  ·  ' + fmtDMY(days[0]) + '  —  ' + fmtDMY(days[days.length-1]);
+  document.getElementById('hint1').textContent = compact ? 'Mode bulan: warna saja (arahkan kursor untuk nama).' : 'Mode minggu: nama tamu tampil di tiap sel.';
+  gridMsg('');
+
+  var freePerDay=days.map(function(d){ var f=0; lastData.forEach(function(rm){ if(!occupantOn(rm.bookings||[],d)) f++; }); return f; });
+  // Total guests staying each day = sum of headcounts of every booking occupying
+  // that night, across all rooms (a room-change guest is in exactly one room per day).
+  function headcount(b){ var declared=(parseInt(b.adults,10)||0)+(parseInt(b.children,10)||0); var named=(b.guestNames&&b.guestNames.length)?b.guestNames.length:0; return Math.max(declared, named, 1); }
+  var guestsPerDay=days.map(function(d){ var g=0; lastData.forEach(function(rm){ (rm.bookings||[]).forEach(function(b){ if(b.checkIn<=d && d<b.checkOut) g+=headcount(b); }); }); return g; });
+
+  var monthRow='';
+  if(compact){
+    monthRow='<tr><th class="roomcol"></th>'; var i=0;
+    while(i<days.length){
+      var mk=parseISO(days[i]); var label=MON[mk.getMonth()]+' '+mk.getFullYear(); var span=1;
+      while(i+span<days.length){ var nx=parseISO(days[i+span]); if(nx.getMonth()===mk.getMonth()&&nx.getFullYear()===mk.getFullYear()) span++; else break; }
+      monthRow+='<th class="mon" colspan="'+span+'">'+label+'</th>'; i+=span;
+    }
+    monthRow+='</tr>';
+  }
+
+  var head='<thead>'+monthRow+'<tr><th class="roomcol">Kamar</th>';
+  days.forEach(function(d,idx){
+    var dt=parseISO(d); var isT=(d===tISO); var we=(dt.getDay()===0||dt.getDay()===6);
+    head+='<th class="day '+(isT?'today':(we?'wend':''))+'"><div class="dow">'+DOW[dt.getDay()]+'</div><div class="dnum">'+dt.getDate()+'</div><div class="fc">'+freePerDay[idx]+'</div></th>';
+  });
+  head+='</tr></thead>';
+
+  var body='<tbody>';
+  lastData.forEach(function(rm){
+    body+='<tr><td class="roomcol">'+(compact?rm.room:'Room '+rm.room)+'</td>';
+    days.forEach(function(d){
+      var dt=parseISO(d); var isT=(d===tISO); var we=(dt.getDay()===0||dt.getDay()===6);
+      var occ=occupantOn(rm.bookings||[],d);
+      var cls='day'+(isT?' todaycol':'');
+      if(occ){
+        var allNames=(occ.guestNames&&occ.guestNames.length)?occ.guestNames:[occ.guestName];
+        var M=methodInfo(occ.method);
+        var da=' data-nm="'+esc(occ.guestName)+'" data-all="'+esc(allNames.join('||'))+'" data-rm="'+rm.room+'" data-ci="'+occ.checkIn+'" data-co="'+occ.checkOut+'" data-ni="'+(occ.nights||'')+'" data-mt="'+esc(M.full)+'" data-conf="'+esc(occ.confirmationNo||'')+'" data-room="'+rm.room+'" data-date="'+d+'"';
+        var rcMark = occ.roomChange ? '🔁' : '';
+        if(compact){
+          var showIni=(occ.checkIn===d);
+          body+='<td class="'+cls+(we&&!isT?' wend':'')+' occtd"'+da+'><div class="cell occ '+M.cls+'">'+(showIni?'<span class="ini">'+esc(initials(occ.guestName))+(rcMark?'<sup>🔁</sup>':'')+'</span>':'●')+'</div></td>';
+        } else {
+          var first=(occ.checkIn===d);
+          var namesHtml=allNames.map(function(n,i){ return '<div class="gn">'+(i+1)+'. '+esc(n)+'</div>'; }).join('');
+          body+='<td class="'+cls+' occtd"'+da+'><div class="cell occ '+M.cls+'">'
+              +'<span class="badge '+M.cls+'">'+M.code+'</span>'
+              +(rcMark?'<span class="badge" style="background:#fff2df;border-color:#c47a10;color:#c47a10;margin-left:3px">🔁 pindahan</span>':'')
+              +'<div class="names">'+namesHtml+'</div>'
+              +'<span class="tag">'+(first?'✦ check-in':(occ.checkOut===addDays(d,1)?'checkout besok':''))+'</span>'
+              +'</div></td>';
+        }
+      } else {
+        body+='<td class="'+cls+(we&&!isT?' wend':'')+' freetd" data-room="'+rm.room+'" data-date="'+d+'"><div class="cell free">'+(compact?'':'kosong')+'</div></td>';
+      }
+    });
+    body+='</tr>';
+  });
+  body+='</tbody>';
+
+  // Footer row at the BOTTOM: total guests staying each day.
+  var foot='<tfoot><tr><td class="roomcol gtotlbl">'+(compact?'Tamu':'Total tamu')+'</td>';
+  days.forEach(function(d,idx){
+    var dt=parseISO(d); var isT=(d===tISO); var we=(dt.getDay()===0||dt.getDay()===6);
+    foot+='<td class="day gtot'+(isT?' todaycol':'')+(we&&!isT?' wend':'')+'">'+guestsPerDay[idx]+'</td>';
+  });
+  foot+='</tr></tfoot>';
+
+  grid.innerHTML=head+body+foot;
+  applyBlockHighlight();
+}
+
+/* ---- Capture the calendar card (grid + total + legend) to a canvas ---- */
+function imgFileName(){
+  return 'room-availability-' + (document.getElementById('weekLabel').textContent||'').replace(/[^0-9]+/g,'-').replace(/^-|-$/g,'') + '.png';
+}
+function captureCard(){
+  return new Promise(function(resolve,reject){
+    if(typeof html2canvas!=='function'){ reject(new Error('Komponen gambar belum siap, coba lagi sebentar.')); return; }
+    var card=document.getElementById('gridCard');
+    if(!card){ reject(new Error('Kalender belum siap.')); return; }
+    var scroll=card.querySelector('.grid-scroll');
+    var prevOverflow = scroll ? scroll.style.overflow : '';
+    var prevWidth = scroll ? scroll.style.width : '';
+    if(scroll){ scroll.style.overflow='visible'; scroll.style.width='max-content'; }  // capture the FULL table
+    html2canvas(card, { scale: 2, backgroundColor:'#ffffff', useCORS:true, windowWidth: Math.max(document.documentElement.clientWidth, card.scrollWidth+40) })
+      .then(function(canvas){ if(scroll){ scroll.style.overflow=prevOverflow; scroll.style.width=prevWidth; } resolve(canvas); })
+      .catch(function(e){ if(scroll){ scroll.style.overflow=prevOverflow; scroll.style.width=prevWidth; } reject(e); });
+  });
+}
+function busy(btn,on,orig){ if(!btn) return; btn.disabled=on; if(on){ btn.dataset.orig=btn.textContent; btn.textContent='⏳ Memproses…'; } else { btn.textContent=btn.dataset.orig||orig; } }
+
+/* ---- Download as PNG ---- */
+function downloadImage(btn){
+  busy(btn,true);
+  captureCard().then(function(canvas){
+    var link=document.createElement('a');
+    link.download=imgFileName();
+    link.href=canvas.toDataURL('image/png');
+    document.body.appendChild(link); link.click(); document.body.removeChild(link);
+  }).catch(function(e){ alert('Gagal membuat gambar: '+e.message); }).then(function(){ busy(btn,false,'📷 Download'); });
+}
+
+/* ---- Send the image DIRECTLY to the staff WhatsApp group (via Fonnte backend) ---- */
+function sendToWAGroup(btn){
+  if(!confirm('Kirim gambar Room Availability ini ke Grup WA sekarang?')) return;
+  busy(btn,true);
+  var caption = 'Room Availability — Turtle Dive Homestay\n' + (document.getElementById('weekLabel').textContent||'');
+  captureCard().then(function(canvas){
+    var imageBase64 = canvas.toDataURL('image/png');
+    return fetch(DATA_URL, {
+      method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({ action:'adminShareRoomAvailImage', password: BACKEND_PW, imageBase64: imageBase64, caption: caption })
+    }).then(function(r){ return r.json(); });
+  }).then(function(res){
+    if(res && res.status==='ok'){ alert('✅ Terkirim ke Grup WA.'); }
+    else { alert('Gagal kirim ke WA: ' + ((res&&res.message)||'coba lagi')); }
+  }).catch(function(e){ alert('Gagal kirim ke WA: '+ (e.message||e)); })
+    .then(function(){ busy(btn,false,'🟢 Kirim ke Grup WA'); });
+}
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>#__ver{position:fixed;left:8px;bottom:8px;z-index:99999;font:700 11px/1.3 system-ui,Arial,sans-serif;background:rgba(14,75,79,.92);color:#fff;padding:4px 9px;border-radius:20px;letter-spacing:.03em;box-shadow:0 2px 8px rgba(0,0,0,.18);opacity:.9}#__ver b{color:#8FD9CC}@media print{#__ver{display:none!important}}</style><div id="__ver">Room Availability · <b>V5</b> · build 2026-08-31</div>
+</body>
+</html>

@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+<meta http-equiv="Pragma" content="no-cache">
+<title>Log Aktivitas — Turtle Dive Homestay</title>
+<style>
+  body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#f3f7f5;color:#0E4B4F;
+       display:flex;min-height:100vh;margin:0;align-items:center;justify-content:center}
+  .box{text-align:center}
+  .spin{width:34px;height:34px;border:4px solid #cfe0db;border-top-color:#0E4B4F;border-radius:50%;
+        margin:0 auto 12px;animation:sp .8s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  a{color:#0E4B4F}
+</style>
+</head>
+<body>
+  <div class="box">
+    <div class="spin"></div>
+    <div>Memuat Log Aktivitas…</div>
+    <div style="font-size:12px;color:#6b8079;margin-top:8px">Jika tidak berpindah, <a id="manual" href="#">klik di sini</a>.</div>
+  </div>
+<script>
+  /* CACHE-BUSTER LOADER — jangan diubah.
+     Aplikasi ada di td_activity_log_app.html. Untuk update, cukup TIMPA file itu
+     (nama sama). Link yang dibagikan tetap td_activity_log.html. */
+  var APP='td_activity_log_app.html';
+  var url=APP+'?v='+Date.now();
+  document.getElementById('manual').href=url;
+  location.replace(url);
+</script>
+</body>
+</html>

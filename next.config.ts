@@ -108,6 +108,29 @@ function canonicalPathRedirects() {
   return out;
 }
 
+/**
+ * The client's own staff system, kept out of search results.
+ *
+ * `public/sistem/` holds the Turtle System pages byte for byte as the family
+ * runs them today. They are the working tools of a business, not pages anybody
+ * should find by searching, and one of them carries a staff PIN in its source
+ * — see `MIGRASI.md`, where that is the first thing on the list to fix.
+ *
+ * This is a sign on the door, not a lock. It keeps the pages out of Google,
+ * which is worth having and is all it does; anyone with the address still
+ * reaches them, exactly as on the hosting they are served from today.
+ */
+function systemHeaders() {
+  return [
+    {
+      source: "/sistem/:path*",
+      headers: [
+        { key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" },
+      ],
+    },
+  ];
+}
+
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   /**
@@ -136,6 +159,9 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return canonicalPathRedirects();
+  },
+  async headers() {
+    return systemHeaders();
   },
 };
 

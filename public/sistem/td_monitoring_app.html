@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
+<meta charset="UTF-8">
+<script>
+// Anti-cache bawaan di dalam file ini sendiri (sama seperti Dashboard/Invoice):
+// kalau halaman ini dibuka lewat link langsung / bookmark lama / ketik ulang di address bar
+// (jadi TIDAK ada parameter "?v=" yang baru), halaman otomatis me-reload dirinya sendiri dengan
+// parameter "v" baru — ini membuat browser (dan kebanyakan cache server/CDN) menganggapnya sebagai
+// URL yang belum pernah diminta sebelumnya, sehingga wajib ambil versi terbaru dari server, bukan
+// dari cache lama. Aman dari infinite-loop karena setelah reload sekali, parameter v jadi baru
+// (<5 detik) sehingga syarat reload tidak terpenuhi lagi. Hash tetap dijaga.
+(function(){
+  try{
+    var p=new URLSearchParams(location.search);
+    var v=parseInt(p.get('v')||'0',10), now=Date.now();
+    if(!v||(now-v)>5000){ p.set('v',now); location.replace(location.pathname+'?'+p.toString()+location.hash); }
+  }catch(e){}
+})();
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Monitoring Tamu — Turtle Dive Homestay</title>
+<style>
+  :root{ --brand:#0e4b4f; --line:#dbe5e4; --muted:#6b8079; --ink:#10262b;
+         --wait:#eef2f4; --wait-bd:#c7d2d6; --in:#e6f7ee; --in-bd:#37b26f;
+         --up:#e3efff; --up-bd:#2563eb; --out:#eee; --out-bd:#9aa; --miss:#fdecd8; --miss-bd:#e08a1e; }
+  *{box-sizing:border-box}
+  body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;margin:0;background:#f3f7f7;color:var(--ink)}
+  .wrap{max-width:1100px;margin:0 auto;padding:16px}
+  h1{font-size:20px;margin:6px 0}
+  .sub{color:var(--muted);font-size:13px;margin:0 0 12px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:14px}
+  .btn{border:1px solid var(--line);background:#fff;border-radius:10px;padding:9px 12px;font-size:14px;font-weight:600;cursor:pointer}
+  .btn.brand{background:var(--brand);color:#fff;border-color:var(--brand)}
+  .btn.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+  .btn.sm{padding:5px 9px;font-size:12px}
+  .bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  input,select,textarea{border:1px solid var(--line);border-radius:10px;padding:9px 10px;font-size:14px;width:100%}
+  label{font-size:12px;color:var(--muted);font-weight:600;display:block;margin-bottom:3px}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  table{width:100%;border-collapse:collapse}
+  th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line);font-size:13px;vertical-align:top}
+  th{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+  .badge{display:inline-block;font-size:11px;font-weight:800;padding:2px 8px;border-radius:20px;border:1px solid}
+  .b-wait{background:var(--wait);border-color:var(--wait-bd);color:#556}
+  .b-in{background:var(--in);border-color:var(--in-bd);color:#177245}
+  .b-up{background:var(--up);border-color:var(--up-bd);color:#1e40af}
+  .b-out{background:var(--out);border-color:var(--out-bd);color:#556}
+  .b-miss{background:var(--miss);border-color:var(--miss-bd);color:#8a5a0a}
+  /* calendar */
+  .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+  .cal .dow{font-size:11px;font-weight:700;color:var(--muted);text-align:center;padding:4px 0}
+  .cal .cell{min-height:74px;border:1px solid var(--line);border-radius:8px;padding:4px;background:#fff}
+  .cal .cell.other{background:#fafbfb;opacity:.6}
+  .cal .cell.today{border-color:#f0c000;background:#fffdf3}
+  .cal .dnum{font-size:11px;color:var(--muted);font-weight:700}
+  .chip{display:block;font-size:11px;padding:2px 5px;border-radius:6px;margin-top:2px;border:1px solid;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .msg{font-size:13px;margin-top:8px}
+  .msg.err{color:#c0492e}
+  #gate{max-width:340px;margin:60px auto;text-align:center}
+  .hidden{display:none}
+  .legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:10px}
+  /* per-room calendar grid — same layout as Room Availability */
+  #calGridTable{border-collapse:separate;border-spacing:0;width:100%}
+  #calGridTable th,#calGridTable td{border-bottom:1px solid var(--line);border-right:1px solid var(--line);padding:0;text-align:center;}
+  #calGridTable thead th{position:sticky;top:0;background:#f5fafc;z-index:3;font-weight:700;color:var(--muted);}
+  #calGridTable thead th.mon{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--brand);background:#eaf4f6;}
+  #calGridTable th.roomcol,#calGridTable td.roomcol{position:sticky;left:0;background:#fff;z-index:2;text-align:left;padding:8px 10px;font-weight:800;min-width:70px;border-right:2px solid var(--line);}
+  #calGridTable thead th.roomcol{z-index:4;background:#f5fafc;}
+  #calGridTable th.day{padding:4px 2px;}
+  #calGridTable th.day .dow{font-size:10px;text-transform:uppercase;color:var(--muted);}
+  #calGridTable th.day .dnum{font-size:14px;font-weight:800;color:var(--ink);}
+  #calGridTable th.day .gc{font-size:10px;color:var(--brand);font-weight:800;}
+  #calGridTable th.today,#calGridTable td.todaycol{background:#fffdf3 !important;}
+  #calGridTable th.wend{background:#f2f6f7;}
+  #calGridTable tfoot td.gtot{text-align:center;font-weight:800;color:var(--brand);background:#EAF3F1;border-top:2px solid var(--brand);font-size:13px;padding:6px 2px;}
+  #calGridTable tfoot td.gtotlbl{font-weight:800;color:var(--brand);background:#EAF3F1;border-top:2px solid var(--brand);font-size:12px;padding:6px 10px;}
+  .cell{display:flex;flex-direction:column;justify-content:center;align-items:center;font-size:12px;line-height:1.15;overflow:hidden;}
+  .cell.free{background:#eef7f1;color:#9ab;}
+  .detailed th.day{min-width:120px}
+  .detailed .cell{min-width:120px;min-height:52px;padding:5px 6px;align-items:stretch;justify-content:flex-start;cursor:pointer;}
+  .detailed .cell.free{cursor:default;align-items:center;justify-content:center;font-weight:700;}
+  .detailed .cell{min-height:52px;}
+  .detailed .cell .names{font-size:11px;font-weight:700;text-align:left;width:100%;}
+  .detailed .cell .names .gn{white-space:normal;word-break:break-word;}
+  .detailed .cell .tag{font-size:10px;opacity:.9;margin-top:2px;}
+  .mbadge{align-self:flex-start;font-size:9px;font-weight:800;padding:1px 6px;border-radius:6px;margin-bottom:3px;border:1px solid;}
+  .compact th.day{min-width:26px;width:26px}
+  .compact .cell{min-width:26px;width:26px;height:30px;font-size:9px;cursor:pointer;}
+  .compact .cell.free{cursor:default}
+  .compact td.roomcol{padding:4px 8px;font-size:13px;}
+  .cell.occ.b-in{background:var(--in);color:#177245;}   .mbadge.b-in{background:var(--in);border-color:var(--in-bd);color:#177245;}
+  .cell.occ.b-up{background:var(--up);color:#1e40af;}    .mbadge.b-up{background:var(--up);border-color:var(--up-bd);color:#1e40af;}
+  .cell.occ.b-out{background:var(--out);color:#556;}     .mbadge.b-out{background:var(--out);border-color:var(--out-bd);color:#556;}
+  .cell.occ.b-miss{background:var(--miss);color:#8a5a0a;} .mbadge.b-miss{background:var(--miss);border-color:var(--miss-bd);color:#8a5a0a;}
+  .cell.occ.b-wait{background:var(--wait);color:#556;}   .mbadge.b-wait{background:var(--wait);border-color:var(--wait-bd);color:#556;}
+  /* loading bar — tampil di atas layar tiap kali ada request ke server (Sync/Simpan/Hapus/Notify/Reload),
+     supaya admin tau sistem sedang memproses (sebelumnya tidak ada indikator sama sekali). */
+  #loadingBar{position:fixed;top:0;left:0;height:3px;width:100%;z-index:99998;background:transparent;overflow:hidden;pointer-events:none}
+  #loadingBar::before{content:'';position:absolute;top:0;left:-40%;height:100%;width:40%;
+    background:linear-gradient(90deg,transparent,var(--brand),#37b26f,transparent);opacity:0}
+  #loadingBar.on::before{opacity:1;animation:ldbar 1.1s ease-in-out infinite}
+  @keyframes ldbar{0%{left:-40%}100%{left:100%}}
+  #loadingChip{position:fixed;top:8px;right:8px;z-index:99998;background:var(--brand);color:#fff;font-size:11.5px;font-weight:700;
+    padding:5px 11px;border-radius:20px;box-shadow:0 2px 8px rgba(0,0,0,.2);display:none;align-items:center;gap:6px}
+  #loadingChip.on{display:flex}
+  #loadingChip .dot{width:7px;height:7px;border-radius:50%;background:#fff;animation:ldpulse 1s ease-in-out infinite}
+  @keyframes ldpulse{0%,100%{opacity:.3}50%{opacity:1}}
+  /* tahan-klik / tahan-tekan untuk pindah kamar */
+  #calGridTable td.occtd{cursor:grab;touch-action:none;}
+  #calGridTable td.occtd.dragging{cursor:grabbing;opacity:.35;}
+  #calGridTable td.occtd.blocked{outline:2px solid #2e6fd9;outline-offset:-2px;box-shadow:inset 0 0 0 2px rgba(46,111,217,.18);}
+  #calGridTable td.drop-ok{outline:2px dashed #2e8b57;outline-offset:-2px;background:#eafff1 !important;}
+  .drag-ghost{position:fixed;z-index:99999;pointer-events:none;background:#1f2a3a;color:#fff;padding:6px 10px;border-radius:8px;font-size:12.5px;font-weight:700;box-shadow:0 6px 18px rgba(0,0,0,.25);transform:translate(-50%,-120%);white-space:nowrap;}
+</style>
+</head>
+<body>
+<div id="loadingBar"></div>
+<div id="loadingChip"><span class="dot"></span>Memproses…</div>
+<div class="wrap">
+
+  <!-- PIN GATE -->
+  <div id="gate">
+    <div style="font-size:40px">🗒️</div>
+    <h1>Monitoring Tamu</h1>
+    <p class="sub">Turtle Dive Homestay · masukkan PIN 6 angka</p>
+    <div class="card">
+      <input id="pinInput" inputmode="numeric" maxlength="6" placeholder="••••••" style="text-align:center;letter-spacing:6px;font-size:18px">
+      <button class="btn brand" style="width:100%;margin-top:10px" onclick="tryPin()">Masuk</button>
+      <div class="msg err" id="pinMsg"></div>
+    </div>
+  </div>
+
+  <!-- APP -->
+  <div id="app" class="hidden">
+    <h1>🗒️ Monitoring Tamu — pelacakan pribadi</h1>
+    <p class="sub">Calendar pribadi Anda. Hanya membaca data booking utama untuk menandai siapa yang sudah check-in — tidak mengubah sistem utama. Saat menyimpan, kamar dicek ke sistem utama: kalau sudah terisi, tamu otomatis dipindah ke kamar kosong (pindah kamar bila perlu).</p>
+
+    <div class="card">
+      <div class="bar" style="justify-content:space-between">
+        <div class="bar">
+          <button class="btn on" id="tabCal" onclick="setView('cal')">📅 Kalender</button>
+          <button class="btn" id="tabList" onclick="setView('list')">📋 Daftar</button>
+        </div>
+        <div class="bar">
+          <button class="btn" onclick="reload()">⟳ Refresh</button>
+          <button class="btn brand" onclick="syncFromMain(this)">⬇ Sync dari Kalender Utama</button>
+          <button class="btn" onclick="showBlockedList(this)">🚫 Disembunyikan</button>
+        </div>
+      </div>
+      <div class="msg" id="topMsg"></div>
+      <!-- Daftar entri yang dihapus PERMANEN (V9) — supaya keputusan itu tidak pernah jadi
+           jalan satu arah: apa pun yang disembunyikan bisa dilihat dan dipulihkan lagi. -->
+      <div id="blockedPanel" style="display:none;margin-top:10px;border:1px solid #e0c9a0;background:#fffaf0;border-radius:10px;padding:10px 12px">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+          <strong style="font-size:14px">🚫 Entri yang disembunyikan permanen</strong>
+          <button class="btn sm" onclick="document.getElementById('blockedPanel').style.display='none'">✕ Tutup</button>
+        </div>
+        <div style="font-size:12px;color:#7a6a4a;margin:4px 0 8px">Entri di bawah tidak akan ditarik lagi oleh "Sync dari Kalender Utama". Tekan <b>Pulihkan</b> kalau ternyata masih dibutuhkan.</div>
+        <div id="blockedBody"></div>
+      </div>
+    </div>
+
+    <!-- ADD / EDIT FORM -->
+    <div class="card">
+      <div class="bar" style="justify-content:space-between">
+        <strong id="formTitle">Tambah entri monitoring</strong>
+        <div class="bar">
+          <button class="btn sm" id="formDelete" style="display:none;background:#fdecec;border-color:#e0a0a0;color:#b0342a" onclick="deleteForm(this)">🗑 Hapus Booking</button>
+          <button class="btn sm" onclick="clearForm()">Kosongkan</button>
+        </div>
+      </div>
+      <input type="hidden" id="f_id">
+      <div id="confirmedHint" style="display:none;font-size:11.5px;color:#177245;background:#e6f7ee;border:1px solid #37b26f;border-radius:8px;padding:6px 9px;margin-top:8px">✅ Tamu ini sudah <b>confirm check-in</b> — perubahan di sini (nama/tanggal/kontak/room/catatan/sumber) akan ikut mengubah booking asli, dan otomatis tampil di All Booking/Dashboard/Room Availability juga.</div>
+      <div class="row2" style="margin-top:8px">
+        <div><label>Booking Reference</label><input id="f_ref" placeholder="No. reservasi OTA (mis. 87019)"></div>
+        <div><label>Kode Booking (cross-check)</label><input id="f_kode" placeholder="Kode sistem (mis. TDH2608…)"></div>
+      </div>
+      <div class="row2" style="margin-top:8px">
+        <div><label>Nama Tamu</label><input id="f_name" placeholder="Nama pemesan/tamu"></div>
+        <div><label>Sumber</label>
+          <select id="f_source">
+            <option value="Booking.com">Booking.com</option>
+            <option value="StayRajaAmpat.com">StayRajaAmpat.com</option>
+            <option value="Direct">Direct</option>
+            <option value="WA">WA</option>
+          </select>
+        </div>
+      </div>
+      <div class="row3" style="margin-top:8px">
+        <div><label>Nama Tamu 2 (opsional)</label><input id="f_name2"></div>
+        <div><label>Nama Tamu 3 (opsional)</label><input id="f_name3"></div>
+        <div><label>Jumlah Tamu</label>
+          <select id="f_count">
+            <option value="">(otomatis)</option>
+            <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+            <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+          </select>
+        </div>
+      </div>
+      <div id="companionHint" style="display:none;font-size:11px;color:var(--muted);margin-top:2px">ℹ️ Untuk tamu yang sudah confirm check-in, nama tamu tambahan &amp; jumlah tamu selalu ikut data booking asli — 3 kolom di atas tidak berpengaruh (dinonaktifkan).</div>
+      <div class="row2" style="margin-top:8px">
+        <div><label>Email</label><input id="f_email" type="email"></div>
+        <div><label>Nomor HP</label><input id="f_phone" inputmode="tel"></div>
+      </div>
+      <div class="row3" style="margin-top:8px">
+        <div><label>Check-in</label><input id="f_ci" type="date"></div>
+        <div><label>Check-out</label><input id="f_co" type="date"></div>
+        <div><label>Room (ikut data check-in)</label><input id="f_room" placeholder="otomatis saat cocok"></div>
+      </div>
+      <div style="margin-top:8px"><label>Catatan</label><input id="f_notes"></div>
+      <button class="btn brand" style="width:100%;margin-top:10px" onclick="saveEntry(this)">💾 Simpan Entri</button>
+      <div id="formNotify" style="display:none;margin-top:10px">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Kirim ajakan isi formulir check-in ke tamu ini:</div>
+        <div class="bar">
+          <button class="btn" style="background:#eaf1ef;border-color:#cfe0db" onclick="notifyForm('email',this)">📧 Notify Email</button>
+          <button class="btn" style="background:#e6f7ee;border-color:#37b26f;color:#177245" onclick="notifyForm('wa',this)">🟢 Notify WA</button>
+        </div>
+      </div>
+      <div class="msg" id="formMsg"></div>
+    </div>
+
+    <!-- OVER BOOKING LIST (guests that couldn't be placed — all rooms full) -->
+    <div class="card" id="overbookCard" style="display:none;border-color:#e0a0a0;background:#fff7f7">
+      <strong style="color:#b0342a">🔴 Over Booking — belum ada kamar</strong>
+      <div class="sub" style="margin:4px 0 8px">Semua kamar penuh pada tanggalnya. Ubah tanggal/kamar untuk menempatkan kembali, atau biarkan di sini sebagai catatan overbook.</div>
+      <div style="overflow-x:auto"><table id="overbookTable"></table></div>
+    </div>
+
+    <!-- CALENDAR VIEW (per-room grid, like Room Availability) -->
+    <div class="card" id="calCard">
+      <div class="bar" style="margin-bottom:8px">
+        <button class="btn sm range on" data-days="7" onclick="setRange(7,this)">1 Minggu</button>
+        <button class="btn sm range" data-days="30" onclick="setRange(30,this)">1 Bulan</button>
+        <button class="btn sm range" data-days="60" onclick="setRange(60,this)">2 Bulan</button>
+      </div>
+      <div class="bar" style="justify-content:space-between;margin-bottom:8px">
+        <div class="bar">
+          <button class="btn sm" onclick="shiftRange(-1)">← Mundur</button>
+          <button class="btn sm" onclick="goToday()">Hari ini</button>
+          <button class="btn sm" onclick="shiftRange(1)">Maju →</button>
+        </div>
+        <strong id="calLabel"></strong>
+      </div>
+      <div style="overflow-x:auto"><table id="calGridTable"></table></div>
+      <div class="legend">
+        <span><span class="badge b-in">Guest Confirm Check In</span></span>
+        <span><span class="badge b-up">Cocok — belum check-in</span></span>
+        <span><span class="badge b-out">Sudah check-out</span></span>
+        <span><span class="badge b-miss">Kemungkinan cocok / lewat</span></span>
+        <span><span class="badge b-wait">Menunggu</span></span>
+      </div>
+    </div>
+
+    <!-- LIST VIEW -->
+    <div class="card hidden" id="listCard">
+      <input id="searchBox" placeholder="Cari nama / ref / email / HP…" style="margin-bottom:10px" oninput="renderList()">
+      <div style="overflow-x:auto"><table id="listTable"></table></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===== SETTINGS — ganti PIN kalau mau ===== */
+var PIN        = '112233';
+var DATA_URL   = 'https://script.google.com/macros/s/AKfycbyGcPCLDGlBB5TzdBov_GJEWz7pms792Ifd9ENN2UmcuMAHwz20Vc7YaUI9yF5UPbX5/exec';
+var BACKEND_PW = 'turtlestaff007';
+var ADMIN_PASSWORD = 'bluemagic007';  // dipakai KHUSUS untuk fitur tahan-geser pindah kamar (adminMoveRoomBooking) pada entri yang sudah confirm/cocok
+/* ========================================== */
+
+var LS='tdh_monitoring_unlocked';
+var LS_SEENMISMATCH='tdh_monitoring_seen_mismatch';
+var LS_STALE_COLLAPSED='tdh_monitoring_stale_collapsed';
+var view='cal', entries=lsGet('tdh_monitoring')||[], calBase=null;
+var seenMismatch=lsGet(LS_SEENMISMATCH)||{};
+
+function lsGet(k){ try{return JSON.parse(localStorage.getItem(k)||'null');}catch(e){return null;} }
+function lsSet(k,v){ try{localStorage.setItem(k,JSON.stringify(v));}catch(e){} }
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function todayISO(){ var d=new Date(),p=function(n){return String(n).padStart(2,'0')}; return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate()); }
+function fmtDMY(iso){ if(!iso) return '—'; var q=String(iso).slice(0,10).split('-'); return q.length===3?q[2]+'/'+q[1]+'/'+q[0]:iso; }
+
+/* ---- loading indicator — dipanggil di tiap request ke server, supaya admin tau sistem sedang memproses ---- */
+var _loadingCount=0;
+function showLoading(){
+  _loadingCount++;
+  var bar=document.getElementById('loadingBar'), chip=document.getElementById('loadingChip');
+  if(bar) bar.classList.add('on');
+  if(chip) chip.classList.add('on');
+}
+function hideLoading(){
+  _loadingCount=Math.max(0,_loadingCount-1);
+  if(_loadingCount>0) return;
+  var bar=document.getElementById('loadingBar'), chip=document.getElementById('loadingChip');
+  if(bar) bar.classList.remove('on');
+  if(chip) chip.classList.remove('on');
+}
+
+function tryPin(){
+  if(document.getElementById('pinInput').value===PIN){ try{localStorage.setItem(LS,'1')}catch(e){}; unlock(); }
+  else document.getElementById('pinMsg').textContent='PIN salah.';
+}
+function unlock(){ document.getElementById('gate').classList.add('hidden'); document.getElementById('app').classList.remove('hidden'); calBase=firstOfThisMonth(); if(entries.length) renderAll(); initDrag(); reload(); }
+function firstOfThisMonth(){ var d=new Date(); return new Date(d.getFullYear(), d.getMonth(), 1); }
+
+function setView(v){ view=v;
+  document.getElementById('tabCal').classList.toggle('on',v==='cal');
+  document.getElementById('tabList').classList.toggle('on',v==='list');
+  document.getElementById('calCard').classList.toggle('hidden',v!=='cal');
+  document.getElementById('listCard').classList.toggle('hidden',v!=='list');
+  renderAll();
+}
+
+/* ---- status helpers ---- */
+function statusOf(e){
+  var m=e.match||{};
+  // CONFIRMED = one identity key (name/HP/email/ref) + BOTH dates match the main booking.
+  if(m.matched && m.confirmed){
+    if(m.status==='arrival')  return {cls:'b-in',  label:'✅ Guest Confirm Check In', room:m.room, via:m.via};
+    if(m.status==='checkout') return {cls:'b-out', label:'🏁 Sudah check-out', room:m.room, via:m.via};
+    return {cls:'b-up', label:'🔵 Cocok — belum check-in', room:m.room, via:m.via};
+  }
+  // identity matches but dates differ/missing → soft hint, needs the owner to verify.
+  if(m.possible) return {cls:'b-miss', label:'🟡 Kemungkinan cocok (cek tanggal)', room:m.room, via:m.via};
+  if(e.checkIn && e.checkIn < todayISO()) return {cls:'b-miss', label:'⚠ Lewat, belum cocok'};
+  return {cls:'b-wait', label:'⏳ Menunggu'};
+}
+
+/* ---- data ---- */
+function reload(){
+  showLoading();
+  fetch(DATA_URL+'?mode=monitoringList&password='+encodeURIComponent(BACKEND_PW))
+    .then(function(r){return r.json();})
+    .then(function(res){ if(res&&res.status==='ok'){ entries=res.entries||[]; lsSet('tdh_monitoring',entries); renderAll(); checkRoomChangeAlerts(); } })
+    .catch(function(){ /* keep cached */ })
+    .then(function(){ hideLoading(); });
+}
+function syncFromMain(btn){
+  if(!confirm('Salin booking berjalan/mendatang dari kalender utama ke monitoring? (yang sudah ada dilewati)')) return;
+  btn.disabled=true; var o=btn.textContent; btn.textContent='⏳ Menyalin…'; showLoading();
+  fetch(DATA_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'monitoringSyncFromMain',password:BACKEND_PW})})
+    .then(function(r){return r.json();})
+    .then(function(res){ if(res&&res.status==='ok'){ document.getElementById('topMsg').textContent='✅ '+res.added+' entri baru disalin, '+(res.updated||0)+' entri diperbarui (room ikut data check-in)'+(res.skippedBlocked?(', '+res.skippedBlocked+' dilewati karena sudah dihapus permanen'):'')+'.'; reload(); } else { alert('Gagal sync: '+((res&&res.message)||'')); } })
+    .catch(function(e){ alert('Gagal terhubung: '+e); })
+    .then(function(){ btn.disabled=false; btn.textContent=o; hideLoading(); });
+}
+function saveEntry(btn){
+  var entry={ id:document.getElementById('f_id').value||'', bookingRef:val('f_ref'), kodeBooking:val('f_kode'), guestName:val('f_name'), name2:val('f_name2'), name3:val('f_name3'), guestCount:val('f_count'), email:val('f_email'), phone:val('f_phone'), checkIn:val('f_ci'), checkOut:val('f_co'), room:val('f_room'), source:val('f_source'), notes:val('f_notes') };
+  if(!entry.guestName && !entry.bookingRef){ document.getElementById('formMsg').textContent='Isi minimal Nama atau Booking Ref.'; return; }
+  var orig = entry.id ? entries.filter(function(x){return String(x.id)===String(entry.id);})[0] : null;
+  var isConfirmed = !!(orig && orig.match && orig.match.matched && orig.match.confirmed && orig.match.confNo);
+  if(isConfirmed && !entry.guestName){ document.getElementById('formMsg').textContent='Nama tamu tidak boleh kosong untuk entri yang sudah confirm check-in.'; return; }
+  btn.disabled=true; showLoading();
+  if(isConfirmed) saveConfirmedEntryCascade(entry, orig, btn);
+  else saveMonitoringOnly(entry, btn);
+}
+// Entri BELUM confirm/cocok (masih daftar tunggu) — perubahan cuma internal di TD Monitoring,
+// tidak menyentuh booking asli sama sekali (perilaku asli, tidak berubah).
+function saveMonitoringOnly(entry, btn){
+  fetch(DATA_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'monitoringSave',password:BACKEND_PW,entry:entry})})
+    .then(function(r){return r.json();})
+    .then(function(res){
+       if(res&&res.status==='ok'){
+         if(res.placeMsg) alert(res.placeMsg);                    // overbook auto-move / room-change info
+         document.getElementById('formMsg').textContent = res.placeMsg || '✅ Tersimpan.';
+         clearForm(); reload();
+       } else {
+         var msg=(res&&res.message)||'';
+         document.getElementById('formMsg').textContent='Gagal: '+msg;
+         if(res&&res.code==='no_room') alert('❌ '+msg);          // fully booked → save rejected
+       }
+     })
+    .catch(function(e){ document.getElementById('formMsg').textContent='Gagal terhubung: '+e; })
+    .then(function(){ btn.disabled=false; hideLoading(); });
+}
+// Rekonstruksi pasangan "tamuNamaN"/"tamuIdentitasN" dari string OtherGuests booking asli
+// saat ini (e.match.otherGuests, format "Nama (Identitas); Nama (Identitas)"), supaya
+// adminUpdateBooking TIDAK menghapus data tamu tambahan (nama+identitas) booking asli —
+// endpoint itu selalu membangun ulang OtherGuests dari field tamuNamaN/tamuIdentitasN,
+// jadi kalau tidak dikirim ulang di sini, daftar tamu tambahan akan kosong/hilang.
+function preserveOtherGuestsFields_(otherGuestsStr){
+  var out={}; var s=(otherGuestsStr||'').trim();
+  if(!s || s==='-') return out;
+  s.split(';').forEach(function(part,i){
+    part=part.trim(); if(!part) return;
+    var m=part.match(/^(.*)\(([^)]*)\)\s*$/);
+    out['tamuNama'+(i+1)] = m ? m[1].trim() : part;
+    out['tamuIdentitas'+(i+1)] = m ? m[2].trim() : '';
+  });
+  return out;
+}
+// Entri SUDAH confirm/cocok dengan booking asli — perubahan field apa pun (nama, tanggal,
+// kontak, room, catatan, sumber, kode booking) ditulis LANGSUNG ke booking asli lewat
+// adminUpdateBooking (endpoint admin yang sama dipakai Dashboard), sehingga otomatis
+// tampil juga di All Booking / Dashboard / Room Availability Calendar. SENGAJA TIDAK
+// mencakup: nama tamu 2/3 & jumlah tamu (kolom itu dikunci di form — lihat setConfirmedFormState_
+// — karena tampilan untuk entri confirm SELALU mengambil dari data booking asli, bukan dari
+// 3 kolom itu), dan TIDAK mencakup hapus/cancel booking (tombol Hapus tetap hanya menghapus
+// entri monitoring lokal, tidak pernah membatalkan booking asli — perubahan berisiko tinggi
+// seperti itu sengaja di luar cakupan fitur ini).
+function saveConfirmedEntryCascade(entry, orig, btn){
+  var confNo = orig.match.confNo;
+  var fields = {
+    nama: entry.guestName, checkIn: entry.checkIn, checkOut: entry.checkOut,
+    email: entry.email, whatsapp: entry.phone, catatan: entry.notes,
+    metodeBooking: entry.source, kodeBooking: entry.kodeBooking,
+    assignedRoom: entry.room || orig.match.room
+  };
+  Object.assign(fields, preserveOtherGuestsFields_(orig.match.otherGuests));
+  fetch(DATA_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body:JSON.stringify({action:'adminUpdateBooking',password:ADMIN_PASSWORD,confirmationNo:confNo,fields:fields})})
+    .then(function(r){return r.json();})
+    .then(function(res){
+      if(!res||res.status!=='ok'){
+        document.getElementById('formMsg').textContent='Gagal memperbarui booking asli: '+((res&&res.message)||'');
+        btn.disabled=false; hideLoading();
+        return;
+      }
+      // Booking asli sudah tersimpan — cerminkan field yang sama ke baris Monitoring lokal juga,
+      // supaya kalender/segmen di app ini langsung ikut, tidak menunggu Sync Ulang.
+      fetch(DATA_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'monitoringSave',password:BACKEND_PW,entry:entry})})
+        .then(function(r2){return r2.json();})
+        .then(function(){
+          document.getElementById('formMsg').textContent='✅ Tersimpan & booking asli diperbarui — otomatis menyesuaikan di semua sistem.';
+          clearForm(); reload();
+        })
+        .catch(function(){ document.getElementById('formMsg').textContent='✅ Booking asli sudah diperbarui, tapi tampilan lokal gagal sinkron — coba ⟳ Reload manual.'; reload(); })
+        .then(function(){ btn.disabled=false; hideLoading(); });
+    })
+    .catch(function(e){ document.getElementById('formMsg').textContent='Gagal terhubung: '+e; btn.disabled=false; hideLoading(); });
+}
+/* V9 (2026-09-03) — HAPUS yang benar-benar hilang, dan pesan galat yang jujur.
+   Dua masalah lama yang diperbaiki di sini:
+   1) delEntry() dulu MENGABAIKAN hasil dari server (`.then(function(){reload();}).catch(function(){})`).
+      Kalau server menolak atau entrinya tidak ketemu, tidak ada pesan apa pun — entrinya
+      hanya "tetap di situ", persis keluhan "tidak bisa dihapus" tanpa penjelasan.
+   2) Entri yang cocok dengan booking asli SELALU KEMBALI setelah "Sync dari Kalender Utama",
+      karena sync menarik ulang semua booking aktif. Jadi menghapusnya memang sia-sia.
+      Sekarang admin bisa memilih HAPUS PERMANEN — entrinya dicatat agar sync tidak
+      pernah menariknya lagi (bisa dipulihkan lewat tombol "🚫 Disembunyikan").
+   Yang TIDAK berubah: menghapus di sini tidak pernah membatalkan booking aslinya. */
+function askPermanent_(e){
+  var hasMatch = !!(e && e.match && (e.match.matched || e.match.possible));
+  if(!hasMatch) return {go:true, permanent:false};
+  var label = e.match.confirmed ? 'COCOK (confirmed)' : 'KEMUNGKINAN cocok';
+  var msg = 'Entri ini berstatus "'+label+'" dengan booking asli di sistem check-in.\n\n'
+    + 'Kalau hanya dihapus biasa, entri ini AKAN MUNCUL LAGI setiap kali menekan '
+    + '"Sync dari Kalender Utama", karena bookingnya masih aktif di sana.\n\n'
+    + 'OK  = HAPUS PERMANEN (tidak akan ditarik lagi oleh sync)\n'
+    + 'Cancel = hapus biasa saja\n\n'
+    + 'Catatan: apa pun pilihannya, booking ASLI tamu ini TIDAK dibatalkan dan TIDAK diubah.';
+  return {go:true, permanent:confirm(msg)};
+}
+function doDelete_(id, permanent, onDone){
+  showLoading();
+  fetch(DATA_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body:JSON.stringify({action:'monitoringDelete', password:(permanent?ADMIN_PASSWORD:BACKEND_PW), id:id, permanent:!!permanent})})
+    .then(function(r){return r.json();})
+    .then(function(res){
+      if(res && res.status==='ok'){
+        document.getElementById('topMsg').textContent = permanent
+          ? '✅ Entri dihapus PERMANEN — tidak akan ditarik lagi oleh Sync. Bisa dipulihkan lewat tombol "🚫 Disembunyikan".'
+          : '✅ Entri dihapus dari monitoring.';
+        if(onDone) onDone();
+        reload();
+      } else {
+        alert('Gagal menghapus: '+((res&&res.message)||'server tidak memberi alasan'));
+      }
+    })
+    .catch(function(e){ alert('Gagal terhubung ke server: '+e); })
+    .then(function(){ hideLoading(); });
+}
+function showBlockedList(btn){
+  var panel=document.getElementById('blockedPanel'), body=document.getElementById('blockedBody');
+  panel.style.display='block'; body.innerHTML='<div style="font-size:13px;color:#7a6a4a">Memuat…</div>';
+  if(btn) btn.disabled=true; showLoading();
+  fetch(DATA_URL+(DATA_URL.indexOf('?')<0?'?':'&')+'mode=monitoringBlockedList&password='+encodeURIComponent(BACKEND_PW)+'&cb='+Date.now())
+    .then(function(r){return r.json();})
+    .then(function(res){
+      if(!res||res.status!=='ok'){ body.innerHTML='<div style="font-size:13px;color:#b0342a">Gagal memuat: '+esc((res&&res.message)||'')+'</div>'; return; }
+      var list=res.blocked||[];
+      if(!list.length){ body.innerHTML='<div style="font-size:13px;color:#7a6a4a">Belum ada entri yang disembunyikan.</div>'; return; }
+      body.innerHTML=list.map(function(b){
+        return '<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:5px 0;border-bottom:1px dotted #e0c9a0;font-size:13px">'
+          +'<span><b>'+esc(b.guestName||'(tanpa nama)')+'</b>'+(b.room?(' · Room '+esc(b.room)):'')
+          +'<span style="color:#7a6a4a"> · '+esc(b.checkIn||'?')+' → '+esc(b.checkOut||'?')+(b.deletedAt?(' · dihapus '+esc(b.deletedAt)):'')+'</span></span>'
+          +'<button class="btn sm" onclick=\'unblockEntry('+JSON.stringify(b.keys).replace(/'/g,"&#39;")+',this)\'>↺ Pulihkan</button>'
+          +'</div>';
+      }).join('');
+    })
+    .catch(function(e){ body.innerHTML='<div style="font-size:13px;color:#b0342a">Gagal terhubung: '+esc(String(e))+'</div>'; })
+    .then(function(){ if(btn) btn.disabled=false; hideLoading(); });
+}
+function unblockEntry(keys,btn){
+  if(!confirm('Pulihkan entri ini? Setelah dipulihkan, "Sync dari Kalender Utama" bisa menariknya kembali ke daftar monitoring.')) return;
+  if(btn) btn.disabled=true; showLoading();
+  fetch(DATA_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body:JSON.stringify({action:'monitoringUnblock',password:ADMIN_PASSWORD,keys:keys})})
+    .then(function(r){return r.json();})
+    .then(function(res){
+      if(res&&res.status==='ok'){ document.getElementById('topMsg').textContent='✅ Entri dipulihkan — bisa ditarik lagi oleh Sync.'; showBlockedList(); }
+      else alert('Gagal memulihkan: '+((res&&res.message)||''));
+    })
+    .catch(function(e){ alert('Gagal terhubung: '+e); })
+    .then(function(){ if(btn) btn.disabled=false; hideLoading(); });
+}
+function delEntry(id){
+  var e=entries.filter(function(x){return String(x.id)===String(id);})[0];
+  if(!confirm('Hapus entri "'+((e&&(e.guestName||e.bookingRef))||'ini')+'" dari monitoring?\n\nBooking asli tamu TIDAK dibatalkan.')) return;
+  var d=askPermanent_(e); if(!d.go) return;
+  doDelete_(id, d.permanent);
+}
+function notify(id,channel,btn){
+  var what = channel==='wa' ? 'WhatsApp' : 'Email';
+  if(!confirm('Kirim '+what+' ajakan isi formulir check-in ke tamu ini sekarang?')) return;
+  var o=btn.textContent; btn.disabled=true; btn.textContent='⏳'; showLoading();
+  fetch(DATA_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'monitoringNotify',password:BACKEND_PW,id:id,channel:channel})})
+    .then(function(r){return r.json();})
+    .then(function(res){ if(res&&res.status==='ok'){ alert('✅ '+what+' terkirim.'); reload(); } else { alert('Gagal kirim '+what+': '+((res&&res.message)||'')); } })
+    .catch(function(e){ alert('Gagal terhubung: '+e); })
+    .then(function(){ btn.disabled=false; btn.textContent=o; hideLoading(); });
+}
+function val(id){ return document.getElementById(id).value.trim(); }
+function clearForm(){ ['f_id','f_ref','f_kode','f_name','f_name2','f_name3','f_email','f_phone','f_ci','f_co','f_room','f_notes'].forEach(function(i){document.getElementById(i).value='';}); document.getElementById('f_source').value='Booking.com'; document.getElementById('f_count').value=''; document.getElementById('formTitle').textContent='Tambah entri monitoring'; document.getElementById('formMsg').textContent=''; document.getElementById('formNotify').style.display='none'; document.getElementById('formDelete').style.display='none'; setConfirmedFormState_(false); }
+// tampilkan/matikan hint + kunci kolom nama-tambahan/jumlah-tamu sesuai status confirm entri yang sedang dibuka.
+function setConfirmedFormState_(isConfirmed){
+  document.getElementById('confirmedHint').style.display = isConfirmed ? 'block' : 'none';
+  document.getElementById('companionHint').style.display = isConfirmed ? 'block' : 'none';
+  ['f_name2','f_name3','f_count'].forEach(function(i){ document.getElementById(i).disabled = !!isConfirmed; });
+}
+function editEntry(id){
+  var e=entries.filter(function(x){return String(x.id)===String(id);})[0]; if(!e) return;
+  document.getElementById('f_id').value=e.id; document.getElementById('f_ref').value=e.bookingRef||''; document.getElementById('f_kode').value=e.kodeBooking||''; document.getElementById('f_name').value=e.guestName||'';
+  document.getElementById('f_name2').value=e.name2||''; document.getElementById('f_name3').value=e.name3||''; document.getElementById('f_count').value=e.guestCount||'';
+  document.getElementById('f_email').value=e.email||''; document.getElementById('f_phone').value=e.phone||''; document.getElementById('f_ci').value=(e.checkIn||'').slice(0,10);
+  document.getElementById('f_co').value=(e.checkOut||'').slice(0,10); document.getElementById('f_room').value=e.room||''; document.getElementById('f_source').value=e.source||'Booking.com'; document.getElementById('f_notes').value=e.notes||'';
+  document.getElementById('formTitle').textContent='Edit entri: '+esc(e.guestName||e.bookingRef);
+  document.getElementById('formNotify').style.display=(e.email||e.phone)?'block':'none';
+  document.getElementById('formDelete').style.display='inline-block';
+  setConfirmedFormState_(!!(e.match && e.match.matched && e.match.confirmed && e.match.confNo));
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function notifyForm(channel,btn){ var id=document.getElementById('f_id').value; if(!id){ alert('Simpan entri dulu sebelum mengirim notifikasi.'); return; } notify(id,channel,btn); }
+function deleteForm(btn){
+  var id=document.getElementById('f_id').value; if(!id){ alert('Tidak ada entri yang dibuka untuk dihapus.'); return; }
+  var nm=document.getElementById('f_name').value||document.getElementById('f_ref').value||'entri ini';
+  if(!confirm('Hapus booking "'+nm+'" dari monitoring?\n\nBooking asli tamu TIDAK dibatalkan — ini hanya menghapus baris pelacakan di TD Monitoring.')) return;
+  var e=entries.filter(function(x){return String(x.id)===String(id);})[0];
+  var d=askPermanent_(e); if(!d.go) return;
+  if(btn){ btn.disabled=true; }
+  doDelete_(id, d.permanent, function(){ clearForm(); });
+  if(btn){ btn.disabled=false; }
+}
+
+/* ---- render ---- */
+function renderAll(){ renderOverbook(); if(view==='cal') renderCal(); else renderList(); }
+
+/* ---- Over Booking list (entries all-rooms-full, flagged by the backend) ---- */
+function renderOverbook(){
+  var card=document.getElementById('overbookCard'), tbl=document.getElementById('overbookTable');
+  if(!card) return;
+  var rows=entries.filter(function(e){return e.overbook;}).sort(function(a,b){return (a.checkIn||'').localeCompare(b.checkIn||'');});
+  if(!rows.length){ card.style.display='none'; tbl.innerHTML=''; return; }
+  card.style.display='block';
+  var html='<tr><th>Tamu</th><th>Check-in → out</th><th>Sumber</th><th></th></tr>';
+  rows.forEach(function(e){
+    html+='<tr>'
+      +'<td><strong>'+entryNames(e).map(function(n){return esc(n)}).join('<br>')+'</strong><div style="font-size:11px;color:var(--muted)">👤 '+entryCount(e)+' tamu</div></td>'
+      +'<td>'+fmtDMY(e.checkIn)+' → '+fmtDMY(e.checkOut)+'</td>'
+      +'<td>'+esc(e.source||'')+'</td>'
+      +'<td style="white-space:nowrap"><button class="btn sm" onclick="editEntry(\''+esc(e.id)+'\')">Edit</button> <button class="btn sm" onclick="delEntry(\''+esc(e.id)+'\')">🗑</button></td>'
+      +'</tr>';
+  });
+  tbl.innerHTML=html;
+}
+
+/* ---- Kemungkinan Usang / Duplikat (V7, 2026-08-23) ----
+   Dipicu oleh laporan 2026-08-23: tampilan TD Monitoring dan Room Availability
+   menunjukkan data yang berbeda untuk tamu yang sama (mis. satu nama muncul di
+   3 Room berbeda di TD Monitoring, padahal booking aslinya cuma di 1 Room). Ini
+   terjadi karena entri "Kemungkinan cocok" (belum confirmed) menampilkan Room
+   yang DIKETIK MANUAL / hasil auto-placement lokal — bukan Room booking asli —
+   sampai entri itu di-edit ulang atau match-nya jadi confirmed. Fungsi di bawah
+   ini HANYA MENANDAI entri yang polanya mencurigakan supaya gampang direview
+   dan dibersihkan manual dari sheet Monitoring — TIDAK mengubah/menghapus data
+   apa pun secara otomatis.
+   Ditandai bila entri BELUM confirmed dan:
+     (a) checkout-nya sudah lewat >1 hari tapi tidak pernah cocok ke booking asli
+         (kemungkinan tamu itu sudah check-in/keluar via jalur lain dan entri
+         manual ini tidak pernah dibersihkan), ATAU
+     (b) ada "kemungkinan cocok" ke booking asli di Room lain dari yang diketik
+         di sini (lihat entryPossibleRoomMismatch), ATAU
+     (c) ada entri LAIN (juga belum confirmed) dengan nama sama & tanggal
+         tumpang-tindih — kemungkinan input dobel oleh staff. */
+function _normGuestName_(s){ return String(s||'').trim().toLowerCase().replace(/\s+/g,' '); }
+function entryLooksStale(e, all){
+  if(e.match && e.match.matched) return null;   // confirmed = otoritatif, tak pernah "usang"
+  if(e.overbook) return null;                    // sudah punya card sendiri (Over Booking)
+  var reasons=[];
+  var co=(e.checkOut||'').slice(0,10);
+  if(co && co < addDays(todayISO(),-1)){
+    reasons.push('checkout sudah lewat ('+fmtDMY(e.checkOut)+') tapi belum pernah cocok ke booking asli');
+  }
+  if(e.match && e.match.possible && e.match.room){
+    var typed=(e.room==null?'':String(e.room)).trim();
+    if(!typed){
+      reasons.push('belum ada Room diisi di sini, tapi mirip booking asli di Room '+e.match.room);
+    } else if(String(e.match.room)!==typed){
+      reasons.push('kemungkinan cocok ke booking asli di Room '+e.match.room+' — beda dari Room yang diketik di sini (Room '+typed+')');
+    }
+  }
+  var myName=_normGuestName_(e.guestName);
+  if(myName){
+    var aCi=(e.checkIn||'').slice(0,10), aCo=(e.checkOut||'').slice(0,10);
+    var dupe = aCi && aCo && all.some(function(o){
+      if(String(o.id)===String(e.id)) return false;
+      if(o.match && o.match.matched) return false;
+      if(_normGuestName_(o.guestName)!==myName) return false;
+      var bCi=(o.checkIn||'').slice(0,10), bCo=(o.checkOut||'').slice(0,10);
+      if(!bCi||!bCo) return false;
+      return aCi<bCo && bCi<aCo;   // overlapping date ranges
+    });
+    if(dupe) reasons.push('ada entri lain dengan nama sama & tanggal tumpang-tindih — kemungkinan duplikat input');
+  }
+  return reasons.length ? reasons : null;
+}
+// V8 (2026-08-23, same day): the persistent "🗂 Kemungkinan Usang / Duplikat" CARD
+// (V7) was reported as too long/messy — a single duplicate guest could produce 8-9
+// near-identical rows, one per raw entry, filling the page. Per the owner's request,
+// this is now folded into the SAME one-time popup mechanism already used for
+// room-move mismatches (checkRoomChangeAlerts/seenMismatch) instead of a standing
+// card — and duplicate entries are GROUPED into one line (name+dates), not one line
+// per raw row, so the popup itself stays short even when many duplicates exist.
+function _staleGroupKey_(e){ return _normGuestName_(e.guestName)+'|'+(e.checkIn||'').slice(0,10)+'|'+(e.checkOut||'').slice(0,10); }
+function computeStaleGroups(){
+  var byKey={};
+  entries.forEach(function(e){
+    var reasons=entryLooksStale(e, entries);
+    if(!reasons) return;
+    var key=_staleGroupKey_(e);
+    if(!byKey[key]) byKey[key]={ key:key, guestName:e.guestName, checkIn:e.checkIn, checkOut:e.checkOut, items:[] };
+    byKey[key].items.push({e:e, reasons:reasons});
+  });
+  return Object.keys(byKey).map(function(k){ return byKey[k]; }).sort(function(a,b){ return (a.checkIn||'').localeCompare(b.checkIn||''); });
+}
+// Signature of a stale GROUP's current state — changes only when membership/reasons
+// actually change, so (like mismatchSignature) the popup won't repeat for something
+// already shown and unchanged since.
+function staleGroupSignature(g){
+  var reasonKeys=[];
+  g.items.forEach(function(it){ it.reasons.forEach(function(r){ if(reasonKeys.indexOf(r)===-1) reasonKeys.push(r); }); });
+  return 'stale:'+g.key+'|n'+g.items.length+'|'+reasonKeys.sort().join(';');
+}
+
+/* ---- per-room calendar (rooms as rows, dates as columns) ---- */
+var DOW=['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
+var ROOMS_LIST=[1,2,3,4,5,6,8,9,10,11];   // Room 7 = permanent long-stay, excluded (same as Availability)
+var calDays=7, calStart=todayISO();
+function addDays(iso,n){ var d=new Date(iso+'T00:00:00'); d.setDate(d.getDate()+n); var p=function(x){return String(x).padStart(2,'0')}; return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate()); }
+function setRange(n,btn){ calDays=n; document.querySelectorAll('.range').forEach(function(b){b.classList.remove('on')}); if(btn) btn.classList.add('on'); renderCal(); }
+function shiftRange(dir){ calStart=addDays(calStart, dir*calDays); renderCal(); }
+function goToday(){ calStart=todayISO(); renderCal(); }
+
+// which room an entry belongs to: the matched (real) room wins, else the typed room.
+function entryRoom(e){ var r=(e.match&&e.match.matched&&e.match.room)?e.match.room:e.room; return (r===''||r==null)?null:Number(r); }
+function entryOnDay(e,iso){ var ci=(e.checkIn||'').slice(0,10), co=(e.checkOut||'').slice(0,10); return ci && co && ci<=iso && iso<co; }
+// Occupancy segments for the calendar: a room-change (split) entry occupies
+// different room rows across the dates. Matched/normal entries = one segment.
+function entrySegs(e){
+  // A confirmed real booking is authoritative — use its single real room, ignore any stale split.
+  if(!(e.match&&e.match.matched&&e.match.room) && e.segments && e.segments.length){
+    return e.segments.map(function(s){ return {room:Number(s.room), ci:String(s.checkIn||'').slice(0,10), co:String(s.checkOut||'').slice(0,10)}; }).filter(function(s){return s.room && s.ci && s.co;});
+  }
+  var r=entryRoom(e); if(r==null) return [];
+  return [{room:r, ci:(e.checkIn||'').slice(0,10), co:(e.checkOut||'').slice(0,10)}];
+}
+function entryHasChange(e){ return !(e.match&&e.match.matched&&e.match.room) && !!(e.segments && e.segments.length>1); }
+// kamar hasil pencocokan sistem berbeda dari kamar yang diketik admin di form — kemungkinan bentrok yang diselesaikan otomatis.
+// (CONFIRMED match — booking asli sudah pasti ada, room-nya pasti benar.)
+function entryRoomMismatch(e){
+  var mRoom=(e.match&&e.match.matched&&e.match.room)?String(e.match.room):'';
+  var typed=(e.room==null?'':String(e.room)).trim();
+  return !!(mRoom && typed && mRoom!==typed);
+}
+// V7 (2026-08-23): versi lebih lunak untuk entri yang BARU "kemungkinan cocok" (belum
+// confirmed — nama/identitas mirip tapi tanggal beda atau belum tentu booking yang sama).
+// Sebelumnya popup peringatan HANYA menyala untuk mismatch yang confirmed, jadi entri
+// "kemungkinan cocok" yang Room-nya sudah beda jauh dari booking asli tidak pernah
+// diberitahukan ke admin sampai ketahuan manual di kalender (lihat laporan 2026-08-23:
+// tampilan TD Monitoring vs Room Availability tidak sinkron). Dipisah dari
+// entryRoomMismatch supaya kata-katanya bisa dibedakan (ini baru KEMUNGKINAN, bukan pasti).
+function entryPossibleRoomMismatch(e){
+  if(e.match && e.match.matched) return false;               // sudah ditangani entryRoomMismatch
+  var mRoom=(e.match&&e.match.possible&&e.match.room)?String(e.match.room):'';
+  var typed=(e.room==null?'':String(e.room)).trim();
+  return !!(mRoom && typed && mRoom!==typed);
+}
+// tanda unik kondisi perpindahan/tidak-cocok saat ini pada entri ini — dipakai supaya popup
+// cuma muncul sekali per kejadian baru (bukan berulang tiap reload selama kondisinya sama).
+function mismatchSignature(e){
+  var parts=[];
+  if(entryHasChange(e)) parts.push('chg:'+e.segments.map(function(s){return s.room;}).join('>'));
+  if(entryRoomMismatch(e)) parts.push('mis:'+e.room+'->'+e.match.room);
+  if(entryPossibleRoomMismatch(e)) parts.push('pmis:'+e.room+'->'+e.match.room);
+  return parts.length ? (String(e.id)+'|'+parts.join('|')) : '';
+}
+// popup notifikasi otomatis: cek entri yang barusan dimuat, kalau ada perpindahan/tidak-cocok
+// yang BELUM pernah di-alert (kondisinya baru), tampilkan satu popup ringkas berisi semuanya.
+// V8 (2026-08-23): folds the "🗂 Kemungkinan Usang/Duplikat" check into this SAME
+// one-time popup (instead of the standing card V7 had) per the owner's request that
+// it was too long/messy on the page. Duplicate entries are grouped (one line per
+// name+dates group, not one line per raw row) so even many duplicates stay compact.
+function checkRoomChangeAlerts(){
+  var fresh=[];
+  entries.forEach(function(e){
+    var sig=mismatchSignature(e);
+    if(sig && !seenMismatch[sig]){ fresh.push({e:e, sig:sig}); }
+  });
+  var freshStale=[];
+  computeStaleGroups().forEach(function(g){
+    var sig=staleGroupSignature(g);
+    if(!seenMismatch[sig]){ freshStale.push({g:g, sig:sig}); }
+  });
+  if(!fresh.length && !freshStale.length) return;
+  var lines=fresh.map(function(x){
+    var e=x.e, who=entryNames(e).join(' & '), detail=[];
+    if(entryHasChange(e)) detail.push('pindah kamar '+e.segments.map(function(s){return 'R'+s.room;}).join(' → '));
+    if(entryRoomMismatch(e)) detail.push('diketik R'+e.room+', sistem cocokkan ke R'+e.match.room);
+    if(entryPossibleRoomMismatch(e)) detail.push('diketik R'+e.room+', KEMUNGKINAN cocok ke booking asli di R'+e.match.room+' (tanggal beda — cek manual)');
+    return '• '+who+': '+detail.join('; ');
+  });
+  var staleLines=freshStale.map(function(x){
+    var g=x.g, reasonKeys=[];
+    g.items.forEach(function(it){ it.reasons.forEach(function(r){ if(reasonKeys.indexOf(r)===-1) reasonKeys.push(r); }); });
+    var countTxt = g.items.length>1 ? (' (×'+g.items.length+' entri identik)') : '';
+    return '• '+(g.guestName||'-')+countTxt+' ['+fmtDMY(g.checkIn)+'→'+fmtDMY(g.checkOut)+']: '+reasonKeys.join('; ');
+  });
+  var allLines=lines.concat(staleLines);
+  var header = (lines.length && staleLines.length) ? '⚠ Perlu dicek — perpindahan/tidak cocok & kemungkinan usang/duplikat:'
+    : lines.length ? '⚠ Perpindahan kamar / tidak cocok terdeteksi:'
+    : '🗂 Kemungkinan entri usang/duplikat terdeteksi:';
+  alert(header+'\n\n'+allLines.join('\n')+'\n\nSilakan cek & sesuaikan/bersihkan manual bila perlu.');
+  fresh.forEach(function(x){ seenMismatch[x.sig]=true; });
+  freshStale.forEach(function(x){ seenMismatch[x.sig]=true; });
+  lsSet(LS_SEENMISMATCH, seenMismatch);
+}
+// all guest names for an entry: matched booking's full list wins, else the manual names typed.
+function entryNames(e){
+  if(e.match&&e.match.matched&&e.match.guestNames&&e.match.guestNames.length) return e.match.guestNames;
+  var arr=[e.guestName,e.name2,e.name3].filter(function(x){return x&&String(x).trim();});
+  return arr.length?arr:[e.bookingRef||'-'];
+}
+// headcount for an entry: matched booking count, else the chosen Jumlah Tamu, else number of names.
+function entryCount(e){
+  if(e.match&&e.match.matched&&e.match.guestNames&&e.match.guestNames.length) return e.match.guestNames.length;
+  var c=parseInt(e.guestCount,10); if(c>0) return c;
+  var arr=[e.guestName,e.name2,e.name3].filter(function(x){return x&&String(x).trim();});
+  return arr.length||1;
+}
+
+/* =====================================================================================
+   TAHAN-KLIK / TAHAN-TEKAN (HP) untuk PINDAH KAMAR — dua tahap (sama seperti Room
+   Availability, lihat komentar di sana untuk penjelasan lengkap):
+   1) TAHAN pertama pada sebuah booking → blok SEMUA malamnya. Ketuk (HP) / Ctrl+klik
+      (PC) hari lain di baris yang sama untuk menggeser batas pindah (bisa diulang).
+   2) TAHAN KEDUA di atas blok yang sudah pas → mulai drag, lepas di baris Room tujuan
+      untuk mengeksekusi — moveDate yang dipakai = batas blok, bukan sel tempat dilepas.
+   Klik di luar blok (booking lain / sel kosong) = batal blok.
+   ===================================================================================== */
+var DRAG_HOLD_MS = 380, DRAG_CANCEL_PX = 9;
+var blockState = null;      // {confNo, room, checkIn, checkOut, guestName, boundary}
+var lastPointerType_ = 'mouse';
+
+function isBlockCell_(td){
+  return !!(blockState && td && td.getAttribute('data-conf')===(blockState.confNo||'') && td.getAttribute('data-room')===blockState.room);
+}
+function applyBlockHighlight(){
+  if(!blockState) return;
+  document.querySelectorAll('#calGridTable td.occtd').forEach(function(td){
+    var on = isBlockCell_(td) && td.getAttribute('data-date') >= blockState.boundary;
+    td.classList.toggle('blocked', !!on);
+  });
+}
+function announceBlock_(){
+  if(!blockState) return;
+  var el=document.getElementById('topMsg'); if(!el) return;
+  var nights = Math.round((new Date(blockState.checkOut+'T00:00:00') - new Date(blockState.boundary+'T00:00:00')) / 86400000);
+  el.textContent = '📦 '+blockState.guestName+': akan pindah '+nights+' malam mulai '+fmtDMY(blockState.boundary)+' (dari Room '+blockState.room+'). Ketuk hari lain di baris ini untuk ubah, tahan & geser ke Room tujuan untuk pindahkan, atau ketuk sel lain untuk batal.';
+}
+function startBlock_(td){
+  var nm=td.getAttribute('data-nm'); if(!nm) return;
+  blockState = {
+    confNo: td.getAttribute('data-conf')||'', room: td.getAttribute('data-room'),
+    checkIn: td.getAttribute('data-ci')||'', checkOut: td.getAttribute('data-co')||'',
+    guestName: nm, boundary: td.getAttribute('data-ci')||''
+  };
+  applyBlockHighlight();
+  announceBlock_();
+}
+function cancelBlock_(){
+  if(!blockState) return;
+  blockState=null;
+  document.querySelectorAll('#calGridTable td.blocked').forEach(function(td){ td.classList.remove('blocked'); });
+}
+// Called from a CAPTURE-phase click listener on the grid, BEFORE each cell's own inline
+// onclick="editEntry(...)" fires. Returns true when the click was consumed for
+// block-adjust (the editor must NOT also open in that case).
+function handleBlockClick_(td, e){
+  if(!blockState) return false;
+  if(td && isBlockCell_(td)){
+    var wantsAdjust = (lastPointerType_==='touch') || e.ctrlKey || e.metaKey;
+    if(!wantsAdjust) return false;               // plain desktop click on the block itself -> let editEntry() open as usual
+    blockState.boundary = td.getAttribute('data-date');
+    applyBlockHighlight();
+    announceBlock_();
+    return true;
+  }
+  cancelBlock_();
+  var el=document.getElementById('topMsg'); if(el) el.textContent='';
+  return false;                                   // let the click still open that OTHER cell's editor as usual
+}
+
+function initDrag(){
+  var grid=document.getElementById('calGridTable');
+  if(!grid || grid._dragInit) return; grid._dragInit=true;
+  var holdTimer=null, dragState=null, ghost=null, curHoverTd=null, startX=0, startY=0;
+
+  function clearHold(){ if(holdTimer){ clearTimeout(holdTimer); holdTimer=null; } }
+  function makeGhost(text){ var g=document.createElement('div'); g.className='drag-ghost'; g.textContent=text; document.body.appendChild(g); return g; }
+  function moveGhost(x,y){ if(ghost){ ghost.style.left=x+'px'; ghost.style.top=y+'px'; } }
+  function clearHover(){ if(curHoverTd){ curHoverTd.classList.remove('drop-ok'); curHoverTd=null; } }
+
+  function beginDrag(td,e){
+    if(!blockState) return;
+    dragState={ td:td, id:td.getAttribute('data-mid'), guestName:blockState.guestName,
+      confNo:blockState.confNo, fromRoom:blockState.room, ci:blockState.checkIn, co:blockState.checkOut };
+    td.classList.add('dragging');
+    ghost=makeGhost('🛏️ '+blockState.guestName+' → geser ke Room tujuan…');
+    moveGhost(e.clientX,e.clientY);
+    try{ td.setPointerCapture(e.pointerId); }catch(err){}
+  }
+  function onPointerDown(e){
+    if(e.pointerType==='mouse' && e.button!==0) return;
+    lastPointerType_ = e.pointerType || 'mouse';
+    var td=e.target.closest?e.target.closest('td.occtd'):null; if(!td) return;
+    startX=e.clientX; startY=e.clientY; clearHold();
+    holdTimer=setTimeout(function(){
+      holdTimer=null;
+      if(isBlockCell_(td)) beginDrag(td,e);      // already blocked -> this hold starts the real move-drag
+      else startBlock_(td);                       // not blocked yet -> this hold just selects/blocks the booking
+    }, DRAG_HOLD_MS);
+  }
+  function onPointerMove(e){
+    if(holdTimer && !dragState){
+      if(Math.abs(e.clientX-startX)>DRAG_CANCEL_PX || Math.abs(e.clientY-startY)>DRAG_CANCEL_PX) clearHold();
+      return;
+    }
+    if(!dragState) return;
+    e.preventDefault();
+    moveGhost(e.clientX,e.clientY);
+    var el=document.elementFromPoint(e.clientX,e.clientY);
+    var td=el && el.closest ? el.closest('td.occtd, td.freetd') : null;
+    if(td!==curHoverTd){ clearHover(); if(td){ td.classList.add('drop-ok'); curHoverTd=td; } }
+  }
+  function onPointerUp(e){
+    clearHold();
+    if(!dragState) return;
+    var st=dragState; dragState=null;
+    st.td.classList.remove('dragging');
+    if(ghost){ ghost.remove(); ghost=null; }
+    var dropTd=curHoverTd; clearHover();
+    try{ st.td.releasePointerCapture(e.pointerId); }catch(err){}
+    if(!dropTd || !blockState) return;            // no valid target -> block stays active, try again
+    var toRoom=dropTd.getAttribute('data-room');
+    if(!toRoom) return;
+    if(String(toRoom)===String(st.fromRoom)){ return; }
+    attemptMonitoringMove(st,toRoom,blockState.boundary);
+  }
+  function onPointerCancel(){
+    clearHold();
+    if(dragState){ dragState.td.classList.remove('dragging'); dragState=null; }
+    if(ghost){ ghost.remove(); ghost=null; }
+    clearHover();
+  }
+  grid.addEventListener('pointerdown',onPointerDown);
+  grid.addEventListener('pointermove',onPointerMove);
+  grid.addEventListener('pointerup',onPointerUp);
+  grid.addEventListener('pointercancel',onPointerCancel);
+  grid.addEventListener('contextmenu',function(e){ if(dragState) e.preventDefault(); });
+  // capture phase so this runs BEFORE a cell's own inline onclick="editEntry(...)"
+  grid.addEventListener('click',function(e){
+    var td=e.target.closest?e.target.closest('td.occtd'):null;
+    if(handleBlockClick_(td,e)){ e.stopPropagation(); e.preventDefault(); }
+  }, true);
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape' && blockState){ cancelBlock_(); var el=document.getElementById('topMsg'); if(el) el.textContent=''; } });
+}
+
+// entri yang sudah confirm/cocok dengan booking asli → pindah lewat backend resmi (adminMoveRoomBooking),
+// otomatis kepakai juga di All Booking / Dashboard, dan bisa kepecah 2 segmen kalau ditaruh di tengah masa inap.
+// entri yang BELUM cocok/confirm (masih dugaan monitoring) → cuma update field "room" lokal via monitoringSave
+// (whole-move saja, tidak ada booking asli untuk dipecah).
+function attemptMonitoringMove(st,toRoom,toDate){
+  if(st.confNo){
+    var isWhole=(toDate<=st.ci);
+    var msg=isWhole
+      ? ('Pindahkan SELURUH booking '+st.guestName+' dari Room '+st.fromRoom+' ke Room '+toRoom+'?')
+      : ('Pecah booking '+st.guestName+' jadi 2 segmen:\n\n• Room '+st.fromRoom+' tetap sampai '+fmtDMY(toDate)+'\n• Room '+toRoom+' mulai '+fmtDMY(toDate)+' s/d '+fmtDMY(st.co)+'\n\nLanjutkan?');
+    if(!confirm(msg)) return;
+    showLoading();
+    fetch(DATA_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify({action:'adminMoveRoomBooking',password:ADMIN_PASSWORD,confirmationNo:st.confNo,newRoom:toRoom,moveDate:toDate})})
+      .then(function(r){return r.json();})
+      .then(function(res){
+        if(!res||res.status!=='ok'){ alert('Gagal memindahkan: '+((res&&res.message)||'coba lagi')); return; }
+        cancelBlock_();
+        reload();
+      })
+      .catch(function(e){ alert('Gagal terhubung saat memindahkan kamar: '+e); })
+      .then(function(){ hideLoading(); });
+    return;
+  }
+  // belum confirm/cocok — hanya update field room lokal di entri monitoring (whole-move saja).
+  if(!confirm('Pindahkan entri monitoring "'+st.guestName+'" dari Room '+st.fromRoom+' ke Room '+toRoom+'?\n\n(Entri ini belum cocok dengan booking asli, jadi hanya kolom Room di monitoring yang diperbarui — bukan booking sesungguhnya.)')) return;
+  var orig=entries.filter(function(x){return String(x.id)===String(st.id);})[0];
+  if(!orig){ alert('Entri tidak ditemukan — coba refresh dulu.'); return; }
+  var entry={ id:orig.id, bookingRef:orig.bookingRef||'', kodeBooking:orig.kodeBooking||'', guestName:orig.guestName||'',
+    name2:orig.name2||'', name3:orig.name3||'', guestCount:orig.guestCount||'', email:orig.email||'', phone:orig.phone||'',
+    checkIn:orig.checkIn||'', checkOut:orig.checkOut||'', room:toRoom, source:orig.source||'', notes:orig.notes||'' };
+  showLoading();
+  fetch(DATA_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'monitoringSave',password:BACKEND_PW,entry:entry})})
+    .then(function(r){return r.json();})
+    .then(function(res){ if(res&&res.status==='ok'){ cancelBlock_(); reload(); } else { alert('Gagal memindahkan: '+((res&&res.message)||'')); } })
+    .catch(function(e){ alert('Gagal terhubung: '+e); })
+    .then(function(){ hideLoading(); });
+}
+
+var MON=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+function initials(n){ n=String(n||'').trim(); var p=n.split(/\s+/); return ((p[0]||'')[0]||'')+((p[1]||'')[0]||''); }
+function shortStatus(cls){ return cls==='b-in'?'CHECK-IN':cls==='b-up'?'COCOK':cls==='b-out'?'OUT':cls==='b-miss'?'CEK':'TUNGGU'; }
+
+function renderCal(){
+  var days=[]; for(var i=0;i<calDays;i++) days.push(addDays(calStart,i));
+  var compact = calDays>10;
+  var tISO=todayISO();
+  var grid=document.getElementById('calGridTable'); grid.className=compact?'compact':'detailed';
+  document.getElementById('calLabel').textContent=fmtDMY(days[0])+'  —  '+fmtDMY(days[days.length-1]);
+
+  function isWend(d){ var g=new Date(d+'T00:00:00').getDay(); return g===0||g===6; }
+  function occ(room,iso){ return entries.filter(function(e){ return entrySegs(e).some(function(sg){ return sg.room===room && sg.ci<=iso && iso<sg.co; }); })[0]||null; }
+  // entries not shown in any room row (no room + no segments, and NOT over-booked) — "Tanpa kamar" row.
+  var noRoom=entries.filter(function(e){ return entryRoom(e)==null && !e.overbook && days.some(function(d){return entryOnDay(e,d);}); });
+  // TOTAL = guests ACTUALLY SHOWN in the grid that day (sum of headcounts across the
+  // displayed room rows + the "Tanpa kamar" row). Guests in hidden rooms (e.g. Room 7
+  // long-stay, excluded from ROOMS_LIST) are NOT shown, so they are NOT counted — this
+  // keeps the total consistent with what's visible on the calendar.
+  var guestsPerDay=days.map(function(d){
+    var g=0;
+    ROOMS_LIST.forEach(function(rm){ var hit=occ(rm,d); if(hit) g+=entryCount(hit); });
+    noRoom.forEach(function(e){ if(entryOnDay(e,d)) g+=entryCount(e); });
+    return g;
+  });
+
+  // optional month header row (compact/month mode)
+  var monthRow='';
+  if(compact){
+    monthRow='<tr><th class="roomcol"></th>'; var i2=0;
+    while(i2<days.length){ var dt0=new Date(days[i2]+'T00:00:00'); var lbl=MON[dt0.getMonth()]+' '+dt0.getFullYear(); var span=1;
+      while(i2+span<days.length){ var nx=new Date(days[i2+span]+'T00:00:00'); if(nx.getMonth()===dt0.getMonth()) span++; else break; }
+      monthRow+='<th class="mon" colspan="'+span+'">'+lbl+'</th>'; i2+=span; }
+    monthRow+='</tr>';
+  }
+
+  var head='<thead>'+monthRow+'<tr><th class="roomcol">Kamar</th>';
+  days.forEach(function(d){ var dt=new Date(d+'T00:00:00'); var t=(d===tISO), we=isWend(d);
+    head+='<th class="day '+(t?'today':(we?'wend':''))+'"><div class="dow">'+DOW[dt.getDay()]+'</div><div class="dnum">'+dt.getDate()+'</div><div class="gc">'+(guestsPerDay[days.indexOf(d)]||'')+'</div></th>'; });
+  head+='</tr></thead>';
+
+  function cellHTML(hit, iso, room){
+    if(!hit) return '<div class="cell free">'+(compact?'':'—')+'</div>';
+    var s=statusOf(hit);
+    var seg=entrySegs(hit).filter(function(sg){ return sg.room===room && sg.ci<=iso && iso<sg.co; })[0]||null;
+    var overallFirst=(hit.checkIn||'').slice(0,10)===iso;
+    var overallLastNight=(hit.checkOut||'').slice(0,10)===addDays(iso,1);
+    var changed=entryHasChange(hit);
+    var movedIn = seg && seg.ci===iso && !overallFirst;                       // arrived into THIS room mid-stay
+    var movingTonight = seg && addDays(iso,1)===seg.co && !overallLastNight;  // last night here before a move
+    var chg = changed?' 🔄':'';
+    var allNames=entryNames(hit); var gcount=entryCount(hit);
+    var ttl = allNames.join(', ')+' · '+s.label+(changed?' · pindah kamar':'');
+    if(compact){ return '<div class="cell occ '+s.cls+'" title="'+esc(ttl)+'" onclick="editEntry(\''+esc(hit.id)+'\')">'+((overallFirst||movedIn)?esc(initials(allNames[0])):'●')+'</div>'; }
+    var namesHtml=allNames.map(function(n,i){ return '<div class="gn">'+(allNames.length>1?(i+1)+'. ':'')+esc(n)+'</div>'; }).join('');
+    var tag = movedIn ? '🔄 pindah ke sini' : (overallFirst?'✦ check-in':(movingTonight?'🔄 pindah kamar besok':(overallLastNight?'checkout besok':'')));
+    return '<div class="cell occ '+s.cls+'" title="'+esc(ttl)+'" onclick="editEntry(\''+esc(hit.id)+'\')">'
+      +'<span class="mbadge '+s.cls+'">'+shortStatus(s.cls)+' · 👤'+gcount+chg+'</span>'
+      +'<div class="names">'+namesHtml+'</div>'
+      +'<span class="tag">'+tag+'</span>'
+      +'</div>';
+  }
+
+  var body='<tbody>';
+  ROOMS_LIST.forEach(function(rm){
+    body+='<tr><td class="roomcol">'+(compact?rm:'Room '+rm)+'</td>';
+    days.forEach(function(d){
+      var t=(d===tISO), we=isWend(d);
+      var hit=occ(rm,d);
+      var cls=''+(t?'todaycol':(we?'wend':''));
+      if(hit){
+        var seg=entrySegs(hit).filter(function(sg){ return sg.room===rm && sg.ci<=d && d<sg.co; })[0]||null;
+        var isConfirmed=!!(hit.match && hit.match.matched && hit.match.confirmed && hit.match.confNo);
+        var da=' data-mid="'+esc(hit.id)+'" data-room="'+rm+'" data-date="'+d+'" data-conf="'+(isConfirmed?esc(hit.match.confNo):'')+'" data-ci="'+(seg?seg.ci:'')+'" data-co="'+(seg?seg.co:'')+'" data-nm="'+esc(entryNames(hit).join(', '))+'"';
+        body+='<td class="'+cls+' occtd"'+da+'>'+cellHTML(hit,d,rm)+'</td>';
+      } else {
+        body+='<td class="'+cls+' freetd" data-room="'+rm+'" data-date="'+d+'">'+cellHTML(hit,d,rm)+'</td>';
+      }
+    });
+    body+='</tr>';
+  });
+  // entries not yet placed in a room (not matched + no typed room) — computed above as `noRoom`
+  if(noRoom.length){
+    body+='<tr><td class="roomcol" style="color:var(--muted)">'+(compact?'—':'Tanpa kamar')+'</td>';
+    days.forEach(function(d){ var hit=noRoom.filter(function(e){return entryOnDay(e,d);})[0]; var t=(d===tISO),we=isWend(d); body+='<td class="'+(t?'todaycol':(we?'wend':''))+'">'+cellHTML(hit,d,null)+'</td>'; });
+    body+='</tr>';
+  }
+  body+='</tbody>';
+
+  var foot='<tfoot><tr><td class="roomcol gtotlbl">'+(compact?'Tamu':'Total tamu')+'</td>';
+  days.forEach(function(d){ var t=(d===tISO); foot+='<td class="gtot'+(t?' todaycol':'')+'">'+guestsPerDay[days.indexOf(d)]+'</td>'; });
+  foot+='</tr></tfoot>';
+
+  grid.innerHTML=head+body+foot;
+  applyBlockHighlight();
+}
+
+function renderList(){
+  var q=(document.getElementById('searchBox').value||'').toLowerCase();
+  var rows=entries.filter(function(e){
+    if(!q) return true;
+    return ([e.guestName,e.bookingRef,e.email,e.phone].join(' ').toLowerCase().indexOf(q)!==-1);
+  }).sort(function(a,b){ return (a.checkIn||'').localeCompare(b.checkIn||''); });
+  var html='<tr><th>Status</th><th>Tamu</th><th>Ref</th><th>Check-in → out</th><th>Kontak</th><th>Sumber</th><th>Notifikasi</th><th></th></tr>';
+  rows.forEach(function(e){
+    var s=statusOf(e);
+    var matchInfo = (e.match&&(e.match.matched||e.match.possible))? ('<div style="font-size:11px;color:var(--muted)">cocok via '+esc(e.match.via)+(e.match.room?(' · Room '+esc(e.match.room)):'')+(e.match.possible?' · tanggal beda':'')+'</div>') : '';
+    var notifStatus = e.notified ? ('<div style="font-size:10.5px;color:var(--muted);margin-top:3px">✓ '+esc(e.notified)+'</div>') : '';
+    var emailBtn = e.email ? ('<button class="btn sm" style="background:#eaf1ef;border-color:#cfe0db" onclick="notify(\''+esc(e.id)+'\',\'email\',this)">📧 Email</button>') : '';
+    var waBtn = e.phone ? ('<button class="btn sm" style="background:#e6f7ee;border-color:#37b26f;color:#177245" onclick="notify(\''+esc(e.id)+'\',\'wa\',this)">🟢 WA</button>') : '';
+    html+='<tr>'
+      +'<td><span class="badge '+s.cls+'">'+esc(s.label)+'</span>'+matchInfo+'</td>'
+      +'<td><strong>'+entryNames(e).map(function(n){return esc(n)}).join('<br>')+'</strong><div style="font-size:11px;color:var(--muted)">👤 '+entryCount(e)+' tamu</div>'+(entryHasChange(e)?('<div style="font-size:11px;color:#8a5a0a">🔄 pindah kamar: '+e.segments.map(function(s){return 'R'+s.room;}).join(' → ')+'</div>'):'')+'</td>'
+      +'<td>'+esc(e.bookingRef||'—')+(e.kodeBooking?('<div style="font-size:11px;color:var(--muted)">kode: '+esc(e.kodeBooking)+'</div>'):'')+'</td>'
+      +'<td>'+fmtDMY(e.checkIn)+' → '+fmtDMY(e.checkOut)+'</td>'
+      +'<td style="font-size:12px">'+esc(e.email||'')+'<br>'+esc(e.phone||'')+'</td>'
+      +'<td>'+esc(e.source||'')+'</td>'
+      +'<td style="white-space:nowrap">'+emailBtn+' '+waBtn+notifStatus+'</td>'
+      +'<td style="white-space:nowrap"><button class="btn sm" onclick="editEntry(\''+esc(e.id)+'\')">Edit</button> <button class="btn sm" onclick="delEntry(\''+esc(e.id)+'\')">🗑</button></td>'
+      +'</tr>';
+  });
+  if(rows.length===0) html+='<tr><td colspan="8" style="color:var(--muted);padding:16px">Belum ada entri. Tambah di atas, atau klik "Sync dari Kalender Utama".</td></tr>';
+  document.getElementById('listTable').innerHTML=html;
+}
+
+/* auto-unlock if PIN remembered */
+(function(){ var ok=false; try{ok=localStorage.getItem(LS)==='1';}catch(e){} if(ok) unlock(); })();
+document.getElementById('pinInput').addEventListener('keydown',function(e){ if(e.key==='Enter') tryPin(); });
+</script>
+<style>#__ver{position:fixed;left:8px;bottom:8px;z-index:99999;font:700 11px/1.3 system-ui,Arial,sans-serif;background:rgba(14,75,79,.92);color:#fff;padding:4px 9px;border-radius:20px;letter-spacing:.03em;box-shadow:0 2px 8px rgba(0,0,0,.18);opacity:.9}#__ver b{color:#8FD9CC}@media print{#__ver{display:none!important}}</style><div id="__ver">TD Monitoring · <b>V9</b> · build 2026-09-03</div>
+</body>
+</html>

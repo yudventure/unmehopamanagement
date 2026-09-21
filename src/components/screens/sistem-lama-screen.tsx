@@ -14,6 +14,8 @@ import {
   jumlahTamu,
   namaTamu,
   papanPantau,
+  statusLama,
+  teksLadang,
   tanggalTampil,
 } from "@/lib/sistem-lama-bentuk";
 
@@ -29,32 +31,25 @@ import {
  */
 
 const MINT: PillColors = { bg: "#DCEFE3", fg: "#216B4B" };
-const CLAY: PillColors = { bg: "#FBE3DA", fg: "#B04A3A" };
+const SAND: PillColors = { bg: "#F7EEDD", fg: "#8A6524" };
 const STONE: PillColors = { bg: "#F2EBE0", fg: "#6B6357" };
 
 function Kosong() {
   return <span className="text-slate-mute">—</span>;
 }
 
+const WARNA_STATUS: Record<string, PillColors> = {
+  /* Datang hari ini: yang perlu disiapkan sekarang. */
+  arrival: MINT,
+  checkout: SAND,
+  upcoming: STONE,
+  lain: STONE,
+};
+
 function Status({ b }: { b: BookingLama }) {
-  const teks =
-    (typeof b.displayStatus === "string" && b.displayStatus.trim()) ||
-    (typeof b.status === "string" && b.status.trim()) ||
-    "";
-  if (!teks) return <Kosong />;
-
-  /* Dicocokkan ke kata yang kebetulan dipakai sistem lama, bukan ke daftar
-     status yang pernah kami lihat. Status yang tidak dikenali tetap dapat
-     chip — batu — alih-alih hilang. */
-  const v = teks.toLowerCase();
-  const warna =
-    v.includes("cancel") || v.includes("no show")
-      ? CLAY
-      : v.includes("in") && !v.includes("out")
-        ? MINT
-        : STONE;
-
-  return <Pill colors={warna}>{teks}</Pill>;
+  const st = statusLama(b);
+  if (!st) return <Kosong />;
+  return <Pill colors={WARNA_STATUS[st.nada] ?? STONE}>{st.label}</Pill>;
 }
 
 function Nama({ b }: { b: BookingLama }) {
@@ -66,9 +61,7 @@ function Nama({ b }: { b: BookingLama }) {
         {nama || <Kosong />}
       </div>
       <div className="truncate font-mono text-[11px] text-slate-mute">
-        {typeof b.confirmationNo === "string" && b.confirmationNo
-          ? b.confirmationNo
-          : "tanpa nomor"}
+        {teksLadang(b.confirmationNo) ?? "tanpa nomor"}
         {orang ? ` · ${orang} orang` : ""}
       </div>
     </div>
@@ -76,8 +69,9 @@ function Nama({ b }: { b: BookingLama }) {
 }
 
 function Kamar({ b }: { b: BookingLama }) {
-  return typeof b.room === "string" && b.room.trim() ? (
-    <span className="text-[12.5px] text-slate-soft">Room {b.room}</span>
+  const kamar = teksLadang(b.room);
+  return kamar ? (
+    <span className="text-[12.5px] text-slate-soft">Room {kamar}</span>
   ) : (
     <Kosong />
   );
@@ -130,10 +124,7 @@ function DaftarRingkas({
         <div className="flex flex-col">
           {items.map(({ b, kanan }, i) => (
             <div
-              key={
-                (typeof b.confirmationNo === "string" && b.confirmationNo) ||
-                `r-${i}`
-              }
+              key={teksLadang(b.confirmationNo) ?? `r-${i}`}
               className="flex items-center gap-3 border-b border-line-fine px-4 py-[11px] last:border-b-0"
             >
               <Nama b={b} />
@@ -237,9 +228,9 @@ export function SistemLamaScreen() {
     return bookings.filter((b) =>
       [
         namaTamu(b),
-        typeof b.confirmationNo === "string" ? b.confirmationNo : "",
-        typeof b.room === "string" ? b.room : "",
-        typeof b.whatsapp === "string" ? b.whatsapp : "",
+        teksLadang(b.confirmationNo) ?? "",
+        teksLadang(b.room) ?? "",
+        teksLadang(b.whatsapp) ?? "",
       ].some((f) => f.toLowerCase().includes(q)),
     );
   }, [bookings, cari]);
@@ -362,11 +353,7 @@ export function SistemLamaScreen() {
                   const minta = PERMINTAAN.filter((p) => diminta(b[p.key]));
                   return (
                     <div
-                      key={
-                        (typeof b.confirmationNo === "string" &&
-                          b.confirmationNo) ||
-                        `baris-${i}`
-                      }
+                      key={teksLadang(b.confirmationNo) ?? `baris-${i}`}
                       className="grid grid-cols-1 gap-x-4 gap-y-[6px] border-b border-line-fine px-4 py-[13px] last:border-b-0 sm:grid-cols-[minmax(0,1.6fr)_minmax(0,1.3fr)_minmax(0,.8fr)_minmax(0,.9fr)]"
                     >
                       <Nama b={b} />

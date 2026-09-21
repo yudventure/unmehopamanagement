@@ -43,12 +43,72 @@ export interface BookingLama {
   [k: string]: unknown;
 }
 
+/**
+ * Isi satu ladang sebagai teks, atau null kalau memang kosong.
+ *
+ * Angka ikut diterima, dan itu bukan kelonggaran — itu perbaikan atas bug
+ * yang baru ketahuan waktu endpoint sungguhannya menjawab. Versi pertama
+ * menyaring dengan `typeof === "string"`, jadi nomor kamar yang datang sebagai
+ * angka JSON (`"room": 3`) jatuh ke "—". Di layar, "—" berarti **belum
+ * dicatat**, jadi penyaring yang dimaksudkan sebagai kehati-hatian justru
+ * mengarang pernyataan yang salah tentang data sungguhan: seluruh kolom kamar
+ * kosong padahal tidak ada satu pun yang kosong.
+ *
+ * Sistem lamanya sendiri tidak memeriksa tipe — ia menulis `Room ${b.room}`
+ * apa adanya. Jadi yang benar mengikuti itu: yang ada ditampilkan, yang
+ * betul-betul tidak ada baru jadi "—".
+ */
+export function teksLadang(nilai: unknown): string | null {
+  if (typeof nilai === "string") {
+    const rapi = nilai.trim();
+    return rapi ? rapi : null;
+  }
+  if (typeof nilai === "number" && Number.isFinite(nilai)) return String(nilai);
+  return null;
+}
+
 /** Nama tamunya, dari ladang mana pun yang terisi di Sheet itu. */
 export function namaTamu(b: BookingLama): string {
   for (const c of [b.guestName, b.name, b.nama]) {
-    if (typeof c === "string" && c.trim()) return c.trim();
+    const t = teksLadang(c);
+    if (t) return t;
   }
   return "";
+}
+
+/**
+ * Status booking, dengan kata yang dipakai sistem lama.
+ *
+ * `displayStatus` di `adminList` **bukan** status tamu — ia nama tab:
+ * `arrival`, `upcoming`, `checkout`. Itu baru ketahuan dari `renderBookingTab`
+ * dan `statusLabel` di dashboard lamanya, dan sebelum itu layar ini
+ * menampilkan kata mentahnya sebagai kalau-kalau itu status.
+ *
+ * Lebih buruk dari sekadar jelek: pewarnaannya dulu mencocokkan potongan kata,
+ * dan "upcom**in**g" mengandung "in" tanpa "out", jadi tamu yang belum datang
+ * diwarnai hijau seperti sudah check-in. Di layar yang dipakai memutuskan
+ * siapa dijemput, itu bukan salah warna, itu salah kabar.
+ *
+ * Yang tidak dikenali tetap ditampilkan apa adanya — kalau suatu hari sistem
+ * lamanya menambah kata baru, layar ini menunjukkannya, bukan menelannya.
+ */
+export type NadaStatus = "arrival" | "checkout" | "upcoming" | "lain";
+
+export function statusLama(
+  b: BookingLama,
+): { label: string; nada: NadaStatus } | null {
+  const mentah = teksLadang(b.displayStatus) ?? teksLadang(b.status);
+  if (!mentah) return null;
+  switch (mentah.toLowerCase()) {
+    case "arrival":
+      return { label: "Arrival", nada: "arrival" };
+    case "checkout":
+      return { label: "Check out", nada: "checkout" };
+    case "upcoming":
+      return { label: "Upcoming", nada: "upcoming" };
+    default:
+      return { label: mentah, nada: "lain" };
+  }
 }
 
 /** Berapa orang yang disebut booking ini, termasuk tamu utamanya. */
@@ -58,7 +118,7 @@ export function jumlahTamu(b: BookingLama): number | null {
   if (typeof daftar === "string" && daftar.trim()) {
     return daftar.split(/[\n,;]+/).filter((s) => s.trim()).length || null;
   }
-  const kap = Number(b.capacity);
+  const kap = Number(teksLadang(b.capacity));
   return Number.isFinite(kap) && kap > 0 ? kap : null;
 }
 
@@ -132,7 +192,15 @@ export function tanggalTampil(nilai: unknown): string {
   });
 }
 
-/** Booking yang sudah dibatalkan tidak ikut dipantau. */
+/**
+ * Booking yang sudah dibatalkan tidak ikut dipantau.
+ *
+ * Catatan sesudah melihat data sungguhan: `displayStatus` dari `adminList`
+ * cuma pernah bernilai arrival/upcoming/checkout, jadi pembatalan tampaknya
+ * tidak ikut dikirim sama sekali — yang dibatalkan hilang dari daftarnya.
+ * Pemeriksaan ini dibiarkan karena `status` bisa membawanya dan tidak ada
+ * ruginya, tapi jangan berharap angkanya pernah di atas nol.
+ */
 export function dibatalkan(b: BookingLama): boolean {
   const teks = [b.displayStatus, b.status]
     .filter((s): s is string => typeof s === "string")

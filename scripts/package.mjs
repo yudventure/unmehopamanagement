@@ -4,8 +4,9 @@
  * `output: "standalone"` leaves `.next/standalone` holding the server and the
  * traced slice of `node_modules`, but deliberately without two things: the
  * files in `public/`, and the compiled CSS and JavaScript in `.next/static`.
- * Vercel serves those from its own edge, so it does not want copies. A single
- * Node process has no edge, so it does.
+ * A platform with an edge in front of it serves those from the edge and does
+ * not want copies beside the server. A single Node process has no edge, so it
+ * does.
  *
  * Forgetting this step does not fail loudly. The site comes up, answers every
  * request, and renders with no stylesheet and no photographs, which reads as a

@@ -3,8 +3,8 @@ import type { NextConfig } from "next";
 /**
  * One application, three sites, told apart by the domain that was asked for.
  *
- * On Vercel — and on any other host — attaching a domain to this project makes
- * that domain serve `/`, which is the booking dashboard. That is right for the
+ * On any host, attaching a domain to this project makes that domain serve
+ * `/`, which is the booking dashboard. That is right for the
  * manager's domain and wrong for the other two: a guest who types the homestay
  * address should land on the homestay, not on a login screen. This is the
  * layer that sorts that out, and it is the one thing "point the domain at the
@@ -18,9 +18,9 @@ import type { NextConfig } from "next";
  *
  * **Why `next.config` and not a proxy.** A rewrite here is resolved by the
  * routing layer before anything runs, so it costs nothing per request and
- * behaves identically on Vercel and on a plain Node server behind Caddy. A
- * proxy would cost an invocation on every request to do work that never
- * changes.
+ * behaves the same on a plain Node server behind a reverse proxy as it would
+ * on any managed platform. A proxy of our own would cost an invocation on
+ * every request to do work that never changes.
  *
  * **Why two lists.** `beforeFiles` runs before the filesystem, `afterFiles`
  * after it. The root has to be rewritten before, because `/` is a real page
@@ -181,9 +181,9 @@ const nextConfig: NextConfig = {
    * deployable somewhere that cannot spare the memory to build.
    *
    * The build itself is unchanged and just as heavy; it simply stops having to
-   * happen on the machine that serves the site. Vercel is unaffected, which is
-   * the point: this is additive, and the deployment that works today keeps
-   * working the same way.
+   * happen on the machine that serves the site. That is the whole point: the
+   * server the site runs on is a small shared one, and building there is what
+   * it cannot do.
    *
    * `server.js` does not serve `public/` or `.next/static` on its own. Both
    * have to be copied in beside it, which is what `npm run package` does. Skip

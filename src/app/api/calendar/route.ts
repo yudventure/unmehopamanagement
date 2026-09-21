@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 import { databaseReady, db } from "@/lib/db";
 import { SESSION_COOKIE, valid } from "@/lib/session";
-import { isPublicSite } from "@/lib/site-domains";
+import { PROPERTIES } from "@/lib/data";
 
 /**
  * Satu permintaan untuk seluruh kisi sebulan.
@@ -96,7 +96,13 @@ export async function GET(req: Request) {
   }
 
   const property = url.searchParams.get("property");
-  if (property && property !== "all" && !isPublicSite(property)) {
+  /* Dicocokkan ke daftar properti, bukan ke daftar situs publik. Keduanya
+     kebetulan sama selama cuma ada dua homestay yang masing-masing punya
+     situs. Dive centre memutus kebetulan itu: ia unit yang dikelola, tapi
+     bukan situs tersendiri — dan lewat pemeriksaan yang lama, menyaringnya
+     dijawab 400. */
+  const dikenal = PROPERTIES.some((p) => p.key === property);
+  if (property && property !== "all" && !dikenal) {
     return NextResponse.json({ error: "unknown-property" }, { status: 400 });
   }
   const scope = property && property !== "all" ? { propertyId: property } : {};

@@ -120,7 +120,7 @@ export function kapasitasKalimat(capAdult: number, capChild: number): string {
 
 /** Properti yang dikenal layar. Selain ini barisnya dilewati, bukan ditebak. */
 function propertiDikenal(id: string): id is PropertyKey {
-  return id === "turtle" || id === "eddo";
+  return id === "turtle" || id === "eddo" || id === "divecenter";
 }
 
 export function kamarDariApi(rows: ApiRoom[]): Room[] {

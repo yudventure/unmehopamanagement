@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { BrandLogo } from "@/components/brand-logo";
-import { CH, CHANNEL_KEYS } from "@/lib/data";
+import { ChannelMark, NavIcon } from "@/components/icons";
 import type { ChannelFilter, PropFilter } from "@/lib/derive";
 import type { Screen } from "@/lib/types";
 
@@ -108,7 +108,10 @@ function NarrowNav({
                   : "bg-surface-tint text-ink-soft"
               }`}
             >
-              {item.label}
+              <span className="flex items-center gap-[7px]">
+                <NavIcon screen={item.key} size={15} />
+                {item.label}
+              </span>
             </button>
           );
         })}
@@ -244,11 +247,7 @@ function NarrowFilters({
                   key={c.key}
                   on={filterCh === c.key}
                   count={c.count}
-                  dot={
-                    c.key === "all"
-                      ? "var(--color-slate-ghost)"
-                      : CH[c.key as (typeof CHANNEL_KEYS)[number]].dot
-                  }
+                  mark={<ChannelMark channel={c.key} />}
                   onClick={() => onFilterCh(c.key)}
                 >
                   {c.label}
@@ -271,13 +270,14 @@ function NarrowFilters({
 function FilterChip({
   on,
   count,
-  dot,
+  mark,
   onClick,
   children,
 }: {
   on: boolean;
   count: number;
-  dot?: string;
+  /** Lambang saluran. Penyaring properti tidak memakainya. */
+  mark?: React.ReactNode;
   onClick: () => void;
   children: React.ReactNode;
 }) {
@@ -287,17 +287,15 @@ function FilterChip({
       onClick={onClick}
       aria-pressed={on}
       className={`flex cursor-pointer items-center gap-[7px] rounded-[10px] px-[11px] py-[7px] text-[13px] whitespace-nowrap ${
+        /* Tebalnya lewat ring, bukan lewat border yang naik jadi 2px: border
+           ikut menghitung lebar, jadi chip yang dipilih akan melebar dua
+           piksel dan menggeser tetangganya tiap kali ditekan. */
         on
-          ? "border border-teal-line bg-teal-tint font-medium text-teal-deep"
+          ? "border border-teal bg-teal-soft font-semibold text-teal-deep ring-1 ring-teal ring-inset"
           : "border border-line-strong bg-surface text-slate"
       }`}
     >
-      {dot && (
-        <span
-          className="h-[9px] w-[9px] shrink-0 rounded-[3px]"
-          style={{ background: dot }}
-        />
-      )}
+      {mark}
       <span>{children}</span>
       <span className="font-mono text-[11px] text-slate-mute">{count}</span>
     </button>
@@ -358,13 +356,20 @@ export function Sidebar({
               type="button"
               onClick={() => onScreen(item.key)}
               aria-current={active ? "page" : undefined}
-              className={`cursor-pointer rounded-[12px] border-none px-[14px] py-[11px] text-left text-[13.5px] whitespace-nowrap ${
+              /* Aktifnya hijau pekat dengan teks putih, bukan tint pucat.
+                 `bg-teal-tint` cuma beberapa persen lebih gelap dari kertas di
+                 belakangnya, dan pada layar terang atau yang sudut pandangnya
+                 miring — dua hal yang biasa di beranda homestay — bedanya
+                 hilang sama sekali. Perlakuan ini juga yang sudah dipakai nav
+                 versi sempit, jadi keduanya akhirnya sepakat. */
+              className={`flex cursor-pointer items-center gap-[10px] rounded-[12px] border-none px-[13px] py-[10px] text-left text-[13.5px] whitespace-nowrap ${
                 active
-                  ? "bg-teal-tint font-bold text-teal-deep"
+                  ? "bg-teal font-semibold text-white shadow-[0_1px_2px_rgba(33,107,75,.25)]"
                   : "bg-transparent text-ink-soft hover:bg-surface-tint"
               }`}
             >
-              {item.label}
+              <NavIcon screen={item.key} />
+              <span>{item.label}</span>
             </button>
           );
         })}
@@ -383,7 +388,7 @@ export function Sidebar({
               aria-pressed={filterProp === p.key}
               className={`flex w-full cursor-pointer items-center justify-between gap-2 rounded-[10px] border-none px-[11px] py-[7px] text-left text-[13px] ${
                 filterProp === p.key
-                  ? "bg-surface-tint font-medium text-ink"
+                  ? "bg-teal-soft font-semibold text-teal-deep ring-1 ring-teal-line"
                   : "bg-transparent text-slate hover:bg-surface-tint"
               }`}
             >
@@ -407,19 +412,14 @@ export function Sidebar({
               aria-pressed={filterCh === c.key}
               className={`flex w-full cursor-pointer items-center gap-[9px] rounded-[10px] border-none px-[11px] py-[6px] text-[13px] ${
                 filterCh === c.key
-                  ? "bg-surface-tint font-medium text-ink"
+                  ? "bg-teal-soft font-semibold text-teal-deep ring-1 ring-teal-line"
                   : "bg-transparent text-slate hover:bg-surface-tint"
               }`}
             >
-              <span
-                className="h-[9px] w-[9px] shrink-0 rounded-[3px]"
-                style={{
-                  background:
-                    c.key === "all"
-                      ? "var(--color-slate-ghost)"
-                      : CH[c.key as (typeof CHANNEL_KEYS)[number]].dot,
-                }}
-              />
+              {/* Lambang saluran menggantikan keping warna sembilan piksel.
+                  Keping itu cuma bisa dibedakan dengan menghafal warnanya;
+                  lambangnya terbaca tanpa dihafal. */}
+              <ChannelMark channel={c.key} />
               <span className="flex-1 text-left">{c.label}</span>
               <span className="font-mono text-[11px] text-slate-mute">
                 {c.count}

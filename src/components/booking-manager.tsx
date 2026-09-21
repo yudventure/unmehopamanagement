@@ -28,7 +28,7 @@ import {
   useSistemLama,
 } from "@/components/sistem-lama-data";
 import { bookingDariLama } from "@/lib/dari-sistem-lama";
-import { sesiPerHari } from "@/lib/sistem-lama-bentuk";
+import { AKTIVITAS, sesiPerHari } from "@/lib/sistem-lama-bentuk";
 import { SyncScreen } from "@/components/screens/sync-screen";
 import { UsersScreen } from "@/components/screens/users-screen";
 import { WebsiteScreen } from "@/components/screens/website-screen";
@@ -49,6 +49,7 @@ import {
   SEED_TODAY,
   OWNER_EMAIL,
   PROPERTIES,
+  PROPERTIES_BERKAMAR,
   STAFF_EMAIL,
   seedBookings,
   seedLedger,
@@ -390,6 +391,19 @@ export function BookingManager({
      terhitung sebagai malam terjual. Ia digambar di sel harinya sendiri. */
   const sesiLama = useSesiLama(lamaAktif);
   const sesiPerTanggal = useMemo(() => sesiPerHari(sesiLama), [sesiLama]);
+
+  /* Sesi dive centre pada bulan yang sedang dilihat. Dihitung dari peta yang
+     sama yang menggambar pitanya, jadi angka di strip dan yang terlihat di
+     kisi tidak bisa berselisih. */
+  const sesiBulanIni = useMemo(() => {
+    const awal = iso(new Date(month.getFullYear(), month.getMonth(), 1));
+    const akhir = iso(new Date(month.getFullYear(), month.getMonth() + 1, 1));
+    let n = 0;
+    for (const [tanggal, daftar] of sesiPerTanggal) {
+      if (tanggal >= awal && tanggal < akhir) n += daftar.length;
+    }
+    return n;
+  }, [sesiPerTanggal, month]);
 
   const dariLama = useMemo(
     () =>
@@ -918,7 +932,14 @@ export function BookingManager({
             (p) => ({
               key: p.key as PropFilter,
               label: p.name,
-              count: scopedRooms.filter((r) => r.prop === p.key).length,
+              /* Angka di sebelah nama adalah ukuran unitnya. Untuk homestay
+                 itu jumlah kamar; untuk dive centre, kamar tidak ada, jadi
+                 yang dihitung kegiatan yang dijadwalkannya. Nol di sana akan
+                 terbaca sebagai unit kosong, padahal jadwalnya justru yang
+                 paling padat. */
+              count: p.kamar
+                ? scopedRooms.filter((r) => r.prop === p.key).length
+                : AKTIVITAS.length,
             }),
           ),
         ]
@@ -1211,7 +1232,10 @@ export function BookingManager({
     }
   };
 
-  const propertyCards: PropertyCard[] = PROPERTIES.filter((p) =>
+  /* Layar ini soal kamar dan okupansinya, jadi dive centre tidak muncul:
+     kartunya akan berisi nol kamar, nol malam, dan okupansi nol persen —
+     tiga angka yang semuanya benar dan semuanya salah artinya. */
+  const propertyCards: PropertyCard[] = PROPERTIES_BERKAMAR.filter((p) =>
     allowedProps.includes(p.key),
   ).map((p) => {
     const rs = scopedRooms.filter((r) => r.prop === p.key);
@@ -1378,6 +1402,9 @@ export function BookingManager({
 
                 {screen === "kalender" && (
                   <CalendarScreen
+                    /* Eddo tidak punya dive centre sendiri, jadi jadwalnya
+                       tidak ikut ke sana. Selain itu ia ikut — dan waktu
+                       dive centre yang dipilih, ia satu-satunya yang ada. */
                     sesiPerTanggal={
                       filterProp === "eddo" ? undefined : sesiPerTanggal
                     }
@@ -1417,6 +1444,9 @@ export function BookingManager({
                       baru: ringkas.bookingBaru === null,
                       piutang: ringkas.piutang === null,
                     }}
+                    hanyaJadwal={filterProp === "divecenter"}
+                    sesiBulanIni={sesiBulanIni}
+                    lamaTersambung={lamaAktif}
                     cells={cells}
                     onSelect={setSelectedId}
                     selectedDate={selectedDate}

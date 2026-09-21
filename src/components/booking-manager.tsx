@@ -22,8 +22,13 @@ import {
 } from "@/components/screens/property-screen";
 import { SistemLamaScreen } from "@/components/screens/sistem-lama-screen";
 import { SistemLamaPanel } from "@/components/sistem-lama-panel";
-import { useKamarLama, useSistemLama } from "@/components/sistem-lama-data";
+import {
+  useKamarLama,
+  useSesiLama,
+  useSistemLama,
+} from "@/components/sistem-lama-data";
 import { bookingDariLama } from "@/lib/dari-sistem-lama";
+import { sesiPerHari } from "@/lib/sistem-lama-bentuk";
 import { SyncScreen } from "@/components/screens/sync-screen";
 import { UsersScreen } from "@/components/screens/users-screen";
 import { WebsiteScreen } from "@/components/screens/website-screen";
@@ -379,6 +384,12 @@ export function BookingManager({
   const { jawaban: jawabanLama } = useSistemLama();
   const lamaAktif = Boolean(jawabanLama?.ok && jawabanLama.bookings?.length);
   const kamarLama = useKamarLama(lamaAktif);
+
+  /* Jadwal dive centre — kegiatan, bukan menginap. Tidak ikut ke `bookings`:
+     sebuah trip menyelam tidak memegang kamar, dan memasukkannya ke sana akan
+     terhitung sebagai malam terjual. Ia digambar di sel harinya sendiri. */
+  const sesiLama = useSesiLama(lamaAktif);
+  const sesiPerTanggal = useMemo(() => sesiPerHari(sesiLama), [sesiLama]);
 
   const dariLama = useMemo(
     () =>
@@ -1367,6 +1378,9 @@ export function BookingManager({
 
                 {screen === "kalender" && (
                   <CalendarScreen
+                    sesiPerTanggal={
+                      filterProp === "eddo" ? undefined : sesiPerTanggal
+                    }
                     narrow={nw}
                     compact={phone}
                     showMoney={showMoney}

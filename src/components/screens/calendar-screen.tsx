@@ -1,6 +1,8 @@
 "use client";
 
 import type { CalendarCell } from "@/lib/derive";
+import { WARNA_AKTIVITAS } from "@/lib/dari-sistem-lama";
+import type { SesiLama } from "@/lib/sistem-lama-bentuk";
 import { WEEKDAYS } from "@/lib/format";
 
 export interface CalendarScreenProps {
@@ -42,6 +44,12 @@ export interface CalendarScreenProps {
   checkinLabel: string;
   belumDicatat: { baru: boolean; piutang: boolean };
   cells: CalendarCell[];
+  /**
+   * Jadwal dive centre per tanggal, dari sistem lama. Kosong berarti belum
+   * tersambung — dan sel yang kosong memang tidak menggambar apa-apa, bukan
+   * menggambar "nol trip".
+   */
+  sesiPerTanggal?: Map<string, SesiLama[]>;
   onSelect: (id: string) => void;
   selectedDate: string | null;
   onSelectDate: (date: string) => void;
@@ -69,6 +77,65 @@ function cellBackground(cell: CalendarCell) {
  * between is the same green at a different length, because length is the
  * quantity and hue would be saying it a second time.
  */
+/**
+ * Jadwal dive centre di dalam sel hari.
+ *
+ * Satu pil per aktivitas, dengan nama dan jumlah pax. Namanya ditulis penuh
+ * dan tidak disingkat: aturan proyek ini menetapkan penamaan ikut sistem lama,
+ * dan "SSI Dive Course" yang dipendekkan jadi "SSI" adalah kosakata baru yang
+ * cuma ada di layar ini.
+ */
+function PitaSesi({ sesi }: { sesi?: SesiLama[] }) {
+  if (!sesi || sesi.length === 0) return null;
+  return (
+    <div className="mt-[5px] flex flex-col gap-[3px]">
+      {sesi.map((s, i) => {
+        const w = WARNA_AKTIVITAS[s.aktivitas];
+        return (
+          <div
+            key={`${s.aktivitas}-${i}`}
+            title={`${s.label}${s.pax ? ` — ${s.pax} pax` : ""}${
+              s.kamar.length ? ` · ${s.kamar.join(", ")}` : ""
+            }`}
+            className="flex items-center gap-[5px] overflow-hidden rounded-[6px] px-[6px] py-[2px] text-[10.5px] leading-[1.4]"
+            style={{ background: w.bg, color: w.fg }}
+          >
+            <span className="truncate">{s.aktivitas}</span>
+            {s.pax !== null && (
+              <span className="ml-auto shrink-0 font-mono tabular-nums">
+                {s.pax}
+              </span>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+/**
+ * Versi telepon: titik saja.
+ *
+ * Di lebar telepon kisi ini sudah berhenti membawa nama — `compact` mengubahnya
+ * jadi peta kepadatan. Menaruh nama aktivitas di sel selebar 50 px berarti
+ * memotongnya jadi dua huruf, yang tidak memberi tahu apa pun. Titiknya
+ * mengatakan "ada kegiatan hari itu", dan hari yang dipilih membuka daftarnya.
+ */
+function TitikSesi({ sesi }: { sesi?: SesiLama[] }) {
+  if (!sesi || sesi.length === 0) return null;
+  return (
+    <div className="flex items-center gap-[2px]">
+      {sesi.slice(0, 4).map((s, i) => (
+        <span
+          key={`${s.aktivitas}-${i}`}
+          className="h-[4px] w-[4px] rounded-full"
+          style={{ background: WARNA_AKTIVITAS[s.aktivitas].dot }}
+        />
+      ))}
+    </div>
+  );
+}
+
 function OccupancyMeter({ cell }: { cell: CalendarCell }) {
   if (!cell.inMonth || cell.capacity === 0) {
     return <div className="h-[5px]" />;
@@ -88,7 +155,10 @@ function OccupancyMeter({ cell }: { cell: CalendarCell }) {
     >
       <div
         className="h-full rounded-full"
-        style={{ width: `${Math.max(ratio * 100, ratio > 0 ? 14 : 0)}%`, background: fill }}
+        style={{
+          width: `${Math.max(ratio * 100, ratio > 0 ? 14 : 0)}%`,
+          background: fill,
+        }}
       />
     </div>
   );
@@ -113,6 +183,7 @@ export function CalendarScreen({
   checkinLabel,
   belumDicatat,
   cells,
+  sesiPerTanggal,
   onSelect,
   selectedDate,
   onSelectDate,
@@ -181,7 +252,11 @@ export function CalendarScreen({
           saja tidak mengatakan baru menurut apa, dan angka tanpa rentang di
           strip yang dibaca sekilas akan ditebak — biasanya sebagai bulan ini,
           yang bukan itu maksudnya. */}
-      <Stat label="Booking baru 7 hari" value={newLabel} unknown={belumDicatat.baru} />
+      <Stat
+        label="Booking baru 7 hari"
+        value={newLabel}
+        unknown={belumDicatat.baru}
+      />
       <Stat label="Check-in 7 hari" value={checkinLabel} />
       {showMoney && (
         <Stat
@@ -203,7 +278,9 @@ export function CalendarScreen({
               ? "border-danger-line bg-danger-tint"
               : "border-line-strong bg-surface-mute"
           } ${
-            compact ? "flex flex-col gap-[10px]" : "flex items-center gap-[14px]"
+            compact
+              ? "flex flex-col gap-[10px]"
+              : "flex items-center gap-[14px]"
           }`}
         >
           <div className="flex items-start gap-[11px]">
@@ -368,6 +445,7 @@ export function CalendarScreen({
                       ? `${cell.occupied}/${cell.capacity}`
                       : " "}
                   </span>
+                  <TitikSesi sesi={sesiPerTanggal?.get(cell.dateStr)} />
                 </button>
               );
             })}
@@ -428,6 +506,8 @@ export function CalendarScreen({
                     </span>
                   )}
                 </button>
+
+                <PitaSesi sesi={sesiPerTanggal?.get(cell.dateStr)} />
                 <div className="mt-[7px] flex flex-col gap-1">
                   {cell.chips.map((chip) => (
                     <button

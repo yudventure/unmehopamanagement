@@ -1,5 +1,6 @@
 import { iso } from "./format";
 import {
+  type Aktivitas,
   type BookingLama,
   dibatalkan,
   jumlahTamu,
@@ -141,3 +142,21 @@ export function bookingDariLama(
     tanpaTanggal: tanpaTanggal + tanpaKamar,
   };
 }
+
+/**
+ * Warna per aktivitas dive centre.
+ *
+ * Keluarga hangat yang sama dengan sisa dashboard, bukan enam warna cerah yang
+ * bersaing dengan chip booking di sel yang sama. Yang dibaca di sel itu
+ * namanya; warnanya cuma membantu mata mengelompokkan baris sejenis antar hari.
+ */
+export const WARNA_AKTIVITAS: Record<
+  Aktivitas,
+  { bg: string; fg: string; dot: string }
+> = {
+  Diving: { bg: "#DCEAF3", fg: "#1D5A7A", dot: "#3E8DB5" },
+  Snorkeling: { bg: "#DCEFE3", fg: "#216B4B", dot: "#4FA07A" },
+  "SSI Dive Course": { bg: "#E6E3F5", fg: "#4A3F86", dot: "#8076C4" },
+  "Excursion Trip": { bg: "#F7EEDD", fg: "#7A5A1F", dot: "#C79B4E" },
+  Transport: { bg: "#F0EBE4", fg: "#5F564A", dot: "#A19686" },
+};

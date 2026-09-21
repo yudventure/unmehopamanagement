@@ -7,7 +7,7 @@ import {
   Modal,
   ModalHeader,
 } from "@/components/ui/modal";
-import { CHANNEL_LABELS, PROPERTIES } from "@/lib/data";
+import { CHANNEL_LABELS, PROPERTIES_BERKAMAR } from "@/lib/data";
 import { fmt, fmtShort } from "@/lib/format";
 import type { BookingForm, ChannelKey, PropertyKey, Room } from "@/lib/types";
 
@@ -74,7 +74,10 @@ export function BookingFormModal({
             onChange={(e) => onProperty(e.target.value as PropertyKey)}
             className={FIELD_SELECT}
           >
-            {PROPERTIES.filter((p) => allowedProps.includes(p.key)).map((p) => (
+            {/* Hanya yang berkamar. Dive centre menjual sesi, dan memilihnya di
+                sini akan memberi daftar kamar yang kosong tanpa satu pun
+                kalimat yang menjelaskan kenapa. */}
+            {PROPERTIES_BERKAMAR.filter((p) => allowedProps.includes(p.key)).map((p) => (
               <option key={p.key} value={p.key}>
                 {p.name}
               </option>

@@ -1,4 +1,13 @@
-export type PropertyKey = "turtle" | "eddo";
+/**
+ * Tiga unit yang dikelola, dan yang ketiga bukan homestay.
+ *
+ * Dive centre-nya milik Turtle — Eddo tidak punya sendiri, dan situsnya
+ * menyebut itu. Ia berdiri sebagai unit tersendiri di sini karena yang
+ * dijadwalkannya bukan kamar melainkan sesi: Diving, Snorkeling, SSI Dive
+ * Course, Excursion Trip, Transport. Tanpa barisnya sendiri di penyaring,
+ * jadwal itu hanya bisa dilihat bercampur dengan booking kamar.
+ */
+export type PropertyKey = "turtle" | "eddo" | "divecenter";
 
 export type ChannelKey =
   | "Booking.com"

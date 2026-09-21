@@ -43,6 +43,20 @@ export interface CalendarScreenProps {
   receivableLabel: string;
   checkinLabel: string;
   belumDicatat: { baru: boolean; piutang: boolean };
+  /**
+   * Dive centre yang sedang dipilih: yang dijadwalkannya sesi, bukan kamar.
+   *
+   * Keenam angka di strip semuanya diturunkan dari kamar — okupansi, malam
+   * terjual, pendapatan per malam, piutang menginap. Dibiarkan tergambar, unit
+   * ini akan melaporkan okupansi nol persen dan pendapatan nol rupiah, yang
+   * dua-duanya benar secara hitungan dan dua-duanya salah artinya. Jadi
+   * strip-nya diganti, bukan dikosongkan.
+   */
+  hanyaJadwal?: boolean;
+  /** Jumlah sesi dive centre pada bulan yang sedang dilihat. */
+  sesiBulanIni?: number;
+  /** Apakah sistem lama — satu-satunya sumber jadwal itu — sedang tersambung. */
+  lamaTersambung?: boolean;
   cells: CalendarCell[];
   /**
    * Jadwal dive centre per tanggal, dari sistem lama. Kosong berarti belum
@@ -182,6 +196,9 @@ export function CalendarScreen({
   receivableLabel,
   checkinLabel,
   belumDicatat,
+  hanyaJadwal = false,
+  sesiBulanIni = 0,
+  lamaTersambung = false,
   cells,
   sesiPerTanggal,
   onSelect,
@@ -238,7 +255,14 @@ export function CalendarScreen({
    * jadi angka yang paling sering ditanyakan pagi-pagi — siapa datang minggu
    * ini — hanya terlihat setelah menggulung melewati seluruh kisi.
    */
-  const stats = (
+  const stats = hanyaJadwal ? (
+    <Stat
+      label="Sesi bulan ini"
+      value={`${sesiBulanIni} sesi`}
+      unknown={sesiBulanIni === 0}
+      span
+    />
+  ) : (
     <>
       <Stat label="Okupansi bulan ini" value={occLabel} />
       <Stat label="Malam terjual" value={nightsLabel} />
@@ -271,7 +295,19 @@ export function CalendarScreen({
 
   return (
     <div>
-      {conflictCount > 0 && (
+      {/* Kisi kosong tanpa satu kalimat pun terbaca sebagai layar rusak, dan
+          dua sebab yang sangat berbeda menghasilkan kisi yang sama persis:
+          sumbernya belum tersambung, atau bulannya memang lowong. Yang kedua
+          kabar biasa; yang pertama berarti tidak ada yang tahu apa-apa. */}
+      {hanyaJadwal && sesiBulanIni === 0 && (
+        <div className="mb-4 rounded-[14px] border border-line-strong bg-surface-mute px-4 py-[13px] text-[12.5px] leading-[1.55] text-slate">
+          {lamaTersambung
+            ? "Tidak ada sesi terjadwal pada bulan ini."
+            : "Jadwal dive centre dibaca dari sistem lama, dan sistem itu belum tersambung — jadi bulan yang kosong di sini belum tentu bulan yang lowong."}
+        </div>
+      )}
+
+      {conflictCount > 0 && !hanyaJadwal && (
         <div
           className={`mb-4 rounded-[14px] border px-4 py-[13px] ${
             conflictTone === "danger"

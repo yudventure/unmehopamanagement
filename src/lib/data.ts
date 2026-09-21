@@ -40,14 +40,39 @@ export const PROPERTIES: {
   key: PropertyKey;
   name: string;
   location: string;
+  /**
+   * Menjual malam menginap. Dive centre tidak: yang dijadwalkannya sesi, dan
+   * penandanya ada di sini supaya tiap layar yang memang soal kamar — form
+   * booking, kartu properti, tabel sinkron — bisa melewatinya lewat satu
+   * bidang, bukan lewat daftar pengecualian yang tercecer.
+   */
+  kamar: boolean;
 }[] = [
   {
     key: "turtle",
     name: "Turtle Homestay",
     location: "Mansuar Kecil (Pulau Kri)",
+    kamar: true,
   },
-  { key: "eddo", name: "Eddo Homestay", location: "Yenbuba, Pulau Mansuar" },
+  {
+    key: "eddo",
+    name: "Eddo Homestay",
+    location: "Yenbuba, Pulau Mansuar",
+    kamar: true,
+  },
+  {
+    /* Alamatnya sama dengan Turtle karena memang berjalan dari sana. Bukan
+       tebakan: situs Eddo menulis bahwa homestay saudaranya yang menjalankan
+       dive centre-nya, di kampung yang sama. */
+    key: "divecenter",
+    name: "Dive Center",
+    location: "Mansuar Kecil (Pulau Kri)",
+    kamar: false,
+  },
 ];
+
+/** Properti yang benar-benar punya kamar. Dipakai layar yang soal kamar. */
+export const PROPERTIES_BERKAMAR = PROPERTIES.filter((p) => p.kamar);
 
 /**
  * The month the seeded book is centred on, and the day the generator treats as

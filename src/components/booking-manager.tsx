@@ -21,6 +21,7 @@ import {
   type PropertyCard,
 } from "@/components/screens/property-screen";
 import { SistemLamaScreen } from "@/components/screens/sistem-lama-screen";
+import { SistemLamaStrip } from "@/components/sistem-lama-strip";
 import { SyncScreen } from "@/components/screens/sync-screen";
 import { UsersScreen } from "@/components/screens/users-screen";
 import { WebsiteScreen } from "@/components/screens/website-screen";
@@ -1301,6 +1302,14 @@ export function BookingManager({
                     yang persis jenis kesalahan yang catatan ini ada untuk
                     mencegahnya. Layar itu membawa keterangannya sendiri. */}
                 {screen !== "lama" && <DataSourceNote sumber={sumber} />}
+
+                {/* Di atas kalender, bukan di dalamnya. Alasan lengkapnya ada
+                    di `sistem-lama-strip.tsx`: mencampur booking sistem lama
+                    ke dalam kisi akan menebak kamarnya dan mengubah okupansi
+                    tanpa mengubah pendapatan. */}
+                {screen === "kalender" && isOwner && (
+                  <SistemLamaStrip onBuka={() => setScreen("lama")} />
+                )}
 
                 {screen === "kalender" && (
                   <CalendarScreen

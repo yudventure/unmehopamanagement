@@ -49,9 +49,9 @@ menimpa satu berkas tanpa mengganti tautan yang sudah beredar.
 | `staff.html` | `turtle_staff_system_19_3.html` | 596 KB |
 | `td_monitoring.html` | `td_monitoring_app.html` | 70 KB |
 | `td_activity_log.html` | `td_activity_log_app.html` | 12 KB |
-| `invoiceapp_turtle_v3.html` | `invoiceapp_turtle_v3_app.html` | 184 KB |
+| `invoiceapp_turtle_v3.html` | `invoiceapp_turtle_v3_app.html` (isinya V32) | 200 KB |
 | — (dibuka langsung) | `td_room_availability.html` | 41 KB |
-| — (versi lain, belum dipakai pemuat) | `invoiceapp_turtle_v3_app_V32_room_occupancy.html` | 200 KB |
+| — (arsip nama asli V32) | `invoiceapp_turtle_v3_app_V32_room_occupancy.html` | 200 KB |
 
 Di luar Apps Script, yang dipanggil keluar cuma cdnjs (jsPDF dan html2canvas),
 Google Fonts, dan tautan `wa.me`. **Tidak ada satu pun alamat mutlak yang
@@ -62,6 +62,15 @@ menunjuk ke hosting lama**, jadi tidak ada yang putus karena pindah.
 Ketiga belas berkas disalin **bit per bit** ke `public/sistem/`, tanpa satu
 karakter pun diubah, dan diperiksa dua kali: md5 sesudah disalin, lalu md5 lagi
 atas apa yang betul-betul dilayani server. Ketiga belasnya identik.
+
+Sesudah itu **satu berkas sengaja diganti isinya**, atas permintaan pemiliknya:
+`invoiceapp_turtle_v3_app.html` sekarang memuat isi V32 (lihat "Invoice naik ke
+V32" di bawah). Jadi klaimnya sekarang: dua belas berkas masih bit per bit sama
+dengan nama aslinya di zip, dan yang ketiga belas memuat bit per bit isi berkas
+lain **dari zip yang sama**. Tidak ada satu byte pun yang kami tulis sendiri ke
+dalam sistem itu, dan `md5sum` masih bisa membuktikannya:
+`invoiceapp_turtle_v3_app.html` sama persis dengan
+`invoiceapp_turtle_v3_app_V32_room_occupancy.html`.
 
 Keenam pintu masuknya dibuka di peramban dari alamat baru: pemuatnya melempar
 ke aplikasi yang benar, layar login/PIN-nya muncul, service worker-nya
@@ -243,14 +252,83 @@ Ambil `ADMIN_PASSWORD`, **bukan** `BACKEND_PW` yang ada tepat di atasnya.
 log, dan haknya berbeda — `adminList` akan menolaknya. Nilainya tidak ditulis di
 sini supaya tidak bertambah satu lagi tempat yang menyimpannya.
 
-### Yang baru satu, dan sisanya
+### Memantaunya, bukan cuma melihatnya
 
-Sekarang layarnya membaca satu mode, `adminList` — daftar booking. Dua puluh
-dua mode baca lain sudah ada di daftar putihnya dan tinggal diberi tampilan:
-papan hari ini (`adminDashboard`), laporan harian (`adminDailyReport`), jadwal
-kamar (`adminGetRoomSchedule`), dan seterusnya. Bentuk datanya dibaca dari
-kode render dashboard lama, bukan dari skema, jadi tiap ladang diperlakukan
-sebagai mungkin-tidak-ada sampai endpoint sungguhan menjawab.
+Layarnya tidak berhenti di daftar. Di atasnya ada papan yang menjawab
+pertanyaan tiap pagi: **siapa datang hari ini, siapa pulang, siapa sedang
+menginap, siapa menyusul 14 hari ke depan.** Dan karena yang dibuka tiap pagi
+adalah Kalender, bukan layar ini, ringkasannya juga duduk sebagai satu baris di
+atas kalender, satu klik dari papannya.
+
+Papannya **diturunkan dari `adminList`**, bukan diminta ke mode
+`adminDashboard`. Mode itu ada dan memulangkan papan yang mirip, tapi bentuk
+tiap barisnya belum pernah kami lihat sungguhan — sementara bentuk `adminList`
+sudah diperiksa. Jadi yang tampil sekarang bisa dipertanggungjawabkan. Begitu
+endpoint aslinya bisa dibaca, `adminDashboard` membawa hal yang tidak bisa
+diturunkan dari sini — diving hari ini, alergi tamu, overbooking — dan itu
+langkah berikutnya.
+
+**Tanggal yang tidak terbaca tidak ditebak.** Sistem lamanya sendiri cuma
+mengenali `YYYY-MM-DD` (`fmtDMY` mencocokkan itu dan memulangkan apa adanya
+kalau tidak cocok), jadi pembacanya mengikuti tafsir yang sudah berlaku di
+sana. Yang di luar bentuk itu dihitung terpisah dan disebut jumlahnya, karena
+"02/10" bisa 2 Oktober dan bisa 10 Februari — dan menebaknya berarti menjemput
+orang di hari yang salah. Yang dibatalkan juga dikeluarkan dari semua hitungan,
+dan jumlahnya disebut supaya tidak terbaca seperti data yang hilang.
+
+### Kenapa booking sistem lama tidak dimasukkan ke kisi kalender
+
+Terdengar lebih rapi, dan justru berbahaya, karena dua hal.
+
+**Kamarnya tidak bisa dicocokkan.** Sistem lama menulis `room: "3"`; kamar di
+dashboard ini punya id dan nama sendiri. Cocok-cocokan berdasarkan angka akan
+benar sampai suatu hari ia salah, dan salahnya berupa tamu sungguhan yang
+tergambar di kamar yang sedang ditempati orang lain.
+
+**Angkanya akan ikut berubah.** Okupansi, pendapatan, dan piutang di layar itu
+semuanya dihitung dari daftar booking yang sama. Baris sistem lama tidak
+membawa harga, jadi menyuntikkannya ke sana membuat okupansi naik sementara
+pendapatan tidak — angka yang meyakinkan dan salah, yang persis dilarang aturan
+proyek ini.
+
+Jadi dua sumbernya sengaja tidak dicampur: yang satu buku milik dashboard ini,
+yang satu jendela ke buku milik orang lain, dan stripnya mengatakan yang mana
+yang sedang dilihat.
+
+### Satu bacaan, dipakai berdua
+
+Papan dan strip memakai simpanan yang sama dengan umur dua menit
+(`sistem-lama-data.tsx`). Tiap panggilan menyentuh Apps Script milik client,
+yang punya kuota harian dan sedang dipakai stafnya untuk bekerja — dua komponen
+yang masing-masing menarik sendiri berarti dashboard ini ikut menghabiskan
+jatah sistem yang sedang dipakai orang.
+
+### Mode yang sudah dipakai, dan sisanya
+
+Sekarang layarnya membaca satu mode, `adminList`. Dua puluh dua mode baca lain
+sudah ada di daftar putihnya dan tinggal diberi tampilan: papan hari ini
+(`adminDashboard`), laporan harian (`adminDailyReport`), jadwal kamar
+(`adminGetRoomSchedule`), dan seterusnya. Bentuk datanya dibaca dari kode render
+dashboard lama, bukan dari skema, jadi tiap ladang diperlakukan sebagai
+mungkin-tidak-ada sampai endpoint sungguhan menjawab.
+
+## Invoice naik ke V32
+
+Pemiliknya memilih yang baru. Caranya mengikuti aturan sistemnya sendiri, bukan mengakali
+pemuatnya: pemuat `invoiceapp_turtle_v3.html` memuat komentar
+*"CACHE-BUSTER LOADER — jangan diubah. Untuk update, cukup TIMPA file itu (nama
+sama)"*, jadi yang ditimpa isinya, dan pemuatnya tidak disentuh sama sekali.
+Tautan yang sudah dibagikan tetap berlaku, dan update berikutnya tetap bekerja
+seperti yang dimaksud penulis aslinya. Berkas bernama `..._V32_room_occupancy.html`
+tetap ada sebagai arsip nama aslinya.
+
+Yang diperiksa sebelum menimpa: V32 memuat **semua** fungsi V31 (285 baris
+ditambah, 5 dibuang, nol fungsi hilang), membaca mode yang sama persis
+(`invoiceSyncAll`), dan **tidak menambah satu pun panggilan tulis** — nol
+`action:` baru, nol POST baru. Tambahannya laporan okupansi kamar: malam per
+bulan, tarif kamar yang bisa diatur, ringkasan per kamar, ekspor CSV. Tarifnya
+disimpan di `localStorage` peramban masing-masing, bukan ke Sheet — jadi aman,
+tapi tidak dilihat staf lain dan hilang kalau browsernya dibersihkan.
 
 ## Yang belum, dan yang perlu diputuskan
 
@@ -272,19 +350,17 @@ pola yang sudah dipakai delapan sisanya. Ini yang pertama harus dibereskan
 sebelum UI-nya disentuh — dan membereskannya berarti memindahkan pemeriksaan itu
 ke sisi server, bukan menyembunyikannya lebih dalam di JavaScript.
 
-**2. Tampilannya belum disentuh sama sekali.** Itu disengaja: langkah pertama
-membuktikan pindahnya tidak merusak apa-apa, dan membuktikannya cuma bisa kalau
-tidak ada yang berubah. Menyentuh UI-nya layar demi layar adalah langkah
+**2. Tampilannya belum kami tulis ulang sama sekali.** Itu disengaja: langkah
+pertama membuktikan pindahnya tidak merusak apa-apa, dan membuktikannya cuma
+bisa kalau tidak ada yang berubah. Naiknya invoice ke V32 bukan pengecualian —
+itu berkas yang sudah ada di zip kliennya, dipasang apa adanya, bukan baris
+yang kami karang. Menyentuh UI-nya layar demi layar adalah langkah
 berikutnya, sesudah pemiliknya memastikan yang di `/sistem/` betul-betul jalan
 dengan data sungguhan.
 
 **3. Domainnya belum dipindah, dan tidak akan dipindah tanpa diminta.** Sistem
 yang lama masih jalan di hosting lama, tidak tersentuh. Yang di sini salinan
 yang berjalan sendiri, menunjuk ke data yang sama.
-
-**4. Dua versi aplikasi invoice** ada di zip-nya, dan pemuatnya menunjuk ke
-yang lama (`invoiceapp_turtle_v3_app.html`). Yang `V32_room_occupancy` ikut
-disalin apa adanya, belum dipakai. Perlu ditanyakan mana yang seharusnya.
 
 ## Aturan kerja untuk berkas-berkas ini
 

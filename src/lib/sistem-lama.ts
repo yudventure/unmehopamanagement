@@ -1,5 +1,9 @@
 import "server-only";
 
+import type { BookingLama } from "./sistem-lama-bentuk";
+
+export type { BookingLama };
+
 /**
  * Reading the old Turtle system, and only ever reading it.
  *
@@ -246,39 +250,6 @@ export interface Amplop {
   [k: string]: unknown;
 }
 
-/**
- * One booking as the old Sheet keeps it.
- *
- * Every field is optional and every field is a guess until the real endpoint
- * answers, because this list was read off the old dashboard's own rendering
- * code rather than off a schema. Nothing here is required to be present, and
- * the screen shows a dash where something is missing instead of inventing it.
- */
-export interface BookingLama {
-  confirmationNo?: string;
-  guestName?: string;
-  name?: string;
-  nama?: string;
-  guestNamesList?: string[] | string;
-  otherGuests?: string;
-  checkIn?: string;
-  checkOut?: string;
-  room?: string;
-  capacity?: string | number;
-  whatsapp?: string;
-  status?: string;
-  displayStatus?: string;
-  session?: string;
-  reqDiving?: unknown;
-  reqSnorkeling?: unknown;
-  reqTryDive?: unknown;
-  reqTransport?: unknown;
-  reqSSICourse?: unknown;
-  reqExtraBed?: unknown;
-  reqExcursion?: unknown;
-  [k: string]: unknown;
-}
-
 function amplopOk(data: unknown): data is Amplop {
   return typeof data === "object" && data !== null;
 }
@@ -308,35 +279,4 @@ export async function bacaDaftarBooking(): Promise<
     ? (data.bookings as BookingLama[])
     : [];
   return { ok: true, data: bookings, ms: hasil.ms, mentah: data };
-}
-
-/** The guest's name, whichever of the three columns the old Sheet used. */
-export function namaTamu(b: BookingLama): string {
-  const kandidat = [b.guestName, b.name, b.nama];
-  for (const c of kandidat) {
-    if (typeof c === "string" && c.trim()) return c.trim();
-  }
-  return "";
-}
-
-/** How many people the booking names, counting the guest itself. */
-export function jumlahTamu(b: BookingLama): number | null {
-  const daftar = b.guestNamesList;
-  if (Array.isArray(daftar)) return daftar.length || null;
-  if (typeof daftar === "string" && daftar.trim()) {
-    return daftar.split(/[\n,;]+/).filter((s) => s.trim()).length || null;
-  }
-  const kap = Number(b.capacity);
-  return Number.isFinite(kap) && kap > 0 ? kap : null;
-}
-
-/** Whether one of the old `req…` flags is set, whatever shape it arrived in. */
-export function diminta(nilai: unknown): boolean {
-  if (typeof nilai === "boolean") return nilai;
-  if (typeof nilai === "number") return nilai > 0;
-  if (typeof nilai === "string") {
-    const v = nilai.trim().toLowerCase();
-    return v !== "" && v !== "0" && v !== "no" && v !== "false" && v !== "-";
-  }
-  return false;
 }

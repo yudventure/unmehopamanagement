@@ -183,16 +183,40 @@
         <div id="bookingList" style="max-height:280px;overflow:auto"><div class="empty-note">Tekan Sync dulu.</div></div>
       </div>
 
-      <!-- ===== Laporan Keuangan Bulanan (V30, 2026-09-02) ===== -->
+      <!-- ===== Laporan Keuangan Bulanan (V30, 2026-09-02 · tab Room/Occupancy ditambah V32, 2026-09-06) ===== -->
       <div class="card hidden" id="finCard">
         <div class="bar" style="justify-content:space-between">
           <strong>📊 Laporan Keuangan Bulanan</strong>
           <div class="bar">
-            <button class="btn sm" onclick="renderFinReport()">⟳ Hitung ulang</button>
-            <button class="btn sm" onclick="downloadFinCsv()">⬇ Unduh CSV</button>
+            <button class="btn sm" onclick="finRecalc()">⟳ Hitung ulang</button>
+            <button class="btn sm" onclick="finCsv()">⬇ Unduh CSV</button>
             <button class="btn sm" onclick="closeFinReport()">✕ Tutup</button>
           </div>
         </div>
+        <div class="bar" style="margin:10px 0 0">
+          <button class="btn sm fintab on" data-ft="act"  onclick="setFinTab('act')">🤿 Aktivitas</button>
+          <button class="btn sm fintab"    data-ft="room" onclick="setFinTab('room')">🛏 Room (Occupancy)</button>
+        </div>
+
+        <!-- Tarif kamar — bisa diubah sendiri, tersimpan di perangkat ini -->
+        <div id="finRateBar" class="hidden" style="margin:10px 0 2px;padding:9px 10px;background:var(--sand);border-radius:9px">
+          <div style="font-size:11.5px;color:var(--muted);margin-bottom:7px">
+            <b>Tarif kamar per malam</b> — dipakai untuk menghitung laporan di bawah. Ubah di sini kalau harganya berubah.
+          </div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
+            <div><label style="display:block;font-size:11px;color:var(--muted)">Isi 2 orang / malam</label>
+              <input id="rr_p2" type="number" style="width:150px" oninput="saveRoomRates()"></div>
+            <div><label style="display:block;font-size:11px;color:var(--muted)">Isi 1 orang / malam</label>
+              <input id="rr_p1" type="number" style="width:150px" oninput="saveRoomRates()"></div>
+            <div><label style="display:block;font-size:11px;color:var(--muted)">Extra bed / orang</label>
+              <input id="rr_eb" type="number" style="width:150px" oninput="saveRoomRates()"></div>
+            <label style="font-size:12px;display:flex;align-items:center;gap:6px;padding-bottom:8px;white-space:nowrap;flex:0 0 auto">
+              <input id="rr_ebnight" type="checkbox" style="width:auto;margin:0" onchange="saveRoomRates()"> Extra bed dihitung per malam
+            </label>
+            <button class="btn sm" style="margin-bottom:2px" onclick="resetRoomRates()">↺ Tarif standar</button>
+          </div>
+        </div>
+
         <div id="finNote" style="font-size:12px;color:var(--muted);margin:8px 0 4px;line-height:1.5"></div>
         <div id="finBody"><div class="empty-note">Menghitung…</div></div>
       </div>
@@ -1900,7 +1924,7 @@ function computeFinReport(){
 
 function openFinReport(){
   document.getElementById('finCard').classList.remove('hidden');
-  renderFinReport();
+  setFinTab(FIN_TAB);
   document.getElementById('finCard').scrollIntoView({behavior:'smooth',block:'start'});
 }
 function closeFinReport(){ document.getElementById('finCard').classList.add('hidden'); }
@@ -1909,6 +1933,7 @@ function renderFinReport(){
   var body=document.getElementById('finBody');
   body.innerHTML='<div class="empty-note">Menghitung…</div>';
   setTimeout(function(){
+    if(FIN_TAB!=='act') return;                                  // pengguna keburu pindah tab
     FIN_DATA=computeFinReport();
     var synced=(document.getElementById('syncLabel')||{}).textContent||'';
     document.getElementById('finNote').innerHTML=
@@ -1968,6 +1993,261 @@ function downloadFinCsv(){
     var a=document.createElement('a');
     a.href=URL.createObjectURL(blob);
     a.download='Laporan-Keuangan-Turtle-'+(new Date().toISOString().slice(0,10))+'.csv';
+    document.body.appendChild(a); a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },500);
+  }catch(e){ alert('Tidak bisa mengunduh CSV di browser ini.'); }
+}
+
+/* =====================================================================================
+   LAPORAN ROOM BULANAN BERDASARKAN OCCUPANCY  (V32, 2026-09-06)
+
+   Permintaan pemilik: laporan pendapatan KAMAR per bulan, dihitung dari isi kamar —
+     • 2 orang / kamar  = Rp 1.500.000 / malam
+     • 1 orang / kamar  = Rp   800.000 / malam
+     • Extra bed        = Rp   250.000 / orang
+
+   KENAPA INI BUKAN KOLOM "Room" DI TAB AKTIVITAS.
+   Kolom Room di tab Aktivitas hanya berisi baris Room/Extra Bed yang DIKETIK MANUAL oleh
+   admin pada satu invoice. Sejak V14, kamar memang sengaja TIDAK pernah ditambahkan
+   otomatis ke invoice (sebagian besar tamu membayar kamar lewat booking.com /
+   stayrajaampat.com, jadi kalau otomatis akan tertagih dua kali). Karena itu angkanya
+   hampir selalu kosong dan tidak bisa dipakai sebagai laporan pendapatan kamar.
+   Tab ini mengambil sumber yang berbeda: DAFTAR BOOKING itu sendiri (DATA.bookings) —
+   siapa menginap di kamar mana, berapa orang, berapa malam — lalu mengalikannya dengan
+   tarif di atas. Jadi kedua tab TIDAK boleh dijumlahkan: yang satu kegiatan, yang satu
+   kamar; menjumlahkannya berisiko menghitung kamar dua kali kalau admin kebetulan juga
+   pernah mengetik baris Room manual di sebuah invoice.
+
+   CARA MENGHITUNG (semuanya sengaja dibuat terbuka supaya bisa dicek manual):
+   1. Satu baris booking = satu kamar. Booking yang bill-nya digabung ("Gabung Bill Antar
+      Room") tetap dihitung SENDIRI-SENDIRI di sini, karena dua kamar yang terisi tetap
+      dua kamar walaupun tagihannya jadi satu lembar.
+   2. Jumlah orang = dewasa + anak. Kalau kolom itu kosong, dipakai jumlah nama tamu;
+      kalau itu pun kosong, dianggap 1 orang (kamar yang dibooking pasti ada isinya).
+   3. Tarif dasar: 1 orang → tarif 1 orang; 2 orang atau lebih → tarif 2 orang.
+      Orang KETIGA dan seterusnya dihitung sebagai extra bed (Rp 250.000/orang).
+   4. Malam dihitung per tanggal, bukan per booking: menginap 29 Agu → 2 Sep berarti
+      3 malam masuk Agustus dan 1 malam masuk September. Ini penting supaya laporan
+      bulanan tidak melompat gara-gara tamu yang menginap melewati pergantian bulan.
+   5. Booking berstatus "Cancel" tidak ikut (memang sudah disaring di backend juga).
+
+   BATASAN YANG HARUS SELALU DITAMPILKAN (lihat finNote):
+   - Ini NILAI KAMAR TERISI menurut jadwal, BUKAN bukti uang masuk, dan termasuk tamu OTA
+     (booking.com dsb) yang uangnya diterima lewat pihak ketiga setelah dipotong komisi.
+   - Tarif di atas dianggap berlaku sama untuk semua kamar dan semua tanggal — belum ada
+     harga per kamar / harga musim tinggi di sistem ini.
+   ===================================================================================== */
+var LS_ROOMRATE='tdh_inv3_roomrates';
+var ROOM_RATE_DEFAULT={p2:1500000,p1:800000,eb:250000,ebPerNight:true};
+var ROOM_RATE=(function(){
+  var s=lsGet(LS_ROOMRATE)||{}, o={};
+  Object.keys(ROOM_RATE_DEFAULT).forEach(function(k){ o[k]=(s[k]==null?ROOM_RATE_DEFAULT[k]:s[k]); });
+  return o;
+})();
+var ROOM_DATA=null, ROOM_OPEN_MONTH=null, FIN_TAB='act';
+
+function setFinTab(t){
+  FIN_TAB=(t==='room')?'room':'act';
+  var tabs=document.querySelectorAll('.fintab');
+  Array.prototype.forEach.call(tabs,function(b){ b.classList.toggle('on',b.getAttribute('data-ft')===FIN_TAB); });
+  var rb=document.getElementById('finRateBar');
+  if(rb) rb.classList.toggle('hidden',FIN_TAB!=='room');
+  if(FIN_TAB==='room'){ fillRoomRateInputs(); renderRoomReport(); } else { renderFinReport(); }
+}
+function finRecalc(){ if(FIN_TAB==='room') renderRoomReport(); else renderFinReport(); }
+function finCsv(){ if(FIN_TAB==='room') downloadRoomCsv(); else downloadFinCsv(); }
+
+function fillRoomRateInputs(){
+  var a=document.getElementById('rr_p2'), b=document.getElementById('rr_p1'),
+      c=document.getElementById('rr_eb'), d=document.getElementById('rr_ebnight');
+  if(a) a.value=ROOM_RATE.p2; if(b) b.value=ROOM_RATE.p1;
+  if(c) c.value=ROOM_RATE.eb; if(d) d.checked=!!ROOM_RATE.ebPerNight;
+}
+function saveRoomRates(){
+  var g=function(id){ var el=document.getElementById(id); return Math.max(0,parseInt(el&&el.value,10)||0); };
+  ROOM_RATE.p2=g('rr_p2'); ROOM_RATE.p1=g('rr_p1'); ROOM_RATE.eb=g('rr_eb');
+  var d=document.getElementById('rr_ebnight'); ROOM_RATE.ebPerNight=!!(d&&d.checked);
+  lsSet(LS_ROOMRATE,ROOM_RATE);
+  renderRoomReport();
+}
+function resetRoomRates(){
+  Object.keys(ROOM_RATE_DEFAULT).forEach(function(k){ ROOM_RATE[k]=ROOM_RATE_DEFAULT[k]; });
+  lsSet(LS_ROOMRATE,ROOM_RATE); fillRoomRateInputs(); renderRoomReport();
+}
+
+/* Kolom "Extra Bed" di sheet bisa berisi TRUE/true/Yes/Ya/1 tergantung siapa yang mengisi. */
+function roomFlagTrue(v){
+  if(v===true) return true;
+  var s=String(v==null?'':v).trim().toLowerCase();
+  return s==='true'||s==='yes'||s==='ya'||s==='y'||s==='1';
+}
+/* Berapa orang di kamar ini — lihat komentar poin 2 di atas. */
+function occHeadsOf(b){
+  var n=(parseInt(b&&b.adults,10)||0)+(parseInt(b&&b.children,10)||0);
+  if(n>0) return n;
+  var names=(b&&b.guestNames&&b.guestNames.length)?b.guestNames.length:0;
+  return names>0?names:1;
+}
+/* Harga satu kamar per malam menurut isinya. extraOnce dipakai kalau extra bed disetel
+   ditagih sekali per booking (bukan per malam) — nilainya ditempelkan ke bulan pertama. */
+function occPriceOf(heads){
+  var h=Math.max(1,parseInt(heads,10)||1);
+  var base=(h<=1)?(ROOM_RATE.p1||0):(ROOM_RATE.p2||0);
+  var extraPeople=Math.max(0,h-2);
+  var extraAmt=extraPeople*(ROOM_RATE.eb||0);
+  return {
+    base:base, extraPeople:extraPeople,
+    extraPerNight: ROOM_RATE.ebPerNight?extraAmt:0,
+    extraOnce:     ROOM_RATE.ebPerNight?0:extraAmt
+  };
+}
+/* Bagi malam menginap ke bulan-bulannya: {'2026-08':3,'2026-09':1}.
+   Kalau tanggalnya tidak lengkap, seluruh malam ditaruh di bulan check-in (atau
+   "Tanpa tanggal" kalau check-in pun kosong) — supaya tidak ada booking yang hilang. */
+function nightsByMonth(ci,co,nights){
+  var out={}, s=String(ci||'').slice(0,10), e=String(co||'').slice(0,10);
+  if(/^\d{4}-\d{2}-\d{2}$/.test(s)&&/^\d{4}-\d{2}-\d{2}$/.test(e)&&e>s){
+    var d=new Date(s+'T00:00:00Z'), end=new Date(e+'T00:00:00Z'), guard=0;
+    while(d<end && guard++<400){
+      var k=d.toISOString().slice(0,7);
+      out[k]=(out[k]||0)+1;
+      d.setUTCDate(d.getUTCDate()+1);
+    }
+    return out;
+  }
+  var n=Math.max(0,parseInt(nights,10)||0);
+  if(n>0) out[/^\d{4}-\d{2}/.test(s)?s.slice(0,7):'']=n;
+  return out;
+}
+
+function computeRoomReport(){
+  var t0=Date.now(), months={};
+  function bucketOf(m){
+    if(!months[m]) months[m]={key:m,nights:0,rooms:0,dbl:0,sgl:0,eb:0,total:0,list:[]};
+    return months[m];
+  }
+  (DATA.bookings||[]).forEach(function(b){
+    if(String(b.status||'')==='Cancel') return;                 // jaga-jaga; backend sudah menyaring
+    var heads=occHeadsOf(b), pr=occPriceOf(heads);
+    var byM=nightsByMonth(b.checkIn,b.checkOut,b.nights);
+    var keys=Object.keys(byM); if(!keys.length) return;         // 0 malam (mis. check-in = check-out)
+    var firstM=keys.slice().sort()[0];
+    keys.forEach(function(m){
+      var n=byM[m], bu=bucketOf(m);
+      var base=pr.base*n;
+      var ex=pr.extraPerNight*n + (m===firstM?pr.extraOnce:0);
+      bu.nights+=n; bu.rooms+=1;
+      if(heads<=1) bu.sgl+=base; else bu.dbl+=base;
+      bu.eb+=ex; bu.total+=base+ex;
+      bu.list.push({
+        conf:b.confirmationNo, room:b.room, name:b.guestName, heads:heads, nights:n,
+        extraPeople:pr.extraPeople, ebFlag:roomFlagTrue(b.extraBed),
+        method:b.bookingMethod||'', checkIn:b.checkIn, checkOut:b.checkOut,
+        amount:base+ex
+      });
+    });
+  });
+  var list=Object.keys(months).map(function(k){return months[k];})
+    .sort(function(a,b){ if(!a.key) return 1; if(!b.key) return -1; return b.key.localeCompare(a.key); });
+  list.forEach(function(m){ m.list.sort(function(a,b){ return String(a.checkIn||'').localeCompare(String(b.checkIn||'')); }); });
+  var grand={nights:0,rooms:0,dbl:0,sgl:0,eb:0,total:0};
+  list.forEach(function(m){ ['nights','rooms','dbl','sgl','eb','total'].forEach(function(k){ grand[k]+=m[k]; }); });
+  return {months:list,grand:grand,ms:Date.now()-t0};
+}
+
+function roomDetailLine(x){
+  var bits=[];
+  bits.push(x.nights+' malam');
+  bits.push(x.heads+' org');
+  if(x.extraPeople>0) bits.push('+'+x.extraPeople+' extra bed');
+  else if(x.ebFlag) bits.push('extra bed dipesan, tidak ditagih (isi ≤2 org)');
+  if(x.method) bits.push(esc(x.method));
+  return bits.join(' · ');
+}
+
+function renderRoomReport(){
+  var body=document.getElementById('finBody');
+  if(!body) return;
+  body.innerHTML='<div class="empty-note">Menghitung…</div>';
+  setTimeout(function(){
+    if(FIN_TAB!=='room') return;                                 // pengguna keburu pindah tab
+    ROOM_DATA=computeRoomReport();
+    var synced=(document.getElementById('syncLabel')||{}).textContent||'';
+    var ebTxt=ROOM_RATE.ebPerNight?'per malam':'sekali per booking';
+    document.getElementById('finNote').innerHTML=
+      'Dihitung dari <b>daftar booking</b> (siapa di kamar mana, berapa orang, berapa malam) × tarif di atas — '
+      + 'bukan dari baris Room yang diketik manual di invoice, jadi <b>jangan dijumlahkan dengan tab Aktivitas</b>.<br>'
+      + 'Tarif dipakai: 2 orang '+rp(ROOM_RATE.p2)+'/malam · 1 orang '+rp(ROOM_RATE.p1)+'/malam · extra bed '+rp(ROOM_RATE.eb)+'/orang ('+ebTxt+'). '
+      + 'Orang ke-3 dan seterusnya dihitung extra bed.<br>'
+      + '⚠️ Ini <b>nilai kamar terisi</b> menurut jadwal — <b>bukan bukti uang masuk</b>, dan termasuk tamu OTA (booking.com dll) yang uangnya diterima lewat pihak ketiga setelah dipotong komisi.<br>'
+      + '⚠️ Menginap yang melewati pergantian bulan dibagi <b>per malam</b> ke bulan masing-masing.<br>'
+      + 'Data hasil Sync terakhir'+(synced?(' ('+synced+')'):'')+' · '+ROOM_DATA.months.length+' bulan · '+ROOM_DATA.ms+' ms.';
+
+    if(!ROOM_DATA.months.length){ body.innerHTML='<div class="empty-note">Belum ada data booking. Tekan <b>Sync Data</b> dulu.</div>'; return; }
+
+    var h='<div style="overflow-x:auto"><table class="fin-table"><thead><tr>'
+        + '<th style="text-align:left">Bulan</th><th>Malam Kamar</th><th>Isi 2+ Org</th><th>Isi 1 Org</th><th>Extra Bed</th><th class="tot">TOTAL</th>'
+        + '</tr></thead><tbody>';
+    ROOM_DATA.months.forEach(function(m){
+      h+='<tr class="fin-row" data-m="'+esc(m.key)+'"><td style="text-align:left"><b>'+finMonthLabel(m.key)+'</b></td>'
+        +'<td'+(m.nights?'':' class="zero"')+'>'+(m.nights||'–')+'</td>'
+        +'<td'+(m.dbl?'':' class="zero"')+'>'+(m.dbl?rp(m.dbl):'–')+'</td>'
+        +'<td'+(m.sgl?'':' class="zero"')+'>'+(m.sgl?rp(m.sgl):'–')+'</td>'
+        +'<td'+(m.eb?'':' class="zero"')+'>'+(m.eb?rp(m.eb):'–')+'</td>'
+        +'<td class="tot">'+rp(m.total)+'</td></tr>';
+      if(ROOM_OPEN_MONTH===m.key){
+        h+='<tr class="fin-detail"><td colspan="6"><div class="fin-detail-inner">'
+          + '<div style="font-size:12px;color:var(--muted);margin-bottom:4px">Rincian per kamar — '+finMonthLabel(m.key)+' ('+m.list.length+' booking · '+m.nights+' malam kamar)</div>'
+          + m.list.map(function(x){
+              return '<div class="fin-inv"><span>'
+                + (x.room?('<b>Room '+esc(x.room)+'</b> · '):'')+esc(x.name||x.conf||'(tanpa nama)')
+                + '<br><span style="color:var(--muted);font-size:11.5px">'+roomDetailLine(x)+'</span>'
+                + '</span><span>'+rp(x.amount)+'</span></div>';
+            }).join('')
+          + '</div></td></tr>';
+      }
+    });
+    h+='</tbody><tfoot><tr><td style="text-align:left">SEMUA BULAN</td>'
+      +'<td>'+(ROOM_DATA.grand.nights||'–')+'</td>'
+      +'<td>'+(ROOM_DATA.grand.dbl?rp(ROOM_DATA.grand.dbl):'–')+'</td>'
+      +'<td>'+(ROOM_DATA.grand.sgl?rp(ROOM_DATA.grand.sgl):'–')+'</td>'
+      +'<td>'+(ROOM_DATA.grand.eb?rp(ROOM_DATA.grand.eb):'–')+'</td>'
+      +'<td class="tot">'+rp(ROOM_DATA.grand.total)+'</td></tr></tfoot></table></div>';
+    body.innerHTML=h;
+
+    Array.prototype.forEach.call(body.querySelectorAll('tr.fin-row'),function(tr){
+      tr.addEventListener('click',function(){
+        var k=tr.getAttribute('data-m');
+        ROOM_OPEN_MONTH=(ROOM_OPEN_MONTH===k)?null:k;
+        renderRoomReport();
+      });
+    });
+  },20);
+}
+
+function downloadRoomCsv(){
+  if(!ROOM_DATA){ alert('Laporan belum dihitung.'); return; }
+  var rows=[['Bulan','Malam Kamar','Isi 2+ Org','Isi 1 Org','Extra Bed','TOTAL']];
+  ROOM_DATA.months.forEach(function(m){ rows.push([finMonthLabel(m.key),m.nights,m.dbl,m.sgl,m.eb,m.total]); });
+  rows.push(['SEMUA BULAN',ROOM_DATA.grand.nights,ROOM_DATA.grand.dbl,ROOM_DATA.grand.sgl,ROOM_DATA.grand.eb,ROOM_DATA.grand.total]);
+  // Rincian per kamar ikut diekspor supaya angkanya bisa dicek satu per satu di Excel.
+  rows.push([]);
+  rows.push(['RINCIAN PER KAMAR']);
+  rows.push(['Bulan','Room','Nama Tamu','Kode Booking','Check-in','Check-out','Malam (bulan ini)','Jumlah Orang','Extra Bed (org)','Sumber Booking','Jumlah']);
+  ROOM_DATA.months.forEach(function(m){
+    m.list.forEach(function(x){
+      rows.push([finMonthLabel(m.key),x.room,x.name,x.conf,x.checkIn,x.checkOut,x.nights,x.heads,x.extraPeople,x.method,x.amount]);
+    });
+  });
+  var csv=rows.map(function(r){ return r.map(function(v){
+    var s=String(v==null?'':v);
+    return /[",\n;]/.test(s)?('"'+s.replace(/"/g,'""')+'"'):s;
+  }).join(','); }).join('\n');
+  try{
+    var blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8;'});
+    var a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='Laporan-Room-Occupancy-Turtle-'+(new Date().toISOString().slice(0,10))+'.csv';
     document.body.appendChild(a); a.click();
     setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },500);
   }catch(e){ alert('Tidak bisa mengunduh CSV di browser ini.'); }
@@ -2534,6 +2814,6 @@ function toggleInvoiceTextPreview(){
 (function(){ var ok=false; try{ok=localStorage.getItem(LS)==='1';}catch(e){} if(ok) unlock(); })();
 document.getElementById('pinInput').addEventListener('keydown',function(e){ if(e.key==='Enter') tryPin(); });
 </script>
-<style>#__ver{position:fixed;left:8px;bottom:8px;z-index:99999;font:700 11px/1.3 system-ui,Arial,sans-serif;background:rgba(14,75,79,.92);color:#fff;padding:4px 9px;border-radius:20px;letter-spacing:.03em;box-shadow:0 2px 8px rgba(0,0,0,.18);opacity:.9}#__ver b{color:#8FD9CC}@media print{#__ver{display:none!important}}</style><div id="__ver">Invoice v3 · <b>V31</b> · build 2026-09-04</div>
+<style>#__ver{position:fixed;left:8px;bottom:8px;z-index:99999;font:700 11px/1.3 system-ui,Arial,sans-serif;background:rgba(14,75,79,.92);color:#fff;padding:4px 9px;border-radius:20px;letter-spacing:.03em;box-shadow:0 2px 8px rgba(0,0,0,.18);opacity:.9}#__ver b{color:#8FD9CC}@media print{#__ver{display:none!important}}</style><div id="__ver">Invoice v3 · <b>V32</b> · build 2026-09-06</div>
 </body>
 </html>

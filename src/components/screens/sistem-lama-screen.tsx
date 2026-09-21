@@ -1,14 +1,15 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-import { useSistemLama } from "@/components/sistem-lama-data";
+import { sejak, useSistemLama } from "@/components/sistem-lama-data";
 import { Pill } from "@/components/ui/pill";
 import type { PillColors } from "@/lib/pills";
 import {
   type BookingLama,
   type PapanPantau,
   JENDELA_HARI,
+  PERMINTAAN,
   diminta,
   jumlahTamu,
   namaTamu,
@@ -30,16 +31,6 @@ import {
 const MINT: PillColors = { bg: "#DCEFE3", fg: "#216B4B" };
 const CLAY: PillColors = { bg: "#FBE3DA", fg: "#B04A3A" };
 const STONE: PillColors = { bg: "#F2EBE0", fg: "#6B6357" };
-
-const PERMINTAAN: { key: keyof BookingLama; label: string }[] = [
-  { key: "reqDiving", label: "Diving" },
-  { key: "reqSnorkeling", label: "Snorkeling" },
-  { key: "reqTryDive", label: "Try dive" },
-  { key: "reqSSICourse", label: "Kursus SSI" },
-  { key: "reqTransport", label: "Transport" },
-  { key: "reqExcursion", label: "Excursion" },
-  { key: "reqExtraBed", label: "Extra bed" },
-];
 
 function Kosong() {
   return <span className="text-slate-mute">—</span>;
@@ -224,8 +215,18 @@ function Papan({ papan }: { papan: PapanPantau }) {
 // -------------------------------------------------------------------- layar
 
 export function SistemLamaScreen() {
-  const { jawaban, sibuk, muat } = useSistemLama();
+  const { jawaban, waktu, sibuk, muat } = useSistemLama();
   const [cari, setCari] = useState("");
+
+  /* Jamnya sendiri, supaya "baru saja" berubah jadi "2 menit lalu" tanpa
+     menunggu data berikutnya datang. Tanpa ini, layar yang gagal menarik
+     ulang akan terus menulis "baru saja" selamanya — kalimat yang paling
+     menyesatkan justru waktu ia berhenti benar. */
+  const [sekarang, setSekarang] = useState(() => Date.now());
+  useEffect(() => {
+    const t = setInterval(() => setSekarang(Date.now()), 15000);
+    return () => clearInterval(t);
+  }, []);
 
   const bookings = useMemo(() => jawaban?.bookings ?? [], [jawaban]);
   const papan = useMemo(() => papanPantau(bookings), [bookings]);
@@ -248,7 +249,8 @@ export function SistemLamaScreen() {
       <div className="mb-1 text-[22px] font-bold">Sistem lama</div>
       <div className="mb-4 max-w-[760px] text-[13.5px] leading-[1.55] text-slate-soft">
         Bookingan yang sudah masuk di sistem staf Turtle yang sekarang, dibaca
-        langsung dari sana supaya bisa dipantau dari dashboard ini. Bacaan saja:{" "}
+        langsung dari sana dan disegarkan sendiri — booking yang masuk di sana
+        muncul di sini tanpa perlu menekan apa pun. Bacaan saja:{" "}
         <strong>tidak ada satu pun yang diubah, ditambah, atau dihapus</strong>{" "}
         di sistem lamanya, dan tidak ada tombol di layar ini yang bisa.
       </div>
@@ -272,8 +274,15 @@ export function SistemLamaScreen() {
           {sibuk ? "Membaca…" : "Baca ulang"}
         </button>
         {jawaban?.ok && (
-          <div className="font-mono text-[11px] text-slate-mute">
-            adminList · {jawaban.ms ?? 0} ms
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <div className="flex items-center gap-[6px] text-[12px] text-slate-soft">
+              <span className="h-[7px] w-[7px] rounded-full bg-teal" />
+              Menyegarkan sendiri tiap menit — terakhir dibaca{" "}
+              {sejak(waktu, sekarang)}
+            </div>
+            <div className="font-mono text-[11px] text-slate-mute">
+              adminList · {jawaban.ms ?? 0} ms
+            </div>
           </div>
         )}
       </div>

@@ -260,6 +260,23 @@ menginap, siapa menyusul 14 hari ke depan.** Dan karena yang dibuka tiap pagi
 adalah Kalender, bukan layar ini, ringkasannya juga duduk sebagai satu baris di
 atas kalender, satu klik dari papannya.
 
+**Papannya menyegarkan diri sendiri.** Tiap menit, selama tabnya dilihat.
+Booking yang masuk di sistem lama muncul di sini tanpa ada yang menekan apa
+pun — dibuktikan, bukan dijanjikan: `sinkron.mjs` di scratchpad menambahkan
+booking ke tiruan Apps Script di tengah jalan lalu menunggu tanpa menyentuh
+halamannya, dan booking itu muncul sendiri beserta papannya.
+
+Begitu tabnya tersembunyi ia **berhenti sama sekali**, dan itu bukan
+kehalusan: kuota Apps Script itu milik client, dan yang memakainya stafnya
+untuk bekerja. Satu tab yang dibiarkan terbuka seharian pada 30 detik memakan
+~2.900 panggilan sehari. Tab yang menganggur di belakang sekarang memakan nol,
+dan begitu dilihat lagi ia langsung menarik sekali supaya yang tampil bukan
+sisa satu jam lalu. Ketiganya ikut diuji.
+
+Layarnya juga menulis "terakhir dibaca sekian lalu", dengan jamnya sendiri —
+tanpa itu, layar yang gagal menarik ulang akan terus menulis "baru saja"
+selamanya, dan kalimat itu paling menyesatkan justru waktu ia berhenti benar.
+
 Papannya **diturunkan dari `adminList`**, bukan diminta ke mode
 `adminDashboard`. Mode itu ada dan memulangkan papan yang mirip, tapi bentuk
 tiap barisnya belum pernah kami lihat sungguhan — sementara bentuk `adminList`
@@ -311,6 +328,59 @@ sudah ada di daftar putihnya dan tinggal diberi tampilan: papan hari ini
 (`adminGetRoomSchedule`), dan seterusnya. Bentuk datanya dibaca dari kode render
 dashboard lama, bukan dari skema, jadi tiap ladang diperlakukan sebagai
 mungkin-tidak-ada sampai endpoint sungguhan menjawab.
+
+## Arah yang sudah diputuskan, 21 September 2026
+
+Pemiliknya menetapkan tiga hal, dan ketiganya mengubah cara membaca sisa
+dokumen ini.
+
+**1. Penamaan dan isi ikut sistem lama.** Layar baru adalah jendela, dan
+jendela tidak mengganti nama benda. Ini langsung menangkap satu kekeliruan:
+versi pertama layar "Sistem lama" menulis "Kursus SSI", "Excursion", dan
+"Try dive" untuk tiga penanda yang di sistem lamanya bernama **SSI Dive
+Course**, **Excursion Trip**, dan **Try Dive**. Terjemahan yang kelihatan
+tidak berbahaya, tapi akibatnya dua kosakata untuk satu benda — staf yang
+membaca "SSI Dive Course" di satu layar dan "Kursus SSI" di layar lain akan
+mengira itu dua hal. Sekarang labelnya disalin, ada di `PERMINTAAN` di
+`sistem-lama-bentuk.ts`, dengan sumbernya disebut.
+
+**2. Sekarang: sinkron satu arah saja, dari sistem lama.** Yang baru membaca,
+yang lama tetap satu-satunya tempat menulis. Dan membacanya harus otomatis:
+booking yang masuk di sana muncul di sini sendiri, tanpa ada yang menekan apa
+pun. Papan yang cuma benar pada detik halaman dibuka bukan pantauan — ia foto
+lama yang terlihat seperti keadaan sekarang, dan itu lebih buruk daripada
+tidak ada papan sama sekali.
+
+**3. Nanti: satu sistem, dengan data lama sebagai isinya.** Migrasi penuhnya
+bukan memindahkan data ke tempat baru. Rencananya justru sebaliknya: aplikasi
+yang sedang dibangun ini menjadi tampilannya, **database sistem lama tetap
+jadi isinya**, dan **domain lamanya tetap alamatnya**. Yang berubah cuma
+kerapiannya.
+
+### Satu hal yang perlu diputuskan sebelum migrasi penuh
+
+Keputusan nomor 3 bertabrakan dengan sesuatu yang sudah ada di repo ini, dan
+lebih baik disebut sekarang daripada ditemukan di tengah jalan.
+
+Dashboard ini sudah punya database sendiri — Postgres lewat Prisma, dengan
+model `Property`, `Room`, `SeasonalRate`, `Booking`, dan `IcalFeed`, ditambah
+proteksi anti-double-booking yang memakai `EXCLUDE USING gist`. Kalau isi
+Turtle tetap di Google Sheet, maka untuk Turtle, Postgres itu **bukan** sumber
+kebenarannya.
+
+Dua-duanya masuk akal, dan pilihannya bukan pilihan teknis semata:
+
+- **Sheet tetap sumbernya.** Tidak ada yang perlu dipindahkan, tidak ada yang
+  bisa rusak waktu memindahkan, dan staf yang sudah terbiasa tetap bisa
+  membuka sistem lamanya. Harganya: proteksi double-booking di Postgres tidak
+  melindungi Turtle, dan tiap layar yang menulis harus lewat Apps Script.
+- **Pindah ke Postgres.** Dapat proteksi itu dan satu tempat untuk semuanya.
+  Harganya: perpindahan data sungguhan, yang persis hal yang kliennya minta
+  dihindari.
+
+Belum diputuskan, dan tidak perlu diputuskan sekarang — sinkron satu arah
+berjalan di kedua kemungkinan itu. Yang tidak boleh terjadi adalah salah satu
+dipilih diam-diam karena kode tumbuh ke satu arah tanpa ada yang menyebutnya.
 
 ## Invoice naik ke V32
 

@@ -30,6 +30,8 @@ export type Screen =
   | "laporan"
   | "properti"
   | "sinkron"
+  /** Read-only view onto the client's old Turtle staff system. Owner only. */
+  | "lama"
   | "website"
   | "pengguna";
 

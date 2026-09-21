@@ -3,8 +3,8 @@ import type { NextConfig } from "next";
 /**
  * One application, three sites, told apart by the domain that was asked for.
  *
- * On Vercel — and on any other host — attaching a domain to this project makes
- * that domain serve `/`, which is the booking dashboard. That is right for the
+ * On any host, attaching a domain to this project makes that domain serve
+ * `/`, which is the booking dashboard. That is right for the
  * manager's domain and wrong for the other two: a guest who types the homestay
  * address should land on the homestay, not on a login screen. This is the
  * layer that sorts that out, and it is the one thing "point the domain at the
@@ -18,9 +18,9 @@ import type { NextConfig } from "next";
  *
  * **Why `next.config` and not a proxy.** A rewrite here is resolved by the
  * routing layer before anything runs, so it costs nothing per request and
- * behaves identically on Vercel and on a plain Node server behind Caddy. A
- * proxy would cost an invocation on every request to do work that never
- * changes.
+ * behaves the same on a plain Node server behind a reverse proxy as it would
+ * on any managed platform. A proxy of our own would cost an invocation on
+ * every request to do work that never changes.
  *
  * **Why two lists.** `beforeFiles` runs before the filesystem, `afterFiles`
  * after it. The root has to be rewritten before, because `/` is a real page
@@ -108,6 +108,67 @@ function canonicalPathRedirects() {
   return out;
 }
 
+/**
+ * The client's own staff system, kept out of search results.
+ *
+ * `public/sistem/` holds the Turtle System pages byte for byte as the family
+ * runs them today. They are the working tools of a business, not pages anybody
+ * should find by searching, and one of them carries a staff PIN in its source
+ * — see `MIGRASI.md`, where that is the first thing on the list to fix.
+ *
+ * This is a sign on the door, not a lock. It keeps the pages out of Google,
+ * which is worth having and is all it does; anyone with the address still
+ * reaches them, exactly as on the hosting they are served from today.
+ */
+function systemHeaders() {
+  return [
+    {
+      source: "/sistem/:path*",
+      headers: [
+        { key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" },
+      ],
+    },
+  ];
+}
+
+/**
+ * Tautan lama sistem stafnya, tetap hidup.
+ *
+ * Di hosting lama berkasnya duduk di akar domain, jadi yang beredar di
+ * WhatsApp dan tersimpan di bookmark orang berbentuk
+ * `turtledivehomestay.com/dashboard.html`. Begitu domain itu menyajikan
+ * aplikasi ini, alamat itu harus tetap sampai ke tempat yang benar — bukan ke
+ * halaman 404 pada Senin pagi.
+ *
+ * Sementara, bukan permanen, karena alasan yang sama seperti pengalihan di
+ * bawah: pengalihan permanen disimpan peramban lama sekali dan tidak enak
+ * ditarik kembali kalau alamatnya ternyata berubah lagi.
+ */
+const SISTEM_LAMA = [
+  "dashboard.html",
+  "staff.html",
+  "td_monitoring.html",
+  "td_activity_log.html",
+  "invoiceapp_turtle_v3.html",
+  "td_room_availability.html",
+  /* Nama aplikasi sebenarnya ikut, karena sebagian orang sudah terlanjur
+     menyimpan alamat panjangnya, bukan pemuatnya. */
+  "td_dashboard_console_31.html",
+  "turtle_staff_system_19_3.html",
+  "td_monitoring_app.html",
+  "td_activity_log_app.html",
+  "invoiceapp_turtle_v3_app.html",
+  "invoiceapp_turtle_v3_app_V32_room_occupancy.html",
+];
+
+function systemRedirects() {
+  return SISTEM_LAMA.map((berkas) => ({
+    source: `/${berkas}`,
+    destination: `/sistem/${berkas}`,
+    permanent: false,
+  }));
+}
+
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   /**
@@ -120,9 +181,9 @@ const nextConfig: NextConfig = {
    * deployable somewhere that cannot spare the memory to build.
    *
    * The build itself is unchanged and just as heavy; it simply stops having to
-   * happen on the machine that serves the site. Vercel is unaffected, which is
-   * the point: this is additive, and the deployment that works today keeps
-   * working the same way.
+   * happen on the machine that serves the site. That is the whole point: the
+   * server the site runs on is a small shared one, and building there is what
+   * it cannot do.
    *
    * `server.js` does not serve `public/` or `.next/static` on its own. Both
    * have to be copied in beside it, which is what `npm run package` does. Skip
@@ -135,7 +196,10 @@ const nextConfig: NextConfig = {
     return { beforeFiles, afterFiles, fallback: [] };
   },
   async redirects() {
-    return canonicalPathRedirects();
+    return [...canonicalPathRedirects(), ...systemRedirects()];
+  },
+  async headers() {
+    return systemHeaders();
   },
 };
 

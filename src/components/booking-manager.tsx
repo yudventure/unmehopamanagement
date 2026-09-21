@@ -20,6 +20,7 @@ import {
   PropertyScreen,
   type PropertyCard,
 } from "@/components/screens/property-screen";
+import { SistemLamaScreen } from "@/components/screens/sistem-lama-screen";
 import { SyncScreen } from "@/components/screens/sync-screen";
 import { UsersScreen } from "@/components/screens/users-screen";
 import { WebsiteScreen } from "@/components/screens/website-screen";
@@ -130,9 +131,14 @@ const OWNER_SCREENS: Screen[] = [
   "laporan",
   "properti",
   "sinkron",
+  "lama",
   "website",
   "pengguna",
 ];
+/* `lama` is owner-only, and that is the most it can be: the session cookie
+   says somebody signed in, not who, so hiding the tab is a courtesy rather
+   than a lock. The endpoint behind it is safe under that limit because it
+   cannot write — see `src/app/api/sistem-lama/route.ts`. */
 const STAFF_SCREENS: Screen[] = ["kalender", "properti"];
 
 const NAV_LABELS: Record<Screen, string> = {
@@ -140,6 +146,7 @@ const NAV_LABELS: Record<Screen, string> = {
   laporan: "Laporan",
   properti: "Properti & Kamar",
   sinkron: "Sinkronisasi OTA",
+  lama: "Sistem lama",
   website: "Website",
   pengguna: "Pengguna & Peran",
 };
@@ -279,7 +286,9 @@ export function BookingManager({
 
     const batal = new AbortController();
     const now = new Date();
-    const dari = iso(new Date(now.getFullYear(), now.getMonth() - JENDELA_BULAN, 1));
+    const dari = iso(
+      new Date(now.getFullYear(), now.getMonth() - JENDELA_BULAN, 1),
+    );
     const sampai = iso(
       new Date(now.getFullYear(), now.getMonth() + JENDELA_BULAN + 1, 1),
     );
@@ -743,7 +752,9 @@ export function BookingManager({
         body: JSON.stringify({ password: loginPass }),
       });
       if (res.status === 503) {
-        setLoginError("Login belum disiapkan di server. Isi DASHBOARD_PASSWORD.");
+        setLoginError(
+          "Login belum disiapkan di server. Isi DASHBOARD_PASSWORD.",
+        );
         return;
       }
       ok = res.ok;
@@ -1172,9 +1183,7 @@ export function BookingManager({
            strand. Counted from the whole book, not the filtered view. */
         upcoming: scopedBookings.filter(
           (b) =>
-            b.roomId === r.id &&
-            b.status !== "Cancelled" &&
-            b.checkOut > today,
+            b.roomId === r.id && b.status !== "Cancelled" && b.checkOut > today,
         ).length,
       })),
     };
@@ -1187,7 +1196,8 @@ export function BookingManager({
      the filtered view: a sidebar filter must never be able to offer a room
      that something else is already sitting in. */
   const formAvailability = useMemo(
-    () => freeRooms(bookings, rooms, form.property, form.checkIn, form.checkOut),
+    () =>
+      freeRooms(bookings, rooms, form.property, form.checkIn, form.checkOut),
     [bookings, rooms, form.property, form.checkIn, form.checkOut],
   );
 
@@ -1281,8 +1291,16 @@ export function BookingManager({
                 {/* Di atas isi tiap layar, bukan hanya kalender: okupansi di
                     Laporan dan tarif di Properti dibangkitkan dari sumber yang
                     sama, jadi peringatan yang cuma muncul di satu layar akan
-                    membuat dua layar lain terbaca sebagai kenyataan. */}
-                <DataSourceNote sumber={sumber} />
+                    membuat dua layar lain terbaca sebagai kenyataan.
+
+                    Kecuali satu. "Sistem lama" tidak mengambil dari sumber itu
+                    sama sekali — isinya dibaca langsung dari sistem client dan
+                    justru sungguhan. Di sana catatan ini tepat terbalik:
+                    kalimat "tidak satu pun berasal dari booking sungguhan"
+                    berdiri di atas daftar yang seluruhnya booking sungguhan,
+                    yang persis jenis kesalahan yang catatan ini ada untuk
+                    mencegahnya. Layar itu membawa keterangannya sendiri. */}
+                {screen !== "lama" && <DataSourceNote sumber={sumber} />}
 
                 {screen === "kalender" && (
                   <CalendarScreen
@@ -1373,6 +1391,8 @@ export function BookingManager({
                     origin={origin}
                   />
                 )}
+
+                {screen === "lama" && isOwner && <SistemLamaScreen />}
 
                 {screen === "website" && isOwner && (
                   <WebsiteScreen editor={userName} />

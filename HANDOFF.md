@@ -631,7 +631,7 @@ website di `/turtle`. Keduanya cuma berbagi tarif kamar, kit ilustrasi, dan
 tanpa yang lain ikut berubah.
 
 **Koreksi.** Paragraf ini dulu bilang memindahkannya ke domain sendiri cuma
-setelan domain di Vercel dan bukan perubahan kode. Itu keliru: domain yang
+setelan domain di panel hosting dan bukan perubahan kode. Itu keliru: domain yang
 ditambahkan ke sebuah proyek menyajikan `/`, dan `/` adalah dashboard, jadi
 tamu yang mengetik alamat homestay akan mendarat di halaman login. Pemetaan
 domain ke situs sekarang ada di `next.config.ts`, mati kalau tidak diisi, dan
@@ -670,7 +670,7 @@ newline tidak bisa dipakai menyuntik header. Minimal salah satu dari WhatsApp
 atau email wajib diisi, kalau tidak owner menerima pesan yang tidak bisa
 dijawab (422 `no-contact`).
 
-Butuh dua variabel di Vercel:
+Butuh dua variabel lingkungan:
 
 | Variabel | Isi |
 |---|---|
@@ -735,8 +735,8 @@ dan konfirmasi tetap lewat WhatsApp.
 bayar sama sekali, semua kartu cuma menawarkan bertanya. `midtransConfigured()`
 dibaca di halaman server lalu diturunkan sebagai prop `payable`. Karena
 halaman Turtle di-*prerender*, kuncinya dibaca **saat build** — memasang kunci
-di panel Vercel baru terlihat setelah deploy berikutnya, sama seperti mode
-perbaikan dan harga.
+baru terlihat setelah build berikutnya, sama seperti mode perbaikan dan
+harga.
 
 ### Halaman detail tiap paket selam
 
@@ -827,7 +827,7 @@ kecil yang bertahan bertahun-tahun, jadi kosong lebih baik daripada tebakan.
 Owner mengubah nomor WhatsApp, email publik, email penerima, tautan media
 sosial, tahun berdiri, enam harga paket selam, dan **mode perbaikan** dari tab
 **Website** di manager, bukan dari repo. Isinya duduk di `content/site.json`;
-`PUT /api/content` menuliskannya kembali lewat GitHub Contents API, Vercel
+`PUT /api/content` menuliskannya kembali lewat GitHub Contents API, `build.yml`
 melihat commit itu dan membangun ulang. Sekitar satu menit sampai tayang, dan
 setiap perubahan tercatat di riwayat repo lengkap dengan nama yang
 menyimpannya. Untuk harga yang bergerak dua kali setahun itu tukaran yang lebih
@@ -885,7 +885,7 @@ bahasa, dan situs ini tujuh bahasa.
 `maintenance` yang tidak ada di berkas dianggap **mati**. Berkas yang ditulis
 sebelum kolom ini ada tidak boleh mematikan situs pada deploy berikutnya.
 
-Butuh empat variabel di Vercel:
+Butuh empat variabel lingkungan:
 
 | Variabel | Isi |
 |---|---|
@@ -932,6 +932,7 @@ Yang diambil apa adanya dari sana:
 | Harga selam | daftar harga 2025 lengkap: 21 baris (15 + 4 perahu excursion + kursus & snorkeling yang belum berharga) + 5 catatan, semuanya jadi kartu | `divePrices` di `content/site.json`, barisnya di `PRICE_ROWS`, kata-katanya di `COPY[*].dive.list` |
 | Klip di atas bar pemesanan selam | diisi dari dashboard: tautan YouTube atau berkas di `public/`. Selebar seksinya, 16:9, **autoplay tanpa suara dan berulang** begitu bandnya masuk layar, dengan kontrol tetap ada | `diveVideo` di `content/site.json`; `assets/README.md` menerangkan slotnya |
 | Nomor kantor | +62 812 4323 7470 untuk reservasi selam | sama dengan `contact.whatsapp` |
+| Sistem staf kliennya | lima perkakas kerja dari hosting lama, disalin bit per bit ke `/sistem/` | `public/sistem/`, ceritanya lengkap di `MIGRASI.md` |
 
 **Situs lama menyebut Pulau Kri, bukan Yenbuba.** Sebelum ini, seluruh copy
 Turtle dalam tujuh bahasa menempatkan homestay-nya di Yenbuba, Pulau Mansuar —
@@ -1070,7 +1071,7 @@ Empat berkas di `public/`, dan `assets/README.md` menerangkan tiap slotnya:
 disalin ke `src/app/turtle/icon.png`).
 
 Nama berkas **peka huruf besar-kecil** di server, tidak di Mac. `Hero.jpg`
-tidak akan tampil di Vercel walaupun terlihat baik-baik saja secara lokal.
+tidak akan tampil di server walaupun terlihat baik-baik saja secara lokal.
 
 Di belakang tiap foto masih ada ilustrasi SVG dengan komposisi yang sama
 (`web/scenes.tsx`), dipasang sebagai CSS background. Kalau satu foto hilang,

@@ -11,8 +11,9 @@
  * and it is sent to a client before anybody has clicked it.
  *
  * The same reading is wrong in the other direction in production. Behind a
- * proxy that terminates TLS — which is every managed host, Vercel included —
- * the request reaches the application as plain http, so a cookie marked
+ * proxy that terminates TLS — which is every managed host, and the shared one
+ * this runs on — the request reaches the application as plain http, so a
+ * cookie marked
  * `secure` only when `req.url` says https is never marked secure at all.
  *
  * Both are answered by the headers the proxy sets and the browser sends, which

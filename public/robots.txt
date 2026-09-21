@@ -1,0 +1,10 @@
+# Situs publiknya boleh dibaca mesin pencari; perkakas kerjanya tidak.
+#
+# /sistem/ berisi sistem staf milik keluarganya, dipindahkan apa adanya dari
+# hosting lama. Itu alat kerja, bukan halaman yang pantas muncul di hasil
+# pencarian. Selain baris ini ada juga header X-Robots-Tag di next.config.ts,
+# karena robots.txt adalah permintaan dan header itu instruksi.
+#
+# Keduanya rambu, bukan kunci. Yang tahu alamatnya tetap bisa membuka.
+User-agent: *
+Disallow: /sistem/

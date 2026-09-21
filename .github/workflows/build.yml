@@ -10,8 +10,9 @@
 # The output is `app.tar.gz`, which unpacks into a folder that runs with one
 # command and no `npm install`. Download it from the run's Artifacts section.
 #
-# Vercel is untouched by this. It keeps building from the same repository the
-# way it does today; this is a second way out, not a replacement.
+# This is the way out that is actually used: the site runs on shared hosting
+# that cannot build, so the build happens here and the result is published
+# ready to run.
 
 name: Build
 

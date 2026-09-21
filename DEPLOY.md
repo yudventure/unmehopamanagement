@@ -1,7 +1,15 @@
-# Deploy ke Vercel
+# Deploy
 
-Satu proyek Vercel, satu repo, **tiga situs**. Yang membedakan ketiganya bukan
-tiga deploy, melainkan domain mana yang diminta pengunjung.
+Satu aplikasi, satu repo, **tiga situs**. Yang membedakan ketiganya bukan tiga
+deploy, melainkan domain mana yang diminta pengunjung.
+
+**Tempatnya Hostinger, dan cuma Hostinger.** Proyek ini sempat berjalan di
+Vercel sewaktu dibangun; per 21 September 2026 pemiliknya memindahkan
+semuanya, dan alamat `*.vercel.app`-nya tidak dipakai lagi. Yang tersisa di
+dokumen ini adalah cara kerja yang sekarang: build di GitHub Actions, hasilnya
+diterbitkan ke branch `deploy`, dan Hostinger menariknya. Bagian **Deploy
+otomatis lewat branch `deploy`** di bawah adalah jalur yang benar-benar
+dipakai.
 
 | Alamat | Isi | Siapa yang membukanya |
 |---|---|---|
@@ -9,15 +17,21 @@ tiga deploy, melainkan domain mana yang diminta pengunjung.
 | `/turtle` | Situs publik Turtle Dive Homestay | tamu |
 | `/eddo` | Situs publik Eddo Homestay | tamu |
 
-Selama belum ada domain, ketiganya dibuka lewat jalur itu apa adanya, termasuk
-di alamat `*.vercel.app` yang Vercel berikan otomatis. **Tidak ada yang perlu
+Selama belum ada domain, ketiganya dibuka lewat jalur itu apa adanya, di
+alamat apa pun yang sedang menyajikan aplikasinya. **Tidak ada yang perlu
 disiapkan supaya situs baru ikut tayang**: `/eddo` adalah halaman di aplikasi
 yang sama, jadi ia ikut naik pada push berikutnya seperti halaman lain.
 
 ## Variabel lingkungan
 
-Diisi di Vercel → Settings → Environment Variables. Semuanya opsional dalam
-arti aplikasinya tetap jalan tanpa itu; yang mati cuma fitur yang
+Ada di dua tempat, dan bedanya penting: yang **dibaca saat build** diisi
+sebagai GitHub repository variables atau secrets, karena build-nya berjalan di
+GitHub Actions; yang **dibaca saat jalan** diisi di panel Hostinger, di
+lingkungan yang menjalankan servernya. `.env.example` memisahkan keduanya, dan
+bagian **Variabel mana yang dibaca kapan** di bawah menerangkan akibat dari
+salah menaruh.
+
+Semuanya opsional dalam arti aplikasinya tetap jalan tanpa itu; yang mati cuma fitur yang
 bersangkutan, dan matinya dijelaskan di layar, bukan berupa error.
 
 | Variabel | Untuk apa | Tanpa ini |
@@ -60,8 +74,7 @@ Tiga hal yang harus benar, dan dua di antaranya tidak ada di sini:
    disiapkan.
 5. **Halaman Turtle membaca kunci itu saat build.** Halamannya di-*prerender*,
    dan tombol bayarnya hanya digambar kalau kuncinya ada. Jadi menambahkan
-   `MIDTRANS_SERVER_KEY` di panel Vercel baru kelihatan setelah deploy
-   berikutnya; sampai saat itu situsnya tetap hidup dan tetap menawarkan
+   `MIDTRANS_SERVER_KEY` baru kelihatan setelah build berikutnya; sampai saat itu situsnya tetap hidup dan tetap menawarkan
    bertanya. (Endpoint-nya sendiri membaca kunci saat jalan, jadi pembayaran
    Eddo yang sudah tayang tidak menunggu apa pun.)
 
@@ -78,15 +91,15 @@ pembayaran uji di sandbox sebelum kuncinya diganti ke produksi.
 
 ## Menyambungkan tiga domain
 
-Ini bagian yang **tidak** selesai hanya dengan menambahkan domain di Vercel.
-Domain yang ditambahkan ke sebuah proyek akan menyajikan `/`, dan `/` adalah
-dashboard. Tamu yang mengetik alamat homestay akan mendarat di halaman login.
+Ini bagian yang **tidak** selesai hanya dengan menambahkan domainnya di panel
+hosting. Domain yang ditambahkan ke sebuah proyek akan menyajikan `/`, dan `/`
+adalah dashboard. Tamu yang mengetik alamat homestay akan mendarat di halaman login.
 
 Dua langkah, dan urutannya bebas.
 
-**1. Tambahkan ketiga domain di Vercel** → Settings → Domains. Kalau memakai
-bentuk `www`, tambahkan keduanya dan biarkan Vercel mengarahkan salah satunya
-ke yang lain.
+**1. Tambahkan ketiga domain di panel Hostinger.** Kalau memakai bentuk `www`,
+tambahkan keduanya dan biarkan panelnya mengarahkan salah satunya ke yang
+lain.
 
 **2. Isi dua variabel berikut**, lalu deploy ulang sekali supaya terbaca:
 
@@ -111,10 +124,10 @@ dipakai sebagai alamat canonical; sisanya dianggap alias.
 **Variabel ini dibaca waktu build, bukan waktu server menyala.** Next menulis
 daftar rewrite-nya ke `.next/routes-manifest.json` sewaktu `next build`, jadi
 mengisi variabelnya lalu menyalakan ulang server saja tidak mengubah apa pun:
-domainnya akan tetap menyajikan dashboard. Diuji, bukan dikira. Di Vercel ini
-otomatis benar karena setiap deploy adalah build baru; di VPS, pastikan
-variabelnya ada di lingkungan yang menjalankan build, bukan cuma di yang
-menjalankan `next start`.
+domainnya akan tetap menyajikan dashboard. Diuji, bukan dikira. Karena
+build-nya berjalan di GitHub Actions, variabel ini harus ada **di sana** —
+sebagai repository variable — bukan cuma di lingkungan yang menjalankan
+`next start` di Hostinger.
 
 **3. Arahkan DNS-nya.** Dua catatan yang perlu diubah dan satu yang tidak
 boleh disentuh:
@@ -152,7 +165,7 @@ memang halaman sungguhan ditemukan lebih dulu dan tidak pernah ikut ditulis
 ulang. Begitu `SITE_DOMAIN_TURTLE` diisi, tautannya berhenti memakai jalur itu
 dan langsung menyeberang ke domain Turtle.
 
-## Kenapa ini ada di `next.config.ts` dan bukan di setelan Vercel
+## Kenapa ini ada di `next.config.ts` dan bukan di setelan panel hosting
 
 Pemetaannya ditulis sebagai rewrite berbasis host di `next.config.ts`. Tiga
 alasan:
@@ -160,9 +173,10 @@ alasan:
 1. **Diselesaikan sebelum apa pun berjalan**, jadi tidak ada biaya per
    permintaan. Proxy akan menagih satu pemanggilan tiap permintaan untuk
    mengerjakan hal yang tidak pernah berubah.
-2. **Berlaku sama di mana pun**. Kalau situsnya nanti pindah ke VPS Hostinger
-   dengan Coolify seperti di dokumen penawaran, berkas yang sama bekerja
-   tanpa diubah. Setelan di dasbor Vercel tidak ikut pindah.
+2. **Berlaku sama di mana pun**. Waktu situsnya betul-betul pindah — dari
+   Vercel ke Hostinger — berkas ini ikut pindah dan bekerja tanpa diubah.
+   Setelan yang tinggal di dasbor sebuah platform tidak begitu, dan itulah
+   yang membuat pilihan ini terbukti.
 3. **Mati total kalau tidak diisi.** Tanpa kedua variabel itu, daftar
    rewrite-nya kosong dan routing persis seperti sekarang. Jadi berkas ini
    boleh ada di repo hari ini dan baru hidup di hari domainnya dibeli, tanpa
@@ -477,7 +491,7 @@ dan `sameSite=lax`, jadi ikut pada kunjungan biasa tapi tidak pada permintaan
 yang dibuat situs lain atas namamu. `secure` menyala sendiri di https dan mati
 di http, supaya pengujian lokal tetap bisa jalan tanpa token pernah lewat
 terbuka di produksi. Yang dibaca `x-forwarded-proto` lebih dulu: di belakang
-proxy yang mengakhiri TLS — Vercel salah satunya — permintaannya sampai ke
+proxy yang mengakhiri TLS — dan tiap hosting bersama punya satu — permintaannya sampai ke
 aplikasi sebagai http biasa, dan menilai dari situ saja berarti `secure` tidak
 pernah menyala di mana pun yang punya proxy.
 
@@ -612,8 +626,9 @@ route yang pernah cocok.
 Yang di sebelah kanan jalan **tanpa `npm install`** di server.
 
 `server.js` tidak menyajikan `public/` dan `.next/static` dengan sendirinya,
-karena Vercel menyajikan keduanya dari edge-nya sendiri. Satu proses Node tidak
-punya edge, jadi keduanya harus disalin masuk. Itu tugas `npm run package`.
+karena platform yang punya edge di depannya menyajikan keduanya dari sana dan
+tidak mau salinannya. Satu proses Node tidak punya edge, jadi keduanya harus
+disalin masuk. Itu tugas `npm run package`.
 **Kalau langkah ini terlewat situsnya tetap menyala tapi tanpa CSS dan tanpa
 foto**, yang kelihatan seperti build rusak padahal cuma penyalinan yang tidak
 jalan. Karena itu skripnya memeriksa hasil kerjanya sendiri di akhir.
@@ -707,18 +722,23 @@ diikuti restart aplikasinya.
 
 ### Yang berubah dalam cara kerja sehari-hari
 
-Di Vercel, CMS menyimpan ke GitHub lalu Vercel build ulang sendiri dan semenit
-kemudian perubahannya tayang. Di Hostinger rantai itu putus di langkah
-terakhir: buildnya jalan di Actions, tapi hasilnya tidak berjalan sendiri ke
-server. Jadi **setiap kali pemiliknya mengubah harga atau nomor WhatsApp lewat
-CMS, ada satu langkah unggah manual**, kecuali nanti dipasang deploy otomatis.
+Sempat berubah, lalu dikembalikan. Waktu pindah ke Hostinger, rantainya putus
+di langkah terakhir: build-nya jalan di Actions, tapi hasilnya tidak berjalan
+sendiri ke server, jadi tiap kali pemiliknya mengubah harga lewat CMS ada satu
+langkah unggah manual.
+
+Itu tidak berlaku lagi. Deploy otomatis lewat branch `deploy` — bagian di atas
+— menyambung kembali langkah terakhirnya: CMS menyimpan ke GitHub, Actions
+membangun, hasilnya diterbitkan ke branch `deploy`, dan Hostinger menariknya
+sendiri. Jadi sehari-harinya sama seperti dulu: ubah harga di CMS, tunggu
+semenit, tayang.
 Ini bukan alasan untuk tidak pindah, cuma hal yang harus diketahui sebelum
 menjanjikannya ke pemilik homestay.
 
 ### Yang tetap boleh tinggal di hosting bersama
 
-Email. Domain bisa menunjuk ke Vercel atau ke VPS lewat A record sementara
-emailnya tetap di Hostinger lewat MX record. Keduanya catatan DNS yang berbeda
+Email. Domain bisa menunjuk ke mana pun aplikasinya berjalan lewat A record
+sementara emailnya tetap di hosting bersama lewat MX record. Keduanya catatan DNS yang berbeda
 dan tidak saling mengganggu, jadi paket yang sudah dibeli tidak mubazir.
 
 ## Pindah server nanti, misalnya dari VPS kecil ke yang lebih besar

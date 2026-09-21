@@ -173,7 +173,16 @@ export function buildCalendar({
 
 export interface MonthStats {
   nights: number;
+  /** Hanya dari booking yang harganya diketahui. */
   revenue: number;
+  /**
+   * Malam yang terjual tapi harganya tidak dikirim sumbernya.
+   *
+   * Dihitung terpisah supaya layar bisa mengatakan "Rp sekian, dari sekian
+   * malam yang berharga" alih-alih menjumlahkan nol ke dalam pendapatan.
+   * Menjumlahkan nol terlihat persis seperti penjualan yang memang nol.
+   */
+  malamTanpaHarga: number;
   commission: number;
   byChannel: Partial<Record<ChannelKey, number>>;
   byRoom: Record<string, number>;
@@ -197,6 +206,7 @@ export function monthStats(
   let nights = 0;
   let revenue = 0;
   let commission = 0;
+  let malamTanpaHarga = 0;
   const byChannel: Partial<Record<ChannelKey, number>> = {};
   const byRoom: Record<string, number> = {};
 
@@ -206,11 +216,19 @@ export function monthStats(
       const dt = new Date(parse(b.checkIn).getTime() + d * 86400000);
       if (dt.getMonth() === m && dt.getFullYear() === y) {
         nights++;
+        byRoom[b.roomId] = (byRoom[b.roomId] ?? 0) + 1;
+
+        /* Malamnya tetap dihitung — kamarnya memang terisi, dan okupansi
+           adalah pertanyaan tentang kamar, bukan tentang uang. Yang dilewati
+           cuma bagian uangnya. */
+        if (b.tanpaHarga) {
+          malamTanpaHarga++;
+          continue;
+        }
         const per = b.total / span;
         revenue += per;
         commission += per * CH[b.channel].com;
         byChannel[b.channel] = (byChannel[b.channel] ?? 0) + per;
-        byRoom[b.roomId] = (byRoom[b.roomId] ?? 0) + 1;
       }
     }
   });
@@ -219,6 +237,7 @@ export function monthStats(
   return {
     nights,
     revenue,
+    malamTanpaHarga,
     commission,
     byChannel,
     byRoom,
@@ -288,6 +307,9 @@ export function ringkasStats(
        membuat angka ini naik tiap kali ada pesanan baru, yang membacanya
        terbalik dari maksudnya. */
     if (b.status === "Cancelled" || b.channel === "Blokir") continue;
+    /* Tanpa harga tidak ada yang bisa dikatakan tentang berapa yang belum
+       dibayar. Memasukkannya sebagai nol berarti menyatakan lunas. */
+    if (b.tanpaHarga) continue;
     if (b.checkIn > today) continue;
     piutang += Math.max(0, b.total - (b.paid ?? 0));
   }
@@ -562,6 +584,10 @@ export function monthlyTrend(
       const n = nightsInMonth(b, y, m);
       if (!n) return;
       nights += n;
+      /* Sama seperti `monthStats`: malamnya dihitung, uangnya tidak dikarang.
+         Grafik tren yang menjumlahkan nol akan menggambar pendapatan jatuh
+         di bulan yang justru penuh. */
+      if (b.tanpaHarga) return;
       revenue += (b.total / dayDiff(b.checkIn, b.checkOut)) * n;
     });
 

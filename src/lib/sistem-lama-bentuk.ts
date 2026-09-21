@@ -461,3 +461,30 @@ export function kalenderLama(
 
   return { hari, baris, tanpaTanggal };
 }
+
+/**
+ * Daftar kamar sungguhan, dari `adminGetRoomSchedule`.
+ *
+ * Kenapa tidak diturunkan dari kamar yang muncul di `adminList` saja: kamar
+ * yang bulan ini tidak terjual tidak muncul di booking mana pun, jadi daftar
+ * yang diturunkan dari booking selalu kurang — dan kekurangannya jatuh tepat
+ * di penyebut okupansi. Sepuluh kamar dengan enam terjual itu 60%; kalau
+ * daftarnya cuma berisi enam kamar yang terjual, angkanya jadi 100%, naik
+ * justru waktu sepi.
+ *
+ * Bentuknya dibaca dari kode render dashboard lama: `result.rooms` adalah
+ * daftar `{ room, bookings: [...] }`.
+ */
+export function kamarDariJadwal(data: unknown): string[] {
+  if (typeof data !== "object" || data === null) return [];
+  const amplop = data as { status?: unknown; rooms?: unknown };
+  if (amplop.status !== "ok" || !Array.isArray(amplop.rooms)) return [];
+
+  const nama: string[] = [];
+  for (const r of amplop.rooms) {
+    if (typeof r !== "object" || r === null) continue;
+    const k = teksLadang((r as { room?: unknown }).room);
+    if (k && !nama.includes(k)) nama.push(k);
+  }
+  return nama;
+}

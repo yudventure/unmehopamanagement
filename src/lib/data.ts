@@ -16,6 +16,7 @@ export const CH: Record<ChannelKey, ChannelStyle> = {
   Agoda: { bg: "#EAE3FD", fg: "#6D28D9", dot: "#8B5CF6", com: 0.17 },
   WhatsApp: { bg: "#D6F2E7", fg: "#0B5F52", dot: "#0E7C6B", com: 0 },
   Blokir: { bg: "#ECEFEE", fg: "#5C6E68", dot: "#9BABA5", com: 0 },
+  "Sistem lama": { bg: "#EDEFF3", fg: "#3F4756", dot: "#7C8797", com: 0 },
 };
 
 export const CHANNEL_KEYS = Object.keys(CH) as ChannelKey[];
@@ -32,6 +33,7 @@ export const CHANNEL_LABELS: Record<ChannelKey, string> = {
   Agoda: "Agoda",
   WhatsApp: "WA / langsung",
   Blokir: "Blokir",
+  "Sistem lama": "Sistem lama",
 };
 
 export const PROPERTIES: {
@@ -418,7 +420,10 @@ export function seedLedger(rooms: Room[], seeded: Booking[]): Booking[] {
             : "Confirmed",
         notes: NOTES[Math.floor(rnd() * NOTES.length)],
         src: ch === "WhatsApp" ? "manual" : "iCal",
-        createdAt: tanggalMasukContoh(checkIn, bookingTotal(r.rate, nights, ch)),
+        createdAt: tanggalMasukContoh(
+          checkIn,
+          bookingTotal(r.rate, nights, ch),
+        ),
       });
 
       /* Gap chosen so nights / (nights + gap) lands near the month's target.

@@ -21,7 +21,9 @@ import {
   type PropertyCard,
 } from "@/components/screens/property-screen";
 import { SistemLamaScreen } from "@/components/screens/sistem-lama-screen";
-import { SistemLamaStrip } from "@/components/sistem-lama-strip";
+import { SistemLamaPanel } from "@/components/sistem-lama-panel";
+import { useKamarLama, useSistemLama } from "@/components/sistem-lama-data";
+import { bookingDariLama } from "@/lib/dari-sistem-lama";
 import { SyncScreen } from "@/components/screens/sync-screen";
 import { UsersScreen } from "@/components/screens/users-screen";
 import { WebsiteScreen } from "@/components/screens/website-screen";
@@ -361,16 +363,59 @@ export function BookingManager({
     return match ? [match.key] : [];
   }, [isOwner, currentUser]);
 
+  /*
+   * Turtle dari sistem lama, kalau tersambung.
+   *
+   * Menggantikan, bukan menemani. Kamar Turtle di data kami bernama
+   * "Turtle 01" sampai "Turtle 10" — nama yang dibangkitkan pembangkit di masa
+   * prototipe, tidak pernah jadi nama kamar siapa pun dan tidak pernah
+   * diucapkan ke tamu. Kamar sungguhannya ada di sistem lama, dan pemiliknya
+   * menetapkan penamaan ikut sistem lama. Kalau keduanya ditampilkan
+   * berdampingan, okupansi dihitung atas kamar yang separuhnya tidak pernah
+   * ada.
+   *
+   * Eddo tidak tersentuh: sistem lama ini milik Turtle.
+   */
+  const { jawaban: jawabanLama } = useSistemLama();
+  const lamaAktif = Boolean(jawabanLama?.ok && jawabanLama.bookings?.length);
+  const kamarLama = useKamarLama(lamaAktif);
+
+  const dariLama = useMemo(
+    () =>
+      lamaAktif
+        ? bookingDariLama(jawabanLama?.bookings ?? [], kamarLama)
+        : null,
+    [lamaAktif, jawabanLama, kamarLama],
+  );
+
+  const rooms2 = useMemo(
+    () =>
+      dariLama
+        ? [...rooms.filter((r) => r.prop !== "turtle"), ...dariLama.rooms]
+        : rooms,
+    [rooms, dariLama],
+  );
+  const bookings2 = useMemo(() => {
+    if (!dariLama) return bookings;
+    const turtle = new Set(
+      rooms.filter((r) => r.prop === "turtle").map((r) => r.id),
+    );
+    return [
+      ...bookings.filter((b) => !turtle.has(b.roomId)),
+      ...dariLama.bookings,
+    ];
+  }, [bookings, rooms, dariLama]);
+
   /* Everything downstream reads these, never `rooms`/`bookings` directly, so
      the scope cannot be sidestepped by one screen forgetting to apply it. */
   const scopedRooms = useMemo(
-    () => rooms.filter((r) => allowedProps.includes(r.prop)),
-    [rooms, allowedProps],
+    () => rooms2.filter((r) => allowedProps.includes(r.prop)),
+    [rooms2, allowedProps],
   );
   const scopedBookings = useMemo(() => {
     const ids = new Set(scopedRooms.map((r) => r.id));
-    return bookings.filter((b) => ids.has(b.roomId));
-  }, [bookings, scopedRooms]);
+    return bookings2.filter((b) => ids.has(b.roomId));
+  }, [bookings2, scopedRooms]);
 
   const roomById = useMemo(
     () => new Map(scopedRooms.map((r) => [r.id, r])),
@@ -1301,15 +1346,24 @@ export function BookingManager({
                     berdiri di atas daftar yang seluruhnya booking sungguhan,
                     yang persis jenis kesalahan yang catatan ini ada untuk
                     mencegahnya. Layar itu membawa keterangannya sendiri. */}
-                {screen !== "lama" && <DataSourceNote sumber={sumber} />}
-
-                {/* Di atas kalender, bukan di dalamnya. Alasan lengkapnya ada
-                    di `sistem-lama-strip.tsx`: mencampur booking sistem lama
-                    ke dalam kisi akan menebak kamarnya dan mengubah okupansi
-                    tanpa mengubah pendapatan. */}
-                {screen === "kalender" && isOwner && (
-                  <SistemLamaStrip onBuka={() => setScreen("lama")} />
+                {screen !== "lama" && (
+                  <DataSourceNote sumber={sumber} lamaTersambung={lamaAktif} />
                 )}
+
+                {/* Kalendernya utuh di sini, bukan sebaris ringkasan: yang
+                    bernama Kalender adalah layar ini, dan kalender kosong di
+                    layar bernama Kalender tidak terbantu oleh kalender lain di
+                    tempat lain. Kenapa tidak dilebur ke kisi di bawahnya ada
+                    di `sistem-lama-panel.tsx`. */}
+                {screen === "kalender" &&
+                  isOwner &&
+                  /* Sistem lamanya milik Turtle. Waktu filternya disetel ke
+                     Eddo, menampilkan kalender Turtle di sana bukan sekadar
+                     tidak relevan — ia menjawab pertanyaan yang tidak
+                     ditanyakan, dengan kamar yang bukan kamar Eddo. */
+                  (filterProp === "all" || filterProp === "turtle") && (
+                    <SistemLamaPanel onBuka={() => setScreen("lama")} />
+                  )}
 
                 {screen === "kalender" && (
                   <CalendarScreen
@@ -1325,7 +1379,15 @@ export function BookingManager({
                     onNextMonth={() => setMonth(new Date(y, m + 1, 1))}
                     occLabel={`${stats.occPct}%`}
                     nightsLabel={`${stats.nights} malam`}
-                    revenueLabel={fmt(stats.revenue)}
+                    revenueLabel={
+                      /* Nol rupiah dari malam yang semuanya belum berharga
+                         terlihat persis seperti nol rupiah karena tidak ada
+                         yang terjual. Dua pernyataan yang sangat berbeda di
+                         layar yang dibaca dari sudut mata. */
+                      stats.malamTanpaHarga > 0 && stats.revenue === 0
+                        ? "belum ada harga"
+                        : fmt(stats.revenue)
+                    }
                     newLabel={
                       ringkas.bookingBaru === null
                         ? "belum dicatat"

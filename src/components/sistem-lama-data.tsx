@@ -131,7 +131,12 @@ export function useSistemLama() {
   const muat = useCallback(async (paksa = false) => {
     setSibuk(true);
     try {
-      await bacaSistemLama(paksa);
+      /* "Baca ulang" berarti semuanya, termasuk daftar kamar — kalau stafnya
+         baru menambah kamar di sistem lama, tombol itu yang mereka tekan. */
+      await Promise.all([
+        bacaSistemLama(paksa),
+        paksa ? bacaKamarLama(true) : null,
+      ]);
     } finally {
       setSibuk(false);
     }
@@ -181,4 +186,68 @@ export function sejak(waktu: number | null, sekarang: number): string {
   if (menit < 60) return `${menit} menit lalu`;
   const jam = Math.round(menit / 60);
   return `${jam} jam lalu`;
+}
+
+// ------------------------------------------------------------- daftar kamar
+
+/**
+ * Daftar kamar sungguhan dari sistem lama, ditarik sekali.
+ *
+ * Terpisah dari booking karena umurnya berbeda. Booking berubah sepanjang hari
+ * dan ditarik tiap menit; daftar kamar berubah beberapa kali setahun, jadi
+ * menariknya tiap menit cuma memakan kuota Apps Script milik client tanpa
+ * menghasilkan apa pun. Ditarik sekali per sesi, dan ikut disegarkan waktu ada
+ * yang menekan "Baca ulang".
+ *
+ * Kenapa perlu sama sekali, padahal kamar bisa dibaca dari booking: kamar yang
+ * bulan ini tidak terjual tidak muncul di booking mana pun. Daftar yang
+ * diturunkan dari booking selalu kurang, dan kekurangannya jatuh tepat di
+ * penyebut okupansi — sepuluh kamar dengan enam terjual itu 60%, tapi kalau
+ * daftarnya cuma berisi enam yang terjual, angkanya jadi 100%, naik justru
+ * waktu sepi.
+ */
+let kamarSimpanan: string[] | null = null;
+let kamarJalan: Promise<string[]> | null = null;
+const kamarPendengar = new Set<(k: string[]) => void>();
+
+async function tarikKamar(): Promise<string[]> {
+  try {
+    const res = await fetch("/api/sistem-lama?mode=adminGetRoomSchedule", {
+      cache: "no-store",
+    });
+    if (!res.ok) return [];
+    const isi = (await res.json()) as { ok?: boolean; data?: unknown };
+    if (!isi.ok) return [];
+    const { kamarDariJadwal } = await import("@/lib/sistem-lama-bentuk");
+    return kamarDariJadwal(isi.data);
+  } catch {
+    return [];
+  }
+}
+
+export async function bacaKamarLama(paksa = false): Promise<string[]> {
+  if (!paksa && kamarSimpanan) return kamarSimpanan;
+  if (kamarJalan) return kamarJalan;
+  kamarJalan = tarikKamar().then((k) => {
+    kamarSimpanan = k;
+    kamarJalan = null;
+    for (const p of kamarPendengar) p(k);
+    return k;
+  });
+  return kamarJalan;
+}
+
+export function useKamarLama(aktif: boolean) {
+  const [kamar, setKamar] = useState<string[]>(kamarSimpanan ?? []);
+
+  useEffect(() => {
+    if (!aktif) return;
+    kamarPendengar.add(setKamar);
+    void bacaKamarLama();
+    return () => {
+      kamarPendengar.delete(setKamar);
+    };
+  }, [aktif]);
+
+  return kamar;
 }

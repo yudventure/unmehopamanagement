@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
+import { sejak } from "@/components/sistem-lama-data";
 import { MONTHS, iso, parse } from "@/lib/format";
 import {
   type BookingLama,
@@ -74,7 +75,14 @@ function Batang({
   );
 }
 
-export function SistemLamaKalender({ bookings }: { bookings: BookingLama[] }) {
+export function SistemLamaKalender({
+  bookings,
+  waktu,
+}: {
+  bookings: BookingLama[];
+  /** Kapan angkanya dibaca. Dipakai menulis "terakhir dibaca sekian lalu". */
+  waktu?: number | null;
+}) {
   const [bulan, setBulan] = useState(() => {
     const n = new Date();
     return new Date(n.getFullYear(), n.getMonth(), 1);
@@ -85,6 +93,13 @@ export function SistemLamaKalender({ bookings }: { bookings: BookingLama[] }) {
     [bookings, bulan],
   );
 
+  const [sekarang, setSekarang] = useState(() => Date.now());
+  useEffect(() => {
+    if (waktu === undefined) return;
+    const t = setInterval(() => setSekarang(Date.now()), 15000);
+    return () => clearInterval(t);
+  }, [waktu]);
+
   const hariIni = iso(new Date());
   const kolom = kal.hari.length;
 
@@ -94,10 +109,14 @@ export function SistemLamaKalender({ bookings }: { bookings: BookingLama[] }) {
   return (
     <div className="mb-5 overflow-hidden rounded-[20px] border border-line-soft bg-surface">
       <div className="flex flex-wrap items-center gap-3 border-b border-line-fine px-4 py-[13px]">
+        {/* Label tombolnya menyebut "di sistem lama" karena di layar Kalender
+            ada dua kalender, dan dua tombol bernama sama persis membuat
+            pemakai screen reader mendengar dua "Bulan berikutnya" tanpa cara
+            membedakan yang mana yang mana. */}
         <div className="flex items-center gap-2">
           <button
             type="button"
-            aria-label="Bulan sebelumnya"
+            aria-label="Bulan sebelumnya di sistem lama"
             onClick={() => geser(-1)}
             className="h-[30px] w-[30px] rounded-[9px] border border-line-input bg-surface text-[13px] hover:bg-surface-hover"
           >
@@ -105,7 +124,7 @@ export function SistemLamaKalender({ bookings }: { bookings: BookingLama[] }) {
           </button>
           <button
             type="button"
-            aria-label="Bulan berikutnya"
+            aria-label="Bulan berikutnya di sistem lama"
             onClick={() => geser(1)}
             className="h-[30px] w-[30px] rounded-[9px] border border-line-input bg-surface text-[13px] hover:bg-surface-hover"
           >
@@ -118,8 +137,14 @@ export function SistemLamaKalender({ bookings }: { bookings: BookingLama[] }) {
         <div className="text-[12px] text-slate-soft">
           {kal.baris.filter((b) => b.kamar !== null).length} kamar terpakai
         </div>
-        <div className="ml-auto text-[11.5px] text-slate-mute">
-          Kamar dan namanya dari sistem lama
+        <div className="ml-auto flex flex-wrap items-center gap-x-3 gap-y-1 text-[11.5px] text-slate-mute">
+          {waktu != null && (
+            <span className="flex items-center gap-[5px]">
+              <span className="h-[6px] w-[6px] rounded-full bg-teal" />
+              {sejak(waktu, sekarang)}
+            </span>
+          )}
+          <span>Kamar dan namanya dari sistem lama</span>
         </div>
       </div>
 

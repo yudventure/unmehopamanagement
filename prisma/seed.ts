@@ -53,6 +53,14 @@ const prisma = db();
 const DEMO = process.argv.includes("--demo");
 
 /** Nama saluran di aplikasi lama → enum di database. */
+/**
+ * Saluran di aplikasi → enum di database.
+ *
+ * "Sistem lama" sengaja tidak ada di sini, dan tidak punya padanan di enum
+ * database. Booking bersaluran itu dibaca dari Google Sheet milik client dan
+ * tidak pernah ditulis ke database ini — kalau suatu hari ada yang mencoba
+ * menyemainya, tipenya yang menolak, bukan reviewer yang harus ingat.
+ */
 const CHANNEL = {
   "Booking.com": "BOOKING_COM",
   Traveloka: "TRAVELOKA",
@@ -60,6 +68,8 @@ const CHANNEL = {
   WhatsApp: "WHATSAPP",
   Blokir: "BLOCK",
 } as const;
+
+type SaluranBisaDisemai = keyof typeof CHANNEL;
 
 /** Status di aplikasi lama → enum di database. */
 const STATUS = {
@@ -192,7 +202,10 @@ async function tamu(bookings: SeedBooking[]) {
  * dan malam yang diperebutkan, supaya yang meninjau melihat keduanya
  * berdampingan dan bukan menemukan satu saja.
  */
-async function bookingDemo(bookings: SeedBooking[], guestIds: Map<string, string>) {
+async function bookingDemo(
+  bookings: SeedBooking[],
+  guestIds: Map<string, string>,
+) {
   let simpan = 0;
   let bentrok = 0;
 
@@ -204,7 +217,7 @@ async function bookingDemo(bookings: SeedBooking[], guestIds: Map<string, string
       guestId: guestIds.get(`${b.guest}|${b.phone}`) ?? null,
       checkIn: tanggal(b.checkIn),
       checkOut: tanggal(b.checkOut),
-      channel: CHANNEL[b.channel],
+      channel: CHANNEL[b.channel as SaluranBisaDisemai],
       source: b.src === "iCal" ? ("ICAL" as const) : ("MANUAL" as const),
       totalAmount: new Prisma.Decimal(b.total),
       notes: b.notes || null,
@@ -253,7 +266,9 @@ async function bookingDemo(bookings: SeedBooking[], guestIds: Map<string, string
  */
 async function bersihkanDemo() {
   const booking = await prisma.booking.deleteMany({
-    where: { OR: [{ code: { startsWith: "BK" } }, { code: { startsWith: "BH" } }] },
+    where: {
+      OR: [{ code: { startsWith: "BK" } }, { code: { startsWith: "BH" } }],
+    },
   });
   const tamu = await prisma.guest.deleteMany({ where: { origin: "demo" } });
   if (booking.count || tamu.count) {
@@ -279,7 +294,9 @@ async function main() {
   await bersihkanDemo();
 
   const rooms = seedRooms();
-  const semua = seedBookings(rooms).concat(seedLedger(rooms, seedBookings(rooms)));
+  const semua = seedBookings(rooms).concat(
+    seedLedger(rooms, seedBookings(rooms)),
+  );
   const guestIds = await tamu(semua);
   console.log(`  tamu      ${guestIds.size}`);
 

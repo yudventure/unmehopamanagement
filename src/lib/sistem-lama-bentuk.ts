@@ -74,6 +74,28 @@ export function diminta(nilai: unknown): boolean {
 }
 
 /**
+ * Permintaan tamu, dengan nama persis seperti yang dipakai sistem lama.
+ *
+ * Kata-katanya disalin dari label di `td_dashboard_console_31.html`, bukan
+ * diterjemahkan. Versi pertama layar ini menulis "Kursus SSI", "Excursion",
+ * dan "Try dive" — tiga-tiganya karangan sendiri, dan itu persis yang bikin
+ * dua sistem jadi dua kosakata. Staf yang membaca "SSI Dive Course" di satu
+ * layar dan "Kursus SSI" di layar lain akan mengira itu dua hal.
+ *
+ * Aturannya sekarang: **penamaan ikut sistem lama.** Sistem lamanya yang jadi
+ * sumber, layar ini jendelanya, dan jendela tidak mengganti nama benda.
+ */
+export const PERMINTAAN: { key: string; label: string }[] = [
+  { key: "reqDiving", label: "Diving" },
+  { key: "reqSnorkeling", label: "Snorkeling" },
+  { key: "reqTryDive", label: "Try Dive" },
+  { key: "reqSSICourse", label: "SSI Dive Course" },
+  { key: "reqTransport", label: "Transport" },
+  { key: "reqExcursion", label: "Excursion Trip" },
+  { key: "reqExtraBed", label: "Extra bed" },
+];
+
+/**
  * Tanggalnya sebagai YYYY-MM-DD, atau null kalau tidak yakin.
  *
  * Sengaja cuma mengenali satu bentuk, dan itu bukan kemalasan. Sistem lamanya

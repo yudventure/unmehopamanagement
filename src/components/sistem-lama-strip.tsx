@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-import { useSistemLama } from "@/components/sistem-lama-data";
+import { sejak, useSistemLama } from "@/components/sistem-lama-data";
 import { namaTamu, papanPantau } from "@/lib/sistem-lama-bentuk";
 
 /**
@@ -34,7 +34,13 @@ import { namaTamu, papanPantau } from "@/lib/sistem-lama-bentuk";
  */
 
 export function SistemLamaStrip({ onBuka }: { onBuka: () => void }) {
-  const { jawaban } = useSistemLama();
+  const { jawaban, waktu } = useSistemLama();
+
+  const [sekarang, setSekarang] = useState(() => Date.now());
+  useEffect(() => {
+    const t = setInterval(() => setSekarang(Date.now()), 15000);
+    return () => clearInterval(t);
+  }, []);
 
   const papan = useMemo(() => papanPantau(jawaban?.bookings ?? []), [jawaban]);
 
@@ -96,8 +102,11 @@ export function SistemLamaStrip({ onBuka }: { onBuka: () => void }) {
         sedang menginap
       </span>
 
-      <span className="ml-auto shrink-0 text-[12px] font-medium text-teal">
-        Buka →
+      <span className="ml-auto flex shrink-0 items-center gap-3">
+        <span className="hidden text-[11.5px] text-slate-mute sm:inline">
+          {sejak(waktu, sekarang)}
+        </span>
+        <span className="text-[12px] font-medium text-teal">Buka →</span>
       </span>
     </button>
   );

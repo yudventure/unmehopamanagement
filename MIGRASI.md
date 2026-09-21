@@ -233,8 +233,15 @@ Kosong berarti layarnya tetap ada dan mengatakan belum disambungkan, lengkap
 dengan dua baris di atas. Tidak ada yang tersambung ke sistem client sampai
 ada yang sengaja mengisinya.
 
-Alamat `/exec`-nya ada di berkas di `public/sistem/` sebagai `WEBAPP_URL` atau
-`DATA_URL`.
+Keduanya diambil dari berkas di `public/sistem/`, dan keduanya ada di
+`td_room_availability.html` di blok konfigurasi paling atas: alamat `/exec`-nya
+sebagai `DATA_URL` (sama di ketiga belas berkas; berkas lain menamainya
+`WEBAPP_URL`), dan passwordnya sebagai `ADMIN_PASSWORD`.
+
+Ambil `ADMIN_PASSWORD`, **bukan** `BACKEND_PW` yang ada tepat di atasnya.
+`BACKEND_PW` itu backend view-only yang dipakai aplikasi monitoring dan activity
+log, dan haknya berbeda — `adminList` akan menolaknya. Nilainya tidak ditulis di
+sini supaya tidak bertambah satu lagi tempat yang menyimpannya.
 
 ### Yang baru satu, dan sisanya
 
@@ -247,12 +254,23 @@ sebagai mungkin-tidak-ada sampai endpoint sungguhan menjawab.
 
 ## Yang belum, dan yang perlu diputuskan
 
-**1. PIN dan kata sandinya tertulis di dalam HTML.** Siapa pun yang membuka
-halamannya bisa membacanya lewat view-source. Ini sudah begitu di hosting lama;
-memindahkannya tidak memperburuk, tapi juga tidak memperbaiki. Ini yang pertama
-harus dibereskan sebelum UI-nya disentuh — dan membereskannya berarti
-memindahkan pemeriksaan itu ke sisi server, bukan menyembunyikannya lebih
-dalam di JavaScript.
+**1. Lima dari tiga belas berkasnya menaruh PIN dan kata sandi di dalam HTML.**
+`td_room_availability.html`, `td_monitoring_app.html`, `td_activity_log_app.html`,
+dan kedua aplikasi invoice. Siapa pun yang membuka halamannya bisa membacanya
+lewat view-source. Ini sudah begitu di hosting lama; memindahkannya tidak
+memperburuk, tapi juga tidak memperbaiki.
+
+Delapan sisanya tidak — dan itu penting untuk diketahui sebelum ada yang
+"membereskan" berkas yang sudah benar. Dua konsol besarnya,
+`td_dashboard_console_31.html` dan `turtle_staff_system_19_3.html`, justru sudah
+melakukannya dengan cara yang benar: `ADMIN_PASSWORD` di sana dimulai kosong,
+diisi dari apa yang diketik staf waktu login, lalu diperiksa di sisi server lewat
+`adminCheckRole`. Yang tersimpan di peramban cuma ingatan login, bukan kunci.
+
+Jadi pekerjaannya bukan menambal semuanya, melainkan membawa lima berkas itu ke
+pola yang sudah dipakai delapan sisanya. Ini yang pertama harus dibereskan
+sebelum UI-nya disentuh — dan membereskannya berarti memindahkan pemeriksaan itu
+ke sisi server, bukan menyembunyikannya lebih dalam di JavaScript.
 
 **2. Tampilannya belum disentuh sama sekali.** Itu disengaja: langkah pertama
 membuktikan pindahnya tidak merusak apa-apa, dan membuktikannya cuma bisa kalau

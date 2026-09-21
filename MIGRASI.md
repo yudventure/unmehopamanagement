@@ -293,6 +293,42 @@ sana. Yang di luar bentuk itu dihitung terpisah dan disebut jumlahnya, karena
 orang di hari yang salah. Yang dibatalkan juga dikeluarkan dari semua hitungan,
 dan jumlahnya disebut supaya tidak terbaca seperti data yang hilang.
 
+### Apa yang ketahuan waktu endpoint sungguhannya menjawab
+
+Sambungannya dibuka 21 September 2026, dan bacaan pertama langsung
+membetulkan tiga hal. Semuanya jenis kesalahan yang tidak bisa ditemukan dari
+membaca kode: ia butuh data sungguhan untuk kelihatan.
+
+**Tanggalnya memang `YYYY-MM-DD`.** Kekhawatiran terbesarnya tidak terbukti —
+papannya terisi, dan cuma segelintir baris yang tanggalnya di luar bentuk itu.
+
+**`room` datang sebagai angka, dan seluruh kolom kamar jatuh jadi "—".**
+Penyaringnya `typeof === "string"`, dimaksudkan sebagai kehati-hatian. Tapi di
+layar ini "—" berarti *belum dicatat*, jadi kehati-hatian itu justru mengarang
+pernyataan yang salah tentang data sungguhan: setiap kamar terbaca kosong
+padahal tidak ada satu pun yang kosong. Sistem lamanya sendiri tidak memeriksa
+tipe — ia menulis `Room ${b.room}` apa adanya. Sekarang `teksLadang` menerima
+angka maupun teks, dan "—" cuma untuk yang betul-betul tidak ada. Hal yang sama
+berlaku untuk `confirmationNo`, yang di sebagian baris juga angka.
+
+**`displayStatus` bukan status tamu — ia nama tab.** Nilainya cuma `arrival`,
+`upcoming`, dan `checkout`, dan dashboard lamanya menamainya **Arrival**,
+**Upcoming**, dan **Check out** lewat `statusLabel`. Layar ini dulu menampilkan
+kata mentahnya, dan lebih buruk: pewarnaannya mencocokkan potongan kata, dan
+"upcom**in**g" mengandung "in" tanpa "out" — jadi tamu yang belum datang
+diwarnai hijau seperti sudah check-in. Di layar yang dipakai memutuskan siapa
+dijemput, itu bukan salah warna, itu salah kabar.
+
+Ikutannya: pembatalan tampaknya tidak ikut dikirim `adminList` sama sekali —
+yang dibatalkan hilang dari daftarnya, bukan ditandai. Jadi catatan "N
+dibatalkan" tidak pernah muncul, dan itu benar; yang diuji sekarang adalah ia
+tidak muncul sebagai "0 dibatalkan", yang akan terbaca seperti data hilang.
+
+Tiruan Apps Script di scratchpad sekarang meniru bentuk ini — kamar berupa
+angka, satu `confirmationNo` berupa angka, `displayStatus` berisi nama tab, dan
+satu booking yang kamarnya memang belum ditetapkan. Fixture yang meniru dugaan
+adalah fixture yang meluluskan bug.
+
 ### Kenapa booking sistem lama tidak dimasukkan ke kisi kalender
 
 Terdengar lebih rapi, dan justru berbahaya, karena dua hal.

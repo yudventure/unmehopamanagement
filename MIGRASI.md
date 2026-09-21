@@ -147,6 +147,104 @@ yang benar.
    seterusnya.
 6. Hosting lamanya **jangan dimatikan** sampai seminggu berlalu tanpa keluhan.
 
+## Membaca sistem lama dari dashboard baru
+
+Ini jalan kedua, dan jalannya berbeda dari memindahkan berkas di atas. Di sana
+UI lamanya yang dipindah apa adanya. Di sini **UI barunya yang membaca data
+lama** — dashboard di `/kelola` punya layar "Sistem lama" yang menampilkan apa
+yang sudah tercatat di sistem client, dalam tampilan yang sedang dibangun.
+
+Yang membuat ini bisa dilakukan tanpa menyentuh datanya sama sekali: sistem
+lama memakai **dua panggilan yang berbeda**, bukan satu panggilan dengan
+saklar.
+
+```
+baca    GET  ?mode=<nama>&password=<pw>      26 mode
+tulis   POST {action: <nama>, …}             19 aksi, text/plain
+```
+
+Jadi pintu yang cuma bisa membaca memang ada bentuknya, dan itu yang dibangun.
+
+### Apa yang menahannya tetap membaca
+
+Di `src/lib/sistem-lama.ts`:
+
+- `method` bukan parameter. Ia tertulis `"GET"`, sekali, dan tidak ada yang
+  bisa menggantinya dari luar.
+- Tidak ada badan permintaan, dan tidak ada jalur kode yang bisa memasangnya.
+- `mode` harus salah satu dari daftar `MODE_BACA`. Pemanggil tidak bisa
+  membawa modenya sendiri.
+- Tiga mode sengaja **tidak** masuk daftar. `adminSyncFromCalendar` dan
+  `invoiceSyncAll` datang lewat GET seperti yang lain, tapi namanya mengatakan
+  ia menulis — dan Apps Script memang boleh mengubah Sheet di dalam `doGet`,
+  karena di sana verb itu kesepakatan, bukan aturan. `adminCheckRole` di luar
+  karena ia penebak password, dan passwordnya password staf, bukan admin.
+- Passwordnya tinggal di server. Tidak ada yang boleh membawa URL-nya ke dalam
+  pesan galat, karena **URL-nya adalah passwordnya** — sistem lama menaruhnya
+  di query string. Fungsi `sunyikan` ada untuk satu pekerjaan itu.
+
+Endpoint-nya, `src/app/api/sistem-lama/route.ts`, menjawab **404 waktu belum
+masuk**, sama seperti `/api/preview`: endpoint yang mengaku ada memberi tahu
+orang asing bahwa situs ini punya jalan ke data booking client.
+
+**Batas yang jujur:** cookie sesi mengatakan ada yang masuk, bukan siapa —
+dashboard ini satu password, dan perannya dipilih di peramban. Jadi ini tidak
+bisa owner-only di sisi server; tabnya disembunyikan dari staf, dan itu
+kesopanan, bukan kunci. Sebarannya sama dengan yang sudah dimiliki dashboard
+atas booking-nya sendiri, dan itu bisa diterima justru karena pintu ini tidak
+bisa menulis.
+
+### Dibuktikan, bukan diduga
+
+Endpoint aslinya tidak bisa dihubungi dari sini dan tidak boleh diutak-atik
+seandainya bisa, jadi buktinya lewat tiruan Apps Script yang mencatat setiap
+permintaan yang masuk — `palsu.mjs` dan `lama.mjs` di scratchpad. Lima belas
+pemeriksaan, semuanya lulus:
+
+| Yang diperiksa | Hasil |
+|---|---|
+| Belum masuk → `/api/sistem-lama` menjawab 404 | ✓ |
+| Data sistem lama tampil di layar (nama, nomor booking, chip permintaan) | ✓ |
+| Booking tanpa nama ditampilkan "—", tidak dikarang | ✓ |
+| Tanggal yang tidak terbaca ditampilkan apa adanya | ✓ |
+| Pencarian menyaring | ✓ |
+| Password sistem lama tidak ada di satu pun dari 24 jawaban ke peramban | ✓ |
+| `adminSyncFromCalendar` ditolak sebelum menyentuh sistem lama | ✓ |
+| `invoiceSyncAll` ditolak | ✓ |
+| `mode` bersisipan `&action=deleteBooking` ditolak | ✓ |
+| Sistem lama hanya menerima GET, nol permintaan bukan-GET | ✓ |
+| Hanya `adminList` yang sampai ke sana | ✓ |
+| Passwordnya ditambahkan di sisi server | ✓ |
+
+Tiruannya menjawab `MENULIS!` untuk permintaan apa pun yang bukan GET, jadi
+kalau suatu saat ada jalur yang menulis, ia muncul sebagai kegagalan, bukan
+sebagai diam.
+
+### Menyalakannya
+
+Dua variabel di panel Hostinger, keduanya kosong secara bawaan:
+
+```
+SISTEM_LAMA_URL=https://script.google.com/macros/s/…/exec
+SISTEM_LAMA_PASSWORD=…
+```
+
+Kosong berarti layarnya tetap ada dan mengatakan belum disambungkan, lengkap
+dengan dua baris di atas. Tidak ada yang tersambung ke sistem client sampai
+ada yang sengaja mengisinya.
+
+Alamat `/exec`-nya ada di berkas di `public/sistem/` sebagai `WEBAPP_URL` atau
+`DATA_URL`.
+
+### Yang baru satu, dan sisanya
+
+Sekarang layarnya membaca satu mode, `adminList` — daftar booking. Dua puluh
+dua mode baca lain sudah ada di daftar putihnya dan tinggal diberi tampilan:
+papan hari ini (`adminDashboard`), laporan harian (`adminDailyReport`), jadwal
+kamar (`adminGetRoomSchedule`), dan seterusnya. Bentuk datanya dibaca dari
+kode render dashboard lama, bukan dari skema, jadi tiap ladang diperlakukan
+sebagai mungkin-tidak-ada sampai endpoint sungguhan menjawab.
+
 ## Yang belum, dan yang perlu diputuskan
 
 **1. PIN dan kata sandinya tertulis di dalam HTML.** Siapa pun yang membuka

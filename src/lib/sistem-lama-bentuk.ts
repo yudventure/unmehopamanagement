@@ -563,6 +563,73 @@ export function sesiDariJawaban(
   return keluar;
 }
 
+/**
+ * Ringkasan jadwal selam: berapa sesi, berapa tamu, dan per kegiatan apa.
+ *
+ * ## Kenapa tidak ada persennya
+ *
+ * Okupansi kamar punya penyebut: jumlah kamar dikali jumlah malam. Jadwal selam
+ * tidak. `adminGetUpcomingSessions` mengirim berapa tamu yang ikut, tidak
+ * berapa yang muat — tidak ada kapasitas perahu, tidak ada batas per guide, dan
+ * tidak ada tangki yang dihitung. Membagi dengan angka yang tidak pernah
+ * dikirim berarti mengarang penyebutnya, dan persentase yang penyebutnya
+ * karangan terbaca persis seperti persentase yang benar.
+ *
+ * Jadi yang dilaporkan jumlahnya: berapa sesi dan berapa orang sudah terdaftar.
+ * Itu pertanyaan yang memang bisa dijawab, dan yang biasanya ditanyakan.
+ *
+ * ## Nol bukan belum dicatat
+ *
+ * `pax` boleh null per sesi. Kalau tidak satu pun sesi membawa angkanya,
+ * jumlahnya null — bukan nol, karena "tidak ada yang ikut" dan "tidak ada yang
+ * mencatat" adalah dua kabar yang sangat berbeda bagi orang yang menyiapkan
+ * perahu besok pagi. `tanpaPax` menghitung yang kosong supaya layarnya bisa
+ * menyebutkan berapa yang belum terisi, bukan diam-diam menjumlah yang ada.
+ */
+export interface RingkasSelam {
+  sesi: number;
+  /** Tamu terdaftar. Null bila tidak satu pun sesi membawa angkanya. */
+  pax: number | null;
+  /** Sesi yang belum mencatat jumlah tamunya. */
+  tanpaPax: number;
+  /** Per kegiatan, hanya yang benar-benar terjadwal. */
+  per: { aktivitas: Aktivitas; sesi: number; pax: number | null }[];
+}
+
+export function ringkasSelam(sesi: SesiLama[]): RingkasSelam {
+  let pax = 0;
+  let adaPax = false;
+  let tanpaPax = 0;
+
+  const peta = new Map<Aktivitas, { sesi: number; pax: number; ada: boolean }>();
+
+  for (const s of sesi) {
+    const baris = peta.get(s.aktivitas) ?? { sesi: 0, pax: 0, ada: false };
+    baris.sesi += 1;
+    if (typeof s.pax === "number") {
+      pax += s.pax;
+      adaPax = true;
+      baris.pax += s.pax;
+      baris.ada = true;
+    } else {
+      tanpaPax += 1;
+    }
+    peta.set(s.aktivitas, baris);
+  }
+
+  return {
+    sesi: sesi.length,
+    pax: adaPax ? pax : null,
+    tanpaPax,
+    /* Urutan tetap mengikuti AKTIVITAS, bukan urutan kemunculan: daftar yang
+       berpindah-pindah urutannya tiap bulan memaksa dibaca ulang tiap kali. */
+    per: AKTIVITAS.filter((a) => peta.has(a)).map((a) => {
+      const b = peta.get(a)!;
+      return { aktivitas: a, sesi: b.sesi, pax: b.ada ? b.pax : null };
+    }),
+  };
+}
+
 /** Sesi per hari, siap ditempel ke sel kalender. */
 export function sesiPerHari(sesi: SesiLama[]): Map<string, SesiLama[]> {
   const peta = new Map<string, SesiLama[]>();

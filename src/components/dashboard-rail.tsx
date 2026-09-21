@@ -2,7 +2,10 @@
 
 import { Pill } from "@/components/ui/pill";
 import { CH, CHANNEL_LABELS } from "@/lib/data";
+import { WARNA_AKTIVITAS } from "@/lib/dari-sistem-lama";
 import { fmtDate, fmtShort } from "@/lib/format";
+import type { RingkasSelam, SesiLama } from "@/lib/sistem-lama-bentuk";
+import { ringkasSelam } from "@/lib/sistem-lama-bentuk";
 import type { Booking } from "@/lib/types";
 
 export interface DayEntry {
@@ -10,6 +13,89 @@ export interface DayEntry {
   roomName: string;
   /** Nights from today until check-in. Only set on the arrivals list. */
   leadDays?: number;
+}
+
+/**
+ * Satu blok jadwal selam, dipisahkan dari bagian kamar dengan garis yang
+ * sengaja tidak sama.
+ *
+ * Pemisah di rail ini semuanya garis rambut krem — "Kamar kosong" memakai yang
+ * itu. Kalau selam ikut memakainya juga, keduanya terbaca sebagai dua bagian
+ * dari daftar yang sama, padahal satuannya berbeda: kamar dihitung per malam,
+ * selam per sesi dan per orang. Garis putus-putus teal mengatakan "ini hal
+ * lain" sebelum satu kata pun dibaca.
+ */
+function BlokSelam({
+  judul,
+  ringkas,
+  sesi,
+  kosong,
+}: {
+  judul: string;
+  ringkas: RingkasSelam;
+  sesi: SesiLama[];
+  kosong: string;
+}) {
+  return (
+    <div className="mt-5 border-t-2 border-dashed border-teal-line pt-4">
+      <div className="mb-[9px] flex items-center gap-2">
+        <h3 className="text-[13px] font-bold">{judul}</h3>
+        <span className="rounded-full bg-teal-tint px-[7px] py-[1px] font-mono text-[10.5px] text-teal-deep">
+          {ringkas.sesi}
+        </span>
+        {/* Yang ditanyakan orang yang menyiapkan perahu besok pagi bukan
+            berapa sesi, melainkan berapa orang. Jadi angka itu yang dipasang
+            paling kanan, tempat mata berhenti. */}
+        <span className="ml-auto text-[11.5px] text-slate-mute">
+          {ringkas.pax === null
+            ? "jumlah tamu belum dicatat"
+            : `${ringkas.pax} tamu terdaftar`}
+        </span>
+      </div>
+
+      {ringkas.sesi === 0 ? (
+        <div className="text-[13px] text-slate-mute">{kosong}</div>
+      ) : (
+        <div className="flex flex-col gap-[7px]">
+          {sesi.map((s, i) => {
+            const w = WARNA_AKTIVITAS[s.aktivitas];
+            return (
+              <div
+                key={`${s.tanggal}-${s.aktivitas}-${i}`}
+                className="flex items-center gap-[9px] rounded-[10px] px-[10px] py-[7px]"
+                style={{ background: w.bg }}
+              >
+                <span
+                  className="h-[8px] w-[8px] shrink-0 rounded-full"
+                  style={{ background: w.dot }}
+                />
+                <span
+                  className="min-w-0 flex-1 truncate text-[12.5px] font-medium"
+                  style={{ color: w.fg }}
+                  title={s.label}
+                >
+                  {s.label}
+                </span>
+                <span
+                  className="shrink-0 font-mono text-[11.5px]"
+                  style={{ color: w.fg }}
+                >
+                  {s.pax === null ? "— tamu" : `${s.pax} tamu`}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {ringkas.tanpaPax > 0 && (
+        <div className="mt-[9px] text-[11.5px] leading-[1.45] text-slate-mute">
+          {ringkas.tanpaPax} sesi belum mencatat jumlah tamunya, jadi tidak ikut
+          terhitung.
+        </div>
+      )}
+    </div>
+  );
 }
 
 export interface DashboardRailProps {
@@ -24,6 +110,12 @@ export interface DashboardRailProps {
   /** Rooms free on the picked day, and any that cannot be sold at all. */
   dayRooms: { free: string[]; renovating: string[] };
   onClearDate: () => void;
+  /** Sesi selam pada hari yang dipilih. Kosong berarti tidak ada. */
+  selamHari?: SesiLama[];
+  /** Sesi selam pada jendela check-in yang sama dengan daftar di atasnya. */
+  selamMendatang?: SesiLama[];
+  /** Eddo tidak punya dive centre sendiri, jadi blok ini tidak ikut ke sana. */
+  adaSelam?: boolean;
 }
 
 /** "Hari ini" / "Besok" earn a marker; past that the date itself is clearer. */
@@ -93,6 +185,7 @@ function Section({
   card,
   empty,
   children,
+  footer,
 }: {
   title: string;
   hint?: string;
@@ -100,6 +193,16 @@ function Section({
   card: boolean;
   empty: string;
   children: React.ReactNode;
+  /**
+   * Digambar di luar pilihan kosong-atau-isi.
+   *
+   * `children` diganti seluruhnya oleh kalimat "kosong" waktu hitungannya nol,
+   * dan itu benar untuk daftarnya sendiri. Tapi blok selam bukan bagian dari
+   * daftar itu — ia hal lain yang kebetulan tinggal di bawahnya, dan kalau
+   * ikut terbuang, ia menghilang tepat pada hari yang tidak ada check-in:
+   * hari yang justru paling sering ditanyakan "hari ini ada trip apa".
+   */
+  footer?: React.ReactNode;
 }) {
   return (
     <section
@@ -125,6 +228,7 @@ function Section({
           children
         )}
       </div>
+      {footer}
     </section>
   );
 }
@@ -138,6 +242,9 @@ export function DashboardRail({
   dayBookings,
   dayRooms,
   onClearDate,
+  selamHari = [],
+  selamMendatang = [],
+  adaSelam = false,
 }: DashboardRailProps) {
   const stay = (b: Booking) =>
     `${fmtShort(b.checkIn)} – ${fmtShort(b.checkOut)}`;
@@ -221,6 +328,15 @@ export function DashboardRail({
           </div>
         )}
       </div>
+
+      {adaSelam && (
+        <BlokSelam
+          judul="Selam & trip"
+          ringkas={ringkasSelam(selamHari)}
+          sesi={selamHari}
+          kosong="Tidak ada sesi selam pada tanggal ini."
+        />
+      )}
     </section>
   ) : (
     <Section
@@ -229,6 +345,16 @@ export function DashboardRail({
       count={upcoming.length}
       card={narrow}
       empty={`Tidak ada check-in dalam ${upcomingDays} hari ke depan.`}
+      footer={
+        adaSelam ? (
+          <BlokSelam
+            judul="Selam & trip"
+            ringkas={ringkasSelam(selamMendatang)}
+            sesi={selamMendatang}
+            kosong={`Tidak ada sesi selam dalam ${upcomingDays} hari ke depan.`}
+          />
+        ) : undefined
+      }
     >
       {upcoming.map(({ booking, roomName, leadDays }) => (
         <Row

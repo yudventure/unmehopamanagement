@@ -7,10 +7,10 @@ memperlihatkan marginnya sendiri mengundang tawar-menawar di angka yang salah.
 ## Nama paketnya bukan "Business"
 
 Tab-nya yang bernama **Individual & Business**; paket di dalamnya yang memuat
-Node.js bernama **Unlimited**. `DEPLOY.md` masih menyebutnya "Business Web
-Hosting" karena begitu namanya waktu dokumen itu ditulis. Yang dipakai di
-penawaran ini nama yang tertulis di kartunya sekarang, supaya yang dipesan
-bukan paket lain.
+Node.js bernama **Unlimited Web Hosting**. `DEPLOY.md` masih menyebutnya
+"Business Web Hosting" karena begitu namanya waktu dokumen itu ditulis. Yang
+dipakai di penawaran ini nama yang tertulis di layarnya sekarang, supaya yang
+dipesan bukan paket lain.
 
 Yang tertulis di kartunya, 6 Oktober 2026: Node.js, **5 aplikasi web**, 50 GB
 NVMe, website tanpa batas, kotak surat tanpa batas per situs gratis 1 tahun,
@@ -18,48 +18,62 @@ domain gratis 1 tahun, 15 kredit vibe coding sekali pakai.
 
 ## Harga, dan dari mana persisnya
 
-Dari kartu **48 bulan** di layar checkout pemilik, 6 Oktober 2026:
+Dari dialog durasi di layar checkout pemilik, yang menampilkan keempatnya
+sekaligus:
 
-> Paket 48 bln mulai **Rp1.867.200** (harga normal **Rp6.235.200**).
-> Biaya perpanjangan **Rp121.900/bln**.
+| Durasi | Promo | Harga coret |
+|---|---:|---:|
+| 48 bulan, hemat 70% | Rp 38.900 / bln | Rp 129.900 / bln |
+| 24 bulan, hemat 65% | Rp 44.900 / bln | Rp 129.900 / bln |
+| 12 bulan, hemat 54% | Rp 59.900 / bln | Rp 129.900 / bln |
+| 1 bulan | — | Rp 129.900 / bln |
+| **Perpanjangan paket** | | **Rp 121.900 / bln** |
 
-| | per bulan | sumber |
-|---|---:|---|
-| Harga normal | **Rp 129.900** | Rp 6.235.200 ÷ 48 |
-| Harga promo (diskon 70%) | Rp 38.900 | Rp 1.867.200 ÷ 48 |
-| Harga perpanjangan | Rp 121.900 | tertulis langsung di kartu |
+Tiga hal yang diselesaikan layar itu, dan dulu masih jadi pertanyaan:
+
+1. **Harga coretnya sama di keempat durasi.** Jadi Rp 129.900/bln berlaku
+   untuk ketiga pilihan, tidak perlu dicek per durasi lagi.
+2. **Pajaknya 11%, terbukti.** Ringkasan 48 bulan: Rp 1.867.200 +
+   Rp 205.392 = Rp 2.072.592, dan 205.392 ÷ 1.867.200 tepat 0,11.
+3. **36 bulan tidak dijual.** Pilihannya 1, 12, 24, 48.
 
 Yang dipakai di dokumen **harga normal Rp 129.900/bln**, atas perintah
-pemilik. Itu konservatif dua kali: harga perpanjangan yang sebenarnya
+pemilik. Konservatif dua kali: harga perpanjangan yang sebenarnya
 (Rp 121.900) justru **di bawah** angka yang dianggarkan, jadi tagihan
-perpanjangan nanti lebih kecil daripada yang dihitung di sini.
+perpanjangan nanti lebih kecil daripada yang dipakai menghitung.
 
-## Dua pilihan yang ditawarkan
+## Tiga pilihan yang ditawarkan
 
-| | A · 1 tahun | B · 3 tahun |
-|---|---:|---:|
-| Paket Unlimited | Rp 1.558.800 | Rp 4.676.400 |
-| Kotak surat email | gratis (tahun pertama dari paket) | Rp 693.600 (24 bln) |
-| Dua nama domain | Rp 209.900 | Rp 1.049.500 |
-| Biaya ICANN | Rp 19.876 | Rp 59.628 |
-| Pajak 11% | Rp 196.743 | Rp 712.704 |
-| **Ke Hostinger** | **Rp 1.985.319** | **Rp 7.191.832** |
-| Jasa pengerjaan | Rp 2.250.000 | Rp 2.250.000 |
-| **Total ke klien** | **Rp 4.235.319** | **Rp 9.441.832** |
-| Uang muka | Rp 3.110.319 | Rp 8.316.832 |
-| Sisa saat serah terima | Rp 1.125.000 | Rp 1.125.000 |
+| | A · 1 tahun | B · 2 tahun | C · 3 tahun |
+|---|---:|---:|---:|
+| Paket Unlimited | Rp 1.558.800 | Rp 3.117.600 | Rp 4.676.400 |
+| Kotak surat email | gratis | Rp 346.800 | Rp 693.600 |
+| Dua nama domain | Rp 209.900 | Rp 629.700 | Rp 1.049.500 |
+| Biaya ICANN | Rp 19.876 | Rp 39.752 | Rp 59.628 |
+| Pajak 11% | Rp 196.743 | Rp 454.724 | Rp 712.704 |
+| **Ke Hostinger** | **Rp 1.985.319** | **Rp 4.588.576** | **Rp 7.191.832** |
+| Jasa pengerjaan | Rp 2.250.000 | Rp 2.250.000 | Rp 2.250.000 |
+| **Total ke klien** | **Rp 4.235.319** | **Rp 6.838.576** | **Rp 9.441.832** |
+| Uang muka | Rp 3.110.319 | Rp 5.713.576 | Rp 8.316.832 |
+| Sisa saat serah terima | Rp 1.125.000 | Rp 1.125.000 | Rp 1.125.000 |
+| **Sisi Hostinger per tahun** | Rp 1.985.319 | Rp 2.294.288 | Rp 2.397.277 |
 
 Dua hadiah paketnya ikut dihitung, bukan diabaikan: **kotak surat gratis 12
 bulan** dan **satu nama domain gratis 1 tahun**. Keduanya cuma berlaku di
-tahun pertama, jadi pilihan A menikmatinya penuh sementara pilihan B
-membaginya ke tiga tahun — itu sebabnya **A lebih murah per tahun**
-(Rp 1.985.319 lawan Rp 2.397.277 di sisi Hostinger). Halaman 13 mengatakan itu
-terang-terangan, dan itu disengaja: klien yang belakangan menghitung sendiri
-lalu merasa dibohongi jauh lebih mahal daripada satu paragraf jujur.
+tahun pertama, jadi A menikmatinya penuh sementara C membaginya ke tiga tahun
+— itu satu-satunya sebab **A lebih murah per tahun**, karena harga per
+bulannya sendiri sama persis di semua durasi.
 
-Yang dibeli dengan pilihan B bukan penghematan, melainkan harga yang dikunci
-dan dua tagihan perpanjangan yang tidak perlu diingat. Jangan jual B sebagai
-"lebih hemat".
+Halaman 13 mengatakan itu terang-terangan, dengan judul kartunya sendiri.
+Klien yang belakangan menghitung sendiri lalu merasa dibohongi jauh lebih
+mahal daripada satu paragraf jujur. Yang dijual pada B dan C bukan
+penghematan, melainkan harga terkunci dan tagihan perpanjangan yang
+dilewati. **Jangan jual C sebagai "lebih hemat".**
+
+**Masa 3 tahun dibeli sebagai 24 + 12 bulan.** Di harga normal itu tidak
+mengubah apa pun (24 × 129.900 + 12 × 129.900 = 36 × 129.900), tapi di harga
+promo dua keranjang itu tidak sama dengan satu keranjang 36 bulan yang tidak
+ada. Catat di kuitansi apa adanya.
 
 ## Perpanjangan, per tahun, sesudah masa paketnya habis
 
@@ -74,23 +88,25 @@ dan dua tagihan perpanjangan yang tidak perlu diingat. Jangan jual B sebagai
 
 ## Selisih promo, dan apa yang dijanjikan soal itu
 
-Di masa 48 bulan selisihnya besar sekali: normal Rp 6.235.200 lawan promo
-Rp 1.867.200, yaitu **Rp 4.368.000 sebelum pajak**, diskon 70%. Untuk masa 12
-dan 36 bulan angkanya belum dibaca dari kartunya masing-masing, tapi polanya
-jelas: yang benar-benar keluar jauh lebih kecil daripada yang ditagih.
+Promo yang sedang berjalan, dari layar yang sama:
 
-**Dokumennya menyelesaikan itu dengan menyerahkan selisihnya ke klien.**
-Halaman 13 punya kartu "Kalau promonya masih berlaku saat dipesan": selisihnya
-jadi milik pemilik, kuitansi Hostinger diserahkan apa adanya. Jadi untung
-tetap **Rp 2.250.000**, yaitu jasanya saja.
+| Durasi | Normal | Promo | Selisih sebelum pajak |
+|---|---:|---:|---:|
+| 12 bulan | Rp 1.558.800 | Rp 718.800 | Rp 840.000 |
+| 24 bulan | Rp 3.117.600 | Rp 1.077.600 | Rp 2.040.000 |
+| 36 bulan (24+12) | Rp 4.676.400 | Rp 1.796.400 | Rp 2.880.000 |
+
+**Dokumennya menyerahkan selisih itu ke klien.** Halaman 13 menyatakannya:
+selisihnya milik pemilik, kuitansi Hostinger diserahkan apa adanya. Jadi
+untung tetap **Rp 2.250.000**, yaitu jasanya saja.
 
 Alasannya praktis, bukan moral saja:
 
 1. Kuitansi Hostinger dijanjikan di halaman 12 dan 16. Menagih Rp 1,99 juta
-   untuk sisi Hostinger lalu menyerahkan kuitansi yang jauh lebih kecil bukan
-   margin, itu ketahuan di menit pertama serah terima.
-2. Harga Hostinger bisa dicek siapa pun dalam sepuluh detik, dan diskonnya
-   dipasang 70% di layar depan.
+   untuk sisi Hostinger lalu menyerahkan kuitansi Rp 0,9 juta bukan margin,
+   itu ketahuan di menit pertama serah terima.
+2. Diskonnya dipasang 54–70% di layar depan Hostinger; siapa pun bisa
+   mengeceknya dalam sepuluh detik.
 3. Harga normal tetap dasar anggaran yang benar untuk perpanjangan.
 
 **Kalau memang mau selisihnya ditahan**, kartunya harus diganti dan janji
@@ -119,16 +135,16 @@ pemantauan dan serah terima.
 
 **Kalau mau dinaikkan**, naikkan nilai per bagian, jangan tambah pos baru.
 
-| Kalau dinaikkan ke | Per hari | Total A | Total B |
-|---|---:|---:|---:|
-| Rp 2.250.000 | Rp 750 rb | Rp 4.235.319 | Rp 9.441.832 |
-| Rp 3.000.000 | Rp 1 jt | Rp 4.985.319 | Rp 10.191.832 |
-| Rp 3.750.000 | Rp 1,25 jt | Rp 5.735.319 | Rp 10.941.832 |
+| Kalau dinaikkan ke | Per hari | Total A | Total B | Total C |
+|---|---:|---:|---:|---:|
+| Rp 2.250.000 | Rp 750 rb | Rp 4.235.319 | Rp 6.838.576 | Rp 9.441.832 |
+| Rp 3.000.000 | Rp 1 jt | Rp 4.985.319 | Rp 7.588.576 | Rp 10.191.832 |
+| Rp 3.750.000 | Rp 1,25 jt | Rp 5.735.319 | Rp 8.338.576 | Rp 10.941.832 |
 
 Catatan: di pilihan A, jasa adalah **lebih dari separuh** total yang dilihat
 klien, beda sekali dengan `penawaran/` yang Rp 16 juta-nya didominasi biaya
 VPS. Menaikkan jasa di sini terasa langsung. Kalau klien menawar, yang lebih
-aman ditawarkan bukan potongan jasa melainkan pilihan A alih-alih B.
+aman ditawarkan bukan potongan jasa melainkan pilihan A alih-alih C.
 
 ## Yang perlu dijaga supaya untungnya tidak tergerus
 
@@ -141,23 +157,16 @@ aman ditawarkan bukan potongan jasa melainkan pilihan A alih-alih B.
 - **Garansi 14 hari sengaja sempit**: hanya kerusakan dari pekerjaan ini.
 - **Perawatan bulanan tidak dijanjikan apa pun.**
 
-## Empat hal yang harus dicek sebelum dokumennya dikirim
+## Dua hal yang masih harus dicek sebelum dokumennya dikirim
 
-1. **Harga normal di kartu 12 bulan.** Rp 129.900/bln itu harga coret di kartu
-   **48 bulan**. Hostinger memasang harga coret yang berbeda untuk tiap masa
-   paket, dan masa yang lebih pendek biasanya lebih mahal per bulan. Buka
-   kartu 12 bulan, baca harga coretnya, lalu ubah satu baris:
-   `PERIODE[0].perBulan` di `angka.mjs`. Kalau tidak dicek, kolom pilihan A
-   bisa terlalu murah.
-2. **Apakah masa 36 bulan memang ada.** Di layar yang terpotret pilihannya ada
-   empat dan yang terbuka 48 bulan. Kalau 36 bulan tidak ada di daftarnya,
-   putuskan dulu: tawarkan 48 bulan sebagai pilihan B, atau beli 24 + 12.
-   Jangan diamkan — dokumennya menjanjikan "3 tahun".
-3. **Apakah hadiahnya berlaku di masa 12 bulan.** Domain gratis 1 tahun dan
-   kotak surat gratis 1 tahun terbaca di kartu 48 bulan. Keduanya ikut
-   dihitung di kolom A; kalau ternyata cuma untuk masa panjang, kolom A naik
-   sekitar Rp 556 ribu sebelum pajak.
-4. **Status `turtlehomestay.com`.** `eddohomestay.com` sudah terdaftar dan
+Daftar ini dulu empat; dialog durasi di layar checkout menyelesaikan dua di
+antaranya (harga coret per durasi, dan ketersediaan masa 36 bulan).
+
+1. **Apakah hadiahnya berlaku di masa 12 bulan.** Domain gratis 1 tahun dan
+   kotak surat gratis 1 tahun terbaca di kartu paketnya, tapi kartu itu
+   terbuka pada 48 bulan. Keduanya ikut dihitung di kolom A; kalau ternyata
+   cuma untuk masa panjang, kolom A naik sekitar Rp 556 ribu sebelum pajak.
+2. **Status `turtlehomestay.com`.** `eddohomestay.com` sudah terdaftar dan
    sudah dipakai — `scripts/package.mjs` menyebutnya domain aktif saat
    mengemas. Nama satunya belum dipastikan; kalau sudah terdaftar, barisnya
    jadi perpanjangan, dan domain gratis dari paket tidak terpakai.

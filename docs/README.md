@@ -6,7 +6,7 @@ menyatukannya jadi satu berkas HTML mandiri dan `render.mjs` mencetaknya.
 | Folder | Hasil | Isi |
 |---|---|---|
 | `penawaran/` | `spesifikasi-dan-penawaran.pdf` | 16 halaman. Deploy ke **VPS KVM 2** dan **tiga** nama domain. Harga di dalamnya sudah lengkap |
-| `penawaran-bisnis/` | `penawaran-hosting-bisnis.pdf` | 16 halaman. **Paket Unlimited** (hosting web Hostinger, kategori Individual & Business) dan **dua** nama domain, dalam dua pilihan masa paket, plus satu halaman branding peta Selat Dampier |
+| `penawaran-bisnis/` | `penawaran-hosting-bisnis.pdf` | 16 halaman. **Paket Unlimited Web Hosting** dan **dua** nama domain, dalam **tiga** pilihan masa paket (1, 2, 3 tahun), plus satu halaman branding peta Selat Dampier |
 
 Keduanya A4 tegak dan dipakai untuk hal yang berbeda: yang pertama menawarkan
 server yang diurus sendiri, yang kedua menawarkan paket terkelola untuk
@@ -92,21 +92,31 @@ bulan dari sumber yang saling bertentangan, dan angka itu meleset jauh.
 
 ### Paket mana, dan harga mana
 
-Paket yang dipakai `penawaran-bisnis/` bernama **Unlimited**. `DEPLOY.md`
-masih menyebutnya "Business Web Hosting" karena begitu namanya waktu itu;
-sekarang "Individual & Business" adalah nama tab-nya, dan paket di dalamnya
-yang memuat Node.js bernama Unlimited. Dokumen memakai nama yang tertulis di
-kartunya, supaya yang dipesan bukan paket lain.
+Paket yang dipakai `penawaran-bisnis/` bernama **Unlimited Web Hosting**.
+`DEPLOY.md` masih menyebutnya "Business Web Hosting" karena begitu namanya
+waktu itu; sekarang "Individual & Business" adalah nama tab-nya, dan paket di
+dalamnya yang memuat Node.js bernama Unlimited. Dokumen memakai nama yang
+tertulis di kartunya, supaya yang dipesan bukan paket lain.
 
-Angkanya dari kartu **48 bulan** di layar checkout pemilik, 6 Oktober 2026:
-harga normal Rp 6.235.200 ÷ 48 = **Rp 129.900/bln**, promo Rp 1.867.200 ÷ 48 =
-Rp 38.900/bln, perpanjangan Rp 121.900/bln tertulis langsung.
+Angkanya dari dialog durasi di layar checkout pemilik, 6 Oktober 2026, yang
+menampilkan keempat durasi sekaligus:
 
-**Hostinger memasang harga coret yang berbeda di tiap kartu masa paket.**
-Rp 129.900 itu kartu 48 bulan; kartu 12 bulan belum dibaca, dan masa yang
-lebih pendek biasanya lebih mahal per bulan. `PERIODE[0].perBulan` di
-`angka.mjs` adalah satu baris yang perlu diubah begitu kartunya dibuka.
-Daftar lengkap yang masih harus dicek ada di `penawaran-bisnis/RINCIAN-INTERNAL.md`.
+| Durasi | Promo | Harga coret |
+|---|---:|---:|
+| 48 bulan, hemat 70% | Rp 38.900 / bln | Rp 129.900 / bln |
+| 24 bulan, hemat 65% | Rp 44.900 / bln | Rp 129.900 / bln |
+| 12 bulan, hemat 54% | Rp 59.900 / bln | Rp 129.900 / bln |
+| 1 bulan | — | Rp 129.900 / bln |
+| Perpanjangan paket | | Rp 121.900 / bln |
+
+**Harga coretnya sama di keempat durasi**, jadi Rp 129.900/bln dipakai untuk
+ketiga pilihan di dokumen tanpa perlu diperiksa per durasi. Pajaknya juga
+terbukti di layar yang sama: ringkasan 48 bulan menulis Rp 1.867.200 plus
+Rp 205.392, dan itu tepat 11%.
+
+**Hostinger tidak menjual 36 bulan** — pilihannya 1, 12, 24, 48. Masa 3 tahun
+di dokumen dibeli sebagai 24 + 12, yang di harga normal jumlahnya sama persis.
+Halaman 13 mengatakan itu, bukan menyembunyikannya.
 
 ### Pita draf
 

@@ -31,7 +31,7 @@ __CSS__
     <p style="margin-top:14px;font-size:11pt;line-height:1.6;max-width:150mm">
       Tiga situs dan satu dashboard sudah jalan dan sudah membaca database.
       Dokumen ini menaruhnya di paket hosting yang pas, menyambungkannya ke
-      dua nama domain, dan menyebutkan biayanya dalam dua pilihan masa
+      dua nama domain, dan menyebutkan biayanya dalam tiga pilihan masa
       paket. Semua angka ukurannya diukur hari ini; semua angka biayanya
       diambil dari layar Hostinger sendiri.
     </p>
@@ -49,16 +49,21 @@ __CSS__
 
     <div style="margin-top:4mm">__N_pita__</div>
 
-    <div class="grid g2" style="margin-top:4mm">
+    <div class="grid g3" style="margin-top:4mm">
       <div class="price duo">
-        <div style="font-size:10pt;font-weight:700">Pilihan A &middot; __N_a-label__</div>
+        <div style="font-size:9.5pt;font-weight:700">A &middot; __N_a-label__</div>
         <div class="v">__N_a-total__</div>
-        <div class="k">Jasa pengerjaan + hosting __N_a-bulan__ bulan, dua nama domain, sudah termasuk pajak</div>
+        <div class="k">Jasa + hosting __N_a-bulan__ bulan, dua nama domain, termasuk pajak</div>
       </div>
       <div class="price duo">
-        <div style="font-size:10pt;font-weight:700">Pilihan B &middot; __N_b-label__</div>
+        <div style="font-size:9.5pt;font-weight:700">B &middot; __N_b-label__</div>
         <div class="v">__N_b-total__</div>
-        <div class="k">Jasa pengerjaan + hosting __N_b-bulan__ bulan, dua nama domain, sudah termasuk pajak</div>
+        <div class="k">Jasa + hosting __N_b-bulan__ bulan, dua nama domain, termasuk pajak</div>
+      </div>
+      <div class="price duo">
+        <div style="font-size:9.5pt;font-weight:700">C &middot; __N_c-label__</div>
+        <div class="v">__N_c-total__</div>
+        <div class="k">Jasa + hosting __N_c-bulan__ bulan, dua nama domain, termasuk pajak</div>
       </div>
     </div>
   </div>
@@ -705,121 +710,116 @@ __CSS__
 <section class="slide">
   <div class="head">
     <div class="eyebrow">Bagian 9 &middot; Biaya</div>
-    <h2 style="margin-top:5px">Dua pilihan masa paket</h2>
+    <h2 style="margin-top:5px">Tiga pilihan masa paket</h2>
   </div>
   <div class="body">
     <div style="margin-top:3mm">__N_pita__</div>
 
     <p class="lede" style="margin-top:4mm">
-      Semua angka di bawah adalah <strong>harga normal</strong> Hostinger,
-      bukan harga promo. Harga promo cuma berlaku sekali dan bisa habis kapan
-      saja, jadi bukan dasar yang aman untuk anggaran. Yang dianggarkan di
-      sini adalah harga yang pasti bisa dibayar, sekarang maupun nanti.
+      Semua angka di bawah <strong>harga normal</strong>, bukan harga promo:
+      promo berlaku sekali dan bisa habis kapan saja. Yang dianggarkan di
+      sini harga yang pasti bisa dibayar, sekarang maupun nanti.
     </p>
 
     <table style="margin-top:4mm">
       <thead><tr>
         <th>Pos</th>
-        <th class="num" style="width:27mm">Harga satuan</th>
-        <th class="num" style="width:30mm">A &middot; __N_a-label__</th>
-        <th class="num" style="width:30mm">B &middot; __N_b-label__</th>
+        <th class="num" style="width:24mm">Harga satuan</th>
+        <th class="num" style="width:25mm">A &middot; __N_a-label__</th>
+        <th class="num" style="width:25mm">B &middot; __N_b-label__</th>
+        <th class="num" style="width:25mm">C &middot; __N_c-label__</th>
       </tr></thead>
       <tbody>
         <tr>
-          <td><strong>Paket __N_nama-paket__</strong><br><span class="small">Node.js, 5 aplikasi web, 50 GB NVMe, TLS untuk kedua domain</span></td>
-          <td class="num" style="color:var(--slate-mute)">&mdash;</td>
-          <td class="num">__N_a-hosting-rinci__</td>
-          <td class="num">__N_b-hosting-rinci__</td>
+          <td><strong>Paket __N_nama-paket__</strong><br><span class="small">Node.js, 5 aplikasi web, 50 GB NVMe. Harga coretnya sama di semua durasi</span></td>
+          <td class="num">__N_hosting-satuan__</td>
+          <td class="num">__N_a-hosting__</td>
+          <td class="num">__N_b-hosting__</td>
+          <td class="num">__N_c-hosting__</td>
         </tr>
         <tr>
-          <td><strong>Kotak surat email</strong><br><span class="small">Paketnya memberi kotak surat gratis setahun; yang dianggarkan cuma bulan sesudahnya</span></td>
+          <td><strong>Kotak surat email</strong><br><span class="small">Gratis setahun dari paketnya; yang dianggarkan cuma bulan sesudahnya</span></td>
           <td class="num">__N_email-bln__</td>
           <td class="num">__N_a-email__</td>
           <td class="num">__N_b-email__</td>
+          <td class="num">__N_c-email__</td>
         </tr>
         <tr>
-          <td><strong>Dua nama domain</strong><br><span class="small">turtlehomestay.com dan eddohomestay.com. Satu nama gratis di tahun pertama, dari paketnya</span></td>
+          <td><strong>Dua nama domain</strong><br><span class="small">turtlehomestay.com dan eddohomestay.com. Satu nama gratis di tahun pertama</span></td>
           <td class="num">__N_domain-thn__</td>
           <td class="num">__N_a-domain__</td>
           <td class="num">__N_b-domain__</td>
+          <td class="num">__N_c-domain__</td>
         </tr>
         <tr>
-          <td><strong>Biaya ICANN</strong> <span class="small">pungutan wajib tiap nama domain per tahun, bukan biaya hosting, dan tetap kena di nama yang gratis</span></td>
+          <td><strong>Biaya ICANN</strong> <span class="small">pungutan wajib tiap nama domain per tahun, bukan biaya hosting</span></td>
           <td class="num" style="color:var(--slate-mute)">__N_icann-satuan__</td>
           <td class="num">__N_a-icann__</td>
           <td class="num">__N_b-icann__</td>
+          <td class="num">__N_c-icann__</td>
         </tr>
         <tr>
           <td><strong>Pajak</strong> <span class="small">__N_pajak-persen__</span></td>
           <td class="num" style="color:var(--slate-mute)">&mdash;</td>
           <td class="num">__N_a-pajak__</td>
           <td class="num">__N_b-pajak__</td>
+          <td class="num">__N_c-pajak__</td>
         </tr>
         <tr class="total">
           <td colspan="2">Jumlah ke Hostinger</td>
           <td class="num">__N_a-hostinger__</td>
           <td class="num">__N_b-hostinger__</td>
+          <td class="num">__N_c-hostinger__</td>
         </tr>
-      </tbody>
-    </table>
-
-    <table style="margin-top:3mm">
-      <tbody>
         <tr>
-          <td>Jasa pengerjaan <span class="small">&middot; enam bagian di halaman 12, __N_jasa-hari__ hari kerja, sekali bayar, sama untuk kedua pilihan</span></td>
-          <td class="num" style="width:30mm">__N_jasa__</td>
-          <td class="num" style="width:30mm">__N_jasa__</td>
+          <td colspan="2">Jasa pengerjaan <span class="small">&middot; enam bagian di halaman 12, __N_jasa-hari__ hari kerja, sekali bayar</span></td>
+          <td class="num">__N_jasa__</td>
+          <td class="num">__N_jasa__</td>
+          <td class="num">__N_jasa__</td>
+        </tr>
+        <tr class="total">
+          <td colspan="2">Total penawaran</td>
+          <td class="num">__N_a-total__</td>
+          <td class="num">__N_b-total__</td>
+          <td class="num">__N_c-total__</td>
+        </tr>
+        <tr>
+          <td colspan="2">Uang muka <span class="small">&middot; seluruh biaya Hostinger + separuh jasa; sisa __N_sisa__ saat serah terima</span></td>
+          <td class="num">__N_a-dp__</td>
+          <td class="num">__N_b-dp__</td>
+          <td class="num">__N_c-dp__</td>
         </tr>
       </tbody>
     </table>
 
-    <div class="grid g2" style="margin-top:3mm">
-      <div class="price-badge">
-        <div>
-          <div style="font-size:10pt;font-weight:700;color:var(--ink)">A &middot; __N_a-label__</div>
-          <div class="k">Uang muka __N_a-dp__, sisa __N_sisa__</div>
-        </div>
-        <div class="v" style="font-size:16pt">__N_a-total__</div>
-      </div>
-      <div class="price-badge">
-        <div>
-          <div style="font-size:10pt;font-weight:700;color:var(--ink)">B &middot; __N_b-label__</div>
-          <div class="k">Uang muka __N_b-dp__, sisa __N_sisa__</div>
-        </div>
-        <div class="v" style="font-size:16pt">__N_b-total__</div>
-      </div>
-    </div>
-
-    <div class="grid g2" style="margin-top:3mm">
-      <div class="card">
-        <h3>Pembayaran</h3>
-        <p>Uang mukanya seluruh biaya Hostinger ditambah separuh jasa, karena
-        Hostinger menagih penuh di depan. Sisa <strong>__N_sisa__</strong>
-        dibayar saat serah terima, dan jumlahnya sama di kedua pilihan karena
-        jasanya sama.</p>
+    <div class="grid g2" style="margin-top:4mm">
+      <div class="card warn">
+        <h3>Yang lebih lama bukan yang lebih murah per tahun</h3>
+        <p>Sisi Hostinger-nya <strong>__N_a-per-tahun__</strong> di A,
+        <strong>__N_b-per-tahun__</strong> di B,
+        <strong>__N_c-per-tahun__</strong> di C, per tahun. Harga per bulannya
+        sama di semua durasi, jadi yang membedakan cuma dua hadiah setahun
+        &mdash; kotak surat dan satu nama domain &mdash; yang terbagi makin
+        tipis makin panjang masanya.</p>
       </div>
       <div class="card green">
-        <h3>Kalau promonya masih berlaku saat dipesan</h3>
-        <p>Selisihnya menjadi milik pemilik, bukan tambahan buat pengerja.
-        Kuitansi Hostinger diserahkan apa adanya saat serah terima, jadi
-        angkanya bisa dicocokkan sendiri baris per baris. Potongan yang
-        sedang berjalan saat ini besar.</p>
+        <h3>Lalu kenapa memilih yang lebih panjang</h3>
+        <p>Harga dikunci: tidak ada kenaikan yang bisa menyusul, tidak ada
+        tagihan perpanjangan yang bisa terlewat, dan tidak ada nama domain
+        yang bisa hangus karena satu email tagihan tidak terbaca. Selisih per
+        tahunnya kecil; yang dibeli adalah tidak perlu memikirkannya lagi.</p>
       </div>
     </div>
 
-    <div class="card warn" style="margin-top:3mm">
-      <h3>Tiga tahun bukan yang lebih murah per tahun, dan itu perlu dibilang</h3>
-      <p>Sisi Hostinger-nya <strong>__N_a-per-tahun__ per tahun</strong> di
-      pilihan A, dan <strong>__N_b-per-tahun__ per tahun</strong> di pilihan
-      B. A lebih murah per tahun karena dua hadiah paketnya &mdash; kotak
-      surat gratis setahun dan satu nama domain gratis setahun &mdash; dibagi
-      satu tahun saja, bukan tiga. Yang dibeli dengan pilihan B bukan
-      penghematan per tahun, melainkan <strong>harga yang dikunci tiga
-      tahun</strong> dan dua tagihan perpanjangan yang tidak perlu diingat.
-      Kalau yang dicari harga per tahun terendah, pilih A.</p>
+    <div class="note" style="margin-top:4mm">
+      <strong>Masa 3 tahun dibeli sebagai 24 + 12 bulan</strong>, karena
+      Hostinger menjual 1, 12, 24, dan 48 bulan; di harga normal jumlahnya
+      sama sampai rupiah terakhir. Dan kalau promonya masih berlaku saat
+      dipesan, <strong>selisihnya menjadi milik pemilik</strong>, dengan
+      kuitansi Hostinger diserahkan apa adanya.
     </div>
   </div>
-  <div class="foot"><span>Dua pilihan masa paket</span><span>13 / 16</span></div>
+  <div class="foot"><span>Tiga pilihan masa paket</span><span>13 / 16</span></div>
 </section>
 
 <!-- ====================================================== 14 perpanjangan -->
@@ -852,7 +852,7 @@ __CSS__
       <h3>Anggarannya sengaja dibuat lebih besar dari tagihannya</h3>
       <p>Harga perpanjangan paketnya <strong>__N_r-hosting-bln__</strong>,
       sementara halaman sebelumnya menganggarkan harga normal
-      <strong>__N_b-hosting-bln__</strong> untuk pilihan B. Jadi tagihan perpanjangan yang
+      <strong>__N_hosting-normal__</strong> di ketiga pilihan. Jadi tagihan perpanjangan yang
       datang nanti lebih kecil daripada yang dipakai untuk menghitung
       penawaran ini, bukan lebih besar. Hostinger juga hampir selalu
       menawarkan potongan untuk perpanjangan; anggaran ini sengaja tidak
@@ -966,29 +966,36 @@ __CSS__
     <table style="margin-top:4mm">
       <thead><tr>
         <th>Pos</th>
-        <th class="num" style="width:32mm">A &middot; __N_a-label__</th>
-        <th class="num" style="width:32mm">B &middot; __N_b-label__</th>
+        <th class="num" style="width:27mm">A &middot; __N_a-label__</th>
+        <th class="num" style="width:27mm">B &middot; __N_b-label__</th>
+        <th class="num" style="width:27mm">C &middot; __N_c-label__</th>
       </tr></thead>
       <tbody>
-        <tr><td>Jasa pengerjaan <span class="small">&middot; enam bagian, __N_jasa-hari__ hari kerja, sekali bayar</span></td><td class="num">__N_jasa__</td><td class="num">__N_jasa__</td></tr>
-        <tr><td>Hosting <span class="small">&middot; paket __N_nama-paket__ + email + dua nama domain + ICANN + pajak, harga normal</span></td><td class="num">__N_a-hostinger__</td><td class="num">__N_b-hostinger__</td></tr>
-        <tr class="total"><td>Total penawaran</td><td class="num">__N_a-total__</td><td class="num">__N_b-total__</td></tr>
-        <tr><td>Uang muka <span class="small">&middot; seluruh biaya hosting + separuh jasa</span></td><td class="num">__N_a-dp__</td><td class="num">__N_b-dp__</td></tr>
-        <tr><td>Saat serah terima <span class="small">&middot; sisa jasa, dibayar setelah semuanya dicek bersama</span></td><td class="num">__N_sisa__</td><td class="num">__N_sisa__</td></tr>
+        <tr><td>Jasa pengerjaan <span class="small">&middot; enam bagian, __N_jasa-hari__ hari kerja, sekali bayar</span></td><td class="num">__N_jasa__</td><td class="num">__N_jasa__</td><td class="num">__N_jasa__</td></tr>
+        <tr><td>Hosting <span class="small">&middot; paket __N_nama-paket__ + email + dua nama domain + ICANN + pajak, harga normal</span></td><td class="num">__N_a-hostinger__</td><td class="num">__N_b-hostinger__</td><td class="num">__N_c-hostinger__</td></tr>
+        <tr class="total"><td>Total penawaran</td><td class="num">__N_a-total__</td><td class="num">__N_b-total__</td><td class="num">__N_c-total__</td></tr>
+        <tr><td>Uang muka <span class="small">&middot; seluruh biaya hosting + separuh jasa</span></td><td class="num">__N_a-dp__</td><td class="num">__N_b-dp__</td><td class="num">__N_c-dp__</td></tr>
+        <tr><td>Saat serah terima <span class="small">&middot; sisa jasa, dibayar setelah semuanya dicek bersama</span></td><td class="num">__N_sisa__</td><td class="num">__N_sisa__</td><td class="num">__N_sisa__</td></tr>
       </tbody>
     </table>
 
-    <div class="grid g2" style="margin-top:4mm">
+    <div class="grid g3" style="margin-top:4mm">
       <div class="card">
         <div class="pilih"><span class="kotak"></span><div>
-          <h3>Pilihan A &middot; __N_a-label__</h3>
-          <p class="small" style="margin-top:2px">Masuk lebih murah, dan tahun depan bebas memutuskan ulang. Tagihan perpanjangan datang setahun lagi.</p>
+          <h3>A &middot; __N_a-label__</h3>
+          <p class="small" style="margin-top:2px">Paling murah per tahun, dan tahun depan bebas memutuskan ulang.</p>
         </div></div>
       </div>
       <div class="card">
         <div class="pilih"><span class="kotak"></span><div>
-          <h3>Pilihan B &middot; __N_b-label__</h3>
-          <p class="small" style="margin-top:2px">Harganya dikunci tiga tahun dan tidak ada tagihan yang bisa terlewat di antaranya.</p>
+          <h3>B &middot; __N_b-label__</h3>
+          <p class="small" style="margin-top:2px">Harga dikunci dua tahun, satu tagihan perpanjangan yang dilewati.</p>
+        </div></div>
+      </div>
+      <div class="card">
+        <div class="pilih"><span class="kotak"></span><div>
+          <h3>C &middot; __N_c-label__</h3>
+          <p class="small" style="margin-top:2px">Harga dikunci tiga tahun, dua tagihan perpanjangan yang dilewati.</p>
         </div></div>
       </div>
     </div>

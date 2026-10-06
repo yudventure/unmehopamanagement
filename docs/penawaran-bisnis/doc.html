@@ -640,8 +640,7 @@ __CSS__
   </div>
   <div class="body">
     <p class="lede" style="margin-top:4mm">
-      Enam bagian, dan tiap bagian punya hasil yang bisa dicek sendiri, bukan
-      cuma laporan bahwa sudah dikerjakan.
+      Enam bagian, dan tiap bagian punya hasil yang bisa dicek sendiri.
     </p>
 
     <table style="margin-top:4mm">
@@ -650,56 +649,66 @@ __CSS__
         <tr>
           <td class="num">1</td>
           <td><strong>Paket dan dua nama domain</strong></td>
-          <td>Pesan paketnya atas nama pemilik, daftarkan nama domain yang belum ada, arahkan keduanya ke aplikasinya, pasang sertifikat yang memperpanjang dirinya sendiri.
-          <br><span class="small">Cek: kedua alamat terbuka dengan gembok, tanpa peringatan.</span></td>
+          <td>Pesan paketnya atas nama pemilik, daftarkan nama domain yang belum ada, arahkan keduanya ke aplikasinya, pasang sertifikat yang memperpanjang sendiri. <span class="small">Cek: kedua alamat terbuka dengan gembok.</span></td>
         </tr>
         <tr>
           <td class="num">2</td>
           <td><strong>Aplikasi Node dan pemisahan domainnya</strong></td>
-          <td>Pasang aplikasinya di slot Node, isi variabel yang dibaca saat jalan, atur supaya tiap nama domain membuka situsnya sendiri dan <span class="mono">/kelola</span> membuka dashboard.
-          <br><span class="small">Cek: dua alamat, tiga tampilan berbeda, dari satu proses yang sama.</span></td>
+          <td>Pasang aplikasinya di slot Node, isi variabel yang dibaca saat jalan, atur supaya tiap nama domain membuka situsnya sendiri dan <span class="mono">/kelola</span> membuka dashboard. <span class="small">Cek: dua alamat, tiga tampilan, satu proses.</span></td>
         </tr>
         <tr>
           <td class="num">3</td>
           <td><strong>Email dan catatan DNS-nya</strong></td>
-          <td>Satu kotak surat berakhiran nama domain sendiri, berikut MX, SPF, dan DKIM supaya email keluar tidak masuk folder spam orang.
-          <br><span class="small">Cek: satu email percobaan sampai ke Gmail di kotak masuk, bukan di spam.</span></td>
+          <td>Satu kotak surat berakhiran nama domain sendiri, berikut MX, SPF, dan DKIM supaya email keluar tidak masuk folder spam. <span class="small">Cek: satu email percobaan sampai ke Gmail di kotak masuk.</span></td>
         </tr>
         <tr>
           <td class="num">4</td>
           <td><strong>Rantai deploy otomatis</strong></td>
-          <td>Sambungkan build di GitHub Actions ke paket ini, supaya pembaruan berikutnya cukup dengan mengirim kode. Termasuk pemeriksaan versi: yang tayang dibandingkan dengan yang baru dibangun sebelum dinyatakan selesai.
-          <br><span class="small">Cek: satu perubahan kecil dikirim, situsnya berubah sendiri dalam beberapa menit.</span></td>
+          <td>Sambungkan build di GitHub Actions ke paket ini, supaya pembaruan berikutnya cukup dengan mengirim kode. Termasuk pemeriksaan versi sebelum dinyatakan selesai. <span class="small">Cek: satu perubahan kecil dikirim, situsnya berubah sendiri dalam beberapa menit.</span></td>
         </tr>
         <tr>
           <td class="num">5</td>
           <td><strong>Database dan cadangan</strong></td>
-          <td>Sambungkan aplikasinya ke PostgreSQL terkelola, jalankan migrasinya dari pipeline, lalu pasang salinan otomatis ke penyimpanan terpisah dan <strong>diuji pulihkan sekali di depan pemilik</strong>.
-          <br><span class="small">Cadangan yang belum pernah dicoba dipulihkan itu belum bisa disebut cadangan.</span></td>
+          <td>Sambungkan aplikasinya ke PostgreSQL terkelola, jalankan migrasinya dari pipeline, lalu pasang salinan otomatis ke penyimpanan terpisah dan <strong>diuji pulihkan sekali di depan pemilik</strong>. <span class="small">Cadangan yang belum pernah dicoba dipulihkan belum bisa disebut cadangan.</span></td>
         </tr>
         <tr>
           <td class="num">6</td>
           <td><strong>Pemantauan dan serah terima</strong></td>
-          <td>Pasang pemantau yang mengirim pesan kalau situsnya tidak menjawab. Serah terima: semua kata sandi diserahkan, plus satu sesi penjelasan cara memperbarui dan cara memulihkan.
-          <br><span class="small">Termasuk catatan tertulis, supaya tidak bergantung pada ingatan siapa pun.</span></td>
+          <td>Pasang pemantau yang mengirim pesan kalau situsnya tidak menjawab. Serah terima: semua kata sandi, plus satu sesi penjelasan cara memperbarui dan memulihkan. <span class="small">Termasuk catatan tertulis, supaya tidak bergantung pada ingatan siapa pun.</span></td>
         </tr>
       </tbody>
     </table>
 
-    <div class="grid g2" style="margin-top:5mm">
+    <h3 style="margin-top:4mm">Yang ikut di tiap pilihan masa paket</h3>
+    <p class="small" style="margin-top:2px">Enam bagian di atas sama di ketiganya; yang membedakan apa yang menemani sesudah serah terima.</p>
+    <table style="margin-top:2mm">
+      <thead><tr>
+        <th>&nbsp;</th>
+        <th class="num" style="width:27mm">A &middot; __N_a-label__</th>
+        <th class="num" style="width:27mm">B &middot; __N_b-label__</th>
+        <th class="num" style="width:27mm">C &middot; __N_c-label__</th>
+      </tr></thead>
+      <tbody>
+        <tr><td><strong>Enam bagian pengerjaan</strong> <span class="small">&middot; __N_jasa-hari__ hari kerja, sama di ketiganya</span></td><td class="num">__N_setup__</td><td class="num">__N_setup__</td><td class="num">__N_setup__</td></tr>
+        <tr><td><strong>Garansi perbaikan</strong> <span class="small">&middot; kerusakan yang datang dari pekerjaan ini</span></td><td class="num">__N_a-garansi__</td><td class="num">__N_b-garansi__</td><td class="num">__N_c-garansi__</td></tr>
+        <tr><td><strong>Pendampingan</strong> <span class="small">&middot; perbaikan kalau bermasalah, pembaruan keamanan, pemulihan dari cadangan</span></td><td class="num">__N_a-damping-bulan__</td><td class="num">__N_b-damping-bulan__<br><span class="small">__N_b-damping__</span></td><td class="num">__N_c-damping-bulan__<br><span class="small">__N_c-damping__</span></td></tr>
+        <tr><td><strong>Pemeriksaan menyeluruh</strong> <span class="small">&middot; cadangan diuji pulihkan lagi, laporan tertulis; sekalian mengingatkan dan membantu perpanjangan</span></td><td class="num">&mdash;</td><td class="num">1&times;</td><td class="num">2&times;</td></tr>
+        <tr class="total"><td>Jasa pengerjaan, sekali bayar</td><td class="num">__N_a-jasa__</td><td class="num">__N_b-jasa__</td><td class="num">__N_c-jasa__</td></tr>
+      </tbody>
+    </table>
+
+    <div class="grid g2" style="margin-top:4mm">
       <div class="card">
         <h3>Jadwal</h3>
-        <p><strong>__N_jasa-hari__ hari kerja</strong> sejak uang muka masuk dan
-        kedua nama domain sudah siap. Bagian 1 sampai 4 selesai di dua hari
-        pertama, jadi kedua alamatnya sudah bisa dibuka di hari kedua;
-        sisanya cadangan, pemantauan, dan serah terima.</p>
+        <p><strong>__N_jasa-hari__ hari kerja</strong> sejak uang muka masuk
+        dan kedua nama domain siap. Bagian 1 sampai 4 selesai di dua hari
+        pertama, jadi kedua alamatnya sudah bisa dibuka di hari kedua.</p>
       </div>
       <div class="card mute">
-        <h3>Garansi 14 hari</h3>
-        <p>Kerusakan <em>yang datang dari pekerjaan ini</em> diperbaiki tanpa
-        biaya selama 14 hari setelah serah terima. Tidak termasuk: permintaan
-        yang mengubah lingkup, pengaturan yang diubah pihak lain, dan
-        gangguan dari sisi penyedia hosting.</p>
+        <h3>Yang tidak dijanjikan</h3>
+        <p>Permintaan yang mengubah lingkup, pengaturan yang diubah pihak lain,
+        dan gangguan dari sisi penyedia. Pendampingan menjaga yang sudah ada
+        tetap jalan, bukan menambah fitur.</p>
       </div>
     </div>
   </div>
@@ -772,10 +781,10 @@ __CSS__
           <td class="num">__N_c-hostinger__</td>
         </tr>
         <tr>
-          <td colspan="2">Jasa pengerjaan <span class="small">&middot; enam bagian di halaman 12, __N_jasa-hari__ hari kerja, sekali bayar</span></td>
-          <td class="num">__N_jasa__</td>
-          <td class="num">__N_jasa__</td>
-          <td class="num">__N_jasa__</td>
+          <td colspan="2">Jasa pengerjaan <span class="small">&middot; enam bagian di halaman 12, sekali bayar, berikut pendampingan yang ikut di tiap masa paket</span></td>
+          <td class="num">__N_a-jasa__</td>
+          <td class="num">__N_b-jasa__</td>
+          <td class="num">__N_c-jasa__</td>
         </tr>
         <tr class="total">
           <td colspan="2">Total penawaran</td>
@@ -784,7 +793,13 @@ __CSS__
           <td class="num">__N_c-total__</td>
         </tr>
         <tr>
-          <td colspan="2">Uang muka <span class="small">&middot; seluruh biaya Hostinger + separuh jasa; sisa __N_sisa__ saat serah terima</span></td>
+          <td colspan="2">Biaya per tahun <span class="small">&middot; totalnya dibagi masa paketnya</span></td>
+          <td class="num">__N_a-per-tahun__</td>
+          <td class="num">__N_b-per-tahun__</td>
+          <td class="num">__N_c-per-tahun__</td>
+        </tr>
+        <tr>
+          <td colspan="2">Uang muka <span class="small">&middot; seluruh biaya Hostinger + separuh jasa; sisanya saat serah terima</span></td>
           <td class="num">__N_a-dp__</td>
           <td class="num">__N_b-dp__</td>
           <td class="num">__N_c-dp__</td>
@@ -793,30 +808,35 @@ __CSS__
     </table>
 
     <div class="grid g2" style="margin-top:4mm">
-      <div class="card warn">
-        <h3>Yang lebih lama bukan yang lebih murah per tahun</h3>
-        <p>Sisi Hostinger-nya <strong>__N_a-per-tahun__</strong> di A,
-        <strong>__N_b-per-tahun__</strong> di B,
-        <strong>__N_c-per-tahun__</strong> di C, per tahun. Harga per bulannya
-        sama di semua durasi, jadi yang membedakan cuma dua hadiah setahun
-        &mdash; kotak surat dan satu nama domain &mdash; yang terbagi makin
-        tipis makin panjang masanya.</p>
-      </div>
       <div class="card green">
-        <h3>Lalu kenapa memilih yang lebih panjang</h3>
-        <p>Harga dikunci: tidak ada kenaikan yang bisa menyusul, tidak ada
-        tagihan perpanjangan yang bisa terlewat, dan tidak ada nama domain
-        yang bisa hangus karena satu email tagihan tidak terbaca. Selisih per
-        tahunnya kecil; yang dibeli adalah tidak perlu memikirkannya lagi.</p>
+        <h3>Kenapa tiga tahun yang paling masuk akal</h3>
+        <p>Biaya per tahunnya <strong>__N_c-per-tahun__</strong>, turun
+        <strong>__N_hemat-c__</strong> dari pilihan A. Pengerjaan dibayar
+        sekali tapi dipakai tiga tahun, pendampingannya
+        <strong>__N_c-damping-per-bulan__</strong> &mdash; lebih murah
+        daripada __N_b-damping-per-bulan__ di B &mdash; dan harga hostingnya
+        dikunci sampai 2029.</p>
+      </div>
+      <div class="card">
+        <h3>Kalau yang dipilih yang pendek</h3>
+        <p>Pilihan A paling ringan di muka, <strong>__N_a-dp__</strong>, dan
+        tahun depan bebas memutuskan ulang. Yang tidak ikut: pendampingan,
+        pemeriksaan menyeluruh, dan bantuan perpanjangan. Garansinya
+        __N_a-garansi__, bukan __N_c-garansi__.</p>
       </div>
     </div>
 
     <div class="note" style="margin-top:4mm">
-      <strong>Masa 3 tahun dibeli sebagai 24 + 12 bulan</strong>, karena
-      Hostinger menjual 1, 12, 24, dan 48 bulan; di harga normal jumlahnya
-      sama sampai rupiah terakhir. Dan kalau promonya masih berlaku saat
-      dipesan, <strong>selisihnya menjadi milik pemilik</strong>, dengan
-      kuitansi Hostinger diserahkan apa adanya.
+      <strong>Satu hal yang perlu dibaca utuh.</strong> Kalau yang
+      dibandingkan cuma sisi Hostinger-nya, A justru sedikit lebih murah per
+      tahun (__N_a-per-tahun-hostinger__ di A, __N_b-per-tahun-hostinger__ di B,
+      __N_c-per-tahun-hostinger__ di C), karena dua hadiah paket yang berlaku setahun jatuh seluruhnya di
+      tahun pertama. Yang membalik perbandingannya adalah jasa dan
+      pendampingan, yang dibayar sekali lalu dipakai sepanjang masanya.
+      &mdash; Dan dua catatan teknis: masa 3 tahun dibeli sebagai
+      <strong>24 + 12 bulan</strong> karena Hostinger tidak menjual 36, dan
+      kalau promonya masih berlaku saat dipesan
+      <strong>selisihnya menjadi milik pemilik</strong>.
     </div>
   </div>
   <div class="foot"><span>Tiga pilihan masa paket</span><span>13 / 16</span></div>
@@ -935,8 +955,8 @@ __CSS__
           <td>Menurunkan beranda Turtle dari 4,66 MB ke kisaran beranda Eddo. Bisa dikerjakan sendiri dengan menyimpan ulang fotonya, atau dimasukkan ke penawaran terpisah.</td>
         </tr>
         <tr>
-          <td><strong>Perawatan bulanan</strong></td>
-          <td>Pemantauan dan cadangan berjalan sendiri setelah dipasang. Kalau ingin ada yang berjaga dan menangani kalau terjadi apa-apa, itu kesepakatan terpisah.</td>
+          <td><strong>Perawatan di luar masa pendampingan</strong></td>
+          <td>Pemantauan dan cadangan berjalan sendiri setelah dipasang. Yang ditangani orang &mdash; perbaikan, pembaruan keamanan, pemulihan &mdash; termasuk selama masa pendampingan di halaman 12: __N_b-damping-bulan__ di pilihan B, __N_c-damping-bulan__ di pilihan C, dan tidak ada di pilihan A. Sesudah masa itu habis, perpanjangannya kesepakatan terpisah.</td>
         </tr>
       </tbody>
     </table>
@@ -971,11 +991,12 @@ __CSS__
         <th class="num" style="width:27mm">C &middot; __N_c-label__</th>
       </tr></thead>
       <tbody>
-        <tr><td>Jasa pengerjaan <span class="small">&middot; enam bagian, __N_jasa-hari__ hari kerja, sekali bayar</span></td><td class="num">__N_jasa__</td><td class="num">__N_jasa__</td><td class="num">__N_jasa__</td></tr>
-        <tr><td>Hosting <span class="small">&middot; paket __N_nama-paket__ + email + dua nama domain + ICANN + pajak, harga normal</span></td><td class="num">__N_a-hostinger__</td><td class="num">__N_b-hostinger__</td><td class="num">__N_c-hostinger__</td></tr>
+        <tr><td>Jasa pengerjaan <span class="small">&middot; enam bagian, __N_jasa-hari__ hari kerja, berikut pendampingan di halaman 12</span></td><td class="num">__N_a-jasa__</td><td class="num">__N_b-jasa__</td><td class="num">__N_c-jasa__</td></tr>
+        <tr><td>Hosting <span class="small">&middot; paket + email + dua nama domain + ICANN + pajak, harga normal</span></td><td class="num">__N_a-hostinger__</td><td class="num">__N_b-hostinger__</td><td class="num">__N_c-hostinger__</td></tr>
         <tr class="total"><td>Total penawaran</td><td class="num">__N_a-total__</td><td class="num">__N_b-total__</td><td class="num">__N_c-total__</td></tr>
         <tr><td>Uang muka <span class="small">&middot; seluruh biaya hosting + separuh jasa</span></td><td class="num">__N_a-dp__</td><td class="num">__N_b-dp__</td><td class="num">__N_c-dp__</td></tr>
-        <tr><td>Saat serah terima <span class="small">&middot; sisa jasa, dibayar setelah semuanya dicek bersama</span></td><td class="num">__N_sisa__</td><td class="num">__N_sisa__</td><td class="num">__N_sisa__</td></tr>
+        <tr><td>Saat serah terima <span class="small">&middot; sisa jasa, dibayar setelah semuanya dicek bersama</span></td><td class="num">__N_a-sisa__</td><td class="num">__N_b-sisa__</td><td class="num">__N_c-sisa__</td></tr>
+        <tr><td>Biaya per tahun <span class="small">&middot; totalnya dibagi masa paketnya</span></td><td class="num">__N_a-per-tahun__</td><td class="num">__N_b-per-tahun__</td><td class="num">__N_c-per-tahun__</td></tr>
       </tbody>
     </table>
 
@@ -983,42 +1004,33 @@ __CSS__
       <div class="card">
         <div class="pilih"><span class="kotak"></span><div>
           <h3>A &middot; __N_a-label__</h3>
-          <p class="small" style="margin-top:2px">Paling murah per tahun, dan tahun depan bebas memutuskan ulang.</p>
+          <p class="small" style="margin-top:2px">__N_a-per-tahun__ / thn. Garansi __N_a-garansi__, tanpa pendampingan.</p>
         </div></div>
       </div>
       <div class="card">
         <div class="pilih"><span class="kotak"></span><div>
           <h3>B &middot; __N_b-label__</h3>
-          <p class="small" style="margin-top:2px">Harga dikunci dua tahun, satu tagihan perpanjangan yang dilewati.</p>
+          <p class="small" style="margin-top:2px">__N_b-per-tahun__ / thn. Garansi __N_b-garansi__, pendampingan __N_b-damping-bulan__, 1&times; pemeriksaan.</p>
         </div></div>
       </div>
       <div class="card">
         <div class="pilih"><span class="kotak"></span><div>
           <h3>C &middot; __N_c-label__</h3>
-          <p class="small" style="margin-top:2px">Harga dikunci tiga tahun, dua tagihan perpanjangan yang dilewati.</p>
+          <p class="small" style="margin-top:2px">__N_c-per-tahun__ / thn, paling murah. Garansi __N_c-garansi__, pendampingan __N_c-damping-bulan__, 2&times; pemeriksaan.</p>
         </div></div>
       </div>
     </div>
-    <p class="small" style="margin-top:3mm">Centang satu kotak di atas. Yang dicentang itu yang mengikat.</p>
+    <p class="small" style="margin-top:2mm">Centang satu kotak di atas. Yang dicentang itu yang mengikat.</p>
 
     <div class="card green" style="margin-top:4mm">
       <h3>Yang diterima pemilik saat serah terima</h3>
       <ul>
         <li>Dua alamat yang sudah hidup dengan sertifikat keamanan aktif, plus dashboard di <span class="mono">/kelola</span></li>
         <li>Satu alamat email berakhiran nama domain sendiri, sudah diuji kirim dan terima</li>
-        <li>Akses penuh ke paket hosting, kedua domain, email, dan database, semuanya atas nama pemilik</li>
-        <li>Salinan database otomatis ke penyimpanan terpisah, dan sudah dibuktikan bisa dipulihkan</li>
+        <li>Akses penuh ke paket hosting, kedua domain, email, dan database, atas nama pemilik</li>
+        <li>Salinan database otomatis ke penyimpanan terpisah, sudah dibuktikan bisa dipulihkan</li>
         <li>Pemantauan yang mengirim pesan kalau situsnya tidak menjawab</li>
-        <li>Catatan tertulis cara memperbarui dan cara memulihkan</li>
-      </ul>
-    </div>
-
-    <div class="card mute" style="margin-top:4mm">
-      <h3>Setelah ini ditandatangani</h3>
-      <ul>
-        <li><strong>Hari 0.</strong> Paket dan nama domain dipesan atas nama pemilik, dibayar dari uang muka, dan kuitansinya diteruskan apa adanya.</li>
-        <li><strong>Hari 1&ndash;2.</strong> Aplikasi dipasang, kedua alamat hidup dengan sertifikatnya, email diuji kirim dan terima, rantai deploy otomatis dibuktikan sekali.</li>
-        <li><strong>Hari __N_jasa-hari__.</strong> Cadangan diuji pulihkan di depan pemilik, pemantauan menyala, kata sandi dan catatannya diserahkan.</li>
+        <li>Catatan tertulis cara memperbarui dan cara memulihkan, plus pendampingan dan garansi sesuai pilihan yang dicentang (halaman 12)</li>
       </ul>
     </div>
 

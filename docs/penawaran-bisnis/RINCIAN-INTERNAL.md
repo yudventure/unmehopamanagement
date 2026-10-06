@@ -52,23 +52,51 @@ perpanjangan nanti lebih kecil daripada yang dipakai menghitung.
 | Biaya ICANN | Rp 19.876 | Rp 39.752 | Rp 59.628 |
 | Pajak 11% | Rp 196.743 | Rp 454.724 | Rp 712.704 |
 | **Ke Hostinger** | **Rp 1.985.319** | **Rp 4.588.576** | **Rp 7.191.832** |
-| Jasa pengerjaan | Rp 2.250.000 | Rp 2.250.000 | Rp 2.250.000 |
-| **Total ke klien** | **Rp 4.235.319** | **Rp 6.838.576** | **Rp 9.441.832** |
-| Uang muka | Rp 3.110.319 | Rp 5.713.576 | Rp 8.316.832 |
-| Sisa saat serah terima | Rp 1.125.000 | Rp 1.125.000 | Rp 1.125.000 |
-| **Sisi Hostinger per tahun** | Rp 1.985.319 | Rp 2.294.288 | Rp 2.397.277 |
+| Setup, sekali bayar | Rp 3.000.000 | Rp 3.000.000 | Rp 3.000.000 |
+| Pendampingan | — | Rp 1.250.000 (6 bln) | Rp 2.000.000 (12 bln) |
+| **Jasa** | **Rp 3.000.000** | **Rp 4.250.000** | **Rp 5.000.000** |
+| **Total ke klien** | **Rp 4.985.319** | **Rp 8.838.576** | **Rp 12.191.832** |
+| Uang muka | Rp 3.485.319 | Rp 6.713.576 | Rp 9.691.832 |
+| Sisa saat serah terima | Rp 1.500.000 | Rp 2.125.000 | Rp 2.500.000 |
+| **Biaya per tahun** | **Rp 4.985.319** | **Rp 4.419.288** | **Rp 4.063.944** |
+| Sisi Hostinger per tahun | Rp 1.985.319 | Rp 2.294.288 | Rp 2.397.277 |
 
-Dua hadiah paketnya ikut dihitung, bukan diabaikan: **kotak surat gratis 12
-bulan** dan **satu nama domain gratis 1 tahun**. Keduanya cuma berlaku di
-tahun pertama, jadi A menikmatinya penuh sementara C membaginya ke tiga tahun
-— itu satu-satunya sebab **A lebih murah per tahun**, karena harga per
-bulannya sendiri sama persis di semua durasi.
+## Kenapa tangganya begini, dan apa yang harus dijaga
 
-Halaman 13 mengatakan itu terang-terangan, dengan judul kartunya sendiri.
-Klien yang belakangan menghitung sendiri lalu merasa dibohongi jauh lebih
-mahal daripada satu paragraf jujur. Yang dijual pada B dan C bukan
-penghematan, melainkan harga terkunci dan tagihan perpanjangan yang
-dilewati. **Jangan jual C sebagai "lebih hemat".**
+Perintah pemilik: tahun pertama tinggi, kedua tinggi, **ketiga yang paling
+masuk akal dipilih, dan minimal Rp 12 juta**. Angka Hostinger tidak bisa
+disentuh — itu harga orang lain. Yang bisa diatur cuma jasanya, dan supaya
+tangganya tidak jadi angka asal, jasanya dipecah dua: **setup yang sama di
+ketiganya** dan **pendampingan yang cuma ikut di masa panjang**.
+
+Setup **Rp 3.000.000** adalah angka pemilik sendiri, sama dengan yang dipakai
+penawaran VPS. Pekerjaan di sini memang lebih pendek daripada yang di sana,
+tapi harga jasa itu hak pemilik, bukan sesuatu yang diturunkan diam-diam.
+
+Pendampingan **Rp 208.333/bln di B** dan **Rp 166.667/bln di C** — makin
+panjang makin murah per bulan, dan itulah yang membalik biaya per tahun jadi
+menurun: Rp 4.985.319 → Rp 4.419.288 → **Rp 4.063.944**. C mendarat di
+Rp 12.191.832, di atas batas Rp 12 juta.
+
+**Yang harus dijaga, dan ini bukan formalitas.** Dua baris yang membuat
+tangganya masuk akal adalah **janji kerja**, bukan hiasan harga:
+
+- **Pendampingan 6 dan 12 bulan** — perbaikan kalau situsnya bermasalah,
+  pembaruan keamanan paketnya, pemulihan dari cadangan.
+- **Pemeriksaan menyeluruh 1× (B) dan 2× (C)**, plus mengingatkan dan
+  membantu perpanjangan.
+- **Garansi 14 / 30 / 60 hari.**
+
+Kalau ketiganya tidak akan dikerjakan, tangganya tidak boleh dipakai seperti
+ini: itu menaikkan harga dengan janji yang tidak ditepati. Yang dijual pada B
+dan C adalah waktu kerja, bukan sekadar masa paket yang lebih panjang.
+
+**Satu kejujuran yang tetap tertulis di halaman 13:** kalau yang dibandingkan
+cuma sisi Hostinger-nya, A justru sedikit lebih murah per tahun, karena dua
+hadiah paket yang berlaku setahun jatuh seluruhnya di tahun pertama. Yang
+membalik perbandingannya adalah jasa dan pendampingan. Klien yang belakangan
+menghitung sendiri lalu merasa dibohongi jauh lebih mahal daripada satu
+paragraf jujur.
 
 **Masa 3 tahun dibeli sebagai 24 + 12 bulan.** Di harga normal itu tidak
 mengubah apa pun (24 × 129.900 + 12 × 129.900 = 36 × 129.900), tapi di harga
@@ -114,10 +142,7 @@ kuitansi di halaman 12 dan 16 dicabut. Bilang saja, nanti diubah. Yang tidak
 boleh adalah dokumen yang menjanjikan satu hal sementara tagihannya berkata
 lain.
 
-## Jasa Rp 2.250.000
-
-Tarifnya sama dengan `penawaran/`: **Rp 750.000 per hari**. Yang berubah
-jumlah harinya, empat jadi tiga, dan alasannya bisa disebutkan satu per satu.
+## Lingkup setup, dan apa yang hilang dari penawaran VPS
 
 Hilang dari lingkup empat hari yang lama:
 
@@ -133,13 +158,10 @@ Node dan pemisahan domainnya; email berikut MX, SPF, DKIM; menyambungkan
 rantai deploy; menyambungkan database berikut cadangan dan uji pulih;
 pemantauan dan serah terima.
 
-**Kalau mau dinaikkan**, naikkan nilai per bagian, jangan tambah pos baru.
-
-| Kalau dinaikkan ke | Per hari | Total A | Total B | Total C |
-|---|---:|---:|---:|---:|
-| Rp 2.250.000 | Rp 750 rb | Rp 4.235.319 | Rp 6.838.576 | Rp 9.441.832 |
-| Rp 3.000.000 | Rp 1 jt | Rp 4.985.319 | Rp 7.588.576 | Rp 10.191.832 |
-| Rp 3.750.000 | Rp 1,25 jt | Rp 5.735.319 | Rp 8.338.576 | Rp 10.941.832 |
+**Kalau mau diubah**, ubah `JASA.setup` atau `PERIODE[].damping` di
+`angka.mjs`; totalnya, per tahunnya, uang mukanya, dan sisanya ikut sendiri.
+Yang perlu dijaga cuma satu: **biaya per tahun harus tetap menurun dari A ke
+C**, kalau tidak, dokumennya menganjurkan pilihan yang lebih mahal per tahun.
 
 Catatan: di pilihan A, jasa adalah **lebih dari separuh** total yang dilihat
 klien, beda sekali dengan `penawaran/` yang Rp 16 juta-nya didominasi biaya
@@ -155,7 +177,9 @@ aman ditawarkan bukan potongan jasa melainkan pilihan A alih-alih C.
 - **Optimasi foto Turtle tidak termasuk**, dan disebut di halaman 15 berikut
   angkanya (4,66 MB turun ke kisaran 1,63 MB).
 - **Garansi 14 hari sengaja sempit**: hanya kerusakan dari pekerjaan ini.
-- **Perawatan bulanan tidak dijanjikan apa pun.**
+- **Perawatan di luar masa pendampingan tidak dijanjikan.** Sesudah 6 atau 12
+  bulan itu habis, perpanjangannya kesepakatan terpisah, dan halaman 15
+  mengatakannya.
 
 ## Dua hal yang masih harus dicek sebelum dokumennya dikirim
 

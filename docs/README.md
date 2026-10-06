@@ -6,7 +6,7 @@ menyatukannya jadi satu berkas HTML mandiri dan `render.mjs` mencetaknya.
 | Folder | Hasil | Isi |
 |---|---|---|
 | `penawaran/` | `spesifikasi-dan-penawaran.pdf` | 16 halaman. Deploy ke **VPS KVM 2** dan **tiga** nama domain. Harga di dalamnya sudah lengkap |
-| `penawaran-bisnis/` | `penawaran-hosting-bisnis.pdf` | 16 halaman. **Paket Unlimited Web Hosting** dan **dua** nama domain, dalam **tiga** pilihan masa paket (1, 2, 3 tahun), plus satu halaman branding peta Selat Dampier |
+| `penawaran-bisnis/` | `penawaran-hosting-bisnis.pdf` | 16 halaman. **Paket Unlimited Web Hosting** dan **dua** nama domain, dalam **tiga** pilihan masa paket (1, 2, 3 tahun) dengan pendampingan bertingkat, plus satu halaman branding peta Selat Dampier |
 
 Keduanya A4 tegak dan dipakai untuk hal yang berbeda: yang pertama menawarkan
 server yang diurus sendiri, yang kedua menawarkan paket terkelola untuk
@@ -117,6 +117,21 @@ Rp 205.392, dan itu tepat 11%.
 **Hostinger tidak menjual 36 bulan** — pilihannya 1, 12, 24, 48. Masa 3 tahun
 di dokumen dibeli sebagai 24 + 12, yang di harga normal jumlahnya sama persis.
 Halaman 13 mengatakan itu, bukan menyembunyikannya.
+
+### Jasanya bertingkat, dan tingkatnya punya isi
+
+Setup sama di ketiga pilihan (`JASA.setup`); yang berbeda **pendampingan**
+yang menempel di masa paketnya (`PERIODE[].damping`): tidak ada di 1 tahun,
+6 bulan di 2 tahun, 12 bulan di 3 tahun, makin murah per bulan makin panjang.
+Itu yang membuat **biaya per tahun menurun** dari pilihan terpendek ke
+terpanjang — tanpa itu, sisi Hostinger-nya sendiri justru sedikit lebih murah
+di masa terpendek, karena dua hadiah paket yang berlaku setahun jatuh
+seluruhnya di tahun pertama. Halaman 13 menuliskan kedua sisinya.
+
+Kalau angkanya diubah, jaga satu hal: **biaya per tahun harus tetap menurun
+dari A ke C**, kalau tidak, dokumennya menganjurkan pilihan yang lebih mahal
+per tahun. Dan pendampingan itu janji kerja, bukan hiasan harga — lihat
+`penawaran-bisnis/RINCIAN-INTERNAL.md`.
 
 ### Pita draf
 

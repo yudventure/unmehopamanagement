@@ -59,11 +59,22 @@ const PAKET = {
   domainGratisTahun: 1,
 };
 
-/** Tiga pilihan yang diminta pemilik. */
+/**
+ * Tiga pilihan, dan apa yang ikut di tiap pilihan.
+ *
+ * `damping` is what the longer terms buy beyond the setup, and it is the
+ * reason the ladder leans the way it does: the Hostinger side alone is
+ * slightly *cheaper* per year on the shortest term, because the plan's two
+ * one-year gifts land entirely inside it. Without something real attached to
+ * the longer terms, recommending them would mean recommending the worse
+ * deal. So the longer terms carry support, priced cheaper by the month the
+ * longer it runs, and that is what turns the all-in cost per year the right
+ * way round.
+ */
 const PERIODE = [
-  { kunci: "a", bulan: 12, label: "1 tahun" },
-  { kunci: "b", bulan: 24, label: "2 tahun" },
-  { kunci: "c", bulan: 36, label: "3 tahun" },
+  { kunci: "a", bulan: 12, label: "1 tahun", dampingBulan: 0, damping: 0, garansi: 14 },
+  { kunci: "b", bulan: 24, label: "2 tahun", dampingBulan: 6, damping: 1250000, garansi: 30 },
+  { kunci: "c", bulan: 36, label: "3 tahun", dampingBulan: 12, damping: 2000000, garansi: 60 },
 ];
 
 /**
@@ -88,13 +99,17 @@ const ICANN = 9938;
 const PAJAK = 0.11;
 
 /**
- * The fee. Three working days at the Rp 750.000 per day the other offer was
- * priced at — that one scoped four days because a VPS has to be ordered,
- * hardened, given Coolify and a PostgreSQL of its own. None of that applies
- * to a managed plan, so the day that paid for it is gone rather than hidden.
- * The same fee in all three columns: the work does not change with the term.
+ * The setup fee: the six parts on page 12, three working days, once.
+ *
+ * Rp 3.000.000 is the owner's own figure, the same one the VPS offer
+ * carries. The work here is shorter than that one — no VPS to order and
+ * harden, no Coolify, no PostgreSQL to install — but the price is the
+ * owner's to set, not something to be derived down behind their back.
+ *
+ * Identical in all three columns. What differs between them is the support
+ * attached to the term, in `PERIODE`.
  */
-const JASA = { hari: 3, perHari: 750000 };
+const JASA = { setup: 3000000, hari: 3 };
 
 /* ------------------------------------------------------------ hitungan */
 
@@ -106,8 +121,9 @@ const rp = (n) => `Rp ${Math.round(n).toLocaleString("en-US").replaceAll(",", ".
 const ISI = '<span class="isi">belum diisi</span>';
 const angka = (n) => (n === null || n === undefined ? ISI : rp(n));
 
-const jasa = JASA.hari * JASA.perHari;
-const sisa = jasa / 2;
+/** Harga pendampingan per bulan, untuk kalimat "makin panjang makin murah". */
+const perBulanDamping = (p) =>
+  p.dampingBulan === 0 ? null : Math.round(p.damping / p.dampingBulan);
 
 /**
  * One term, priced.
@@ -134,7 +150,12 @@ function hitung(p) {
   const pajak = sebelumPajak === null ? null : Math.round(sebelumPajak * PAJAK);
   const keHostinger = sebelumPajak === null ? null : sebelumPajak + pajak;
 
+  const jasa = JASA.setup + p.damping;
+  const sisa = jasa / 2;
+
   return {
+    jasa,
+    sisa,
     ...p,
     perBulan,
     tahun,
@@ -147,7 +168,11 @@ function hitung(p) {
     keHostinger,
     total: keHostinger === null ? null : keHostinger + jasa,
     dp: keHostinger === null ? null : keHostinger + sisa,
-    perTahun: keHostinger === null ? null : keHostinger / tahun,
+    /* Per tahun dihitung dari total yang dilihat klien, bukan dari sisi
+       Hostinger saja: itu angka yang benar-benar dibandingkan orang, dan
+       itu yang membuat masa terpanjang jadi yang paling masuk akal. */
+    perTahun: keHostinger === null ? null : (keHostinger + jasa) / tahun,
+    perTahunHostinger: keHostinger === null ? null : keHostinger / tahun,
   };
 }
 
@@ -208,9 +233,15 @@ export default function () {
     "email-bln": `${rp(EMAIL.perBulan)} / bln`,
     "domain-thn": `${rp(DOMAIN.perTahun)} / thn`,
     "icann-satuan": rp(ICANN),
-    jasa: rp(jasa),
+    setup: rp(JASA.setup),
+    /* Selisih biaya per tahun antara masa terpendek dan terpanjang. Dihitung
+       di sini, bukan diketik di halamannya: angka yang diketik tangan di
+       sebelah angka yang dihitung adalah angka yang akan basi sendiri. */
+    "hemat-c":
+      H[0].perTahun === null || H[H.length - 1].perTahun === null
+        ? ISI
+        : rp(H[0].perTahun - H[H.length - 1].perTahun),
     "jasa-hari": String(JASA.hari),
-    sisa: rp(sisa),
     "r-hosting-bln": `${rp(PAKET.perpanjanganPerBulan)} / bln`,
     "r-hosting": rp(rHosting),
     "r-email": rp(rEmail),
@@ -231,9 +262,22 @@ export default function () {
     keluar[`${h.kunci}-icann`] = rp(h.icann);
     keluar[`${h.kunci}-pajak`] = angka(h.pajak);
     keluar[`${h.kunci}-hostinger`] = angka(h.keHostinger);
+    keluar[`${h.kunci}-jasa`] = rp(h.jasa);
+    if (h.damping !== 0) keluar[`${h.kunci}-damping`] = rp(h.damping);
+    keluar[`${h.kunci}-damping-bulan`] =
+      h.dampingBulan === 0 ? "tidak termasuk" : `${h.dampingBulan} bulan`;
+    /* Cuma masa paket yang benar-benar membawa pendampingan yang punya
+       harga per bulannya. Kunci kosong untuk yang tidak akan ditolak
+       build.mjs sebagai nilai yang tidak dipakai halaman mana pun, dan itu
+       memang yang diinginkan. */
+    const perBulan = perBulanDamping(h);
+    if (perBulan !== null) keluar[`${h.kunci}-damping-per-bulan`] = `${rp(perBulan)} / bln`;
+    keluar[`${h.kunci}-garansi`] = `${h.garansi} hari`;
     keluar[`${h.kunci}-total`] = angka(h.total);
     keluar[`${h.kunci}-dp`] = angka(h.dp);
+    keluar[`${h.kunci}-sisa`] = rp(h.sisa);
     keluar[`${h.kunci}-per-tahun`] = angka(h.perTahun);
+    keluar[`${h.kunci}-per-tahun-hostinger`] = angka(h.perTahunHostinger);
   }
   return keluar;
 }

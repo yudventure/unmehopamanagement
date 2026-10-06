@@ -1,0 +1,1000 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Spesifikasi &amp; Penawaran Hosting Bisnis — Unmehopa Management</title>
+<style>
+@font-face { font-family: "DM Sans"; font-style: normal; font-weight: 100 1000; src: url(data:font/woff2;base64,__DMSANS__) format("woff2"); }
+@font-face { font-family: "JetBrains Mono"; font-style: normal; font-weight: 100 800; src: url(data:font/woff2;base64,__MONO__) format("woff2"); }
+__CSS__
+</style>
+</head>
+<body>
+
+<!-- ============================================================ 1 sampul -->
+<section class="slide cover">
+  <div style="display:flex;align-items:center;gap:12px">
+    <div class="logo"><img src="data:image/png;base64,__LOGO__" alt=""></div>
+    <div>
+      <div style="font-size:10.5pt;font-weight:700">Unmehopa Management</div>
+      <div style="font-size:8.5pt;color:rgba(255,255,255,.7)">Turtle Dive Homestay &middot; Eddo Homestay &middot; Raja Ampat</div>
+    </div>
+    <div style="margin-left:auto;text-align:right">
+      <div class="eyebrow">Spesifikasi &amp; penawaran</div>
+      <div class="mono" style="font-size:8pt;color:rgba(255,255,255,.6);margin-top:3px">No. UM/HOS/2026-02 &middot; 6 Oktober 2026</div>
+    </div>
+  </div>
+
+  <div>
+    <div class="eyebrow">Untuk pengerjaan</div>
+    <h1 style="margin-top:10px">Paket Business Web Hosting,<br>dua nama domain sendiri</h1>
+    <p style="margin-top:14px;font-size:11pt;line-height:1.6;max-width:150mm">
+      Tiga situs dan satu dashboard sudah jalan dan sudah membaca database.
+      Dokumen ini menaruhnya di paket hosting yang pas, menyambungkannya ke
+      dua nama domain, dan menyebutkan biayanya untuk dua tahun. Semua angka
+      ukurannya diukur hari ini; semua angka biayanya diambil dari layar
+      Hostinger sendiri.
+    </p>
+
+    <div class="grid g2" style="margin-top:9mm">
+      <div class="chip">
+        <div class="t mono" style="font-size:8.5pt">turtlehomestay.com</div>
+        <div class="s">Situs publik Turtle Dive Homestay dan dive center. Tujuh bahasa, enam paket selam</div>
+      </div>
+      <div class="chip">
+        <div class="t mono" style="font-size:8.5pt">eddohomestay.com</div>
+        <div class="s">Situs publik Eddo Homestay, dan dashboard pengelolaan di <span class="mono">/kelola</span></div>
+      </div>
+    </div>
+
+    <div style="margin-top:4mm">__N_pita__</div>
+
+    <div class="price" style="margin-top:4mm">
+      <div>
+        <div style="font-size:10.5pt;font-weight:700">Total penawaran</div>
+        <div class="k">Jasa pengerjaan + hosting, dua nama domain, dan email untuk 24 bulan. Harga normal, sudah termasuk pajak</div>
+      </div>
+      <div class="v">__N_total__</div>
+    </div>
+  </div>
+
+  <div class="foot"><span>Unmehopa Management</span><span>1 / 16</span></div>
+</section>
+
+<!-- ========================================================== 2 ringkasan -->
+<section class="slide">
+  <div class="head">
+    <div class="eyebrow">Bagian 1 &middot; Ringkasan</div>
+    <h2 style="margin-top:5px">Di mana posisinya sekarang</h2>
+  </div>
+  <div class="body">
+    <p class="lede" style="margin-top:5mm">
+      Yang dulu belum ada sekarang sudah ada. Databasenya berdiri,
+      dashboard-nya membaca booking sungguhan dari sana, dan tiap kali kode
+      dikirim, situsnya membangun dan menayangkan dirinya sendiri tanpa ada
+      yang menyentuh server. Yang tersisa bukan lagi menyiapkan, melainkan
+      menaruhnya di paket yang benar dan memberinya dua alamat.
+    </p>
+
+    <div class="grid g3" style="margin-top:6mm">
+      <div class="card"><div class="stat"><span class="n">3</span><span class="k">situs dari satu aplikasi: Turtle, Eddo, dan dashboard. Satu slot Node, bukan tiga</span></div></div>
+      <div class="card"><div class="stat"><span class="n">7</span><span class="k">bahasa penuh di kedua situs publik, bertipe di kode: terjemahan yang lupa diisi menggagalkan build</span></div></div>
+      <div class="card"><div class="stat"><span class="n">32</span><span class="k">halaman dibangun jadi HTML saat build, jadi tidak perlu dirender ulang tiap tamu</span></div></div>
+    </div>
+
+    <div class="grid g2" style="margin-top:5mm">
+      <div class="card green">
+        <h3>Sudah berfungsi</h3>
+        <ul>
+          <li><strong>Database PostgreSQL</strong> dengan aturan anti-bentrok di tingkat database: dua booking yang bertindih di kamar yang sama ditolak oleh database, bukan cuma oleh layar</li>
+          <li><strong>Dashboard membaca database</strong>: kalender, okupansi bulan ini, malam terjual, pendapatan, check-in tujuh hari ke depan</li>
+          <li>Laporan: okupansi, ADR, lama menginap, dua grafik, ekspor CSV dan PDF</li>
+          <li>Properti, kamar, tarif, pengguna dan peran, serta pemisahan hak Owner dan Staf</li>
+          <li>Situs publik Turtle: kamar, enam paket selam dengan halaman sendiri, musim, cara sampai, FAQ, galeri, peta</li>
+          <li>Situs publik Eddo Homestay, dengan peta perjalanan Sorong&ndash;Waisai&ndash;rumahnya</li>
+          <li><strong>Deploy otomatis</strong>: kode dikirim, GitHub Actions membangun, hasilnya terbit, dan versinya dicek sendiri sebelum dinyatakan selesai</li>
+          <li>CMS di dalam dashboard, lengkap dengan saklar mode perbaikan</li>
+        </ul>
+      </div>
+      <div class="card warn">
+        <h3>Belum ada</h3>
+        <ul>
+          <li><strong>Menyimpan perubahan booking.</strong> Layar sudah membaca database; menandai check-in, membatalkan, dan menambah booking baru belum tersimpan ke sana</li>
+          <li><strong>Sinkronisasi iCal</strong> ke Booking.com, Agoda, Traveloka</li>
+          <li><strong>Akun per orang.</strong> Sekarang satu kata sandi untuk masuk, bukan satu akun untuk tiap staf</li>
+          <li><strong>Foto asli Eddo Homestay</strong> dan sebagian isi teksnya</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="note" style="margin-top:5mm">
+      <strong>Yang ditawarkan di dokumen ini adalah tempat menjalankannya dan
+      kedua alamatnya</strong>, bukan keempat hal di kolom kanan. Setelah
+      pekerjaan ini selesai, kedua situs publik tayang di nama domainnya
+      sendiri dan dashboard-nya dibuka dari mana saja; booking masih dicatat
+      lewat tahap berikutnya di halaman 15.
+    </div>
+  </div>
+  <div class="foot"><span>Ringkasan</span><span>2 / 16</span></div>
+</section>
+
+<!-- ================================================ 3 tampilan situs -->
+<section class="slide">
+  <div class="head">
+    <div class="eyebrow">Bagian 2 &middot; Tampilan</div>
+    <h2 style="margin-top:5px">Situs publik, halaman depan</h2>
+  </div>
+  <div class="body">
+    <p class="lede" style="margin-top:4mm">
+      Gambar di empat halaman berikut adalah tangkapan layar aplikasi yang
+      sudah berjalan, diambil dari build produksi, bukan gambar rancangan.
+      Yang terlihat di sini sudah bisa dibuka hari ini.
+    </p>
+
+    <div style="margin-top:5mm">
+      <div class="shot"><img src="data:image/jpeg;base64,__SHOT_web-hero-desk__" alt="Halaman depan situs publik di layar lebar"></div>
+      <div class="cap"><strong>Halaman depan, layar lebar.</strong> Foto udara teluknya dibiarkan penuh tanpa bilah menu di atasnya; bilahnya baru muncul setelah halaman digulir. Tombol di bawah judul mengantar ke halaman profil keluarga.</div>
+    </div>
+
+    <div class="shots-row three" style="margin-top:6mm;max-width:136mm;margin-left:auto;margin-right:auto;gap:6mm">
+      <div>
+        <div class="shot phone"><img src="data:image/jpeg;base64,__SHOT_web-hero-hp__" alt="Halaman depan di ponsel, bahasa Inggris"></div>
+        <div class="cap"><strong>Ponsel, Inggris.</strong> Satu dari tujuh bahasa.</div>
+      </div>
+      <div>
+        <div class="shot phone"><img src="data:image/jpeg;base64,__SHOT_web-kamar-hp-id__" alt="Bagian kamar di ponsel, bahasa Indonesia"></div>
+        <div class="cap"><strong>Kamar, Indonesia.</strong> Ditukar lewat tombol bahasa di bilah atas.</div>
+      </div>
+      <div>
+        <div class="shot phone"><img src="data:image/jpeg;base64,__SHOT_web-musim-hp-id__" alt="Bagian musim di ponsel, bahasa Indonesia"></div>
+        <div class="cap"><strong>Musim.</strong> Kapan sebaiknya datang, per bulan.</div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>Tampilan</span><span>3 / 16</span></div>
+</section>
+
+<!-- ============================================ 4 tampilan halaman dalam -->
+<section class="slide">
+  <div class="head">
+    <div class="eyebrow">Bagian 2 &middot; Tampilan</div>
+    <h2 style="margin-top:5px">Situs publik, halaman dalam</h2>
+  </div>
+  <div class="body">
+    <div style="margin-top:5mm">
+      <div class="shot"><img src="data:image/jpeg;base64,__SHOT_web-diving-desk__" alt="Bagian diving di situs publik"></div>
+      <div class="cap"><strong>Bagian diving.</strong> Enam paket, masing-masing punya halaman sendiri. Logo SSI duduk di sebelah judulnya. Bilah pemesanan di bawah menyimpan pilihan paket, bulan, dan jumlah penyelam, lalu membawanya ke tombol Pesan.</div>
+    </div>
+
+    <div class="shots-row two" style="margin-top:6mm">
+      <div>
+        <div class="shot"><img src="data:image/jpeg;base64,__SHOT_web-paket-desk__" alt="Halaman satu paket selam"></div>
+        <div class="cap"><strong>Halaman satu paket.</strong> Harga bisa dilihat dalam rupiah atau mata uang lain dengan kurs yang ditarik saat halaman dibuka.</div>
+      </div>
+      <div>
+        <div class="shot"><img src="data:image/jpeg;base64,__SHOT_web-profil-desk__" alt="Halaman profil keluarga"></div>
+        <div class="cap"><strong>Halaman profil.</strong> Cerita keluarga yang membangun homestay, terpisah dari halaman depan supaya halaman depan tetap ringkas.</div>
+      </div>
+    </div>
+
+    <div class="note" style="margin-top:6mm">
+      <strong>Sebagian isi yang terlihat di gambar masih contoh.</strong>
+      Harga selam, nomor WhatsApp, tahun berdiri, dan tautan media sosial
+      diisi sendiri dari tab Website di dashboard tanpa menyentuh kode.
+      Lihat halaman 15.
+    </div>
+  </div>
+  <div class="foot"><span>Tampilan</span><span>4 / 16</span></div>
+</section>
+
+<!-- ================================================== 5 tampilan dashboard -->
+<section class="slide">
+  <div class="head">
+    <div class="eyebrow">Bagian 2 &middot; Tampilan</div>
+    <h2 style="margin-top:5px">Dashboard pengelolaan</h2>
+  </div>
+  <div class="body">
+    <div style="margin-top:4mm">
+      <div class="shot"><img src="data:image/jpeg;base64,__SHOT_app-kalender-desk__" alt="Kalender booking di dashboard, membaca dari database"></div>
+      <div class="cap"><strong>Kalender.</strong> Satu bulan penuh, semua kamar dari tiga properti. Di atasnya okupansi bulan ini, malam terjual, pendapatan, booking baru tujuh hari, dan check-in tujuh hari. Yang belum pernah dicatat ditulis &ldquo;belum dicatat&rdquo;, bukan nol &mdash; piutang Rp 0 dan piutang yang tidak diketahui bukan hal yang sama.</div>
+    </div>
+
+    <div class="shots-row two" style="margin-top:5mm">
+      <div>
+        <div class="shot"><img src="data:image/jpeg;base64,__SHOT_app-form-desk__" alt="Formulir booking baru dengan pemberitahuan kamar kosong"></div>
+        <div class="cap"><strong>Booking baru.</strong> Begitu tanggalnya diisi, formulirnya menyebut kamar mana yang masih kosong sepanjang rentang itu, dan kamar yang sedang renovasi disebut terpisah.</div>
+      </div>
+      <div>
+        <div class="shot"><img src="data:image/jpeg;base64,__SHOT_app-laporan-desk__" alt="Layar laporan dengan grafik okupansi"></div>
+        <div class="cap"><strong>Laporan.</strong> Okupansi, pendapatan kotor, ADR, lama menginap, tren per bulan dan per hari, ekspor CSV dan PDF.</div>
+      </div>
+    </div>
+
+    <div class="note" style="margin-top:5mm">
+      <strong>Nama tamu dan angka di gambar ini data demo, bukan booking
+      sungguhan dan bukan tarif sungguhan.</strong> Sekitar 1.100 booking
+      dibangkitkan supaya layarnya bisa dinilai dalam keadaan penuh, bukan
+      kosong, dan dipasang di database yang sama bentuknya dengan yang
+      dipakai nanti. Tarif Rp 1.550.000 yang terbaca di formulir berasal dari
+      data demo itu juga.
+    </div>
+  </div>
+  <div class="foot"><span>Tampilan</span><span>5 / 16</span></div>
+</section>
+
+<!-- =============================================== 6 kamar dan ponsel -->
+<section class="slide">
+  <div class="head">
+    <div class="eyebrow">Bagian 2 &middot; Tampilan</div>
+    <h2 style="margin-top:5px">Kamar dan tarif, dan di ponsel</h2>
+  </div>
+  <div class="body">
+    <div style="margin-top:4mm">
+      <div class="shot"><img src="data:image/jpeg;base64,__SHOT_app-kamar-desk__" alt="Layar properti dan kamar, dengan tarif per malam"></div>
+      <div class="cap"><strong>Properti &amp; Kamar.</strong> Tiga properti dalam satu daftar: Turtle Homestay, Eddo Homestay, dan Dive Center. Tarif per malam diubah di sini, dan booking baru memakai tarif yang berlaku saat disimpan. Situs publik membaca tarif dari sumber yang sama, jadi situs dan dashboard tidak mungkin menyebut angka berbeda.</div>
+    </div>
+
+    <div class="shots-row two" style="margin-top:5mm">
+      <div style="display:flex;gap:5mm;align-items:flex-start">
+        <div class="shot phone" style="width:47%"><img src="data:image/jpeg;base64,__SHOT_app-kalender-hp__" alt="Kalender di ponsel"></div>
+        <div class="shot phone" style="width:47%"><img src="data:image/jpeg;base64,__SHOT_app-laporan-hp__" alt="Laporan di ponsel"></div>
+      </div>
+      <div>
+        <h3 style="font-size:11pt">Dashboard-nya dipakai dari ponsel</h3>
+        <p style="margin-top:3mm">Bilahnya jadi dua baris, menunya jadi baris
+        yang digeser jari, dan tiap tanggal di kalender diringkas jadi meteran
+        okupansi berikut angkanya, karena nama tamu tidak muat di kolom
+        selebar jari tanpa jadi tidak terbaca.</p>
+        <p style="margin-top:3mm">Ini yang dipakai saat menerima tamu di
+        dermaga, bukan saat duduk di depan laptop, jadi yang dikejar bukan
+        kelengkapan tapi bisa dibaca sambil berdiri.</p>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>Tampilan</span><span>6 / 16</span></div>
+</section>
+
+<!-- ========================================================= 7 branding -->
+<section class="slide">
+  <div class="head">
+    <div class="eyebrow">Bagian 3 &middot; Branding</div>
+    <h2 style="margin-top:5px">Selat Dampier, digambar dari catatan resmi</h2>
+  </div>
+  <div class="body">
+    <p class="lede" style="margin-top:4mm">
+      Dua peta ini bukan gambar yang diunduh dan bukan peta pihak lain yang
+      ditempel di halaman. Keduanya digambar sendiri dari data wilayah
+      Indonesia, memakai warna dan huruf situsnya, dan dibangun oleh satu
+      perintah yang sama &mdash; jadi memperbaiki satu garis pantai
+      memperbaiki keduanya.
+    </p>
+
+    <div style="margin-top:5mm;display:grid;grid-template-columns:1fr 1fr;gap:6mm;align-items:start;max-width:168mm;margin-left:auto;margin-right:auto">
+      <div>
+        <div class="art"><img src="data:image/jpeg;base64,__SHOT_eddo-dampier__" alt="Peta Selat Dampier: Waigeo dan Gam di utara, Batanta di selatan"></div>
+        <div class="cap"><strong>Selat Dampier, pulau demi pulau.</strong> Tiap nama bisa ditekan, dan halamannya menceritakan apa yang memang diketahui tentang pulau itu.</div>
+      </div>
+      <div>
+        <div class="art"><img src="data:image/jpeg;base64,__SHOT_eddo-perjalanan__" alt="Peta perjalanan Sorong ke Waisai ke Eddo Homestay"></div>
+        <div class="cap"><strong>Cara ke sini.</strong> Sorong &rarr; Waisai dengan kapal cepat, lalu perahu ke rumahnya. Sudah terpasang di situs Eddo Homestay.</div>
+      </div>
+    </div>
+
+    <div class="grid g2" style="margin-top:5mm">
+      <div class="card">
+        <h3>Dari mana garis dan namanya</h3>
+        <p>Garis pantainya dari data batas desa Indonesia, nama pulaunya dari
+        gazetir pulau nasional. Keduanya catatan resmi yang bisa dibuka
+        siapa pun, bukan ingatan dan bukan tebakan.</p>
+      </div>
+      <div class="card green">
+        <h3>Build yang menolak nama yang salah</h3>
+        <p>Nama tiap pulau dicocokkan ke daftar resminya dan build berhenti
+        kalau tidak cocok. Aturan itu langsung menangkap satu kekeliruan:
+        pulau kecil di timur laut Gam yang disangka Friwen ternyata
+        <strong>Pulau Kurai</strong>. Tanpa pemeriksaan itu nama yang salah
+        sudah tayang, dan terbaca seolah-olah resmi.</p>
+      </div>
+    </div>
+
+    <div class="rule" style="margin:4mm 0"></div>
+
+    <h3 style="font-size:11pt">Tiga sumber, semuanya terbuka dan bisa dicek</h3>
+    <table style="margin-top:3mm">
+      <tbody>
+        <tr>
+          <td style="width:38mm"><strong>Garis pantai</strong></td>
+          <td>Poligon desa se-Kabupaten Raja Ampat. Di gugusan pulau, poligon desa <em>adalah</em> pulau atau sepotong pulau, jadi gabungannya garis pantai</td>
+          <td class="num" style="width:22mm">MIT</td>
+        </tr>
+        <tr>
+          <td><strong>Nama pulau</strong></td>
+          <td>Gazetir pulau dari keputusan yang sama, bukan dari peta daring mana pun</td>
+          <td class="num">MIT</td>
+        </tr>
+        <tr>
+          <td><strong>Potongan mana satu pulau</strong></td>
+          <td>Daratan OpenStreetMap pada 100 m, tempat satu pulau utuh jadi satu lingkaran</td>
+          <td class="num">CC-BY-SA, ODbL</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="small" style="margin-top:3mm">
+      Generatornya menolak menulis petanya kecuali titik resmi tiap pulau
+      berlabel jatuh di dalam tepat satu pulau yang digambar.
+    </p>
+
+    <div class="note" style="margin-top:4mm">
+      <strong>Peta Selat Dampier sudah jadi tapi sengaja belum dipasang di
+      halaman mana pun.</strong> Pemiliknya menyimpannya dulu; tempatnya bisa
+      di situs Eddo, di situs Turtle, atau di tempat lain. Ia ikut di dalam
+      pekerjaan ini dan tidak perlu digambar ulang kalau nanti dipakai.
+    </div>
+  </div>
+  <div class="foot"><span>Branding</span><span>7 / 16</span></div>
+</section>
+
+<!-- ======================================================== 8 arsitektur -->
+<section class="slide">
+  <div class="head">
+    <div class="eyebrow">Bagian 4 &middot; Arsitektur</div>
+    <h2 style="margin-top:5px">Dua domain, satu kode, satu aplikasi</h2>
+  </div>
+  <div class="body">
+    <p class="lede" style="margin-top:4mm">
+      Ketiga situs tinggal serumah di satu repo dan berbagi satu set warna
+      dan komponen. Memisahnya jadi beberapa alamat tidak perlu memecah
+      kodenya: satu lapisan membaca nama domain yang diminta pengunjung lalu
+      mengarahkan ke bagian yang benar. Yang berjalan di server tetap satu
+      proses Node.
+    </p>
+
+    <div style="display:grid;grid-template-columns:1fr 10mm 1fr;align-items:center;margin-top:5mm">
+      <div style="display:flex;flex-direction:column;gap:3mm">
+        <div class="box"><div class="t mono" style="font-size:8.5pt">turtlehomestay.com</div><div class="s">Tamu, calon tamu, mesin pencari</div></div>
+        <div class="box"><div class="t mono" style="font-size:8.5pt">eddohomestay.com</div><div class="s">Tamu properti kedua. Kamar dan tarifnya dari tabel yang sama</div></div>
+        <div class="box"><div class="t mono" style="font-size:8.5pt">eddohomestay.com/kelola</div><div class="s">Pemilik dan staf saja</div></div>
+      </div>
+      <div class="arrow">&rarr;</div>
+      <div class="box" style="background:var(--teal-tint);border-color:var(--teal-line)">
+        <div class="t">Satu aplikasi Node, satu slot</div>
+        <div class="s">Membaca nama domain yang diminta, lalu menyajikan situs publik atau dashboard. Satu build, satu proses, tanpa menggandakan kode &mdash; jadi paket yang menyebut lima aplikasi Node tetap terpakai satu.</div>
+      </div>
+    </div>
+
+    <div class="card warn" style="margin-top:5mm">
+      <h3>Satu hal yang hilang karena dashboard-nya ikut di domain Eddo</h3>
+      <p>Kalau dashboard punya domainnya sendiri, cookie sesinya tidak akan
+      pernah ikut terkirim ke situs publik, karena beda domain. Dengan
+      <span class="mono">eddohomestay.com/kelola</span>, cookie itu ikut ke
+      halaman publik Eddo juga. Yang menahannya adalah cookie-nya
+      <span class="mono">httpOnly</span>, jadi tidak ada skrip yang bisa
+      membacanya, dan <span class="mono">sameSite=lax</span> serta
+      <span class="mono">secure</span>. Itu cukup, dan pemisahan domain tetap
+      lebih baik: kalau nanti mau, satu nama domain lagi mengembalikannya
+      tanpa mengubah kode.</p>
+    </div>
+
+    <div class="rule"></div>
+
+    <h3 style="font-size:11pt">Tumpukan teknologi</h3>
+    <table style="margin-top:3mm">
+      <tbody>
+        <tr><td style="width:34mm"><strong>Framework</strong></td><td class="mono" style="width:44mm">Next.js 16.3</td><td>Satu kode untuk halaman statis, halaman dinamis, dan endpoint API</td></tr>
+        <tr><td><strong>Bahasa</strong></td><td class="mono">TypeScript 5.9</td><td>Mode ketat: terjemahan yang lupa diisi menggagalkan build, bukan menayangkan versi setengah jadi</td></tr>
+        <tr><td><strong>Database</strong></td><td class="mono">PostgreSQL</td><td>Terkelola, di luar paket hosting, dengan sambungan terkumpul. Aturan anti-bentrok ditegakkan database, bukan layar</td></tr>
+        <tr><td><strong>Deploy</strong></td><td class="mono">GitHub Actions</td><td>Membangun di luar, menerbitkan hasilnya, lalu memeriksa sendiri bahwa yang tayang memang versi itu</td></tr>
+        <tr><td><strong>Runtime server</strong></td><td class="mono">Node 22</td><td>Lima endpoint ditulis khusus untuk runtime Node, termasuk pembayaran</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="foot"><span>Arsitektur</span><span>8 / 16</span></div>
+</section>
+
+<!-- ============================================================ 9 angka -->
+<section class="slide">
+  <div class="head">
+    <div class="eyebrow">Bagian 5 &middot; Angka yang diukur</div>
+    <h2 style="margin-top:5px">Berat halaman dan berat build</h2>
+  </div>
+  <div class="body">
+    <p class="lede" style="margin-top:4mm">
+      Diukur 6 Oktober 2026 terhadap build produksi: satu kunjungan pertama
+      tanpa cache, semua permintaan dihitung. Ini angka yang menentukan
+      bagaimana rasanya membuka situs ini dari sinyal pulau, dan yang
+      menentukan paket mana yang cukup.
+    </p>
+
+    <div class="grid g3" style="margin-top:5mm">
+      <div class="card">
+        <div class="eyebrow" style="font-size:7.2pt">Turtle &middot; beranda</div>
+        <div class="stat" style="margin-top:5px"><span class="n">4,66 MB</span><span class="k">29 permintaan &middot; selesai 0,95 detik</span></div>
+      </div>
+      <div class="card">
+        <div class="eyebrow" style="font-size:7.2pt">Eddo &middot; beranda</div>
+        <div class="stat" style="margin-top:5px"><span class="n">1,63 MB</span><span class="k">23 permintaan &middot; selesai 0,86 detik</span></div>
+      </div>
+      <div class="card">
+        <div class="eyebrow" style="font-size:7.2pt">Dashboard</div>
+        <div class="stat" style="margin-top:5px"><span class="n">1,08 MB</span><span class="k">14 permintaan &middot; tanpa foto sama sekali</span></div>
+      </div>
+    </div>
+
+    <div style="margin-top:5mm">
+      <h3>Beranda Turtle dipecah menurut isinya</h3>
+      <div style="margin-top:3mm">
+        <div class="meter"><span class="lbl">Foto</span><span class="track"><span class="fill tight" style="width:74%"></span></span><span class="val">3.544 kB</span></div>
+        <div class="meter"><span class="lbl">JavaScript</span><span class="track"><span class="fill" style="width:19%"></span></span><span class="val">899 kB</span></div>
+        <div class="meter"><span class="lbl">HTML + CSS + font</span><span class="track"><span class="fill" style="width:7%"></span></span><span class="val">324 kB</span></div>
+      </div>
+    </div>
+
+    <div class="card warn" style="margin-top:5mm">
+      <h3>Foto itu 74% berat beranda Turtle</h3>
+      <p>Beranda Eddo, yang fotonya sudah disimpan ulang dalam format modern,
+      cuma 1,63 MB &mdash; 413 kB di antaranya foto. Menyimpan ulang foto
+      Turtle dengan cara yang sama menurunkan berandanya ke kisaran yang
+      sama. Sekali kerja, tidak butuh paket lebih besar maupun kode baru, dan
+      dampaknya paling terasa justru di tempat sinyalnya paling lemah.</p>
+    </div>
+
+    <div class="rule"></div>
+
+    <h3>Waktu build, diukur dari nol</h3>
+    <div style="margin-top:3mm">
+      <div class="meter"><span class="lbl">Kompilasi</span><span class="track"><span class="fill" style="width:57%"></span></span><span class="val">15,2 detik</span></div>
+      <div class="meter"><span class="lbl">Cek TypeScript</span><span class="track"><span class="fill" style="width:29%"></span></span><span class="val">7,7 detik</span></div>
+      <div class="meter"><span class="lbl">32 halaman statis</span><span class="track"><span class="fill" style="width:2%"></span></span><span class="val">0,44 detik</span></div>
+    </div>
+    <p class="small" style="margin-top:4mm">
+      Seluruhnya <strong>26,5 detik</strong>, dengan puncak memori sekitar
+      <strong>1,6 GB</strong> tersebar di tiga proses pekerja. Melayani jauh
+      lebih ringan daripada membangun: server yang sedang menyajikan ketiga
+      situs duduk di sekitar <strong>138 MB</strong>. Selisih sebelas kali
+      lipat itu yang menentukan satu aturan di halaman berikutnya.
+    </p>
+
+    <h3 style="margin-top:6mm">Yang ada di mesin build, dan yang benar-benar diunggah</h3>
+    <div style="margin-top:3mm">
+      <div class="meter"><span class="lbl">node_modules</span><span class="track"><span class="fill tight" style="width:100%"></span></span><span class="val">888 MB</span></div>
+      <div class="meter"><span class="lbl">.next</span><span class="track"><span class="fill tight" style="width:17%"></span></span><span class="val">149 MB</span></div>
+      <div class="meter"><span class="lbl">Hasil siap jalan</span><span class="track"><span class="fill" style="width:5%"></span></span><span class="val">41 MB</span></div>
+      <div class="meter"><span class="lbl">Arsip terkompresi</span><span class="track"><span class="fill" style="width:2%"></span></span><span class="val">14,4 MB</span></div>
+    </div>
+    <div class="legend">
+      <span><i class="swatch" style="background:var(--gold)"></i> Tinggal di mesin build</span>
+      <span><i class="swatch" style="background:var(--teal)"></i> Naik ke server</span>
+    </div>
+  </div>
+  <div class="foot"><span>Angka yang diukur</span><span>9 / 16</span></div>
+</section>
+
+<!-- ========================================================== 10 paket -->
+<section class="slide">
+  <div class="head">
+    <div class="eyebrow">Bagian 6 &middot; Tempat menjalankannya</div>
+    <h2 style="margin-top:5px">Paket Business Web Hosting</h2>
+  </div>
+  <div class="body">
+    <p class="lede" style="margin-top:4mm">
+      Yang menentukan bukan harga paketnya, melainkan satu hal: hosting itu
+      bisa menjalankan proses Node yang hidup terus atau tidak. Paket
+      Business Web Hosting bisa &mdash; paketnya mencantumkan lima aplikasi
+      Node.js, dan ketiga situs ini satu aplikasi yang sama, jadi yang
+      terpakai satu slot.
+    </p>
+
+    <div class="grid g2" style="margin-top:5mm">
+      <div class="box dash" style="padding:11px 13px">
+        <div class="eyebrow" style="font-size:7.2pt;margin-bottom:8px">Yang berjalan di paket ini</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div class="box" style="border-color:var(--teal-line);background:var(--teal-tint)">
+            <div class="t">Dua domain, TLS otomatis</div>
+            <div class="s">Sertifikat dipasang dan diperpanjang dari panel, satu untuk tiap nama</div>
+          </div>
+          <div class="arrow" style="font-size:10pt">&darr;</div>
+          <div class="box"><div class="t">Satu aplikasi Node 22</div><div class="s">Tiga situs, lima endpoint API, dan 32 halaman yang sudah jadi HTML saat build</div></div>
+          <div class="arrow" style="font-size:10pt">&darr;</div>
+          <div class="box"><div class="t">PostgreSQL terkelola, di luar paket</div><div class="s">Tidak menumpang memori paket ini, dan cadangannya urusan penyedianya</div></div>
+        </div>
+      </div>
+
+      <div>
+        <h3>Yang dibutuhkan aplikasinya</h3>
+        <table style="margin-top:3mm">
+          <tbody>
+            <tr><td>Node</td><td class="num">22</td></tr>
+            <tr><td>Memori saat melayani</td><td class="num">138 MB</td></tr>
+            <tr><td>Berkas yang diunggah</td><td class="num">41 MB</td></tr>
+            <tr><td>Arsip terkompresi</td><td class="num">14,4 MB</td></tr>
+            <tr><td>Slot aplikasi Node</td><td class="num">1</td></tr>
+            <tr><td>Koneksi HTTPS keluar</td><td class="num">perlu</td></tr>
+            <tr><td>Memori saat build</td><td class="num" style="color:var(--amber-ink)">1,6 GB</td></tr>
+          </tbody>
+        </table>
+        <p class="small" style="margin-top:3mm">
+          Baris terakhir yang kuning itu <strong>tidak pernah terjadi di
+          server</strong>, dan itu disengaja. Lihat kotak di bawah.
+        </p>
+      </div>
+    </div>
+
+    <div class="card warn" style="margin-top:5mm">
+      <h3>Aturan pertama: jangan pernah build di server itu</h3>
+      <p>Membangun aplikasinya memuncak di sekitar 1,6 GB. Di mesin build itu
+      lega; di hosting bersama itu jatah paket, dan build yang kehabisan
+      memori mati di tengah jalan tanpa pesan yang jelas. Jadi build
+      dikerjakan di GitHub Actions, dan yang sampai ke server cuma hasilnya:
+      41 MB berkas jadi, 14,4 MB kalau dikirim terkompresi, dari
+      <span class="mono">node_modules</span> yang di mesin build berukuran
+      888 MB. Server cuma menjalankannya, dan untuk itu 138 MB sudah cukup.</p>
+    </div>
+
+    <div class="note" style="margin-top:4mm">
+      <strong>Satu hal yang harus dicek sendiri di panel sebelum memesan:</strong>
+      cari menu <span class="mono">Node.js</span> atau
+      <span class="mono">Setup Node.js App</span>. Kalau menu itu tidak ada,
+      jawabannya tidak, dan yang mati bukan cuma pembayarannya melainkan
+      seluruh situsnya.
+    </div>
+
+    <h3 style="margin-top:5mm">Empat hal yang dipastikan saat memesan, bukan sesudahnya</h3>
+    <table style="margin-top:2mm">
+      <tbody>
+        <tr><td style="width:52mm"><strong>Versi Node</strong></td><td>Harus bisa disetel ke 22. Versi yang lebih lama menolak sebagian kode yang dipakai</td></tr>
+        <tr><td><strong>Dua domain dalam satu paket</strong></td><td>Kedua nama menunjuk ke aplikasi yang sama, bukan ke dua paket terpisah</td></tr>
+        <tr><td><strong>Koneksi HTTPS keluar</strong></td><td>Aplikasinya memanggil database, sumber kurs, pembayaran, dan pengirim email dari sisi server. Kalau keluarnya diblokir, bagian-bagian itu mati satu per satu</td></tr>
+        <tr><td><strong>Proses yang dihidupkan lagi</strong></td><td>Kalau prosesnya mati, panelnya harus menyalakannya sendiri, termasuk setelah server di-restart</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="foot"><span>Paket</span><span>10 / 16</span></div>
+</section>
+
+<!-- ===================================================== 11 kenapa bisnis -->
+<section class="slide">
+  <div class="head">
+    <div class="eyebrow">Bagian 7 &middot; Pilihan</div>
+    <h2 style="margin-top:5px">Kenapa Business, bukan VPS</h2>
+  </div>
+  <div class="body">
+    <table style="margin-top:5mm">
+      <thead><tr><th style="width:44mm">Pilihan</th><th style="width:26mm" class="num">Yang diurus</th><th>Penilaian</th></tr></thead>
+      <tbody>
+        <tr style="background:var(--teal-tint)">
+          <td style="border-left:3px solid var(--teal)"><strong>Business Web Hosting</strong><br><span class="small">5 aplikasi Node.js, panel hPanel</span></td>
+          <td class="num">panelnya</td>
+          <td><strong>Yang dipilih.</strong> Sistem operasi, pembaruan keamanan, dan sertifikat TLS diurus penyedianya. Databasenya terkelola di luar, jadi tidak ada yang perlu dipasang maupun dicadangkan sendiri. Tidak ada satu pun pekerjaan sysadmin yang berulang tiap bulan.</td>
+        </tr>
+        <tr>
+          <td><strong>VPS KVM 2</strong><br><span class="small">2 vCPU, 8 GB, 100 GB</span></td>
+          <td class="num">semuanya</td>
+          <td>Lebih lapang dan bisa membangun di mesin yang sama, tapi tidak terkelola: patch sistem, firewall, dan pemulihan saat server bermasalah jadi tanggung jawab pemilik atau pengerjanya. Untuk aplikasi yang build-nya sudah di luar dan database-nya sudah di luar, kelapangan itu tidak terpakai.</td>
+        </tr>
+        <tr>
+          <td><strong>Hosting tanpa Node</strong><br><span class="small">paket PHP biasa</span></td>
+          <td class="num">&mdash;</td>
+          <td><span style="color:var(--amber-ink);font-weight:700">Tidak bisa dipakai.</span> Aplikasi ini butuh proses Node yang hidup terus. Mengubahnya jadi berkas statis tetap mematikan pembayaran, dan bukan karena kodenya kurang pintar &mdash; lihat kotak di bawah.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="card warn" style="margin-top:5mm">
+      <h3>Kenapa pembayaran yang paling mengunci pilihan hosting</h3>
+      <ul>
+        <li><strong>Kunci server Midtrans tidak boleh sampai ke browser.</strong> Kunci itu yang menandatangani permintaan. Di situs statis tidak ada tempat menyimpannya selain di dalam halaman, dan di dalam halaman artinya siapa pun bisa membacanya.</li>
+        <li><strong>Notifikasi Midtrans butuh alamat yang bisa menerima kiriman.</strong> Endpoint-nya memeriksa tanda tangan sebelum percaya. Berkas statis tidak bisa menerima kiriman, apalagi memeriksa tanda tangan.</li>
+        <li><strong>Nominalnya dihitung di server</strong> dari tabel kamar. Tanpa server, nominalnya datang dari browser, dan nominal yang datang dari browser adalah nominal yang dipilih pengirimnya.</li>
+      </ul>
+    </div>
+
+    <div class="grid g2" style="margin-top:5mm">
+      <div class="card green">
+        <h3>Kepemilikan ada di pemilik</h3>
+        <p>Paket hosting, kedua nama domain, dan seluruh kata sandinya
+        <strong>atas nama pemilik</strong>, bukan atas nama pengerja. Tidak ada
+        bagian dari susunan ini yang mengunci pemilik ke satu orang.</p>
+      </div>
+      <div class="card">
+        <h3>Bisa naik ke VPS belakangan</h3>
+        <p>Kalau nanti perlu, pindah ke VPS tidak mengubah satu baris kode:
+        yang pindah cuma berkas hasil build, variabel lingkungan, dan catatan
+        DNS. Databasenya sudah di luar server, jadi ia tidak ikut pindah sama
+        sekali.</p>
+      </div>
+    </div>
+
+    <div class="card mute" style="margin-top:4mm">
+      <h3>Kenapa databasenya tetap di luar, bukan MySQL bawaan paket</h3>
+      <p>Hosting bersama menyediakan MySQL, bukan PostgreSQL. Itu terdengar
+      seperti soal selera, tapi bukan: aturan anti-bentrok yang menolak dua
+      booking bertindih di kamar yang sama <strong>ditegakkan oleh
+      PostgreSQL sendiri</strong>, dan MySQL tidak punya padanannya. Pindah
+      ke MySQL berarti pencegahan double booking kembali bergantung
+      sepenuhnya pada kode, yaitu pada tidak adanya satu pun celah di seluruh
+      jalur yang menulis booking. Jadi databasenya tetap PostgreSQL terkelola
+      di luar paket, dan paket hostingnya cuma menjalankan aplikasinya &mdash;
+      pembagian yang juga membuat pindah hosting nanti jadi pekerjaan
+      setengah hari, bukan pindahan data.</p>
+    </div>
+  </div>
+  <div class="foot"><span>Pilihan paket</span><span>11 / 16</span></div>
+</section>
+
+<!-- ========================================================== 12 lingkup -->
+<section class="slide">
+  <div class="head">
+    <div class="eyebrow">Bagian 8 &middot; Pekerjaan</div>
+    <h2 style="margin-top:5px">Lingkup pekerjaan</h2>
+  </div>
+  <div class="body">
+    <p class="lede" style="margin-top:4mm">
+      Enam bagian, dan tiap bagian punya hasil yang bisa dicek sendiri, bukan
+      cuma laporan bahwa sudah dikerjakan.
+    </p>
+
+    <table style="margin-top:4mm">
+      <thead><tr><th style="width:7mm">&nbsp;</th><th style="width:40mm">Bagian</th><th>Isinya, dan apa yang bisa dicek sendiri</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="num">1</td>
+          <td><strong>Paket dan dua nama domain</strong></td>
+          <td>Pesan paketnya atas nama pemilik, daftarkan nama domain yang belum ada, arahkan keduanya ke aplikasinya, pasang sertifikat yang memperpanjang dirinya sendiri.
+          <br><span class="small">Cek: kedua alamat terbuka dengan gembok, tanpa peringatan.</span></td>
+        </tr>
+        <tr>
+          <td class="num">2</td>
+          <td><strong>Aplikasi Node dan pemisahan domainnya</strong></td>
+          <td>Pasang aplikasinya di slot Node, isi variabel yang dibaca saat jalan, atur supaya tiap nama domain membuka situsnya sendiri dan <span class="mono">/kelola</span> membuka dashboard.
+          <br><span class="small">Cek: dua alamat, tiga tampilan berbeda, dari satu proses yang sama.</span></td>
+        </tr>
+        <tr>
+          <td class="num">3</td>
+          <td><strong>Email dan catatan DNS-nya</strong></td>
+          <td>Satu kotak surat berakhiran nama domain sendiri, berikut MX, SPF, dan DKIM supaya email keluar tidak masuk folder spam orang.
+          <br><span class="small">Cek: satu email percobaan sampai ke Gmail di kotak masuk, bukan di spam.</span></td>
+        </tr>
+        <tr>
+          <td class="num">4</td>
+          <td><strong>Rantai deploy otomatis</strong></td>
+          <td>Sambungkan build di GitHub Actions ke paket ini, supaya pembaruan berikutnya cukup dengan mengirim kode. Termasuk pemeriksaan versi: yang tayang dibandingkan dengan yang baru dibangun sebelum dinyatakan selesai.
+          <br><span class="small">Cek: satu perubahan kecil dikirim, situsnya berubah sendiri dalam beberapa menit.</span></td>
+        </tr>
+        <tr>
+          <td class="num">5</td>
+          <td><strong>Database dan cadangan</strong></td>
+          <td>Sambungkan aplikasinya ke PostgreSQL terkelola, jalankan migrasinya dari pipeline, lalu pasang salinan otomatis ke penyimpanan terpisah dan <strong>diuji pulihkan sekali di depan pemilik</strong>.
+          <br><span class="small">Cadangan yang belum pernah dicoba dipulihkan itu belum bisa disebut cadangan.</span></td>
+        </tr>
+        <tr>
+          <td class="num">6</td>
+          <td><strong>Pemantauan dan serah terima</strong></td>
+          <td>Pasang pemantau yang mengirim pesan kalau situsnya tidak menjawab. Serah terima: semua kata sandi diserahkan, plus satu sesi penjelasan cara memperbarui dan cara memulihkan.
+          <br><span class="small">Termasuk catatan tertulis, supaya tidak bergantung pada ingatan siapa pun.</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="grid g2" style="margin-top:5mm">
+      <div class="card">
+        <h3>Jadwal</h3>
+        <p><strong>__N_jasa-hari__ hari kerja</strong> sejak uang muka masuk dan
+        kedua nama domain sudah siap. Bagian 1 sampai 4 selesai di dua hari
+        pertama, jadi kedua alamatnya sudah bisa dibuka di hari kedua;
+        sisanya cadangan, pemantauan, dan serah terima.</p>
+      </div>
+      <div class="card mute">
+        <h3>Garansi 14 hari</h3>
+        <p>Kerusakan <em>yang datang dari pekerjaan ini</em> diperbaiki tanpa
+        biaya selama 14 hari setelah serah terima. Tidak termasuk: permintaan
+        yang mengubah lingkup, pengaturan yang diubah pihak lain, dan
+        gangguan dari sisi penyedia hosting.</p>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>Lingkup pekerjaan</span><span>12 / 16</span></div>
+</section>
+
+<!-- =========================================================== 13 biaya -->
+<section class="slide">
+  <div class="head">
+    <div class="eyebrow">Bagian 9 &middot; Biaya</div>
+    <h2 style="margin-top:5px">Rincian biaya, __N_bulan__ bulan pertama</h2>
+  </div>
+  <div class="body">
+    <div style="margin-top:3mm">__N_pita__</div>
+
+    <p class="lede" style="margin-top:4mm">
+      Semua angka di bawah adalah <strong>harga normal</strong>, bukan harga
+      promo. Harga promo cuma berlaku sekali dan bisa habis kapan saja, jadi
+      bukan dasar yang aman untuk anggaran dua tahun. Yang dianggarkan di
+      sini adalah harga yang pasti bisa dibayar, sekarang maupun nanti.
+    </p>
+
+    <h3 style="margin-top:4mm;font-size:11pt">Dibayarkan ke penyedia hosting &middot; __N_bulan__ bulan</h3>
+    <table style="margin-top:2mm">
+      <thead><tr><th>Pos</th><th class="num" style="width:32mm">Harga normal</th><th class="num" style="width:32mm">__N_bulan__ bulan</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>Paket Business Web Hosting</strong><br><span class="small">Slot aplikasi Node.js, panel, TLS untuk kedua domain</span></td>
+          <td class="num">__N_bisnis-bln__</td>
+          <td class="num">__N_bisnis-24__</td>
+        </tr>
+        <tr>
+          <td><strong>Email profesional, 1 kotak surat</strong><br><span class="small">Dicoret saat pemesanan kalau paketnya sudah memuat kotak surat</span></td>
+          <td class="num">__N_email-bln__</td>
+          <td class="num">__N_email-24__</td>
+        </tr>
+        <tr>
+          <td><strong>Dua nama domain</strong><br><span class="small">turtlehomestay.com dan eddohomestay.com, dua tahun masing-masing</span></td>
+          <td class="num">__N_domain-thn__</td>
+          <td class="num">__N_domain-24__</td>
+        </tr>
+        <tr>
+          <td><strong>Biaya ICANN</strong> <span class="small">pungutan wajib tiap nama domain per tahun, bukan biaya hosting</span></td>
+          <td class="num" style="color:var(--slate-mute)">__N_icann-satuan__</td>
+          <td class="num">__N_icann-24__</td>
+        </tr>
+        <tr><td><strong>Pajak</strong> <span class="small">__N_pajak-persen__</span></td><td class="num" style="color:var(--slate-mute)">&mdash;</td><td class="num">__N_pajak-24__</td></tr>
+        <tr class="total"><td colspan="2">Jumlah ke penyedia hosting, __N_bulan__ bulan</td><td class="num">__N_hostinger-24__</td></tr>
+      </tbody>
+    </table>
+
+    <table style="margin-top:3mm">
+      <tbody>
+        <tr><td>Jasa pengerjaan <span class="small">&middot; enam bagian di halaman 12, __N_jasa-hari__ hari kerja, sekali bayar</span></td><td class="num" style="width:32mm">__N_jasa__</td></tr>
+      </tbody>
+    </table>
+
+    <div class="price-badge" style="margin-top:3mm">
+      <div>
+        <div style="font-size:11pt;font-weight:700;color:var(--ink)">Total penawaran</div>
+        <div class="k">Dua tahun penuh, dua nama domain, sudah termasuk pajak</div>
+      </div>
+      <div class="v">__N_total__</div>
+    </div>
+
+    <div class="grid g2" style="margin-top:3mm">
+      <div class="card">
+        <h3>Pembayaran</h3>
+        <p><strong>Uang muka __N_dp__</strong>, yaitu seluruh biaya hosting
+        ditambah separuh jasa, karena penyedianya menagih penuh di depan.
+        <strong>Sisa __N_sisa__</strong> saat serah terima.</p>
+      </div>
+      <div class="card green">
+        <h3>Kalau promonya masih berlaku saat dipesan</h3>
+        <p>Selisihnya menjadi milik pemilik, bukan tambahan buat pengerja.
+        Kuitansinya diserahkan apa adanya saat serah terima, jadi angkanya
+        bisa dicocokkan sendiri baris per baris.</p>
+      </div>
+    </div>
+
+    <div class="grid g2" style="margin-top:4mm">
+      <div class="card mute">
+        <h3>Kalau satu nama domainnya sudah terdaftar</h3>
+        <p><span class="mono">eddohomestay.com</span> sudah dipakai hari ini,
+        jadi yang dianggarkan di barisnya adalah perpanjangannya, dengan
+        tanggal jatuh tempo yang mengikuti pendaftarannya sendiri. Baris itu
+        disesuaikan saat pemesanan, bukan jadi tagihan ganda.</p>
+      </div>
+      <div class="card mute">
+        <h3>Yang memang tidak ada di tabel ini</h3>
+        <p>Database PostgreSQL-nya terkelola dan di luar paket hosting,
+        sekarang di jatah gratis penyedianya. Dan penyedia pembayaran menagih
+        per transaksi, bukan per bulan. Lihat halaman 14.</p>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>Biaya __N_bulan__ bulan pertama</span><span>13 / 16</span></div>
+</section>
+
+<!-- ====================================================== 14 tahun kedua -->
+<section class="slide">
+  <div class="head">
+    <div class="eyebrow">Bagian 10 &middot; Setelah __N_bulan__ bulan</div>
+    <h2 style="margin-top:5px">Biaya yang berjalan terus</h2>
+  </div>
+  <div class="body">
+    <p class="lede" style="margin-top:4mm">
+      Ini biaya pemilik ke penyedia hosting, bukan ke pengerja, dan tidak ada
+      biaya jasa yang berulang. Karena halaman sebelumnya sudah memakai harga
+      normal, angka di bawah <strong>sama persis</strong> dengan yang dibayar
+      sekarang: itu memang gunanya tidak memakai harga promo.
+    </p>
+
+    <table style="margin-top:5mm">
+      <thead><tr><th>Pos</th><th class="num" style="width:32mm">Harga normal</th><th class="num" style="width:32mm">Per __N_bulan__ bulan</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Paket Business Web Hosting</strong></td><td class="num">__N_bisnis-bln__</td><td class="num">__N_bisnis-24__</td></tr>
+        <tr><td><strong>Email profesional</strong></td><td class="num">__N_email-bln__</td><td class="num">__N_email-24__</td></tr>
+        <tr><td><strong>Dua nama domain</strong></td><td class="num">__N_domain-thn__</td><td class="num">__N_domain-24__</td></tr>
+        <tr><td><strong>Biaya ICANN</strong></td><td class="num" style="color:var(--slate-mute)">__N_icann-satuan__</td><td class="num">__N_icann-24__</td></tr>
+        <tr><td><strong>Pajak</strong> <span class="small">__N_pajak-persen__</span></td><td class="num" style="color:var(--slate-mute)">&mdash;</td><td class="num">__N_pajak-24__</td></tr>
+        <tr class="total"><td colspan="2">Jumlah tiap perpanjangan</td><td class="num">__N_hostinger-24__</td></tr>
+      </tbody>
+    </table>
+
+    <div class="note" style="margin-top:5mm">
+      <strong>Satu tanggal jatuh tempo, dan itu disengaja.</strong> Paket,
+      email, dan kedua nama domain diambil untuk jangka yang sama supaya
+      semuanya jatuh tempo bersamaan. Satu tagihan jauh lebih sulit terlewat
+      daripada empat tagihan yang berpencar, dan nama domain yang terlewat
+      bisa diambil orang lain.
+    </div>
+
+    <div class="card warn" style="margin-top:5mm">
+      <h3>Satu pos di luar tabel ini</h3>
+      <p>Database PostgreSQL-nya terkelola dan berada di luar paket hosting.
+      Sekarang ia berjalan di jatah gratis penyedianya, yang cukup untuk
+      ukuran dua homestay, dan karena itu tidak ada angkanya di sini. Kalau
+      suatu saat jatah itu terlampaui, biayanya muncul sebagai tagihan
+      tersendiri &mdash; bukan kejutan dari dalam paket hosting, tapi tetap
+      harus diketahui sekarang, bukan nanti.</p>
+    </div>
+
+    <div class="card green" style="margin-top:4mm">
+      <h3>Cara menekannya, kalau nanti perlu</h3>
+      <p>Penyedia hosting hampir selalu menawarkan potongan untuk
+      perpanjangan. Anggaran ini sengaja tidak mengandalkannya, jadi potongan
+      apa pun langsung jadi kelebihan, bukan selisih yang harus ditambal.</p>
+    </div>
+
+    <div class="grid g2" style="margin-top:4mm">
+      <div class="card warn">
+        <h3>Kalau tagihannya terlewat</h3>
+        <p>Paket hosting yang lewat tempo membuat situsnya mati sampai
+        dibayar, dan itu bisa dipulihkan. <strong>Nama domain berbeda:</strong>
+        setelah masa tenggangnya habis, namanya kembali ke pasar dan siapa pun
+        boleh mengambilnya. Isinya tetap aman — kode, foto, dan database ada
+        di tempat lain — tapi alamatnya belum tentu bisa diambil kembali.</p>
+      </div>
+      <div class="card">
+        <h3>Satu pengingat, bukan empat</h3>
+        <p>Karena semuanya jatuh tempo bersamaan, yang perlu masuk kalender
+        cuma satu tanggal. Pemantau yang dipasang di bagian 6 juga mengirim
+        pesan kalau situsnya berhenti menjawab, jadi tagihan yang terlewat
+        ketahuan di hari yang sama, bukan sebulan kemudian.</p>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>Biaya berjalan</span><span>14 / 16</span></div>
+</section>
+
+<!-- ==================================================== 15 tidak termasuk -->
+<section class="slide">
+  <div class="head">
+    <div class="eyebrow">Bagian 11 &middot; Batasan</div>
+    <h2 style="margin-top:5px">Yang tidak termasuk</h2>
+  </div>
+  <div class="body">
+    <p class="lede" style="margin-top:4mm">
+      Bagian ini ditulis supaya batas pekerjaannya jelas dari awal, bukan
+      ditemukan di tengah jalan.
+    </p>
+
+    <table style="margin-top:5mm">
+      <tbody>
+        <tr>
+          <td style="width:52mm"><strong>Menyimpan perubahan booking</strong><br><span class="pill later">tahap berikutnya</span></td>
+          <td>Dashboard sudah membaca database. Menandai check-in, membatalkan, mencatat pembayaran, dan menambah booking baru supaya tersimpan permanen adalah pekerjaan terbesar yang tersisa dan dihitung terpisah.</td>
+        </tr>
+        <tr>
+          <td><strong>Akun per orang</strong><br><span class="pill later">tahap berikutnya</span></td>
+          <td>Sekarang masuknya dengan satu kata sandi bersama. Satu akun untuk tiap staf, berikut penegakan hak Owner dan Staf di server, menyusul bersama tahap di atas.</td>
+        </tr>
+        <tr>
+          <td><strong>Sinkronisasi iCal</strong><br><span class="pill later">tahap berikutnya</span></td>
+          <td>Tarik dan kirim kalender ke Booking.com, Agoda, dan Traveloka. Ini yang menghentikan double booking antar platform, dan ini masalah nomor satu yang disebut di dokumen kebutuhan aslinya.</td>
+        </tr>
+        <tr>
+          <td><strong>Foto dan isi Eddo Homestay</strong></td>
+          <td>Situsnya sudah ada dan ikut tayang, tapi sebagian fotonya masih sementara sampai pemilik mengirim foto aslinya, dan teks kamarnya masih rancangan yang perlu dicek pemilik. Keduanya diisi dari sisi pemilik, bukan pekerjaan hosting.</td>
+        </tr>
+        <tr>
+          <td><strong>Isi kotak surat email</strong></td>
+          <td>Kotak suratnya dipasang dan dibuktikan bisa kirim dan terima, tapi memindahkan email lama, menyusun tanda tangan email, dan membuat alamat tambahan tidak termasuk.</td>
+        </tr>
+        <tr>
+          <td><strong>Pengisian konten</strong></td>
+          <td>Nomor WhatsApp, email penerima pesan, harga paket selam, dan tautan media sosial. Semuanya diisi sendiri dari tab Website di dashboard tanpa menyentuh kode, dan tidak butuh pengerja.</td>
+        </tr>
+        <tr>
+          <td><strong>Optimasi foto Turtle</strong></td>
+          <td>Menurunkan beranda Turtle dari 4,66 MB ke kisaran beranda Eddo. Bisa dikerjakan sendiri dengan menyimpan ulang fotonya, atau dimasukkan ke penawaran terpisah.</td>
+        </tr>
+        <tr>
+          <td><strong>Perawatan bulanan</strong></td>
+          <td>Pemantauan dan cadangan berjalan sendiri setelah dipasang. Kalau ingin ada yang berjaga dan menangani kalau terjadi apa-apa, itu kesepakatan terpisah.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="card warn" style="margin-top:5mm">
+      <h3>Satu hal yang perlu diulang</h3>
+      <p>Setelah pekerjaan ini selesai, <strong>kedua situs publik tayang
+      penuh di nama domainnya sendiri</strong> dan dashboard-nya bisa dibuka
+      dari mana saja dan menampilkan booking sungguhan dari database. Tapi
+      <strong>perubahan yang diketik di dashboard belum tersimpan</strong>
+      sampai tahap berikutnya selesai. Jangan berhenti mencatat booking di
+      tempat yang sekarang sebelum tahap itu jalan.</p>
+    </div>
+  </div>
+  <div class="foot"><span>Batasan</span><span>15 / 16</span></div>
+</section>
+
+<!-- ===================================================== 16 persetujuan -->
+<section class="slide">
+  <div class="head">
+    <div class="eyebrow">Bagian 12 &middot; Persetujuan</div>
+    <h2 style="margin-top:5px">Ringkasan dan tanda tangan</h2>
+  </div>
+  <div class="body">
+    <div style="margin-top:4mm">__N_pita__</div>
+
+    <table style="margin-top:4mm">
+      <tbody>
+        <tr><td>Jasa pengerjaan <span class="small">&middot; enam bagian, __N_jasa-hari__ hari kerja, sekali bayar</span></td><td class="num" style="width:32mm">__N_jasa__</td></tr>
+        <tr><td>Hosting, __N_bulan__ bulan <span class="small">&middot; paket Business + email + dua nama domain + ICANN + pajak, harga normal</span></td><td class="num">__N_hostinger-24__</td></tr>
+        <tr class="total"><td>Total penawaran</td><td class="num">__N_total__</td></tr>
+      </tbody>
+    </table>
+
+    <div class="grid g2" style="margin-top:5mm">
+      <div class="card">
+        <h3>Uang muka</h3>
+        <p style="font-size:12pt;font-weight:700;margin-top:3px">__N_dp__</p>
+        <p class="small" style="margin-top:3px">Seluruh biaya hosting ditambah separuh jasa</p>
+      </div>
+      <div class="card">
+        <h3>Saat serah terima</h3>
+        <p style="font-size:12pt;font-weight:700;margin-top:3px">__N_sisa__</p>
+        <p class="small" style="margin-top:3px">Sisa jasa, dibayar setelah semuanya dicek bersama</p>
+      </div>
+    </div>
+
+    <div class="card green" style="margin-top:4mm">
+      <h3>Yang diterima pemilik saat serah terima</h3>
+      <ul>
+        <li>Dua alamat yang sudah hidup dengan sertifikat keamanan aktif, plus dashboard di <span class="mono">/kelola</span></li>
+        <li>Satu alamat email berakhiran nama domain sendiri, sudah diuji kirim dan terima</li>
+        <li>Akses penuh ke paket hosting, kedua domain, email, dan database, semuanya atas nama pemilik</li>
+        <li>Salinan database otomatis ke penyimpanan terpisah, dan sudah dibuktikan bisa dipulihkan</li>
+        <li>Pemantauan yang mengirim pesan kalau situsnya tidak menjawab</li>
+        <li>Catatan tertulis cara memperbarui dan cara memulihkan</li>
+      </ul>
+    </div>
+
+    <div class="card mute" style="margin-top:4mm">
+      <h3>Setelah ini ditandatangani</h3>
+      <ul>
+        <li><strong>Hari 0.</strong> Paket dan nama domain dipesan atas nama pemilik, dibayar dari uang muka, dan kuitansinya diteruskan apa adanya.</li>
+        <li><strong>Hari 1&ndash;2.</strong> Aplikasi dipasang, kedua alamat hidup dengan sertifikatnya, email diuji kirim dan terima, rantai deploy otomatis dibuktikan sekali.</li>
+        <li><strong>Hari __N_jasa-hari__.</strong> Cadangan diuji pulihkan di depan pemilik, pemantauan menyala, kata sandi dan catatannya diserahkan.</li>
+      </ul>
+    </div>
+
+    <div class="rule" style="margin:4mm 0"></div>
+
+    <div class="sign">
+      <div>
+        <div class="line"></div>
+        <div class="who">Pemilik &middot; nama, tanggal, tanda tangan</div>
+      </div>
+      <div>
+        <div class="line"></div>
+        <div class="who">Pengerja &middot; nama, tanggal, tanda tangan</div>
+      </div>
+    </div>
+
+    <p class="small" style="margin-top:4mm">
+      Penawaran ini berlaku 30 hari sejak tanggal di halaman pertama. Angka
+      hostingnya adalah harga normal, bukan harga promo, jadi tidak ikut
+      hangus kalau promonya berakhir. Nama domain yang belum terdaftar
+      dikonfirmasi ketersediaannya saat pemesanan.
+    </p>
+  </div>
+  <div class="foot"><span>Persetujuan</span><span>16 / 16</span></div>
+</section>
+
+</body>
+</html>

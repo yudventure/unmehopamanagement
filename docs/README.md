@@ -1,22 +1,38 @@
 # docs — sumber dokumen PDF
 
-Menghasilkan `docs/spesifikasi-dan-penawaran.pdf`: 16 halaman A4 tegak,
-spesifikasi teknis dan penawaran harga deploy dalam **satu dokumen**. Halaman
-1 sampai 10 menjelaskan apa yang sudah dibangun, memperlihatkannya, dan di mana
-sebaiknya dijalankan; halaman 11 sampai 16 lingkup pekerjaan, biaya, batasan,
-dan tanda tangan.
+Dua dokumen, satu alat. Tiap folder di sini adalah satu dokumen; `build.mjs`
+menyatukannya jadi satu berkas HTML mandiri dan `render.mjs` mencetaknya.
+
+| Folder | Hasil | Isi |
+|---|---|---|
+| `penawaran/` | `spesifikasi-dan-penawaran.pdf` | 16 halaman. Deploy ke **VPS KVM 2** dan **tiga** nama domain. Harga di dalamnya sudah lengkap |
+| `penawaran-bisnis/` | `penawaran-hosting-bisnis.pdf` | 16 halaman. **Paket Business Web Hosting** dan **dua** nama domain, plus satu halaman branding peta Selat Dampier. **Harga paketnya belum diisi** — lihat di bawah |
+
+Keduanya A4 tegak dan dipakai untuk hal yang berbeda: yang pertama menawarkan
+server yang diurus sendiri, yang kedua menawarkan paket terkelola untuk
+aplikasi yang database dan build-nya sudah di luar. Yang kedua juga lebih
+baru: dashboard-nya sudah membaca database sungguhan, dan dokumennya
+mengatakan begitu.
+
+## Isi satu folder dokumen
 
 | Berkas | Isi |
 |---|---|
-| `penawaran/doc.html` | Isi dan susunan tiap halaman. Penanda `__DMSANS__`, `__MONO__`, `__LOGO__`, `__CSS__`, dan `__SHOT_*__` diisi saat build |
-| `penawaran/doc.css` | Token warna, tipografi, kartu, tabel, meteran, dan bingkai tangkapan layar. A4 tegak |
-| `penawaran/shots/*.jpg` | Tangkapan layar aplikasi yang sudah berjalan, dipakai di halaman 3 sampai 6 |
-| `penawaran/RINCIAN-INTERNAL.md` | Perhitungan margin. **Tidak ikut ke PDF dan tidak untuk klien** |
-| `build.mjs` | Menyatukan font, logo, dan CSS jadi satu berkas HTML mandiri. Satu argumen: nama foldernya |
-| `render.mjs` | Mencetaknya jadi PDF lewat Chromium, sekaligus memeriksa tidak ada isi yang keluar halaman |
+| `doc.html` | Isi dan susunan tiap halaman. Penanda `__DMSANS__`, `__MONO__`, `__LOGO__`, `__CSS__`, `__SHOT_*__`, dan `__N_*__` diisi saat build |
+| `doc.css` | Token warna, tipografi, kartu, tabel, meteran, dan bingkai tangkapan layar. A4 tegak |
+| `shots/*.jpg` | Tangkapan layar aplikasi yang sudah berjalan |
+| `angka.mjs` | **Opsional.** Semua angka dokumen itu berikut hitungannya. Tiap `__N_nama__` di markup diganti nilainya |
+| `RINCIAN-INTERNAL.md` | Perhitungan margin. **Tidak ikut ke PDF dan tidak untuk klien** |
 
 Tiap folder dokumen isinya persis satu `.html` dan satu `.css`; skripnya
 mencarinya sendiri, jadi menambah dokumen baru cukup menambah folder.
+
+`build.mjs` dan `render.mjs` dipakai bersama oleh keduanya:
+
+| Berkas | Isi |
+|---|---|
+| `build.mjs` | Menyatukan font, logo, CSS, tangkapan layar, dan angka jadi satu berkas HTML mandiri. Satu argumen: nama foldernya |
+| `render.mjs` | Mencetaknya jadi PDF lewat Chromium, sekaligus memeriksa tidak ada isi yang keluar halaman |
 
 ## Cara membangun ulang
 
@@ -24,6 +40,9 @@ mencarinya sendiri, jadi menambah dokumen baru cukup menambah folder.
 npm run build            # sekali, supaya berkas fontnya ada di .next
 node docs/build.mjs penawaran
 node docs/render.mjs penawaran docs/spesifikasi-dan-penawaran.pdf
+
+node docs/build.mjs penawaran-bisnis
+node docs/render.mjs penawaran-bisnis docs/penawaran-hosting-bisnis.pdf
 ```
 
 `render.mjs` butuh Chromium-nya Playwright. Itu **bukan** dependensi aplikasi
@@ -42,41 +61,84 @@ tidak.
 
 ## Angka di dalamnya
 
-Semua angka performa di halaman 8 dan 9 **diukur**, bukan diperkirakan: berat
-halaman dari build produksi lewat Chromium, waktu dan memori build dari
-`npm run build` di mesin ini. Kalau aplikasinya berubah banyak, ukur ulang
-sebelum menyebarkan dokumennya lagi.
+### Yang diukur
 
-Harga di halaman 12 dan 13 adalah **harga normal Hostinger, bukan harga
-promo**, atas permintaan pemilik. Angkanya diambil dari harga coret di layar
-Hostinger sendiri: KVM 2 Rp 407.900 per bulan, email Rp 28.900 per bulan, nama
-domain Rp 209.900 per tahun. Semuanya diambil 24 bulan, jadi kedua halaman itu
-menyebut angka yang sama, dan itu memang gunanya: anggaran yang tidak berubah
-saat promonya habis.
+Semua angka performa **diukur, bukan diperkirakan**: berat halaman dari build
+produksi lewat Chromium, waktu dan memori build dari `npm run build` di mesin
+ini. Kalau aplikasinya berubah banyak, ukur ulang sebelum menyebarkan
+dokumennya lagi. Angka di `penawaran-bisnis/` diukur 6 Oktober 2026 dan
+berbeda dari angka di `penawaran/`, yang lebih tua; itu bukan ketidakcocokan
+yang perlu dirapikan, itu dua pengukuran pada dua tanggal.
 
-Harga promo yang sedang berlaku jauh lebih murah, dan selisihnya besar. Halaman
-12 menyelesaikan itu dengan menyatakan selisihnya jadi milik pemilik dan
-kuitansi Hostinger diserahkan apa adanya. Kalau kalimat itu diubah, janji
+### Harga, dan dari mana boleh diambil
+
+Harga di kedua dokumen adalah **harga normal Hostinger, bukan harga promo**,
+atas permintaan pemilik. Angkanya diambil dari harga coret di layar Hostinger
+sendiri: KVM 2 Rp 407.900 per bulan, email Rp 28.900 per bulan, nama domain
+Rp 209.900 per tahun. Semuanya diambil 24 bulan, dan itu memang gunanya:
+anggaran yang tidak berubah saat promonya habis.
+
+Harga promo yang sedang berlaku jauh lebih murah, dan selisihnya besar.
+`penawaran/` menyelesaikan itu dengan menyatakan selisihnya jadi milik pemilik
+dan kuitansi Hostinger diserahkan apa adanya. Kalau kalimat itu diubah, janji
 kuitansi di halaman 11 dan 16 harus ikut diubah, atau dokumennya jadi
-menjanjikan dua hal yang bertentangan. Rinciannya ada di
-`penawaran/RINCIAN-INTERNAL.md`.
-
-Tiga nama domain, bukan dua: `turtlehomestay.com` untuk situs publik Turtle,
-`unmehoppa.com` untuk dashboard, dan satu lagi untuk situs publik Eddo
-Homestay di `/eddo`, yang nama pastinya belum dipilih.
+menjanjikan dua hal yang bertentangan. Rinciannya ada di tiap
+`RINCIAN-INTERNAL.md`.
 
 **Kalau nanti diperbarui, ambil dari keranjang atau halaman checkout Hostinger,
 dan catat mana yang harga coret dan mana yang harga bayar.** Jangan dari
 artikel pihak ketiga: versi lama dokumen ini memakai perkiraan Rp 436 rb per
 bulan dari sumber yang saling bertentangan, dan angka itu meleset jauh.
 
+### Satu angka yang sengaja masih kosong
+
+Harga **Business Web Hosting** belum ada di repositori ini dan tidak boleh
+dikarang, jadi `penawaran-bisnis/angka.mjs` menulisnya `null`. Akibatnya tiap
+angka yang bergantung padanya — pajak, jumlah ke penyedia, total, uang muka —
+tercetak sebagai isian kosong, dan sampul berikut kedua halaman harga membawa
+pita **"Draf — belum boleh dikirim"**.
+
+Mengisinya satu baris:
+
+```js
+const BISNIS = { perBulan: 123456, bulan: 24 };   // harga coret dari keranjang
+```
+
+lalu bangun ulang. Pitanya hilang sendiri; tidak ada yang perlu diingat untuk
+dihapus.
+
+## `angka.mjs`: kenapa angkanya tidak ditulis di markup
+
+Angka di halaman harga hampir semuanya turunan: harga per bulan dikali masa
+paket, pajak atas jumlahnya, uang muka yang isinya satu pos penuh plus separuh
+pos lain. Diketik satu-satu di markup, itu sebelas kesempatan untuk salah, dan
+yang salah adalah yang tidak ada yang menjumlahkan ulang. Dengan `angka.mjs`
+masukannya di satu tempat, hitungannya terjadi sekali, dan mengubah harga
+adalah mengubah harga — bukan mengubah halaman.
+
+Diperiksa dua arah, sama seperti tangkapan layar: penanda tanpa nilai akan
+tercetak sebagai `__N_total__` di dokumen yang ditandatangani orang, dan nilai
+yang tidak dipakai halaman mana pun berarti ada angka yang dipindah atau
+diganti namanya dengan kembarannya tertinggal. Dua-duanya menggagalkan build.
+
 ## Tangkapan layarnya asli
 
-Halaman 3 sampai 6 memperlihatkan aplikasi yang sudah berjalan, diambil dari
+Halaman tampilan memperlihatkan aplikasi yang sudah berjalan, diambil dari
 build produksi lewat Chromium di 1440x900 dan 390x844, bukan gambar rancangan.
 Dikecilkan ke 1020px (layar lebar) dan 470px (ponsel) lalu disimpan sebagai
 JPEG mutu 84 memakai canvas Chromium sendiri, karena di lingkungan ini tidak
-ada ImageMagick, sharp, atau PIL. Tiga belas berkas, sekitar 1,1 MB.
+ada ImageMagick, sharp, atau PIL.
+
+Tangkapan layar dashboard di `penawaran-bisnis/` diambil dari dashboard yang
+membaca **Postgres lokal berisi data demo**, bukan dari data contoh di browser,
+dan bukan dari database pemilik. Halaman 5 menyebutnya terang-terangan,
+termasuk bahwa tarif Rp 1.550.000 yang terbaca di formulir berasal dari data
+demo itu.
+
+Dua layar sengaja **tidak** dipotret: tab Website dan layar pratinjau. Keduanya
+memuat alamat email pemilik, nomor WhatsApp-nya, dan sebuah URL pratinjau
+berikut tokennya. Dokumen yang dikirim ke orang lain tidak perlu membawa
+satu pun dari itu.
 
 `build.mjs` menukar `__SHOT_nama__` di markup dengan isi `shots/nama.jpg`.
 Dua arahnya diperiksa dan dua-duanya menggagalkan build: penanda yang tidak
@@ -94,7 +156,8 @@ Yang diperiksa bukan cuma isi yang keluar batas halaman, tapi juga isi yang
 **turun menabrak footer**. Yang pertama itu yang paling gampang lolos:
 halamannya `overflow: hidden`, jadi isi yang kelebihan tidak tumpah ke luar di
 tempat yang kelihatan, dia cuma terpotong diam-diam di bawah. Itu yang
-menangkap halaman tangkapan layar waktu barisnya masih kelewat tinggi. Kalau
-ketemu, nomor halaman dan alasannya disebut dan PDF-nya tidak ditulis.
+menangkap halaman tangkapan layar waktu barisnya masih kelewat tinggi, dan
+halaman branding waktu kedua petanya masih kelewat besar. Kalau ketemu, nomor
+halaman dan alasannya disebut dan PDF-nya tidak ditulis.
 
 Perlu dua argumen: nama folder dan tempat PDF-nya ditulis.

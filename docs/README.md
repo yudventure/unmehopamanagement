@@ -118,31 +118,37 @@ Rp 205.392, dan itu tepat 11%.
 di dokumen dibeli sebagai 24 + 12, yang di harga normal jumlahnya sama persis.
 Halaman 13 mengatakan itu, bukan menyembunyikannya.
 
-### Harga paketnya dipatok, bukan dijumlahkan
+### Hostingnya dikunci, pendampingannya tahunan
 
 `penawaran-bisnis/` bukan penawaran bangun-lalu-pergi; ia **layanan
-tahunan**, karena pemiliknya yang menerima telepon kalau ada apa-apa:
+tahunan**, karena pemiliknya yang menerima telepon kalau ada apa-apa. Dan
+isinya sengaja dipisah dua, karena dua bagian itu berperilaku berbeda:
 
 ```
-Tahun pertama                      Rp  9.000.000   PERIODE[0].harga
-Tiap tahun sesudahnya              Rp  6.000.000   LANJUT
-Atau: tiga tahun dikunci di depan  Rp 12.000.000   PERIODE[2].harga
+Dibayar di muka   hosting untuk SELURUH masa paket, pengerjaan,
+                  dan pendampingan tahun pertama     PERIODE[].harga
+Tiap tahun        pendampingan saja, selama masanya  DAMPING
+berikutnya        — hostingnya sudah dibayar
+Sesudah masanya   biaya lanjutan penuh               LANJUT
 ```
 
-Harga paketnya **angka bulat yang dipatok**, bukan hasil penjumlahan pos.
-Bagian Hostinger tetap dirinci sampai rupiah di halaman 13 dan kuitansinya
-tetap diserahkan; sisanya terbaca apa adanya sebagai pengerjaan dan
-pendampingan. Jadi `angka.mjs` menghitung bagian Hostinger, lalu
-**menguranginya dari harga paket**, bukan sebaliknya.
+Harga hosting bisa dikunci karena ia memang dibeli sekaligus di depan;
+pendampingan tidak, karena ia pekerjaan tahun berjalan. Mengunci tiga tahun
+pendampingan di harga satu tahun berarti menjanjikan 36 bulan
+kesiapsiagaan dengan bayaran yang tidak sepadan.
 
-Halaman 14 membuka biaya lanjutannya jadi dua: Rp 2.496.696 ke Hostinger
-dan Rp 3.503.304 pendampingan. Itu satu-satunya tempat angka pendampingan
-muncul sebagai angka, dan `LANJUT` yang menentukannya.
+`DAMPING` **tidak dipatok sendiri**: ia `LANJUT` dikurangi tagihan Hostinger
+setahun, jadi tarif tahun berjalan dan bagian pendampingan di biaya lanjutan
+tidak mungkin berbeda. Harga di mukanya yang dipatok sebagai angka bulat;
+bagian Hostinger dihitung lalu **dikurangkan darinya**, bukan sebaliknya,
+dan sisanya terbaca apa adanya sebagai pengerjaan dan pendampingan. Rincian
+Hostinger tetap tampil sampai rupiah di halaman 13 dan kuitansinya tetap
+diserahkan.
 
-Kalau angkanya diubah, baca dulu bagian **"Yang harus dibaca pemilik
-sebelum mengirim dokumen ini"** di `penawaran-bisnis/RINCIAN-INTERNAL.md`:
-paket tiga tahun mengikat 36 bulan pendampingan dengan bayaran jauh di
-bawah tarif perpanjangan, dan itu keputusan, bukan kebetulan.
+Kalau angkanya diubah, baca dulu **"Berapa yang benar-benar masuk ke
+pengerja"** di `penawaran-bisnis/RINCIAN-INTERNAL.md`, dan naikkan harga di
+muka — bukan `DAMPING`, yang ikut menaikkan biaya lanjutan yang sudah
+disebut ke pemilik.
 
 ### Pita draf
 

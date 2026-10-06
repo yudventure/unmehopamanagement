@@ -10,23 +10,27 @@
  * ## The shape of this offer, and why it is this shape
  *
  * The owner is the one who gets the call when something breaks, so this is
- * not a build-and-walk-away price. It is a yearly service with a price for
- * staying:
+ * not a build-and-walk-away price. It is a yearly service, and it is split
+ * in two because the two halves behave differently:
  *
- *     Tahun pertama                      Rp  9.000.000
- *     Tiap tahun sesudahnya              Rp  6.000.000
- *     Atau: tiga tahun dikunci di depan  Rp 12.000.000
+ *     Dibayar di depan   hosting untuk seluruh masa paket, pengerjaan,
+ *                        dan pendampingan tahun pertama
+ *     Tiap tahun         pendampingan saja, selama masa paketnya — karena
+ *     berikutnya         hostingnya sudah dibayar di depan
+ *     Sesudah masanya    biaya lanjutan penuh: hosting lagi + pendampingan
  *
- * Paying year by year for three years is Rp 21 juta; the three-year package
- * is Rp 12 juta. That gap is the whole argument of page 13, and it is a
- * commitment discount rather than an accounting trick — the document says so
- * in those words rather than leaving the reader to find it.
+ * Harga hosting dikunci selama masa paket; pendampingan tidak, karena ia
+ * pekerjaan tahun berjalan dan bukan sesuatu yang bisa dibayar di muka
+ * tanpa menghukum salah satu pihak. Mengunci tiga tahun pendampingan di
+ * harga satu tahun berarti menjanjikan 36 bulan kesiapsiagaan dengan
+ * bayaran yang tidak sepadan; dokumen yang begitu tidak akan bertahan
+ * sampai tahun ketiga.
  *
  * The package prices are round on purpose. They are the owner's numbers, set
- * from the outside in: what the work is worth per year, not what the parts
- * add up to. The Hostinger side is still itemised to the rupiah on page 13
- * and the receipt is still handed over, so what the service costs is plain
- * rather than buried — it is simply priced, not computed.
+ * from the outside in: what the work is worth, not what the parts add up to.
+ * The Hostinger side is still itemised to the rupiah on page 13 and the
+ * receipt is still handed over, so what the service costs is plain rather
+ * than buried — it is simply priced, not computed.
  *
  * ## Where the Hostinger numbers come from
  *
@@ -72,12 +76,13 @@ const PAKET = {
 };
 
 /**
- * Tiga pilihan, dengan harga paketnya masing-masing.
+ * Tiga pilihan, dengan harga di mukanya masing-masing.
  *
- * `harga` is set, not derived. Rp 9 juta for the first year and Rp 12 juta
- * for three are the owner's figures; Rp 10,5 juta for two years is the
- * midpoint between them, and the one number here nobody has confirmed —
- * change it in this line if it should be something else.
+ * `harga` is what is paid up front: Hostinger for the whole term, the six
+ * parts of the build, and the first year of support. It is set, not derived.
+ * Rp 9 juta for one year and Rp 12 juta for three are the owner's figures;
+ * Rp 10,5 juta for two years is the midpoint between them, and the one
+ * number here nobody has confirmed — change it in this line.
  */
 const PERIODE = [
   { kunci: "a", bulan: 12, label: "1 tahun", harga: 9000000, periksa: 1 },
@@ -92,7 +97,8 @@ const PERIODE = [
  * This is the number the whole offer turns on: what being the person who
  * answers when something breaks is worth per year. It covers the Hostinger
  * bill for that year and the support on top of it, and page 14 splits it
- * into exactly those two so nobody has to guess which is which.
+ * into exactly those two so nobody has to guess which is which. The support
+ * half, on its own, is what the years inside a locked term are billed at.
  */
 const LANJUT = 6000000;
 
@@ -155,27 +161,34 @@ function hostinger(bulan) {
 function hitung(p) {
   const h = hostinger(p.bulan);
   /* Kalau dibayar tahunan: tahun pertama harga tahun pertama, sisanya harga
-     perpanjangan. Itu pembanding yang membuat paket panjang masuk akal. */
+     perpanjangan penuh. Itu pembanding yang membuat paket panjang masuk
+     akal, dan tanpa pembanding itu angka hematnya tidak berarti apa-apa. */
   const tahunan = TAHUN_PERTAMA + LANJUT * (h.tahun - 1);
   const muka = Math.round(p.harga * MUKA);
+  /* Tahun ke-2 dan seterusnya di dalam masa paket: pendampingan saja,
+     karena hostingnya sudah ikut dibayar di muka. */
+  const tahunDamping = h.tahun - 1;
+  const dampingDalam = tahunDamping * DAMPING;
+  const selamaMasa = p.harga + dampingDalam;
   return {
     ...p,
     ...h,
-    /* Sisa harga paket sesudah bagian Hostinger: pengerjaan dan
-       pendampingan. Dihitung sebagai sisa, bukan dipatok, supaya totalnya
-       tetap bulat dan bagian Hostinger tetap apa adanya. */
+    /* Sisa harga di muka sesudah bagian Hostinger: pengerjaan dan
+       pendampingan tahun pertama. Dihitung sebagai sisa, bukan dipatok,
+       supaya harga mukanya tetap bulat dan bagian Hostinger apa adanya. */
     jasa: p.harga - h.jumlah,
-    perTahun: p.harga / h.tahun,
+    tahunDamping,
+    dampingDalam,
+    selamaMasa,
+    perTahun: selamaMasa / h.tahun,
     muka,
     sisa: p.harga - muka,
     tahunan,
-    hemat: tahunan - p.harga,
-    /** Tahun keberapa tagihan perpanjangan pertama datang. */
+    hemat: tahunan - selamaMasa,
+    /** Tahun keberapa biaya lanjutan penuh mulai datang. */
     mulaiLanjut: h.tahun + 1,
   };
 }
-
-const H = PERIODE.map(hitung);
 
 /* Perpanjangan, per tahun. Sisi Hostinger-nya memakai harga perpanjangan
    yang tertulis di dialognya sendiri, bukan harga normal: untuk pos ini
@@ -187,8 +200,15 @@ const lIcann = ICANN * DOMAIN.berapa;
 const lSebelumPajak = lHosting + lEmail + lDomain + lIcann;
 const lPajak = Math.round(lSebelumPajak * PAJAK);
 const lKeHostinger = lSebelumPajak + lPajak;
-/** Sisa biaya perpanjangan sesudah tagihan Hostinger: itulah pendampingannya. */
-const lDamping = LANJUT - lKeHostinger;
+/**
+ * Sisa biaya perpanjangan sesudah tagihan Hostinger: itulah pendampingannya,
+ * dan itu juga tarif tahun berjalan di dalam masa paket. Satu angka, dua
+ * tempat — kalau ia dipatok terpisah, suatu saat keduanya akan berbeda dan
+ * tidak ada yang tahu mana yang benar.
+ */
+const DAMPING = LANJUT - lKeHostinger;
+
+const H = PERIODE.map(hitung);
 
 /**
  * The band. It is the difference between a draft and a document somebody
@@ -220,8 +240,12 @@ export default function () {
     lanjut: rp(LANJUT),
     "lanjut-bln": `${rp(Math.round(LANJUT / 12))} / bln`,
     "lanjut-hostinger": rp(lKeHostinger),
-    "lanjut-damping": rp(lDamping),
-    "lanjut-damping-bln": `${rp(Math.round(lDamping / 12))} / bln`,
+    "lanjut-damping": rp(DAMPING),
+    "lanjut-damping-bln": `${rp(Math.round(DAMPING / 12))} / bln`,
+    /* Tarif pendampingan tahun berjalan di dalam masa paket: sama persis
+       dengan bagian pendampingan di biaya lanjutan, karena memang pekerjaan
+       yang sama; yang tidak ditagih lagi cuma hostingnya. */
+    damping: rp(DAMPING),
     "l-hosting-bln": `${rp(PAKET.perpanjanganPerBulan)} / bln`,
     "l-hosting": rp(lHosting),
     "l-email": rp(lEmail),
@@ -246,7 +270,12 @@ export default function () {
     keluar[`${k}-jasa`] = rp(h.jasa);
     keluar[`${k}-periksa`] = `${h.periksa}&times;`;
     keluar[`${k}-total`] = angka(h.harga);
+    keluar[`${k}-selama-masa`] = angka(h.selamaMasa);
     keluar[`${k}-per-tahun`] = angka(h.perTahun);
+    keluar[`${k}-damping-dalam`] =
+      h.tahunDamping === 0
+        ? "&mdash;"
+        : `${rp(h.dampingDalam)}<br><span class="small">${h.tahunDamping}&times; ${rp(DAMPING)}</span>`;
     keluar[`${k}-muka`] = rp(h.muka);
     keluar[`${k}-sisa`] = rp(h.sisa);
     keluar[`${k}-tahunan`] = rp(h.tahunan);

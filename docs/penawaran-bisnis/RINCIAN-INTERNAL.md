@@ -42,32 +42,45 @@ pemilik. Konservatif dua kali: harga perpanjangan yang sebenarnya
 (Rp 121.900) justru **di bawah** angka yang dianggarkan, jadi tagihan
 perpanjangan nanti lebih kecil daripada yang dipakai menghitung.
 
-## Bentuk penawarannya: layanan tahunan, bukan sekali jadi
+## Bentuk penawarannya: hosting dikunci, pendampingan tahunan
 
 Perintah pemilik: **tahun pertama Rp 9 juta, lanjutannya Rp 6 juta per
-tahun, dan paket tiga tahun Rp 12 juta** — alasannya "setiap hari ada
-maintenance atau ada apa apa saya juga yang pusing". Jadi ini bukan lagi
-harga bangun-lalu-pergi; ini harga untuk tetap ada.
+tahun, paket tiga tahun Rp 12 juta** — alasannya "setiap hari ada
+maintenance atau ada apa apa saya juga yang pusing". Lalu dari tiga jalan
+keluar yang ditawarkan, pemilik memilih yang ketiga: **pisahkan hostingnya
+dari pendampingannya.**
 
-Harga paketnya **dipatok, bukan dijumlahkan**. Bagian Hostinger tetap
-dirinci sampai rupiah di halaman 13 dan kuitansinya tetap diserahkan, jadi
-sisanya — pengerjaan dan pendampingan — terbaca apa adanya sebagai bagian
-yang dihargai, bukan yang dihitung.
+Jadi bentuknya begini, dan pembagiannya bukan soal selera:
+
+| | Dikunci di muka? | Kenapa |
+|---|---|---|
+| Hosting, email, domain | **Ya**, seluruh masa paket | Memang dibeli sekaligus di depan ke Hostinger |
+| Pengerjaan | **Ya**, sekali | Memang sekali kerja |
+| Pendampingan | **Tidak**, ditagih per tahun | Pekerjaan tahun berjalan |
+
+Mengunci tiga tahun pendampingan di harga satu tahun berarti menjanjikan 36
+bulan kesiapsiagaan dengan bayaran yang tidak sepadan. Versi sebelum ini
+melakukan persis itu, dan angkanya jatuh ke Rp 133 ribu per bulan.
 
 | | A · 1 tahun | B · 2 tahun | C · 3 tahun |
 |---|---:|---:|---:|
-| Ke Hostinger | Rp 1.985.319 | Rp 4.588.576 | Rp 7.191.832 |
-| Pengerjaan + pendampingan | Rp 7.014.681 | Rp 5.911.424 | Rp 4.808.168 |
-| **Harga paket** | **Rp 9.000.000** | **Rp 10.500.000** | **Rp 12.000.000** |
-| Per tahun | Rp 9.000.000 | Rp 5.250.000 | Rp 4.000.000 |
+| Ke Hostinger, seluruh masa | Rp 1.985.319 | Rp 4.588.576 | Rp 7.191.832 |
+| Pengerjaan + pendampingan thn 1 | Rp 7.014.681 | Rp 5.911.424 | Rp 4.808.168 |
+| **Dibayar di muka** | **Rp 9.000.000** | **Rp 10.500.000** | **Rp 12.000.000** |
 | Uang muka 70% / sisa 30% | 6.300.000 / 2.700.000 | 7.350.000 / 3.150.000 | 8.400.000 / 3.600.000 |
-| Kalau dibayar tahunan | Rp 9.000.000 | Rp 15.000.000 | Rp 21.000.000 |
-| Hemat buat klien | — | Rp 4.500.000 | Rp 9.000.000 |
-| Biaya lanjutan mulai | tahun ke-2 | tahun ke-3 | tahun ke-4 |
+| Pendampingan tahun berikutnya | — | 1× Rp 3.503.304 | 2× Rp 3.503.304 |
+| **Jumlah selama masa paket** | **Rp 9.000.000** | **Rp 14.003.304** | **Rp 19.006.608** |
+| Biaya per tahun | Rp 9.000.000 | Rp 7.001.652 | Rp 6.335.536 |
+| Kalau tanpa mengunci | Rp 9.000.000 | Rp 15.000.000 | Rp 21.000.000 |
+| Hemat buat klien | — | Rp 996.696 | Rp 1.993.392 |
+| Biaya lanjutan penuh mulai | tahun ke-2 | tahun ke-3 | tahun ke-4 |
+
+Biaya per tahun tetap menurun dari A ke C, jadi C tetap pilihan yang paling
+masuk akal — tapi sekarang potongannya wajar, bukan bagi-bagi.
 
 **Rp 10,5 juta untuk 2 tahun adalah titik tengah yang saya isi sendiri**,
 bukan angka pemilik. Pemilik baru menyebut 9 juta dan 12 juta. Ubah di
-`PERIODE[1].harga` kalau mestinya lain.
+`PERIODE[1].harga`.
 
 ## Biaya lanjutan Rp 6 juta per tahun, dibuka
 
@@ -82,54 +95,45 @@ bukan angka pemilik. Pemilik baru menyebut 9 juta dan 12 juta. Ubah di
 | **Pendampingan** | **Rp 291.942 / bln** | **Rp 3.503.304** |
 | **Jumlah** | | **Rp 6.000.000** |
 
-Jadi yang benar-benar masuk ke pengerja dari tiap perpanjangan adalah
-**Rp 3.503.304 per tahun**, atau sekitar **Rp 292 ribu per bulan**, untuk
-menangani apa pun yang terjadi. Itu angka yang perlu diingat, karena bagian
-berikutnya membandingkannya.
+**Rp 3.503.304 itu satu angka yang dipakai di dua tempat**, dan di
+`angka.mjs` ia memang satu konstanta (`DAMPING`): tarif tahun berjalan di
+dalam masa paket, dan bagian pendampingan di biaya lanjutan. Bedanya cuma
+hostingnya — di dalam masa paket hostingnya sudah dibayar, jadi tidak
+ditagih lagi.
 
-## Yang harus dibaca pemilik sebelum mengirim dokumen ini
+## Berapa yang benar-benar masuk ke pengerja
 
-Paket C **tidak menguntungkan**, dan itu bukan kekeliruan hitungan melainkan
-akibat langsung dari angka yang diminta. Begini duduknya:
-
-| Jasa yang diterima pengerja | Selama 36 bulan | Per bulan |
+| | Jasa selama masanya | Per bulan |
 |---|---:|---:|
-| Klien bayar tahunan (9 jt lalu 6 jt, 6 jt) | Rp 14.021.289 | Rp 389.480 |
-| Klien ambil paket C | Rp 4.808.168 | **Rp 133.560** |
+| A · 1 tahun | Rp 7.014.681 | Rp 584.557 |
+| B · 2 tahun | Rp 9.414.728 | Rp 392.280 |
+| C · 3 tahun | Rp 11.814.776 | Rp 328.188 |
+| Klien bayar tahunan, 3 thn | Rp 14.021.289 | Rp 389.480 |
 
-Beda **Rp 9.213.121** selama tiga tahun — dan kewajiban kerjanya sama
-persis: 36 bulan menangani apa pun yang terjadi. Dengan kata lain, dokumen
-ini menganjurkan klien memilih pilihan yang membayar pengerjanya
-**Rp 133 ribu per bulan** untuk kesiapsiagaan harian. Kalau maintenance-nya
-memang hampir tiap hari, itu di bawah ongkos.
+C masih di bawah jalur tahunan, **tapi selisihnya tinggal Rp 2.206.513**
+untuk tiga tahun, bukan Rp 9,2 juta seperti versi sebelumnya. Rp 328 ribu
+per bulan untuk kesiapsiagaan harian masih bisa dipertahankan, dan itu
+harga yang dibayar untuk mendapat klien yang terkunci tiga tahun.
 
-Tiga jalan keluar, tinggal pilih:
-
-1. **Biarkan.** Sah kalau yang dikejar uang muka besar di depan
-   (Rp 8,4 juta cair sekali) dan klien yang tidak kabur. Tapi sadari tiga
-   tahun ke depan sudah terkunci di harga itu.
-2. **Naikkan C.** Supaya jasa per bulannya sama dengan perpanjangan,
-   C harus **Rp 17.701.744**. Di angka berapa pun di antaranya, selisihnya
-   mengecil.
-3. **Pisahkan hostingnya dari pendampingannya.** C mengunci harga hosting
-   tiga tahun tapi pendampingannya tetap tahunan: Rp 12 juta untuk tahun
-   pertama plus hosting tiga tahun, lalu Rp 3,5 juta per tahun untuk
-   pendampingan tahun ke-2 dan ke-3. Klien tetap dapat kepastian harga
-   hosting, pengerja tetap dibayar untuk tiap tahun kerja. Ini yang paling
-   jujur ke dua arah, dan paling mudah dipertahankan kalau ditanya.
-
-Sampai salah satunya dipilih, **dokumennya menjanjikan kerja tiga tahun
-dengan bayaran satu tahun lebih sedikit.**
+Kalau mau lebih rapat lagi, yang dinaikkan **harga di muka pilihan C**, bukan
+tarif pendampingannya — tarif itu dipakai di dua tempat dan menaikkannya
+ikut menaikkan biaya lanjutan yang sudah disebut Rp 6 juta ke pemilik.
 
 ## Pendampingan itu janji kerja
 
-Baris pendampingan di halaman 12 dan 14 bukan hiasan harga. Isinya, apa
+Baris pendampingan di halaman 12, 13, dan 14 bukan hiasan harga. Isinya, apa
 adanya: situs tidak menjawab, dashboard error, email tidak sampai —
 ditangani; pembaruan keamanan paket dan versi Node; pemulihan dari cadangan;
 satu pemeriksaan menyeluruh tiap tahun berikut laporan tertulis; dan
 perpanjangan diingatkan serta dibantu.
 
 Kalau itu tidak akan dikerjakan, harga ini tidak boleh dipakai seperti ini.
+
+Satu hal yang justru jadi lebih baik dengan pemisahan ini: **pendampingan
+boleh tidak diperpanjang**, oleh kedua pihak. Klien yang merasa tidak perlu
+bisa berhenti di tahun kedua; pengerja yang kewalahan bisa tidak
+menawarkannya lagi. Yang tidak bisa dilepas cuma tagihan Hostinger-nya, dan
+itu memang bukan tagihan pengerja.
 
 ## Selisih promo, dan apa yang dijanjikan soal itu
 

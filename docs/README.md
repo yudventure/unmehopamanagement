@@ -6,7 +6,7 @@ menyatukannya jadi satu berkas HTML mandiri dan `render.mjs` mencetaknya.
 | Folder | Hasil | Isi |
 |---|---|---|
 | `penawaran/` | `spesifikasi-dan-penawaran.pdf` | 16 halaman. Deploy ke **VPS KVM 2** dan **tiga** nama domain. Harga di dalamnya sudah lengkap |
-| `penawaran-bisnis/` | `penawaran-hosting-bisnis.pdf` | 16 halaman. **Paket Unlimited Web Hosting** dan **dua** nama domain, dalam **tiga** pilihan masa paket (1, 2, 3 tahun) dengan pendampingan bertingkat, plus satu halaman branding peta Selat Dampier |
+| `penawaran-bisnis/` | `penawaran-hosting-bisnis.pdf` | 16 halaman. **Paket Unlimited Web Hosting** dan **dua** nama domain sebagai **layanan tahunan** — tiga pilihan masa paket berikut biaya lanjutannya — plus satu halaman branding peta Selat Dampier |
 
 Keduanya A4 tegak dan dipakai untuk hal yang berbeda: yang pertama menawarkan
 server yang diurus sendiri, yang kedua menawarkan paket terkelola untuk
@@ -118,20 +118,31 @@ Rp 205.392, dan itu tepat 11%.
 di dokumen dibeli sebagai 24 + 12, yang di harga normal jumlahnya sama persis.
 Halaman 13 mengatakan itu, bukan menyembunyikannya.
 
-### Jasanya bertingkat, dan tingkatnya punya isi
+### Harga paketnya dipatok, bukan dijumlahkan
 
-Setup sama di ketiga pilihan (`JASA.setup`); yang berbeda **pendampingan**
-yang menempel di masa paketnya (`PERIODE[].damping`): tidak ada di 1 tahun,
-6 bulan di 2 tahun, 12 bulan di 3 tahun, makin murah per bulan makin panjang.
-Itu yang membuat **biaya per tahun menurun** dari pilihan terpendek ke
-terpanjang — tanpa itu, sisi Hostinger-nya sendiri justru sedikit lebih murah
-di masa terpendek, karena dua hadiah paket yang berlaku setahun jatuh
-seluruhnya di tahun pertama. Halaman 13 menuliskan kedua sisinya.
+`penawaran-bisnis/` bukan penawaran bangun-lalu-pergi; ia **layanan
+tahunan**, karena pemiliknya yang menerima telepon kalau ada apa-apa:
 
-Kalau angkanya diubah, jaga satu hal: **biaya per tahun harus tetap menurun
-dari A ke C**, kalau tidak, dokumennya menganjurkan pilihan yang lebih mahal
-per tahun. Dan pendampingan itu janji kerja, bukan hiasan harga — lihat
-`penawaran-bisnis/RINCIAN-INTERNAL.md`.
+```
+Tahun pertama                      Rp  9.000.000   PERIODE[0].harga
+Tiap tahun sesudahnya              Rp  6.000.000   LANJUT
+Atau: tiga tahun dikunci di depan  Rp 12.000.000   PERIODE[2].harga
+```
+
+Harga paketnya **angka bulat yang dipatok**, bukan hasil penjumlahan pos.
+Bagian Hostinger tetap dirinci sampai rupiah di halaman 13 dan kuitansinya
+tetap diserahkan; sisanya terbaca apa adanya sebagai pengerjaan dan
+pendampingan. Jadi `angka.mjs` menghitung bagian Hostinger, lalu
+**menguranginya dari harga paket**, bukan sebaliknya.
+
+Halaman 14 membuka biaya lanjutannya jadi dua: Rp 2.496.696 ke Hostinger
+dan Rp 3.503.304 pendampingan. Itu satu-satunya tempat angka pendampingan
+muncul sebagai angka, dan `LANJUT` yang menentukannya.
+
+Kalau angkanya diubah, baca dulu bagian **"Yang harus dibaca pemilik
+sebelum mengirim dokumen ini"** di `penawaran-bisnis/RINCIAN-INTERNAL.md`:
+paket tiga tahun mengikat 36 bulan pendampingan dengan bayaran jauh di
+bawah tarif perpanjangan, dan itu keputusan, bukan kebetulan.
 
 ### Pita draf
 

@@ -4,13 +4,33 @@
  * `docs/build.mjs` calls the default export and swaps each `__N_name__` in
  * the markup for the matching string. The markup therefore holds no
  * arithmetic at all: change a price here and every place it reaches — the
- * three option columns, the tax on each, the three totals, the three
- * deposits, the renewal page, the signature page — moves together or not at
- * all.
+ * three option columns, the per-year row, the deposits, the renewal page,
+ * the signature page — moves together or not at all.
  *
- * ## Where the numbers come from
+ * ## The shape of this offer, and why it is this shape
  *
- * The owner's own Hostinger checkout dialog for **Unlimited Web Hosting**,
+ * The owner is the one who gets the call when something breaks, so this is
+ * not a build-and-walk-away price. It is a yearly service with a price for
+ * staying:
+ *
+ *     Tahun pertama                      Rp  9.000.000
+ *     Tiap tahun sesudahnya              Rp  6.000.000
+ *     Atau: tiga tahun dikunci di depan  Rp 12.000.000
+ *
+ * Paying year by year for three years is Rp 21 juta; the three-year package
+ * is Rp 12 juta. That gap is the whole argument of page 13, and it is a
+ * commitment discount rather than an accounting trick — the document says so
+ * in those words rather than leaving the reader to find it.
+ *
+ * The package prices are round on purpose. They are the owner's numbers, set
+ * from the outside in: what the work is worth per year, not what the parts
+ * add up to. The Hostinger side is still itemised to the rupiah on page 13
+ * and the receipt is still handed over, so what the service costs is plain
+ * rather than buried — it is simply priced, not computed.
+ *
+ * ## Where the Hostinger numbers come from
+ *
+ * The owner's own Hostinger checkout dialog for Unlimited Web Hosting,
  * 6 October 2026. It lists all four durations at once, and the struck-through
  * price is the same on every one of them:
  *
@@ -20,21 +40,13 @@
  *      1 bulan                          Rp129.900 / bln
  *     Biaya perpanjangan paket          Rp121.900 / bln
  *
- * So **Rp 129.900 per bulan is the normal price for any term**, which is what
- * this offer budgets at, on the owner's instruction. It is conservative
- * twice over: the renewal price Hostinger states (Rp121.900) is *below* the
- * figure budgeted here.
- *
- * The same dialog settles the tax: its 48-month summary reads Rp1.867.200
- * plus Rp205.392, and 205.392 / 1.867.200 is exactly 11%.
- *
- * ## Three years is bought as 24 + 12
+ * So Rp 129.900 per bulan is the normal price for any term, which is what
+ * the Hostinger side is budgeted at. The same dialog settles the tax: its
+ * 48-month summary reads Rp1.867.200 plus Rp205.392, exactly 11%.
  *
  * Hostinger sells 1, 12, 24 and 48 months — there is no 36. At the normal
  * price that costs nothing to work around, because the rate does not change
  * with the term: 24 x 129.900 + 12 x 129.900 is 36 x 129.900 to the rupiah.
- * The document says so on the price page rather than leaving it to be
- * discovered at checkout.
  */
 
 /* ------------------------------------------------------------- masukan */
@@ -44,8 +56,8 @@
  *
  * `nama` is what the card says. `DEPLOY.md` still calls it "Business Web
  * Hosting", which is what the tab is called ("Paket Individual & Business");
- * the plan inside it that carries Node.js is **Unlimited**. Naming it wrong
- * in a document somebody orders from is how the wrong thing gets ordered.
+ * the plan inside it that carries Node.js is Unlimited. Naming it wrong in a
+ * document somebody orders from is how the wrong thing gets ordered.
  */
 const PAKET = {
   nama: "Unlimited Web Hosting",
@@ -60,31 +72,37 @@ const PAKET = {
 };
 
 /**
- * Tiga pilihan, dan apa yang ikut di tiap pilihan.
+ * Tiga pilihan, dengan harga paketnya masing-masing.
  *
- * `damping` is what the longer terms buy beyond the setup, and it is the
- * reason the ladder leans the way it does: the Hostinger side alone is
- * slightly *cheaper* per year on the shortest term, because the plan's two
- * one-year gifts land entirely inside it. Without something real attached to
- * the longer terms, recommending them would mean recommending the worse
- * deal. So the longer terms carry support, priced cheaper by the month the
- * longer it runs, and that is what turns the all-in cost per year the right
- * way round.
+ * `harga` is set, not derived. Rp 9 juta for the first year and Rp 12 juta
+ * for three are the owner's figures; Rp 10,5 juta for two years is the
+ * midpoint between them, and the one number here nobody has confirmed —
+ * change it in this line if it should be something else.
  */
 const PERIODE = [
-  { kunci: "a", bulan: 12, label: "1 tahun", dampingBulan: 0, damping: 0, garansi: 14 },
-  { kunci: "b", bulan: 24, label: "2 tahun", dampingBulan: 6, damping: 1250000, garansi: 30 },
-  { kunci: "c", bulan: 36, label: "3 tahun", dampingBulan: 12, damping: 2000000, garansi: 60 },
+  { kunci: "a", bulan: 12, label: "1 tahun", harga: 9000000, periksa: 1 },
+  { kunci: "b", bulan: 24, label: "2 tahun", harga: 10500000, periksa: 2 },
+  { kunci: "c", bulan: 36, label: "3 tahun", harga: 12000000, periksa: 3 },
 ];
 
 /**
- * Professional email, one mailbox, at the normal price from the same cart
- * the other offer was built from.
+ * Tiap tahun sesudah masa paketnya habis, dan tiap tahun kalau dibayar
+ * tahunan sejak awal.
  *
- * Only the months after the plan's free year are budgeted. The plan says
- * "kotak surat tanpa batas per situs — gratis selama 1 tahun"; what a
- * mailbox costs on this plan *after* that year is not on the card, so the
- * known price of Hostinger's separate email product stands in for it.
+ * This is the number the whole offer turns on: what being the person who
+ * answers when something breaks is worth per year. It covers the Hostinger
+ * bill for that year and the support on top of it, and page 14 splits it
+ * into exactly those two so nobody has to guess which is which.
+ */
+const LANJUT = 6000000;
+
+/** Harga tahun pertama kalau dibayar tahunan, bukan dikunci di depan. */
+const TAHUN_PERTAMA = PERIODE[0].harga;
+
+/**
+ * Professional email, one mailbox, at the normal price from the same cart
+ * the other offer was built from. Only the months after the plan's free year
+ * are budgeted.
  */
 const EMAIL = { perBulan: 28900 };
 
@@ -98,18 +116,12 @@ const ICANN = 9938;
 /** Dari ringkasan pembayaran di layar checkout: 205.392 / 1.867.200 = 11%. */
 const PAJAK = 0.11;
 
-/**
- * The setup fee: the six parts on page 12, three working days, once.
- *
- * Rp 3.000.000 is the owner's own figure, the same one the VPS offer
- * carries. The work here is shorter than that one — no VPS to order and
- * harden, no Coolify, no PostgreSQL to install — but the price is the
- * owner's to set, not something to be derived down behind their back.
- *
- * Identical in all three columns. What differs between them is the support
- * attached to the term, in `PERIODE`.
- */
-const JASA = { setup: 3000000, hari: 3 };
+/** Enam bagian pengerjaan di halaman 12, sekali jalan. */
+const HARI_KERJA = 3;
+
+/** Uang muka dibayar di depan karena Hostinger menagih penuh di depan;
+    sisanya setelah semuanya dicek bersama. */
+const MUKA = 0.7;
 
 /* ------------------------------------------------------------ hitungan */
 
@@ -121,105 +133,73 @@ const rp = (n) => `Rp ${Math.round(n).toLocaleString("en-US").replaceAll(",", ".
 const ISI = '<span class="isi">belum diisi</span>';
 const angka = (n) => (n === null || n === undefined ? ISI : rp(n));
 
-/** Harga pendampingan per bulan, untuk kalimat "makin panjang makin murah". */
-const perBulanDamping = (p) =>
-  p.dampingBulan === 0 ? null : Math.round(p.damping / p.dampingBulan);
-
 /**
- * One term, priced.
+ * The Hostinger bill for one term.
  *
- * The free year is subtracted rather than assumed away: email is paid only
- * for the months past it, and of the two domain names only one is free, and
- * only for its first year.
+ * The plan's free year is subtracted rather than assumed away: email is paid
+ * only for the months past it, and of the two domain names only one is free,
+ * and only for its first year.
  */
-function hitung(p) {
-  const perBulan = p.perBulan ?? PAKET.normalPerBulan;
-  const tahun = Math.ceil(p.bulan / 12);
-  const hosting = perBulan === null ? null : perBulan * p.bulan;
-
-  const bulanEmail = Math.max(0, p.bulan - PAKET.emailGratisBulan);
+function hostinger(bulan) {
+  const tahun = Math.ceil(bulan / 12);
+  const paket = PAKET.normalPerBulan * bulan;
+  const bulanEmail = Math.max(0, bulan - PAKET.emailGratisBulan);
   const email = bulanEmail * EMAIL.perBulan;
+  const domain = (DOMAIN.berapa * tahun - PAKET.domainGratisTahun) * DOMAIN.perTahun;
+  const icann = DOMAIN.berapa * tahun * ICANN;
+  const sebelumPajak = paket + email + domain + icann;
+  const pajak = Math.round(sebelumPajak * PAJAK);
+  return { tahun, paket, bulanEmail, email, domain, icann, pajak, jumlah: sebelumPajak + pajak };
+}
 
-  const tahunDomain = DOMAIN.berapa * tahun - PAKET.domainGratisTahun;
-  const domain = tahunDomain * DOMAIN.perTahun;
-
-  const icannTahun = DOMAIN.berapa * tahun;
-  const icann = icannTahun * ICANN;
-
-  const sebelumPajak = hosting === null ? null : hosting + email + domain + icann;
-  const pajak = sebelumPajak === null ? null : Math.round(sebelumPajak * PAJAK);
-  const keHostinger = sebelumPajak === null ? null : sebelumPajak + pajak;
-
-  const jasa = JASA.setup + p.damping;
-  const sisa = jasa / 2;
-
+function hitung(p) {
+  const h = hostinger(p.bulan);
+  /* Kalau dibayar tahunan: tahun pertama harga tahun pertama, sisanya harga
+     perpanjangan. Itu pembanding yang membuat paket panjang masuk akal. */
+  const tahunan = TAHUN_PERTAMA + LANJUT * (h.tahun - 1);
+  const muka = Math.round(p.harga * MUKA);
   return {
-    jasa,
-    sisa,
     ...p,
-    perBulan,
-    tahun,
-    bulanEmail,
-    hosting,
-    email,
-    domain,
-    icann,
-    pajak,
-    keHostinger,
-    total: keHostinger === null ? null : keHostinger + jasa,
-    dp: keHostinger === null ? null : keHostinger + sisa,
-    /* Per tahun dihitung dari total yang dilihat klien, bukan dari sisi
-       Hostinger saja: itu angka yang benar-benar dibandingkan orang, dan
-       itu yang membuat masa terpanjang jadi yang paling masuk akal. */
-    perTahun: keHostinger === null ? null : (keHostinger + jasa) / tahun,
-    perTahunHostinger: keHostinger === null ? null : keHostinger / tahun,
+    ...h,
+    /* Sisa harga paket sesudah bagian Hostinger: pengerjaan dan
+       pendampingan. Dihitung sebagai sisa, bukan dipatok, supaya totalnya
+       tetap bulat dan bagian Hostinger tetap apa adanya. */
+    jasa: p.harga - h.jumlah,
+    perTahun: p.harga / h.tahun,
+    muka,
+    sisa: p.harga - muka,
+    tahunan,
+    hemat: tahunan - p.harga,
+    /** Tahun keberapa tagihan perpanjangan pertama datang. */
+    mulaiLanjut: h.tahun + 1,
   };
 }
 
 const H = PERIODE.map(hitung);
 
-/**
- * Whether every term shares one monthly rate.
- *
- * Today they do, and the checkout dialog is where that came from rather than
- * an assumption. But Hostinger is free to price a short term dearer tomorrow,
- * and a single shared "harga satuan" cell would then be quietly wrong for two
- * of three columns. So the rate sits in the shared cell only while it really
- * is shared, and drops into each column the moment it stops being.
- */
-const seragam = H.every((h) => h.perBulan === H[0].perBulan);
-
-/** The hosting amount for one term, carrying its own rate only when the
- *  shared cell above it cannot. */
-const rinciHosting = (h) =>
-  h.hosting === null
-    ? ISI
-    : seragam
-      ? rp(h.hosting)
-      : `${rp(h.hosting)}<br><span class="small">${rp(h.perBulan)} / bln</span>`;
-
-/* Perpanjangan, per tahun, sesudah masa paketnya habis. Memakai harga
-   perpanjangan yang tertulis di dialognya, bukan harga normal: untuk pos ini
-   Hostinger menyebut angkanya sendiri, jadi tidak perlu ditaksir. */
-const rHosting = PAKET.perpanjanganPerBulan * 12;
-const rEmail = EMAIL.perBulan * 12;
-const rDomain = DOMAIN.perTahun * DOMAIN.berapa;
-const rIcann = ICANN * DOMAIN.berapa;
-const rSebelumPajak = rHosting + rEmail + rDomain + rIcann;
-const rPajak = Math.round(rSebelumPajak * PAJAK);
+/* Perpanjangan, per tahun. Sisi Hostinger-nya memakai harga perpanjangan
+   yang tertulis di dialognya sendiri, bukan harga normal: untuk pos ini
+   Hostinger menyebut angkanya, jadi tidak perlu ditaksir. */
+const lHosting = PAKET.perpanjanganPerBulan * 12;
+const lEmail = EMAIL.perBulan * 12;
+const lDomain = DOMAIN.perTahun * DOMAIN.berapa;
+const lIcann = ICANN * DOMAIN.berapa;
+const lSebelumPajak = lHosting + lEmail + lDomain + lIcann;
+const lPajak = Math.round(lSebelumPajak * PAJAK);
+const lKeHostinger = lSebelumPajak + lPajak;
+/** Sisa biaya perpanjangan sesudah tagihan Hostinger: itulah pendampingannya. */
+const lDamping = LANJUT - lKeHostinger;
 
 /**
  * The band. It is the difference between a draft and a document somebody
  * signs, so it is loud, and it leaves on its own the moment every term has a
  * price — nobody has to remember to delete it.
  */
-const belum = H.filter((h) => h.perBulan === null);
+const belum = H.filter((h) => !h.harga);
 const pita = belum.length
-  ? `<div class="draf"><strong>Draf — harga paket ${PAKET.nama} untuk ` +
+  ? "<div class=\"draf\"><strong>Draf — harga paket untuk " +
     belum.map((h) => h.label).join(" dan ") +
-    " belum diisi.</strong> " +
-    "Harganya diambil dari keranjang atau halaman checkout Hostinger, bukan dari artikel, " +
-    'lalu dituliskan di <span class="mono">docs/penawaran-bisnis/angka.mjs</span>. ' +
+    " belum diisi.</strong> Isi di <span class=\"mono\">docs/penawaran-bisnis/angka.mjs</span>. " +
     "Dokumen ini belum boleh dikirim.</div>"
   : "";
 
@@ -228,56 +208,52 @@ export default function () {
     pita,
     "nama-paket": PAKET.nama,
     "pajak-persen": `${Math.round(PAJAK * 100)}%`,
-    "hosting-satuan": seragam ? `${rp(PAKET.normalPerBulan)} / bln` : "&mdash;",
-    "hosting-normal": `${rp(PAKET.normalPerBulan)} / bln`,
+    "hosting-satuan": `${rp(PAKET.normalPerBulan)} / bln`,
     "email-bln": `${rp(EMAIL.perBulan)} / bln`,
     "domain-thn": `${rp(DOMAIN.perTahun)} / thn`,
     "icann-satuan": rp(ICANN),
-    setup: rp(JASA.setup),
-    /* Selisih biaya per tahun antara masa terpendek dan terpanjang. Dihitung
-       di sini, bukan diketik di halamannya: angka yang diketik tangan di
-       sebelah angka yang dihitung adalah angka yang akan basi sendiri. */
-    "hemat-c":
-      H[0].perTahun === null || H[H.length - 1].perTahun === null
-        ? ISI
-        : rp(H[0].perTahun - H[H.length - 1].perTahun),
-    "jasa-hari": String(JASA.hari),
-    "r-hosting-bln": `${rp(PAKET.perpanjanganPerBulan)} / bln`,
-    "r-hosting": rp(rHosting),
-    "r-email": rp(rEmail),
-    "r-domain": rp(rDomain),
-    "r-icann": rp(rIcann),
-    "r-pajak": rp(rPajak),
-    "r-total": rp(rSebelumPajak + rPajak),
+    "jasa-hari": String(HARI_KERJA),
+    "muka-persen": `${Math.round(MUKA * 100)}%`,
+    "sisa-persen": `${Math.round((1 - MUKA) * 100)}%`,
+
+    /* --- biaya lanjutan, per tahun --- */
+    lanjut: rp(LANJUT),
+    "lanjut-bln": `${rp(Math.round(LANJUT / 12))} / bln`,
+    "lanjut-hostinger": rp(lKeHostinger),
+    "lanjut-damping": rp(lDamping),
+    "lanjut-damping-bln": `${rp(Math.round(lDamping / 12))} / bln`,
+    "l-hosting-bln": `${rp(PAKET.perpanjanganPerBulan)} / bln`,
+    "l-hosting": rp(lHosting),
+    "l-email": rp(lEmail),
+    "l-domain": rp(lDomain),
+    "l-icann": rp(lIcann),
+    "l-pajak": rp(lPajak),
+    "tahun-pertama": rp(TAHUN_PERTAMA),
   };
 
   /* Satu set kunci per masa paket, dibangkitkan dari daftarnya sendiri, jadi
      menambah atau mengurangi pilihan tidak meninggalkan kunci yatim. */
   for (const h of H) {
-    keluar[`${h.kunci}-label`] = h.label;
-    keluar[`${h.kunci}-bulan`] = String(h.bulan);
-    keluar[`${h.kunci}-hosting`] = rinciHosting(h);
-    keluar[`${h.kunci}-email`] = h.bulanEmail === 0 ? "gratis" : rp(h.email);
-    keluar[`${h.kunci}-domain`] = rp(h.domain);
-    keluar[`${h.kunci}-icann`] = rp(h.icann);
-    keluar[`${h.kunci}-pajak`] = angka(h.pajak);
-    keluar[`${h.kunci}-hostinger`] = angka(h.keHostinger);
-    keluar[`${h.kunci}-jasa`] = rp(h.jasa);
-    if (h.damping !== 0) keluar[`${h.kunci}-damping`] = rp(h.damping);
-    keluar[`${h.kunci}-damping-bulan`] =
-      h.dampingBulan === 0 ? "tidak termasuk" : `${h.dampingBulan} bulan`;
-    /* Cuma masa paket yang benar-benar membawa pendampingan yang punya
-       harga per bulannya. Kunci kosong untuk yang tidak akan ditolak
-       build.mjs sebagai nilai yang tidak dipakai halaman mana pun, dan itu
-       memang yang diinginkan. */
-    const perBulan = perBulanDamping(h);
-    if (perBulan !== null) keluar[`${h.kunci}-damping-per-bulan`] = `${rp(perBulan)} / bln`;
-    keluar[`${h.kunci}-garansi`] = `${h.garansi} hari`;
-    keluar[`${h.kunci}-total`] = angka(h.total);
-    keluar[`${h.kunci}-dp`] = angka(h.dp);
-    keluar[`${h.kunci}-sisa`] = rp(h.sisa);
-    keluar[`${h.kunci}-per-tahun`] = angka(h.perTahun);
-    keluar[`${h.kunci}-per-tahun-hostinger`] = angka(h.perTahunHostinger);
+    const k = h.kunci;
+    keluar[`${k}-label`] = h.label;
+    keluar[`${k}-bulan`] = String(h.bulan);
+    keluar[`${k}-hosting-paket`] = rp(h.paket);
+    keluar[`${k}-email`] = h.bulanEmail === 0 ? "gratis" : rp(h.email);
+    keluar[`${k}-domain`] = rp(h.domain);
+    keluar[`${k}-icann`] = rp(h.icann);
+    keluar[`${k}-pajak`] = rp(h.pajak);
+    keluar[`${k}-hostinger`] = rp(h.jumlah);
+    keluar[`${k}-jasa`] = rp(h.jasa);
+    keluar[`${k}-periksa`] = `${h.periksa}&times;`;
+    keluar[`${k}-total`] = angka(h.harga);
+    keluar[`${k}-per-tahun`] = angka(h.perTahun);
+    keluar[`${k}-muka`] = rp(h.muka);
+    keluar[`${k}-sisa`] = rp(h.sisa);
+    keluar[`${k}-tahunan`] = rp(h.tahunan);
+    keluar[`${k}-mulai-lanjut`] = `tahun ke-${h.mulaiLanjut}`;
+    /* Hemat cuma ada artinya kalau masanya lebih dari setahun; di masa
+       setahun harga paket memang harga tahunannya. */
+    if (h.hemat > 0) keluar[`${k}-hemat`] = rp(h.hemat);
   }
   return keluar;
 }

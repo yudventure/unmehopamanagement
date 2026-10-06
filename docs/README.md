@@ -6,7 +6,7 @@ menyatukannya jadi satu berkas HTML mandiri dan `render.mjs` mencetaknya.
 | Folder | Hasil | Isi |
 |---|---|---|
 | `penawaran/` | `spesifikasi-dan-penawaran.pdf` | 16 halaman. Deploy ke **VPS KVM 2** dan **tiga** nama domain. Harga di dalamnya sudah lengkap |
-| `penawaran-bisnis/` | `penawaran-hosting-bisnis.pdf` | 16 halaman. **Paket Business Web Hosting** dan **dua** nama domain, plus satu halaman branding peta Selat Dampier. **Harga paketnya belum diisi** — lihat di bawah |
+| `penawaran-bisnis/` | `penawaran-hosting-bisnis.pdf` | 16 halaman. **Paket Unlimited** (hosting web Hostinger, kategori Individual & Business) dan **dua** nama domain, dalam dua pilihan masa paket, plus satu halaman branding peta Selat Dampier |
 
 Keduanya A4 tegak dan dipakai untuk hal yang berbeda: yang pertama menawarkan
 server yang diurus sendiri, yang kedua menawarkan paket terkelola untuk
@@ -90,22 +90,31 @@ dan catat mana yang harga coret dan mana yang harga bayar.** Jangan dari
 artikel pihak ketiga: versi lama dokumen ini memakai perkiraan Rp 436 rb per
 bulan dari sumber yang saling bertentangan, dan angka itu meleset jauh.
 
-### Satu angka yang sengaja masih kosong
+### Paket mana, dan harga mana
 
-Harga **Business Web Hosting** belum ada di repositori ini dan tidak boleh
-dikarang, jadi `penawaran-bisnis/angka.mjs` menulisnya `null`. Akibatnya tiap
-angka yang bergantung padanya — pajak, jumlah ke penyedia, total, uang muka —
-tercetak sebagai isian kosong, dan sampul berikut kedua halaman harga membawa
-pita **"Draf — belum boleh dikirim"**.
+Paket yang dipakai `penawaran-bisnis/` bernama **Unlimited**. `DEPLOY.md`
+masih menyebutnya "Business Web Hosting" karena begitu namanya waktu itu;
+sekarang "Individual & Business" adalah nama tab-nya, dan paket di dalamnya
+yang memuat Node.js bernama Unlimited. Dokumen memakai nama yang tertulis di
+kartunya, supaya yang dipesan bukan paket lain.
 
-Mengisinya satu baris:
+Angkanya dari kartu **48 bulan** di layar checkout pemilik, 6 Oktober 2026:
+harga normal Rp 6.235.200 ÷ 48 = **Rp 129.900/bln**, promo Rp 1.867.200 ÷ 48 =
+Rp 38.900/bln, perpanjangan Rp 121.900/bln tertulis langsung.
 
-```js
-const BISNIS = { perBulan: 123456, bulan: 24 };   // harga coret dari keranjang
-```
+**Hostinger memasang harga coret yang berbeda di tiap kartu masa paket.**
+Rp 129.900 itu kartu 48 bulan; kartu 12 bulan belum dibaca, dan masa yang
+lebih pendek biasanya lebih mahal per bulan. `PERIODE[0].perBulan` di
+`angka.mjs` adalah satu baris yang perlu diubah begitu kartunya dibuka.
+Daftar lengkap yang masih harus dicek ada di `penawaran-bisnis/RINCIAN-INTERNAL.md`.
 
-lalu bangun ulang. Pitanya hilang sendiri; tidak ada yang perlu diingat untuk
-dihapus.
+### Pita draf
+
+Kalau satu masa paket di `PERIODE` harganya `null`, tiap angka yang
+bergantung padanya tercetak sebagai isian kosong dan sampul berikut kedua
+halaman harga membawa pita **"Draf — belum boleh dikirim"**. Mengisi harganya
+lalu membangun ulang membuat pitanya hilang sendiri; tidak ada yang perlu
+diingat untuk dihapus.
 
 ## `angka.mjs`: kenapa angkanya tidak ditulis di markup
 

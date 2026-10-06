@@ -331,3 +331,27 @@ li::marker { color: var(--slate-mute); }
   background: var(--surface);
 }
 .art img { width: 100%; height: auto; display: block; }
+
+/* ------------------------------------------------------- dua pilihan */
+/*
+ * Two terms side by side, on the cover and on the signing page.
+ *
+ * The single `.price` puts its figure on the right of the sentence, which
+ * works when there is one figure and one sentence. With two of them at half
+ * width that lands a 24pt number in a 70mm column, so here the figure drops
+ * under its label instead and shrinks to what the column can hold.
+ */
+.price.duo { display: block; padding: 11px 15px; }
+.price.duo .v {
+  display: block; margin-left: 0; padding-left: 0;
+  margin-top: 3px; font-size: 17pt;
+}
+.price.duo .k { font-size: 8.4pt; line-height: 1.4; }
+
+/* The chosen-term boxes on the signing page: one is ticked by hand, so the
+   box has to be a box and not a bullet. */
+.pilih { display: flex; align-items: flex-start; gap: 9px; }
+.pilih .kotak {
+  flex-shrink: 0; width: 13px; height: 13px; margin-top: 2px;
+  border: 1.5px solid var(--slate-mute); border-radius: 3px; background: var(--surface);
+}

@@ -9,7 +9,23 @@ import type { Screen } from "@/lib/types";
 export interface NavItem {
   key: Screen;
   label: string;
+  /**
+   * Unit yang dibuka item ini ("all", "turtle", "eddo", "divecenter"). Hanya
+   * untuk layar yang bergantung pada unit (kalender, laporan, kamar,
+   * sinkronisasi). Layar lain, seperti Website dan Pengguna, tanpa unit.
+   */
+  unit?: string;
 }
+
+/** Satu bagian menu: satu unit, atau yang lintas unit. `label` kosong berarti tanpa judul. */
+export interface NavGroup {
+  id: string;
+  label: string;
+  items: NavItem[];
+}
+
+const sama = (n: NavItem, screen: Screen, unit: string) =>
+  n.key === screen && (n.unit === undefined || n.unit === unit);
 
 export interface Kabar {
   id: string;
@@ -18,9 +34,11 @@ export interface Kabar {
 }
 
 export interface RangkaPanelProps {
-  nav: NavItem[];
+  nav: NavGroup[];
   screen: Screen;
-  onScreen: (screen: Screen) => void;
+  /** Unit yang sedang dibuka, untuk menandai item yang aktif. */
+  unit: string;
+  onScreen: (item: NavItem) => void;
   /** Nama dan peran orang yang sedang masuk, untuk menu akun. */
   nama: string;
   email: string;
@@ -127,38 +145,106 @@ function useKunciGulir(aktif: boolean) {
 const inisial = (nama: string) =>
   (nama.trim().split(/\s+/).slice(0, 2).map((k) => k[0]).join("") || "A").toUpperCase();
 
+function ButirMenu({
+  n, aktif, onScreen, kecil = false,
+}: {
+  n: NavItem;
+  aktif: boolean;
+  onScreen: (item: NavItem) => void;
+  kecil?: boolean;
+}) {
+  return (
+    <li>
+      <button
+        type="button"
+        onClick={() => onScreen(n)}
+        aria-current={aktif ? "page" : undefined}
+        className={`flex w-full cursor-pointer items-center gap-3.5 rounded-2xl border-none text-left transition-colors ${
+          kecil ? "px-4 py-2.5 text-[0.9375rem]" : "px-4 py-3 text-[1.0625rem]"
+        } ${
+          aktif
+            ? "bg-panel-utama font-semibold text-white shadow-[0_12px_26px_rgb(43_84_67/0.28)]"
+            : "bg-transparent text-panel-utama hover:bg-panel-latar"
+        }`}
+      >
+        <NavIcon screen={n.key} size={kecil ? 18 : 20} />
+        {n.label}
+      </button>
+    </li>
+  );
+}
+
+/** Satu unit atau bagian, dilipat bila bukan yang sedang dibuka. */
+function GrupMenu({
+  g, screen, unit, onScreen, awalBuka,
+}: {
+  g: NavGroup;
+  screen: Screen;
+  unit: string;
+  onScreen: (item: NavItem) => void;
+  /** Terbuka sejak awal: bagian satu-satunya, misalnya manajer satu unit. */
+  awalBuka: boolean;
+}) {
+  const diDalam = g.items.some((n) => sama(n, screen, unit));
+  const [buka, setBuka] = useState(diDalam || awalBuka);
+  /* Terbuka sendiri bila item di dalamnya yang dibuka, misalnya lewat pintasan
+     di Ringkasan. Menutupnya tetap pilihan orangnya. */
+  useEffect(() => {
+    if (diDalam) setBuka(true);
+  }, [diDalam]);
+  return (
+    <li>
+      <button
+        type="button"
+        onClick={() => setBuka((b) => !b)}
+        aria-expanded={buka}
+        className="flex w-full cursor-pointer items-center gap-2 rounded-2xl border-none bg-transparent px-4 py-2.5 text-left text-[11px] font-bold tracking-[0.16em] text-panel-aksen uppercase hover:bg-panel-latar"
+      >
+        {g.label}
+        <Ikon nama="bawah" className={`ml-auto size-4 transition-transform ${buka ? "rotate-180" : ""}`} />
+      </button>
+      {buka && (
+        <ul className="mt-1 grid gap-1">
+          {g.items.map((n) => (
+            <ButirMenu
+              key={`${n.key}-${n.unit ?? ""}`}
+              n={n}
+              aktif={sama(n, screen, unit)}
+              onScreen={onScreen}
+              kecil
+            />
+          ))}
+        </ul>
+      )}
+    </li>
+  );
+}
+
 function Navigasi({
-  nav,
-  screen,
-  onScreen,
-  hariIni,
-}: Pick<RangkaPanelProps, "nav" | "screen" | "onScreen" | "hariIni">) {
+  nav, screen, unit, onScreen, hariIni,
+}: Pick<RangkaPanelProps, "nav" | "screen" | "unit" | "onScreen" | "hariIni">) {
+  /* Satu bagian bernama saja berarti tidak ada yang perlu dipilih di antara. */
+  const tunggal = nav.filter((g) => g.label).length === 1;
   return (
     <nav aria-label="Menu panel">
       <p className="mb-3 px-4 text-[11px] font-bold tracking-[0.16em] text-panel-utama uppercase">
         Menu
       </p>
       <ul className="grid gap-1">
-        {nav.map((n) => {
-          const aktif = n.key === screen;
-          return (
-            <li key={n.key}>
-              <button
-                type="button"
-                onClick={() => onScreen(n.key)}
-                aria-current={aktif ? "page" : undefined}
-                className={`flex w-full cursor-pointer items-center gap-3.5 rounded-2xl border-none px-4 py-3 text-left text-[1.0625rem] transition-colors ${
-                  aktif
-                    ? "bg-panel-utama font-semibold text-white shadow-[0_12px_26px_rgb(43_84_67/0.28)]"
-                    : "bg-transparent text-panel-utama hover:bg-panel-latar"
-                }`}
-              >
-                <NavIcon screen={n.key} size={20} />
-                {n.label}
-              </button>
-            </li>
-          );
-        })}
+        {nav.map((g) =>
+          g.label ? (
+            <GrupMenu key={g.id} g={g} screen={screen} unit={unit} onScreen={onScreen} awalBuka={tunggal} />
+          ) : (
+            g.items.map((n) => (
+              <ButirMenu
+                key={`${g.id}-${n.key}-${n.unit ?? ""}`}
+                n={n}
+                aktif={sama(n, screen, unit)}
+                onScreen={onScreen}
+              />
+            ))
+          ),
+        )}
       </ul>
       <div className="mt-8 rounded-3xl bg-panel-lembut px-5 py-5">
         <p className="text-[11px] font-bold tracking-[0.16em] text-panel-aksen uppercase">
@@ -175,6 +261,7 @@ function Navigasi({
 export function RangkaPanel({
   nav,
   screen,
+  unit,
   onScreen,
   nama,
   email,
@@ -202,7 +289,7 @@ export function RangkaPanel({
   useTutupLuar(lembar, tutupLembar, dalamLembar);
   useKunciGulir(lembar);
 
-  const pilih = (k: Screen) => {
+  const pilih = (k: NavItem) => {
     onScreen(k);
     setLembar(false);
     setBuka("");
@@ -348,7 +435,7 @@ export function RangkaPanel({
 
       <div className="mx-auto flex max-w-[100rem]">
         <aside className="sticky top-[4.5rem] hidden h-[calc(100svh-4.5rem)] w-[18.5rem] shrink-0 overflow-y-auto px-6 py-8 lg:block">
-          <Navigasi nav={nav} screen={screen} onScreen={pilih} hariIni={hariIni} />
+          <Navigasi nav={nav} screen={screen} unit={unit} onScreen={pilih} hariIni={hariIni} />
         </aside>
         <main id="isi" className="min-w-0 flex-1 px-4 py-6 sm:px-6 lg:py-8 lg:pr-10 lg:pl-4">
           {children}
@@ -379,7 +466,7 @@ export function RangkaPanel({
             className="h-11 w-full rounded-full border-none bg-panel-latar pr-4 pl-11 text-[0.9375rem] text-panel-utama outline-none placeholder:text-panel-utama/50"
           />
         </label>
-        <Navigasi nav={nav} screen={screen} onScreen={pilih} hariIni={hariIni} />
+        <Navigasi nav={nav} screen={screen} unit={unit} onScreen={pilih} hariIni={hariIni} />
       </div>
     </div>
   );

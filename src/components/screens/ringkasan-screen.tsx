@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 
 import { NavIcon } from "@/components/icons";
-import type { NavItem } from "@/components/rangka-panel";
 import { findConflicts } from "@/lib/derive";
 import { MONTHS, dayDiff, fmt, fmtShort, iso, parse } from "@/lib/format";
 import type { Booking, Room, Screen } from "@/lib/types";
@@ -16,24 +15,23 @@ export interface RingkasanScreenProps {
   rooms: Room[];
   today: string;
   showMoney: boolean;
-  /** Layar yang boleh dibuka akun ini, tanpa Ringkasan sendiri. */
-  pintasan: NavItem[];
-  onScreen: (s: Screen) => void;
+  /** Bagian menu yang boleh dibuka akun ini (satu per unit), tanpa Ringkasan sendiri. */
+  pintasan: Pintasan[];
+  /** Akun ini punya kalender, jadi angka booking di bawah ada artinya. */
+  adaKalender: boolean;
+}
+
+export interface Pintasan {
+  id: string;
+  label: string;
+  ket: string;
+  ikon: Screen;
+  onPilih: () => void;
 }
 
 const AKTIF = (b: Booking) => b.status !== "Cancelled" && b.status !== "Tidak datang";
 const DITERIMA = (b: Booking) =>
   b.status === "Confirmed" || b.status === "Checked-in" || b.status === "Checked-out";
-
-const KET_PINTASAN: Partial<Record<Screen, string>> = {
-  kalender: "Kalender booking semua kamar.",
-  laporan: "Okupansi dan pendapatan.",
-  properti: "Kamar, tarif, dan statusnya.",
-  sinkron: "Sambungan kalender OTA.",
-  lama: "Data dari sistem lama Turtle.",
-  website: "Isi dan foto website.",
-  pengguna: "Akun, peran, dan akses unit.",
-};
 
 /** Salam mengikuti jam Papua (WIT), bukan jam perangkat. */
 function salam(jam: number) {
@@ -79,7 +77,7 @@ function Ubin({ label, nilai, ket, gelap = false }: { label: string; nilai: stri
 }
 
 export function RingkasanScreen({
-  nama, peran, bookings, rooms, today, showMoney, pintasan, onScreen,
+  nama, peran, bookings, rooms, today, showMoney, pintasan, adaKalender,
 }: RingkasanScreenProps) {
   const aktif = bookings.filter(AKTIF);
   const bulan = today.slice(0, 7);
@@ -112,7 +110,7 @@ export function RingkasanScreen({
     .slice(0, 3);
   const ruangNama = (id: string) => rooms.find((r) => r.id === id)?.name ?? id;
 
-  const adaBooking = nav(pintasan, "kalender");
+  const adaBooking = adaKalender;
   const [t] = [parse(today)];
   const bulanNama = `${MONTHS[t.getMonth()]} ${t.getFullYear()}`;
   const jamIni = Number(
@@ -212,17 +210,17 @@ export function RingkasanScreen({
         <section aria-label="Halaman Anda" className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {pintasan.map((p) => (
             <button
-              key={p.key}
+              key={p.id}
               type="button"
-              onClick={() => onScreen(p.key)}
+              onClick={p.onPilih}
               className="flex cursor-pointer items-start gap-4 rounded-3xl border-none bg-white p-5 text-left text-panel-utama ring-1 ring-panel-garis transition-colors hover:bg-panel-latar"
             >
               <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-2xl bg-panel-lembut text-panel-aksen">
-                <NavIcon screen={p.key} size={20} />
+                <NavIcon screen={p.ikon} size={20} />
               </span>
               <span>
                 <span className="block text-[1.0625rem] font-semibold">{p.label}</span>
-                <span className="mt-0.5 block text-sm text-panel-utama/70">{KET_PINTASAN[p.key]}</span>
+                <span className="mt-0.5 block text-sm text-panel-utama/70">{p.ket}</span>
               </span>
             </button>
           ))}
@@ -230,8 +228,4 @@ export function RingkasanScreen({
       )}
     </div>
   );
-}
-
-function nav(items: NavItem[], key: Screen) {
-  return items.some((i) => i.key === key);
 }

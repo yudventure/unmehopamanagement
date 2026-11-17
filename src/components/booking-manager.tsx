@@ -38,9 +38,9 @@ import { LABEL_PERAN, aksesPenuh, layarUntuk, lihatSemua, lihatUang } from "@/li
 import type { AkunPublik } from "@/lib/server/akun";
 import { UsersScreen } from "@/components/screens/users-screen";
 import { WebsiteScreen } from "@/components/screens/website-screen";
-import { RangkaPanel, type Kabar, type NavItem } from "@/components/rangka-panel";
+import { RangkaPanel, type Kabar, type NavGroup, type NavItem } from "@/components/rangka-panel";
 import { FilterKalender } from "@/components/filter-kalender";
-import { RingkasanScreen } from "@/components/screens/ringkasan-screen";
+import { RingkasanScreen, type Pintasan } from "@/components/screens/ringkasan-screen";
 import {
   bookingDariApi,
   kamarDariApi,
@@ -1028,10 +1028,75 @@ export function BookingManager({
     [scopedBookings],
   );
 
-  const nav: NavItem[] = layar.map((k) => ({
-    key: k,
-    label: NAV_LABELS[k],
-  }));
+  /**
+   * Menu per unit. Pemilik, general manager, dan developer melihat satu bagian
+   * "Semua unit" dan satu bagian per unit (Turtle, Eddo, Dive Center), masing-
+   * masing dengan halamannya sendiri. Manajer unit dan staf hanya melihat
+   * bagian unit mereka. Keuangan, HRD, dan PR hanya halaman perannya.
+   *
+   * Dive Center tidak punya kamar, jadi hanya kalender (jadwal selam). Sistem
+   * lama adalah milik Turtle, jadi duduk di bagian Turtle.
+   */
+  const navGrup = useMemo<NavGroup[]>(() => {
+    const butir = (k: Screen, unit?: string): NavItem => ({ key: k, label: NAV_LABELS[k], unit });
+    const ada = (k: Screen) => layar.includes(k);
+    const grup: NavGroup[] = [{ id: "awal", label: "", items: [butir("ringkasan")] }];
+    const perUnit = isOwner || akun.peran === "manajer" || akun.peran === "staf";
+    if (perUnit) {
+      const bergantungUnit: Screen[] = ["kalender", "laporan", "properti", "sinkron"];
+      if (isOwner && allowedProps.length > 1) {
+        grup.push({
+          id: "semua",
+          label: "Semua unit",
+          items: bergantungUnit.filter(ada).map((k) => butir(k, "all")),
+        });
+      }
+      for (const u of allowedProps) {
+        const nama = PROPERTIES.find((p) => p.key === u)?.name ?? u;
+        const layarUnit: Screen[] =
+          u === "divecenter" ? ["kalender"] : [...bergantungUnit, ...(u === "turtle" ? (["lama"] as Screen[]) : [])];
+        const items = layarUnit.filter(ada).map((k) => butir(k, u));
+        if (items.length) grup.push({ id: u, label: nama, items });
+      }
+      const umum = (["website", "pengguna"] as Screen[]).filter(ada).map((k) => butir(k));
+      if (umum.length) grup.push({ id: "perusahaan", label: "Perusahaan", items: umum });
+    } else {
+      const sisa = layar
+        .filter((k) => k !== "ringkasan")
+        .map((k) => butir(k, (["kalender", "laporan", "properti", "sinkron"] as Screen[]).includes(k) ? "all" : undefined));
+      if (sisa.length) grup.push({ id: "peran", label: "", items: sisa });
+    }
+    return grup;
+  }, [layar, isOwner, akun.peran, allowedProps]);
+
+  /** Membuka satu item menu: layarnya, dan unitnya bila layar itu bergantung pada unit. */
+  const bukaMenu = useCallback((n: NavItem) => {
+    setScreen(n.key);
+    if (n.unit !== undefined) setFilterProp(n.unit as PropFilter);
+    setSelectedId(null);
+  }, []);
+
+  const pintasan = useMemo<Pintasan[]>(() => {
+    const ket: Partial<Record<Screen, string>> = {
+      kalender: "Kalender booking.", laporan: "Okupansi dan pendapatan.", properti: "Kamar, tarif, dan statusnya.",
+      sinkron: "Sambungan kalender ke situs luar.", lama: "Data dari sistem lama Turtle.",
+      website: "Isi dan foto website.", pengguna: "Akun, peran, dan akses unit.",
+    };
+    const hasil: Pintasan[] = [];
+    for (const g of navGrup) {
+      if (g.id === "awal") continue;
+      if (g.label && g.id !== "perusahaan") {
+        hasil.push({
+          id: g.id, label: g.label, ket: g.items.map((i) => i.label).join(", "),
+          ikon: g.items[0].key, onPilih: () => bukaMenu(g.items[0]),
+        });
+      } else {
+        for (const i of g.items)
+          hasil.push({ id: `${g.id}-${i.key}`, label: i.label, ket: ket[i.key] ?? "", ikon: i.key, onPilih: () => bukaMenu(i) });
+      }
+    }
+    return hasil;
+  }, [navGrup, bukaMenu]);
 
   /* One allowed property needs no chooser — the list would just repeat the
      same count twice. */
@@ -1412,9 +1477,10 @@ export function BookingManager({
        * green is spent where it means something: the screen you are on.
        */}
       <RangkaPanel
-        nav={nav}
+        nav={navGrup}
         screen={screen}
-        onScreen={setScreen}
+        unit={filterProp}
+        onScreen={bukaMenu}
         nama={userName}
         email={loginEmail}
         peran={LABEL_PERAN[akun.peran]}
@@ -1439,6 +1505,16 @@ export function BookingManager({
                     berdiri di atas daftar yang seluruhnya booking sungguhan,
                     yang persis jenis kesalahan yang catatan ini ada untuk
                     mencegahnya. Layar itu membawa keterangannya sendiri. */}
+                {filterProp !== "all" &&
+                  (["kalender", "laporan", "properti", "sinkron", "lama"] as Screen[]).includes(screen) && (
+                    <div className="mb-4">
+                      <p className="text-[11px] font-bold tracking-[0.16em] text-panel-aksen uppercase">Unit</p>
+                      <p className="text-[1.5rem] leading-tight font-bold text-panel-utama">
+                        {PROPERTIES.find((p) => p.key === filterProp)?.name}
+                      </p>
+                    </div>
+                  )}
+
                 {screen !== "lama" && (
                   <DataSourceNote sumber={sumber} lamaTersambung={lamaAktif} />
                 )}
@@ -1466,14 +1542,14 @@ export function BookingManager({
                     rooms={scopedRooms}
                     today={today}
                     showMoney={showMoney}
-                    pintasan={nav.filter((n) => n.key !== "ringkasan")}
-                    onScreen={setScreen}
+                    pintasan={pintasan}
+                    adaKalender={layar.includes("kalender")}
                   />
                 )}
 
-                {screen === "kalender" && (
+                {screen === "kalender" && filterProp !== "divecenter" && (
                   <FilterKalender
-                    propCounts={propCounts}
+                    propCounts={[]}
                     filterProp={filterProp}
                     onFilterProp={setFilterProp}
                     channelCounts={channelCounts}
@@ -1572,7 +1648,7 @@ export function BookingManager({
                 {screen === "properti" && (
                   <PropertyScreen
                     compact={phone}
-                    cards={propertyCards}
+                    cards={propertyCards.filter((c) => filterProp === "all" || c.key === filterProp)}
                     showMoney={showMoney}
                     canEdit={isOwner}
                     onSaveRoom={saveRoom}
@@ -1582,7 +1658,7 @@ export function BookingManager({
 
                 {screen === "sinkron" && layar.includes("sinkron") && (
                   <SyncScreen
-                    rooms={scopedRooms}
+                    rooms={scopedRooms.filter((r) => filterProp === "all" || r.prop === filterProp)}
                     sambungan={sambungan}
                     origin={origin}
                     onAdd={tambahSambungan}

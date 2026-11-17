@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 
+import { KartuGalat, type PeringatanGalat } from "@/components/galat-panel";
+import { KartuPembaca } from "@/components/kartu-pembaca";
 import { SakelarSistemLama } from "@/components/sakelar-sistem-lama";
 
 interface Pembayaran {
@@ -9,6 +11,7 @@ interface Pembayaran {
   clientKey: { ada: boolean; bentuk: string | null; akhir: string };
   mode: "sandbox" | "produksi";
   siap: boolean;
+  bolehUji: boolean;
   peringatan: string[];
   notifikasiUrl: string;
 }
@@ -70,11 +73,11 @@ function KartuMidtrans() {
       )}
 
       <div className="mt-4 flex flex-wrap items-center gap-3">
-        <button type="button" onClick={() => void jalankanTes()} disabled={sibuk || !p.serverKey.ada}
+        {p.bolehUji && <button type="button" onClick={() => void jalankanTes()} disabled={sibuk || !p.serverKey.ada || !p.bolehUji}
           className="cursor-pointer rounded-full border-none bg-panel-utama px-5 py-2 text-[0.875rem] font-bold text-white hover:bg-panel-utama-2 disabled:cursor-not-allowed disabled:opacity-50">
           {sibuk ? "Menguji…" : "Tes server key"}
-        </button>
-        <span className="text-xs text-panel-utama/60">Menanyakan satu pesanan yang tidak ada ke Midtrans. Tidak ada yang dibuat atau ditagih.</span>
+        </button>}
+        <span className="text-xs text-panel-utama/60">{p.bolehUji ? "Menanyakan satu pesanan yang tidak ada ke Midtrans. Tidak ada yang dibuat atau ditagih." : "Hanya developer dan pemilik yang bisa mengubah kunci dan menjalankan tes."}</span>
       </div>
       {tes && (
         <p className={`mt-3 rounded-2xl px-4 py-3 text-[0.875rem] ${tes.hasil === "diterima" ? "bg-panel-lembut text-panel-aksen" : "bg-panel-merah-lembut text-panel-merah"}`}>{tes.pesan}</p>
@@ -106,8 +109,12 @@ function KartuMidtrans() {
   );
 }
 
-/** Pengaturan dashboard: sakelar sistem lama, dan penyiapan pembayaran Midtrans (hanya developer dan pemilik). */
-export function PengaturanScreen({ bolehPembayaran }: { bolehPembayaran: boolean }) {
+/**
+ * Pengaturan dashboard: galat, sakelar sistem lama, pembaca screenshot, dan
+ * pembayaran Midtrans. Developer dan pemilik mengubah; general manager hanya
+ * melihat (layarnya hanya terbuka bagi mereka bertiga).
+ */
+export function PengaturanScreen({ galat, muatGalat }: { galat: { peringatan: PeringatanGalat[]; bolehHapus: boolean } | null; muatGalat: () => Promise<void> }) {
   return (
     <div className="grid gap-5">
       <section className="rounded-3xl bg-white p-5 ring-1 ring-panel-garis">
@@ -115,8 +122,10 @@ export function PengaturanScreen({ bolehPembayaran }: { bolehPembayaran: boolean
         <h1 className="mt-1 text-[1.6rem] leading-tight font-bold text-panel-utama">Pengaturan</h1>
         <p className="mt-1 text-sm text-panel-utama/70">Sakelar dan penyiapan yang dulu harus dilakukan lewat panel hosting.</p>
       </section>
+      <KartuGalat data={galat} muat={muatGalat} />
       <SakelarSistemLama />
-      {bolehPembayaran && <KartuMidtrans />}
+      <KartuPembaca />
+      <KartuMidtrans />
     </div>
   );
 }

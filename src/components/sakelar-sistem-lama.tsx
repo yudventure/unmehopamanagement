@@ -15,7 +15,7 @@ interface Keadaan {
  * Turtle dari sistem staf lama (Apps Script); mati berarti Turtle memakai data
  * dashboard sendiri dan sistem lama tidak dipanggil sama sekali.
  *
- * Yang bisa membaliknya: developer, pemilik, dan general manager. Yang lain
+ * Yang bisa membaliknya: developer dan pemilik. General manager melihat saja. Yang lain
  * melihat keadaannya saja. Membalik memuat ulang halaman, supaya semua layar
  * membaca dari sumber yang baru, bukan dari salinan yang sudah di memori.
  */
@@ -74,7 +74,7 @@ export function SakelarSistemLama({ ringkas = false }: { ringkas?: boolean }) {
               Terakhir diubah oleh {k.diubahOleh}, {new Intl.DateTimeFormat("id-ID", { timeZone: "Asia/Jayapura", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }).format(new Date(k.diubahPada)).replace(":", ".")} WIT.
             </p>
           )}
-          {!k.bolehUbah && <p className="mt-1 text-[0.75rem] text-panel-utama/60">Hanya developer, pemilik, dan general manager yang bisa mengubahnya.</p>}
+          {!k.bolehUbah && <p className="mt-1 text-[0.75rem] text-panel-utama/60">Hanya developer dan pemilik yang bisa mengubahnya.</p>}
           {galat && <p className="mt-2 text-[0.8125rem] font-medium text-panel-merah">{galat}</p>}
         </div>
         <button

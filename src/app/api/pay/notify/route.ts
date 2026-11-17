@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { catatGalat } from "@/lib/server/galat";
 import { EDDO } from "@/lib/eddo-content";
 import { GUEST_MAIL, guestLang, guestMailHtml, guestMailText } from "@/lib/eddo-mail";
 import { orderSite, outcome, signatureOk } from "@/lib/midtrans";
@@ -56,6 +57,7 @@ export async function POST(req: Request) {
   }
 
   if (!signatureOk(body)) {
+    await catatGalat("Pembayaran Midtrans", "Notifikasi pembayaran ditolak karena tanda tangannya tidak cocok. Periksa server key, atau ada yang mencoba memalsukan notifikasi.");
     return NextResponse.json({ error: "bad-signature" }, { status: 401 });
   }
 

@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 import { propertiBoleh } from "@/lib/server/akses";
+import { catatGalat } from "@/lib/server/galat";
 import { bacaPengaturan } from "@/lib/server/pengaturan";
 import { SESSION_COOKIE, valid } from "@/lib/session";
 import {
@@ -75,6 +76,7 @@ export async function GET(req: Request) {
 
   if (mode === "adminList") {
     const hasil = await bacaDaftarBooking();
+    if (!hasil.ok) await catatGalat("Sistem lama Turtle", hasil.pesan ?? "Tidak bisa membaca daftar booking.");
     return NextResponse.json({
       ok: hasil.ok,
       siap: true,
@@ -108,6 +110,7 @@ export async function GET(req: Request) {
   }
 
   const hasil = await bacaSistemLama(mode, params);
+  if (!hasil.ok) await catatGalat("Sistem lama Turtle", hasil.pesan ?? `Bacaan ${mode} gagal.`);
   return NextResponse.json({
     ok: hasil.ok,
     siap: true,

@@ -539,3 +539,29 @@ Kunci tetap dipasang di tempat yang sama dengan sebelumnya:
 Kunci Midtrans ada di dashboard Midtrans pada Settings lalu Access Keys, terpisah
 untuk sandbox dan produksi. Cobalah sandbox sebelum produksi.
 `MIDTRANS_API_URL` opsional, hanya untuk uji dengan Midtrans tiruan.
+
+
+## Pengaturan: siapa yang boleh mengubah, kunci pembaca screenshot, dan peringatan galat
+
+**Siapa.** Developer dan pemilik sama: mengubah semua pengaturan (sakelar sistem
+lama, kunci API, tes koneksi, membersihkan catatan galat) dan akun. General
+manager hanya **melihat** Pengaturan, tanpa bisa mengubah apa pun. Penjaganya di
+server (`aksesPenuh` di `/api/pengaturan`, `/api/pembaca`, `/api/pembayaran/tes`,
+`/api/galat` DELETE), bukan hanya tombol yang disembunyikan. Manajer unit dan
+peran lain tidak melihat Pengaturan sama sekali.
+
+**Kunci pembaca screenshot.** Di Pengaturan, kartu "Pembaca screenshot": tempel
+kunci Anthropic (berawalan `sk-ant-`, dibuat di console.anthropic.com), Simpan,
+lalu Tes kunci (menanyakan daftar model: gratis dan tidak membaca gambar).
+Disimpan di `kunci.json` folder data server (izin 600), tulis-saja: tidak pernah
+dikirim balik, hanya empat huruf terakhir. Kunci dari dashboard didahulukan atas
+`ANTHROPIC_API_KEY` di environment; tombol Hapus mengembalikan ke yang di
+environment. Kunci pembayaran Midtrans **tetap** di environment, sengaja.
+
+**Peringatan galat.** Untuk developer, pemilik, dan GM: pita merah di atas tiap
+layar ("Ada n galat yang perlu diperiksa", tombol Lihat) dan kartu "Galat dan
+peringatan" di Pengaturan. Dua sumber: keadaan yang diperiksa sekarang (kunci
+Midtrans bertabrakan, sistem lama menyala tapi belum diatur di server, sambungan
+kalender yang gagal dibaca; hilang sendiri begitu diperbaiki) dan catatan galat
+`galat.json` (50 terakhir, tujuh hari; pembaca screenshot ditolak atau kena
+batas, sistem lama gagal dibaca, notifikasi Midtrans bertanda tangan salah).

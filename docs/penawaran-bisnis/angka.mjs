@@ -106,11 +106,17 @@ const LANJUT = 6000000;
 const TAHUN_PERTAMA = PERIODE[0].harga;
 
 /**
- * Professional email, one mailbox, at the normal price from the same cart
- * the other offer was built from. Only the months after the plan's free year
- * are budgeted.
+ * Professional email at the normal price from the same cart the other offer
+ * was built from. Only the months after the plan's free year are budgeted.
+ *
+ * Two mailboxes, not one: the owner named one address per homestay on
+ * 17 November 2026 — `rajaampat@turtlehomestay.com` and
+ * `rajaampat@eddohomestay.com`. The dashboard's own domain gets none, because
+ * nothing publishes an address on it; it is a login screen, not a contact
+ * page. Each mailbox is a line on the same bill, so budgeting one and
+ * installing two would be a shortfall the owner finds out about at renewal.
  */
-const EMAIL = { perBulan: 28900 };
+const EMAIL = { perBulan: 28900, berapa: 2 };
 
 /**
  * Tiga nama: `turtlehomestay.com`, `eddohomestay.com`, dan
@@ -161,7 +167,7 @@ function hostinger(bulan) {
   const tahun = Math.ceil(bulan / 12);
   const paket = PAKET.normalPerBulan * bulan;
   const bulanEmail = Math.max(0, bulan - PAKET.emailGratisBulan);
-  const email = bulanEmail * EMAIL.perBulan;
+  const email = bulanEmail * EMAIL.perBulan * EMAIL.berapa;
   const domain = (DOMAIN.berapa * tahun - PAKET.domainGratisTahun) * DOMAIN.perTahun;
   const icann = DOMAIN.berapa * tahun * ICANN;
   const sebelumPajak = paket + email + domain + icann;
@@ -205,7 +211,7 @@ function hitung(p) {
    yang tertulis di dialognya sendiri, bukan harga normal: untuk pos ini
    Hostinger menyebut angkanya, jadi tidak perlu ditaksir. */
 const lHosting = PAKET.perpanjanganPerBulan * 12;
-const lEmail = EMAIL.perBulan * 12;
+const lEmail = EMAIL.perBulan * 12 * EMAIL.berapa;
 const lDomain = DOMAIN.perTahun * DOMAIN.berapa;
 const lIcann = ICANN * DOMAIN.berapa;
 const lSebelumPajak = lHosting + lEmail + lDomain + lIcann;
@@ -240,7 +246,7 @@ export default function () {
     "nama-paket": PAKET.nama,
     "pajak-persen": `${Math.round(PAJAK * 100)}%`,
     "hosting-satuan": `${rp(PAKET.normalPerBulan)} / bln`,
-    "email-bln": `${rp(EMAIL.perBulan)} / bln`,
+    "email-bln": `${rp(EMAIL.perBulan)} / bln &times; ${EMAIL.berapa}`,
     "domain-thn": `${rp(DOMAIN.perTahun)} / thn`,
     "icann-satuan": rp(ICANN),
     "jasa-hari": String(HARI_KERJA),

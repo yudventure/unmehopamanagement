@@ -64,15 +64,15 @@ melakukan persis itu, dan angkanya jatuh ke Rp 133 ribu per bulan.
 
 | | A · 1 tahun | B · 2 tahun | C · 3 tahun |
 |---|---:|---:|---:|
-| Ke Hostinger, seluruh masa | Rp 2.229.340 | Rp 5.076.616 | Rp 7.923.893 |
-| Pengerjaan + pendampingan thn 1 | Rp 6.770.660 | Rp 5.423.384 | Rp 4.076.107 |
+| Ke Hostinger, seluruh masa | Rp 2.229.340 | Rp 5.461.564 | Rp 8.693.789 |
+| Pengerjaan + pendampingan thn 1 | Rp 6.770.660 | Rp 5.038.436 | Rp 3.306.211 |
 | **Dibayar di muka** | **Rp 9.000.000** | **Rp 10.500.000** | **Rp 12.000.000** |
 | Uang muka 70% / sisa 30% | 6.300.000 / 2.700.000 | 7.350.000 / 3.150.000 | 8.400.000 / 3.600.000 |
-| Pendampingan tahun berikutnya | — | 1× Rp 3.259.283 | 2× Rp 3.259.283 |
-| **Jumlah selama masa paket** | **Rp 9.000.000** | **Rp 13.759.283** | **Rp 18.518.566** |
-| Biaya per tahun | Rp 9.000.000 | Rp 6.879.642 | Rp 6.172.855 |
+| Pendampingan tahun berikutnya | — | 1× Rp 2.874.335 | 2× Rp 2.874.335 |
+| **Jumlah selama masa paket** | **Rp 9.000.000** | **Rp 13.374.335** | **Rp 17.748.670** |
+| Biaya per tahun | Rp 9.000.000 | Rp 6.687.168 | Rp 5.916.223 |
 | Kalau tanpa mengunci | Rp 9.000.000 | Rp 15.000.000 | Rp 21.000.000 |
-| Hemat buat klien | — | Rp 1.240.717 | Rp 2.481.434 |
+| Hemat buat klien | — | Rp 1.625.665 | Rp 3.251.330 |
 | Biaya lanjutan penuh mulai | tahun ke-2 | tahun ke-3 | tahun ke-4 |
 
 Biaya per tahun tetap menurun dari A ke C, jadi C tetap pilihan yang paling
@@ -87,15 +87,15 @@ bukan angka pemilik. Pemilik baru menyebut 9 juta dan 12 juta. Ubah di
 | Pos | | Per tahun |
 |---|---:|---:|
 | Paket Unlimited, harga perpanjangan | Rp 121.900 / bln | Rp 1.462.800 |
-| Kotak surat email | Rp 28.900 / bln | Rp 346.800 |
+| Kotak surat email | Rp 28.900 / bln × 2 | Rp 693.600 |
 | Tiga nama domain | Rp 209.900 / thn | Rp 629.700 |
 | Biaya ICANN | Rp 9.938 × 3 | Rp 29.814 |
-| Pajak 11% | | Rp 271.603 |
-| **Ke Hostinger** | | **Rp 2.740.717** |
-| **Pendampingan** | **Rp 271.607 / bln** | **Rp 3.259.283** |
+| Pajak 11% | | Rp 309.751 |
+| **Ke Hostinger** | | **Rp 3.125.665** |
+| **Pendampingan** | **Rp 239.528 / bln** | **Rp 2.874.335** |
 | **Jumlah** | | **Rp 6.000.000** |
 
-**Rp 3.259.283 itu satu angka yang dipakai di dua tempat**, dan di
+**Rp 2.874.335 itu satu angka yang dipakai di dua tempat**, dan di
 `angka.mjs` ia memang satu konstanta (`DAMPING`): tarif tahun berjalan di
 dalam masa paket, dan bagian pendampingan di biaya lanjutan. Bedanya cuma
 hostingnya — di dalam masa paket hostingnya sudah dibayar, jadi tidak
@@ -106,35 +106,50 @@ ditagih lagi.
 | | Jasa selama masanya | Per bulan |
 |---|---:|---:|
 | A · 1 tahun | Rp 6.770.660 | Rp 564.222 |
-| B · 2 tahun | Rp 8.682.667 | Rp 361.778 |
-| C · 3 tahun | Rp 10.594.673 | Rp 294.296 |
-| Klien bayar tahunan, 3 thn | Rp 13.289.226 | Rp 369.145 |
+| B · 2 tahun | Rp 7.912.771 | Rp 329.699 |
+| C · 3 tahun | Rp 9.054.881 | Rp 251.524 |
+| Klien bayar tahunan, 3 thn | Rp 12.519.330 | Rp 347.759 |
 
-C masih di bawah jalur tahunan, **selisihnya Rp 2.694.553** untuk tiga tahun
-— bukan Rp 9,2 juta seperti versi yang mengunci pendampingan di muka.
-Rp 294 ribu per bulan untuk kesiapsiagaan harian masih bisa dipertahankan,
-dan itu harga yang dibayar untuk mendapat klien yang terkunci tiga tahun.
+C masih di bawah jalur tahunan, **selisihnya Rp 3.464.449** untuk tiga tahun.
+Tapi Rp 251 ribu per bulan untuk kesiapsiagaan harian sudah tipis, dan
+arahnya satu-satunya: tiap pos Hostinger yang ditambahkan ke paket dengan
+harga yang tetap, keluarnya dari sini.
 
-### Nama domain ketiga memotong jasa Rp 1,22 juta, dan itu tidak terlihat klien
+### Domain ketiga dan kotak surat kedua memotong jasa Rp 2,76 juta
 
-Pemilik menetapkan tiga domain pada 17 November 2026:
-`turtlehomestay.com`, `eddohomestay.com`, dan `unmehopamanagement.com` untuk
-dashboard-nya. Harga paketnya **tidak ikut naik** — tetap 9 / 10,5 / 12 juta
-— jadi biaya nama ketiga keluar dari bagian jasa, bukan dari kantong klien:
+Dua keputusan pemilik pada 17 November 2026, keduanya benar sendiri-sendiri,
+keduanya menambah pos di tagihan Hostinger:
 
-| | Dua domain | Tiga domain | Selisih |
-|---|---:|---:|---:|
-| Jasa pilihan C, 36 bulan | Rp 11.814.776 | Rp 10.594.673 | **−Rp 1.220.103** |
-| Pendampingan per tahun | Rp 3.503.304 | Rp 3.259.283 | −Rp 244.021 |
+1. **tiga domain** — `turtlehomestay.com`, `eddohomestay.com`, dan
+   `unmehopamanagement.com` untuk dashboard-nya;
+2. **dua kotak surat** — `rajaampat@turtlehomestay.com` dan
+   `rajaampat@eddohomestay.com`, satu per homestay.
+
+Harga paketnya **tidak ikut naik** — tetap 9 / 10,5 / 12 juta — jadi
+keduanya keluar dari bagian jasa, bukan dari kantong klien:
+
+| | Awal · 2 domain, 1 surat | + domain ke-3 | + surat ke-2 | Selisih |
+|---|---:|---:|---:|---:|
+| Jasa pilihan C, 36 bulan | Rp 11.814.776 | Rp 10.594.673 | Rp 9.054.881 | **−Rp 2.759.895** |
+| Pendampingan per tahun | Rp 3.503.304 | Rp 3.259.283 | Rp 2.874.335 | −Rp 628.969 |
+
+**Satu hal yang bisa mengembalikan sebagian besarnya tanpa menyentuh harga:**
+berapa kotak surat yang sebenarnya sudah termasuk di paket Unlimited. Model
+ini membayar keduanya penuh sesudah tahun gratisnya — arah yang aman, karena
+tidak mungkin kurang menagih Hostinger. Kalau paketnya ternyata memang
+memuat beberapa kotak surat, baris Rp 693.600 per tahun itu hilang dan
+`EMAIL.berapa` jadi 0. Itu sudah masuk daftar yang harus dicek sebelum
+penawarannya dikirim.
 
 Dua jalan kalau itu tidak diinginkan, dan keduanya satu baris di
 `angka.mjs`: naikkan `PERIODE[].harga`, atau naikkan `LANJUT` di atas
 Rp 6 juta — tapi yang kedua mengubah angka yang sudah disebut ke pemilik.
-Kalau dibiarkan, sadari saja bahwa nama ketiga itu dibayar dari jasa.
+Kalau dibiarkan, sadari saja bahwa keduanya dibayar dari jasa.
 
 Yang didapat sebagai gantinya nyata, dan bukan cuma alamat yang rapi:
 dashboard berdiri di domainnya sendiri, jadi cookie sesinya tidak pernah ikut
-terkirim ke halaman yang dibuka tamu. Halaman 8 menjelaskannya.
+terkirim ke halaman yang dibuka tamu, dan tiap homestay punya alamat email
+berakhiran namanya sendiri. Halaman 8 menjelaskan yang pertama.
 
 Kalau mau lebih rapat lagi, yang dinaikkan **harga di muka pilihan C**, bukan
 tarif pendampingannya — tarif itu dipakai di dua tempat dan menaikkannya

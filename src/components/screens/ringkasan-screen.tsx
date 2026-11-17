@@ -19,6 +19,10 @@ export interface RingkasanScreenProps {
   pintasan: Pintasan[];
   /** Akun ini punya kalender, jadi angka booking di bawah ada artinya. */
   adaKalender: boolean;
+  /** Membuka peninjauan bentrok di Kalender. */
+  onBukaBentrok: () => void;
+  /** Membuka rincian satu booking. */
+  onBukaBooking: (id: string) => void;
 }
 
 export interface Pintasan {
@@ -77,7 +81,7 @@ function Ubin({ label, nilai, ket, gelap = false }: { label: string; nilai: stri
 }
 
 export function RingkasanScreen({
-  nama, peran, bookings, rooms, today, showMoney, pintasan, adaKalender,
+  nama, peran, bookings, rooms, today, showMoney, pintasan, adaKalender, onBukaBentrok, onBukaBooking,
 }: RingkasanScreenProps) {
   const aktif = bookings.filter(AKTIF);
   const bulan = today.slice(0, 7);
@@ -104,10 +108,11 @@ export function RingkasanScreen({
 
   const bentrok = findConflicts(bookings).length;
   const mendesak = menunggu.filter((b) => b.checkIn >= today && dayDiff(today, b.checkIn) <= 3);
+  /* Yang tiba dalam tiga hari ke depan, tidak dibatasi jumlahnya: daftar
+     menggulir bila panjang. Lebih dari itu belum perlu dipantau dari sini. */
   const terdekat = aktif
-    .filter((b) => b.checkIn >= today)
-    .sort((a, b) => a.checkIn.localeCompare(b.checkIn))
-    .slice(0, 3);
+    .filter((b) => b.checkIn >= today && dayDiff(today, b.checkIn) <= 3)
+    .sort((a, b) => a.checkIn.localeCompare(b.checkIn));
   const ruangNama = (id: string) => rooms.find((r) => r.id === id)?.name ?? id;
 
   const adaBooking = adaKalender;
@@ -171,33 +176,50 @@ export function RingkasanScreen({
             {bentrok === 0 && mendesak.length === 0 ? (
               <p className="mt-3 text-[0.9375rem] text-panel-utama/80">Tidak ada yang perlu dikejar.</p>
             ) : (
-              <ul className="mt-3 grid gap-2">
+              <ul className="mt-3 grid max-h-[18rem] gap-2 overflow-y-auto pr-1">
                 {bentrok > 0 && (
-                  <li className="rounded-2xl bg-panel-merah-lembut px-4 py-3 text-[0.9375rem] text-panel-merah">
-                    {bentrok} kamar terjual dua kali pada malam yang sama. Buka Kalender untuk menyelesaikannya.
+                  <li className="flex flex-wrap items-center gap-3 rounded-2xl bg-panel-merah-lembut px-4 py-3 text-[0.9375rem] text-panel-merah">
+                    <span className="min-w-0 flex-1">{bentrok} kamar terjual dua kali pada malam yang sama.</span>
+                    <button type="button" onClick={onBukaBentrok}
+                      className="shrink-0 cursor-pointer rounded-full border-none bg-panel-merah px-4 py-[6px] text-[0.8125rem] font-bold text-white hover:opacity-90">
+                      Tinjau bentrok
+                    </button>
                   </li>
                 )}
-                {mendesak.slice(0, 4).map((b) => (
-                  <li key={b.id} className="rounded-2xl bg-panel-latar px-4 py-3 text-[0.9375rem] text-panel-utama">
-                    <span className="font-semibold">{b.guest}</span> belum dikonfirmasi, tiba {fmtShort(b.checkIn)} di {ruangNama(b.roomId)}.
+                {mendesak.map((b) => (
+                  <li key={b.id} className="flex flex-wrap items-center gap-3 rounded-2xl bg-panel-latar px-4 py-3 text-[0.9375rem] text-panel-utama">
+                    <span className="min-w-0 flex-1">
+                      <span className="font-semibold">{b.guest}</span> belum dikonfirmasi, tiba {fmtShort(b.checkIn)} di {ruangNama(b.roomId)}.
+                    </span>
+                    <button type="button" onClick={() => onBukaBooking(b.id)}
+                      className="shrink-0 cursor-pointer rounded-full border-none bg-panel-utama px-4 py-[6px] text-[0.8125rem] font-bold text-white hover:bg-panel-utama-2">
+                      Buka booking
+                    </button>
                   </li>
                 ))}
               </ul>
             )}
           </div>
           <div className="rounded-3xl bg-white p-5 ring-1 ring-panel-garis">
-            <p className="text-[11px] font-bold tracking-[0.16em] text-panel-aksen uppercase">Tiba terdekat</p>
+            <p className="flex items-center gap-2 text-[11px] font-bold tracking-[0.16em] text-panel-aksen uppercase">
+              Tiba terdekat
+              <span className="rounded-full bg-panel-lembut px-2 py-[1px] tracking-normal normal-case">{terdekat.length}</span>
+              <span className="ml-auto tracking-normal text-panel-utama/60 normal-case">3 hari ke depan</span>
+            </p>
             {terdekat.length === 0 ? (
-              <p className="mt-3 text-[0.9375rem] text-panel-utama/80">Belum ada tamu yang akan tiba.</p>
+              <p className="mt-3 text-[0.9375rem] text-panel-utama/80">Tidak ada tamu tiba dalam 3 hari ke depan.</p>
             ) : (
-              <ul className="mt-3 grid gap-2">
+              <ul className="mt-3 grid max-h-[18rem] gap-2 overflow-y-auto pr-1" aria-label="Tamu tiba dalam 3 hari ke depan">
                 {terdekat.map((b) => (
                   <li key={b.id} className="flex items-center justify-between gap-3 rounded-2xl bg-panel-latar px-4 py-3 text-[0.9375rem] text-panel-utama">
                     <span className="min-w-0">
                       <span className="block truncate font-semibold">{b.guest}</span>
                       <span className="block text-sm text-panel-utama/70">{ruangNama(b.roomId)}</span>
                     </span>
-                    <span className="shrink-0 font-semibold">{fmtShort(b.checkIn)}</span>
+                    <button type="button" onClick={() => onBukaBooking(b.id)} aria-label={`Buka booking ${b.guest}`}
+                      className="shrink-0 cursor-pointer rounded-full border-none bg-transparent px-2 py-1 font-semibold text-panel-utama hover:bg-panel-lembut">
+                      {b.checkIn === today ? "Hari ini" : fmtShort(b.checkIn)}
+                    </button>
                   </li>
                 ))}
               </ul>

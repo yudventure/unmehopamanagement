@@ -1764,6 +1764,15 @@ export function BookingManager({
                     showMoney={showMoney}
                     pintasan={pintasan}
                     adaKalender={layar.includes("kalender")}
+                    onBukaBentrok={() => {
+                      /* Peninjauannya di Kalender: berpindah ke sana lalu membuka daftar bentrok. */
+                      setScreen("kalender");
+                      setConflictOpen(true);
+                    }}
+                    onBukaBooking={(id) => {
+                      setScreen("kalender");
+                      setSelectedId(id);
+                    }}
                   />
                 )}
 

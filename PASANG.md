@@ -396,3 +396,27 @@ itu saja, dan judul **Unit** tampil di atas halaman. Peran lain hanya melihat
 bagiannya: manajer unit dan staf hanya bagian unit di kolom **Akses properti**
 akunnya, keuangan hanya Laporan dan Kalender, HRD hanya Pengguna, PR hanya
 Website. Bagian yang hanya satu terbuka sejak awal, yang lain terlipat.
+
+
+## Halaman tanpa gaya setelah deploy, dan ikon tab yang tidak berganti
+
+Terjadi di eddohomestay.com pada sebuah mesin Windows pada 17 November 2026:
+teks polos tanpa gaya, gambar tetap muncul, dan favicon lama.
+
+**Sebabnya.** Next mengirim halaman situs yang dibangun saat build dengan
+`Cache-Control: s-maxage=31536000`, satu tahun di cache bersama seperti CDN
+Hostinger. Tiap deploy mengganti nama berkas gaya (`/_next/static/css/<hash>.css`)
+dan membuang yang lama. HTML lama yang masih di CDN menunjuk ke berkas yang
+sudah tidak ada: gambar muncul karena berasal dari `public/`, gaya tidak, dan
+ikon tab tetap yang lama karena HTML-nya yang lama.
+
+**Perbaikannya** ada di `next.config.mjs` (`cachePublik`): halaman situs publik
+kini `public, max-age=0, must-revalidate`, jadi CDN bertanya dulu ke server
+sebelum memakai salinannya. Berkas `/_next/static` tetap `immutable`. Dashboard
+dan `/api` tidak diubah: tetap `private, no-store`.
+
+**Satu langkah manual setelah deploy pertama dengan aturan ini.** Salinan satu
+tahun yang SUDAH ada di CDN tidak hilang sendiri. Bersihkan cache CDN di hPanel
+(aplikasi Node.js atau Websites, lalu menu Cache atau CDN, lalu Purge atau
+Clear cache), kemudian muat ulang keras di peramban (Ctrl+Shift+R di Windows,
+Cmd+Shift+R di Mac). Sesudah itu deploy berikutnya tidak perlu langkah ini.

@@ -173,8 +173,45 @@ function pintuDashboard() {
  * which is worth having and is all it does; anyone with the address still
  * reaches them, exactly as on the hosting they are served from today.
  */
+/**
+ * Halaman situs publik tidak boleh tinggal di cache bersama.
+ *
+ * Next mengirim halaman yang dibangun saat build dengan
+ * `s-maxage=31536000`: satu tahun di CDN. Tiap deploy mengganti nama berkas
+ * gaya (`/_next/static/css/<hash>.css`) dan membuang yang lama, jadi HTML lama
+ * yang masih di CDN menunjuk ke berkas yang sudah tidak ada. Hasilnya halaman
+ * tanpa gaya, dan ikon tab yang tidak pernah berganti, persis seperti yang
+ * terlihat di eddohomestay.com pada sebuah mesin Windows.
+ *
+ * `max-age=0, must-revalidate`: CDN dan peramban boleh menyimpannya, tapi
+ * bertanya dulu ke server sebelum memakainya (ETag, jawaban 304 yang murah).
+ * Berkas statis di `/_next/static` tetap abadi, karena namanya memuat hash
+ * isinya.
+ *
+ * Hanya situs publik: jalurnya sendiri (`/turtle`, `/eddo`) dan akar serta
+ * halaman di domain homestay. Dashboard dan `/api` memuat isi per pengguna dan
+ * tetap dengan aturan bawaannya (`private, no-store`), tidak pernah `public`.
+ */
+function cachePublik() {
+  const nilai = [{ key: "Cache-Control", value: "public, max-age=0, must-revalidate" }];
+  /* Bukan berkas statis, bukan /api, dan bukan /kelola (pintu dashboard). */
+  const bukanStatis = "(?!_next/|api/|kelola|.*\\..*).+";
+  const out = [];
+  for (const site of SITES) {
+    out.push({ source: site.base, headers: nilai });
+    out.push({ source: `${site.base}/:path*`, headers: nilai });
+    for (const host of hostsFor(site.env)) {
+      const has = [{ type: "host", value: host }];
+      out.push({ source: "/", has, headers: nilai });
+      out.push({ source: `/:path(${bukanStatis})`, has, headers: nilai });
+    }
+  }
+  return out;
+}
+
 function systemHeaders() {
   return [
+    ...cachePublik(),
     {
       source: "/sistem/:path*",
       headers: [

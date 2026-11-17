@@ -34,6 +34,10 @@ export interface RoomEditModalProps {
   onClose: () => void;
   /** Returns a message when the save is rejected, or null when it went in. */
   onSave: (id: string, patch: RoomPatch) => string | null;
+  /** Kamar baru: judul dan tombol berubah, dan selalu bisa disimpan. */
+  baru?: boolean;
+  /** Menghapus kamar. Kembali berisi alasan bila ditolak. */
+  onDelete?: (id: string) => string | null;
 }
 
 const digits = (s: string) => s.replace(/\D/g, "");
@@ -89,6 +93,8 @@ export function RoomEditModal({
   showMoney,
   onClose,
   onSave,
+  baru = false,
+  onDelete,
 }: RoomEditModalProps) {
   const [name, setName] = useState(room.name);
   const [cap, setCap] = useState(room.cap);
@@ -98,6 +104,7 @@ export function RoomEditModal({
 
   const nextRate = showMoney ? Number(digits(rate)) : room.rate;
   const dirty =
+    baru ||
     name !== room.name ||
     cap !== room.cap ||
     nextRate !== room.rate ||
@@ -125,12 +132,13 @@ export function RoomEditModal({
     <Modal onClose={onClose} z={70} maxWidth={460} labelledBy="room-edit-title">
       <ModalHeader
         id="room-edit-title"
-        title="Ubah detail kamar"
+        title={baru ? "Tambah kamar" : "Ubah detail kamar"}
         onClose={onClose}
       />
       <div className="mb-[18px] text-[13px] leading-[1.5] text-slate-soft">
-        Perubahan berlaku untuk booking berikutnya. Booking yang sudah tercatat
-        tetap memakai harga saat disimpan.
+        {baru
+          ? "Kamar baru langsung muncul di kalender dan bisa disambungkan ke situs pemesanan."
+          : "Perubahan berlaku untuk booking berikutnya. Booking yang sudah tercatat tetap memakai harga saat disimpan."}
       </div>
 
       <div className="flex flex-col gap-[14px]">
@@ -218,9 +226,29 @@ export function RoomEditModal({
               : "cursor-not-allowed bg-surface-tint text-slate-mute"
           }`}
         >
-          {dirty ? "Simpan perubahan" : "Belum ada perubahan"}
+          {baru ? "Tambah kamar" : dirty ? "Simpan perubahan" : "Belum ada perubahan"}
         </button>
       </div>
+
+      {onDelete && !baru && (
+        <div className="mt-4 rounded-[12px] bg-surface-mute px-3 py-[10px] text-[12.5px] leading-[1.5] text-slate">
+          {room.upcoming > 0
+            ? "Kamar yang masih punya booking tidak bisa dihapus. Nonaktifkan saja."
+            : "Menghapus kamar membuangnya dari kalender. Kamar yang pernah punya booking atau sambungan kalender tidak bisa dihapus, nonaktifkan saja."}
+          <button
+            type="button"
+            disabled={room.upcoming > 0}
+            onClick={() => {
+              const problem = onDelete(room.id);
+              if (problem) setError(problem);
+              else onClose();
+            }}
+            className="mt-2 block cursor-pointer rounded-[9px] border border-danger-line bg-surface px-3 py-[6px] text-[12.5px] font-medium text-danger-ink hover:bg-danger-tint disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Hapus kamar ini
+          </button>
+        </div>
+      )}
     </Modal>
   );
 }

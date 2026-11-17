@@ -2,395 +2,333 @@
 
 import { useState } from "react";
 
-import { Pill } from "@/components/ui/pill";
-import { CH, CHANNEL_LABELS, PROPERTIES } from "@/lib/data";
+import { PROPERTIES } from "@/lib/data";
 import { fmtDateTime } from "@/lib/format";
-import type { ChannelKey, ExportToken, IcalFeed, Room } from "@/lib/types";
+import type { Room, Sambungan } from "@/lib/types";
 
-/** Only these publish an iCal calendar; WhatsApp and Blokir have none. */
-const OTA_CHANNELS: ChannelKey[] = ["Booking.com", "Agoda", "Traveloka"];
+/**
+ * Nama yang disarankan saat mengetik, bukan daftar yang membatasi. Situs apa
+ * pun yang bisa memberi tautan iCal boleh disambungkan, termasuk agen
+ * perjalanan lokal; nama yang diketik dipakai apa adanya.
+ */
+const SARAN = [
+  "Booking.com", "Airbnb", "Agoda", "Expedia", "Tiket.com", "Traveloka", "Trip.com",
+  "Hotels.com", "Google Calendar", "Agen perjalanan",
+];
 
 export interface SyncScreenProps {
   rooms: Room[];
-  feeds: IcalFeed[];
-  tokens: ExportToken[];
-  onAddFeed: (
-    roomId: string,
-    channel: ChannelKey,
-    url: string,
-  ) => string | null;
-  onRemoveFeed: (id: string) => void;
-  onIssueToken: (roomId: string) => void;
-  onResetToken: (roomId: string) => void;
-  /** Base the export URL is built on, e.g. https://unmehopa.example. */
+  sambungan: Sambungan[];
+  /** Base tautan ekspor, misalnya https://unmehopamanagement.com. */
   origin: string;
+  onAdd: (roomId: string, nama: string, url: string) => Promise<string | null>;
+  onRemove: (id: string) => void;
+  onUbahUrl: (id: string, url: string) => Promise<string | null>;
+  onTokenBaru: (id: string) => void;
+  onJalankan: () => void;
+  sedangJalan: boolean;
+  /** Kamar Turtle dibaca dari sistem lama, yang belum ikut ke tautan ekspor. */
+  turtleDariLama: boolean;
 }
 
-function Section({
-  title,
-  children,
+const KOTAK_ISIAN =
+  "rounded-[9px] border border-line-input bg-surface px-[11px] py-[7px] text-[12.5px] outline-none focus:border-teal";
+const TOMBOL_KECIL =
+  "cursor-pointer rounded-[9px] border border-line-strong bg-surface px-[13px] py-[7px] text-[12.5px] font-medium hover:bg-surface-hover";
+
+function Status({ s }: { s: Sambungan }) {
+  if (!s.url)
+    return <span className="rounded-full bg-surface-tint px-2 py-[2px] text-[11px] text-slate">Hanya mengirim</span>;
+  if (s.galat)
+    return <span className="rounded-full bg-danger-soft px-2 py-[2px] text-[11px] text-danger-ink">Gagal dibaca</span>;
+  if (!s.berhasil)
+    return <span className="rounded-full bg-amber-soft px-2 py-[2px] text-[11px] text-amber-ink">Belum dibaca</span>;
+  return <span className="rounded-full bg-teal-soft px-2 py-[2px] text-[11px] text-teal-deep">Tersambung</span>;
+}
+
+function BarisSambungan({
+  s, origin, onRemove, onUbahUrl, onTokenBaru,
 }: {
-  title: string;
-  children: React.ReactNode;
+  s: Sambungan;
+  origin: string;
+  onRemove: () => void;
+  onUbahUrl: (url: string) => Promise<string | null>;
+  onTokenBaru: () => void;
 }) {
+  const [salin, setSalin] = useState(false);
+  const [ubah, setUbah] = useState(false);
+  const [url, setUrl] = useState(s.url);
+  const [galat, setGalat] = useState("");
+  const tautan = `${origin}/api/ical/${s.token}.ics`;
+
   return (
-    <div>
-      <div className="mb-[6px] font-mono text-[10.5px] tracking-[.08em] text-slate-mute uppercase">
-        {title}
-      </div>
-      {children}
-    </div>
-  );
-}
-
-function ExportRow({
-  room,
-  token,
-  origin,
-  onIssue,
-  onReset,
-}: {
-  room: Room;
-  token?: ExportToken;
-  origin: string;
-  onIssue: () => void;
-  onReset: () => void;
-}) {
-  const [copied, setCopied] = useState(false);
-
-  if (!token) {
-    return (
-      <div className="flex flex-wrap items-center gap-3">
-        <span className="text-[12.5px] text-slate-mute">
-          Belum ada URL ekspor untuk kamar ini.
-        </span>
+    <div className="flex flex-col gap-2 rounded-[12px] border border-line bg-surface px-[13px] py-[11px]">
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-[13.5px] font-bold">{s.nama}</span>
+        <Status s={s} />
+        {s.berhasil && (
+          <span className="text-[12px] text-slate-mute">
+            {s.jumlah ?? 0} malam terbaca, {fmtDateTime(new Date(s.berhasil))}
+          </span>
+        )}
         <button
           type="button"
-          onClick={onIssue}
-          className="cursor-pointer rounded-[9px] border border-teal bg-surface px-[13px] py-[6px] text-[12.5px] font-medium text-teal hover:bg-teal-tint"
+          onClick={onRemove}
+          className="ml-auto cursor-pointer rounded-[8px] border-none bg-transparent px-2 py-1 text-[12px] text-danger hover:bg-danger-tint"
         >
-          Buat URL ekspor
+          Hapus
         </button>
       </div>
-    );
-  }
+      {s.galat && <div className="text-[12px] text-danger-ink">{s.galat}</div>}
 
-  const url = `${origin}/api/ical/${token.token}.ics`;
+      <div>
+        <div className="mb-1 text-[11px] text-slate-mute">Dibaca dari situs itu</div>
+        {ubah || !s.url ? (
+          <div className="flex flex-wrap items-center gap-2">
+            <input
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              placeholder="https://… tautan iCal dari situs itu"
+              aria-label={`Tautan iCal ${s.nama}`}
+              className={`${KOTAK_ISIAN} min-w-[220px] flex-1 font-mono text-[11.5px]`}
+            />
+            <button
+              type="button"
+              onClick={async () => {
+                const g = await onUbahUrl(url.trim());
+                setGalat(g ?? "");
+                if (!g) setUbah(false);
+              }}
+              className="cursor-pointer rounded-[9px] border-none bg-teal px-[15px] py-[8px] text-[12.5px] font-bold text-white hover:bg-teal-deep"
+            >
+              Simpan dan baca
+            </button>
+          </div>
+        ) : (
+          <div className="flex flex-wrap items-center gap-2">
+            <code className="min-w-0 flex-1 overflow-hidden rounded-[9px] border border-line-input bg-surface-mute px-[11px] py-[7px] font-mono text-[11.5px] text-ellipsis whitespace-nowrap text-slate">
+              {s.url}
+            </code>
+            <button type="button" onClick={() => setUbah(true)} className={TOMBOL_KECIL}>
+              Ganti
+            </button>
+          </div>
+        )}
+        {galat && <div className="mt-1 text-[12px] text-danger-ink">{galat}</div>}
+      </div>
 
-  return (
-    <div className="flex flex-wrap items-center gap-2">
-      <code className="min-w-0 flex-1 overflow-hidden rounded-[9px] border border-line-input bg-surface px-[11px] py-[7px] font-mono text-[11.5px] text-ellipsis whitespace-nowrap text-ink-soft">
-        {url}
-      </code>
-      <button
-        type="button"
-        onClick={() => {
-          navigator.clipboard?.writeText(url);
-          setCopied(true);
-          setTimeout(() => setCopied(false), 1600);
-        }}
-        className="cursor-pointer rounded-[9px] border border-line-strong bg-surface px-[13px] py-[7px] text-[12.5px] font-medium hover:bg-surface-hover"
-      >
-        {copied ? "Tersalin" : "Salin"}
-      </button>
-      <button
-        type="button"
-        onClick={onReset}
-        title="Buat token baru — URL lama langsung tidak berlaku"
-        className="cursor-pointer rounded-[9px] border border-line-strong bg-surface px-[13px] py-[7px] text-[12.5px] text-slate hover:bg-surface-hover"
-      >
-        Reset token
-      </button>
-      <span className="w-full font-mono text-[10.5px] text-slate-mute">
-        dibuat {fmtDateTime(new Date(token.createdAt))}
-      </span>
+      <div>
+        <div className="mb-1 text-[11px] text-slate-mute">Tempel ke situs itu supaya malam terjual terblokir di sana</div>
+        <div className="flex flex-wrap items-center gap-2">
+          <code className="min-w-0 flex-1 overflow-hidden rounded-[9px] border border-line-input bg-surface-mute px-[11px] py-[7px] font-mono text-[11.5px] text-ellipsis whitespace-nowrap text-slate">
+            {tautan}
+          </code>
+          <button
+            type="button"
+            onClick={() => {
+              void navigator.clipboard?.writeText(tautan);
+              setSalin(true);
+              setTimeout(() => setSalin(false), 1600);
+            }}
+            className={TOMBOL_KECIL}
+          >
+            {salin ? "Tersalin" : "Salin"}
+          </button>
+          <button
+            type="button"
+            onClick={onTokenBaru}
+            title="Buat tautan baru. Tautan lama langsung tidak berlaku."
+            className={`${TOMBOL_KECIL} text-slate`}
+          >
+            Buat tautan baru
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
 
-function ImportBlock({
-  room,
-  feeds,
-  onAdd,
-  onRemove,
-}: {
-  room: Room;
-  feeds: IcalFeed[];
-  onAdd: (channel: ChannelKey, url: string) => string | null;
-  onRemove: (id: string) => void;
-}) {
-  const [channel, setChannel] = useState<ChannelKey>("Booking.com");
+function TambahSambungan({ room, onAdd }: { room: Room; onAdd: SyncScreenProps["onAdd"] }) {
+  const [nama, setNama] = useState("");
   const [url, setUrl] = useState("");
-  const [error, setError] = useState("");
+  const [galat, setGalat] = useState("");
+  const [sibuk, setSibuk] = useState(false);
 
-  const submit = () => {
-    const problem = onAdd(channel, url.trim());
-    if (problem) {
-      setError(problem);
-      return;
-    }
+  const kirim = async () => {
+    if (sibuk) return;
+    setSibuk(true);
+    const g = await onAdd(room.id, nama.trim(), url.trim());
+    setSibuk(false);
+    if (g) return setGalat(g);
+    setNama("");
     setUrl("");
-    setError("");
+    setGalat("");
   };
 
   return (
-    <div className="flex flex-col gap-[7px]">
-      {feeds.map((f) => (
-        <div
-          key={f.id}
-          className="flex flex-wrap items-center gap-2 rounded-[10px] border border-line bg-surface px-[11px] py-[7px]"
-        >
-          <Pill colors={{ bg: CH[f.channel].bg, fg: CH[f.channel].fg }}>
-            {CHANNEL_LABELS[f.channel]}
-          </Pill>
-          <code className="min-w-0 flex-1 overflow-hidden font-mono text-[11.5px] text-ellipsis whitespace-nowrap text-slate">
-            {f.url}
-          </code>
-          <span className="font-mono text-[10.5px] text-amber-ink">
-            belum pernah ditarik
-          </span>
-          <button
-            type="button"
-            onClick={() => onRemove(f.id)}
-            className="cursor-pointer rounded-[8px] border-none bg-transparent px-2 py-1 text-[12px] text-danger hover:bg-danger-tint"
-          >
-            Hapus
-          </button>
-        </div>
-      ))}
-
+    <div>
       <div className="flex flex-wrap items-center gap-2">
-        <select
-          value={channel}
-          onChange={(e) => setChannel(e.target.value as ChannelKey)}
-          aria-label={`Saluran feed untuk ${room.name}`}
-          className="rounded-[9px] border border-line-input bg-surface px-[10px] py-[7px] text-[12.5px] outline-none focus:border-teal"
-        >
-          {OTA_CHANNELS.map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
-          ))}
-        </select>
+        <input
+          value={nama}
+          onChange={(e) => { setNama(e.target.value); setGalat(""); }}
+          list="saran-situs"
+          placeholder="Nama situs atau agen"
+          aria-label={`Nama situs untuk ${room.name}`}
+          className={`${KOTAK_ISIAN} w-[190px]`}
+        />
         <input
           value={url}
-          onChange={(e) => {
-            setUrl(e.target.value);
-            setError("");
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") submit();
-          }}
-          placeholder="https://… URL iCal dari extranet OTA"
-          aria-label={`URL iCal untuk ${room.name}`}
-          className="min-w-[220px] flex-1 rounded-[9px] border border-line-input bg-surface px-[11px] py-[7px] font-mono text-[11.5px] outline-none focus:border-teal"
+          onChange={(e) => { setUrl(e.target.value); setGalat(""); }}
+          onKeyDown={(e) => e.key === "Enter" && void kirim()}
+          placeholder="https://… tautan iCal (boleh kosong bila situs itu hanya membaca)"
+          aria-label={`Tautan iCal untuk ${room.name}`}
+          className={`${KOTAK_ISIAN} min-w-[220px] flex-1 font-mono text-[11.5px]`}
         />
         <button
           type="button"
-          onClick={submit}
-          className="cursor-pointer rounded-[9px] border-none bg-teal px-[15px] py-[8px] text-[12.5px] font-bold text-white hover:bg-teal-deep"
+          onClick={() => void kirim()}
+          disabled={sibuk}
+          className="cursor-pointer rounded-[9px] border-none bg-teal px-[15px] py-[8px] text-[12.5px] font-bold text-white hover:bg-teal-deep disabled:cursor-wait disabled:opacity-70"
         >
-          Tambah
+          {sibuk ? "Menyambung…" : "Sambungkan"}
         </button>
       </div>
-      {error && <div className="text-[12px] text-danger-ink">{error}</div>}
+      {galat && <div className="mt-1 text-[12px] text-danger-ink">{galat}</div>}
     </div>
   );
 }
 
 /**
- * One room, folded down to a line until there is a reason to open it.
- *
- * Laid out flat, each room took a heading, two labelled sections, a select, a
- * text field and three buttons — about 350px of screen. Fifteen of those ran
- * to roughly 6,800px, so reaching the last room of the second property meant
- * scrolling past fourteen copies of a form identical to the one being looked
- * for. The work itself is occasional: a URL is pasted once per room per
- * channel and then not touched again for months.
- *
- * So the line carries the state and the form stays behind it. What matters at
- * a glance is which rooms are already wired up and which are not, and that is
- * exactly what the summary says — a count rather than a tick, because two
- * channels connected out of three is the common half-done case and a tick
- * would call it finished.
+ * Satu kamar, dilipat menjadi satu baris sampai ada alasan membukanya. Lima
+ * belas formulir terbuka sekaligus berarti menggulir ribuan piksel untuk
+ * sampai ke kamar yang dicari; barisnya membawa keadaannya, dan formulirnya
+ * di belakang.
  */
-function RoomRow({
-  room,
-  feeds,
-  token,
-  origin,
-  onAddFeed,
-  onRemoveFeed,
-  onIssueToken,
-  onResetToken,
+function BarisKamar({
+  room, daftar, origin, onAdd, onRemove, onUbahUrl, onTokenBaru,
 }: {
   room: Room;
-  feeds: IcalFeed[];
-  token?: ExportToken;
+  daftar: Sambungan[];
   origin: string;
-  onAddFeed: (channel: ChannelKey, url: string) => string | null;
-  onRemoveFeed: (id: string) => void;
-  onIssueToken: () => void;
-  onResetToken: () => void;
+  onAdd: SyncScreenProps["onAdd"];
+  onRemove: (id: string) => void;
+  onUbahUrl: SyncScreenProps["onUbahUrl"];
+  onTokenBaru: (id: string) => void;
 }) {
-  const [open, setOpen] = useState(false);
-
-  const importState = feeds.length
-    ? `${feeds.length} feed impor`
-    : "impor belum diatur";
-  const exportState = token ? "URL ekspor siap" : "ekspor belum dibuat";
-  /* Configured rooms read in ink and unconfigured ones in the muted grey, so
-     the eye can pick the remaining work out of the column without reading. */
-  const wired = feeds.length > 0 || !!token;
-
+  const [buka, setBuka] = useState(false);
+  const gagal = daftar.filter((s) => s.galat).length;
   return (
-    <div className="border-t border-line-row first:border-t-0">
+    <div className="mt-[6px] first:mt-0">
       <button
         type="button"
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={open}
-        className="flex w-full cursor-pointer flex-wrap items-center gap-x-[10px] gap-y-1 border-none bg-transparent px-5 py-[13px] text-left hover:bg-surface-mute"
+        onClick={() => setBuka((v) => !v)}
+        aria-expanded={buka}
+        className="flex w-full cursor-pointer flex-wrap items-center gap-x-[10px] gap-y-1 rounded-[12px] border-none bg-transparent px-4 py-[12px] text-left hover:bg-surface-hover"
       >
         <span className="text-[14px] font-bold">{room.name}</span>
         {!room.active && (
-          <span className="rounded-full bg-amber-soft px-[8px] py-[2px] text-[11px] text-amber-ink">
-            Renovasi
-          </span>
+          <span className="rounded-full bg-amber-soft px-[8px] py-[2px] text-[11px] text-amber-ink">Nonaktif</span>
         )}
-        <span
-          className={`ml-auto text-[12.5px] ${
-            wired ? "text-ink-soft" : "text-slate-mute"
-          }`}
-        >
-          {importState} · {exportState}
+        <span className={`ml-auto text-[12.5px] ${daftar.length ? "text-ink-soft" : "text-slate-mute"}`}>
+          {daftar.length ? `${daftar.length} situs tersambung` : "belum tersambung"}
+          {gagal ? `, ${gagal} gagal dibaca` : ""}
         </span>
-        <svg
-          aria-hidden="true"
-          viewBox="0 0 12 12"
-          className={`h-3 w-3 shrink-0 text-slate ${open ? "rotate-180" : ""}`}
-        >
-          <path
-            d="M2.5 4.5 6 8l3.5-3.5"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.6"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
+        <svg aria-hidden="true" viewBox="0 0 12 12" className={`h-3 w-3 shrink-0 text-slate ${buka ? "rotate-180" : ""}`}>
+          <path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </button>
-
-      {/*
-        Hidden rather than unmounted. The field below holds a URL that was
-        pasted from an OTA extranet in another tab, and unmounting throws it
-        away — so a mistaken tap on the header would mean going back for it. It
-        costs a form in the document per room and no height at all, which is
-        the whole point of folding this.
-      */}
-      <div
-        hidden={!open}
-        className="flex flex-col gap-[14px] px-5 pt-1 pb-[18px]"
-      >
-        <Section title="Impor dari OTA">
-          <ImportBlock
-            room={room}
-            feeds={feeds}
-            onAdd={onAddFeed}
-            onRemove={onRemoveFeed}
-          />
-        </Section>
-
-        <Section title="Ekspor ke OTA">
-          <ExportRow
-            room={room}
-            token={token}
+      {/* Disembunyikan, bukan dilepas: kolom di dalamnya memegang tautan yang
+          ditempel dari extranet di tab lain, dan melepasnya membuangnya. */}
+      <div hidden={!buka} className="flex flex-col gap-3 px-4 pt-1 pb-4">
+        {daftar.map((s) => (
+          <BarisSambungan
+            key={s.id}
+            s={s}
             origin={origin}
-            onIssue={onIssueToken}
-            onReset={onResetToken}
+            onRemove={() => onRemove(s.id)}
+            onUbahUrl={(u) => onUbahUrl(s.id, u)}
+            onTokenBaru={() => onTokenBaru(s.id)}
           />
-        </Section>
+        ))}
+        <TambahSambungan room={room} onAdd={onAdd} />
       </div>
     </div>
   );
 }
 
 /**
- * Where the owner collects the iCal URLs on both directions. Nothing here
- * fetches or serves anything yet — there is no backend — so every feed reads
- * "belum pernah ditarik" rather than inventing a sync time, and the export URL
- * is labelled as not yet live so it does not get pasted into an extranet that
- * would only fail to reach it.
+ * Pengelola sinkronisasi kalender ke situs mana pun, lewat iCal. Tiap
+ * sambungan terikat ke satu kamar dan satu situs luar, dan punya dua arah:
+ * server membaca tautan dari situs itu (malam terisi di sana ikut tampil di
+ * kalender dan ikut memeriksa bentrok), dan situs itu membaca tautan ekspor
+ * kita (malam terisi di sini terblokir di sana). Situs yang hanya membaca,
+ * seperti banyak agen, cukup tanpa tautan impor.
  */
 export function SyncScreen({
-  rooms,
-  feeds,
-  tokens,
-  onAddFeed,
-  onRemoveFeed,
-  onIssueToken,
-  onResetToken,
-  origin,
+  rooms, sambungan, origin, onAdd, onRemove, onUbahUrl, onTokenBaru, onJalankan, sedangJalan, turtleDariLama,
 }: SyncScreenProps) {
-  const tokenFor = new Map(tokens.map((t) => [t.roomId, t]));
-  const feedsFor = (roomId: string) => feeds.filter((f) => f.roomId === roomId);
   const props = PROPERTIES.filter((p) => rooms.some((r) => r.prop === p.key));
+  const terakhir = sambungan.map((s) => s.berhasil).filter(Boolean).sort().pop();
 
   return (
     <div>
-      <div className="mb-1 text-[22px] font-bold">Sinkronisasi OTA</div>
-      <div className="mb-4 max-w-[760px] text-[13.5px] leading-[1.55] text-slate-soft">
-        Dua arah per kamar. <strong>Impor</strong> menarik kalender dari OTA ke
-        sini. <strong>Ekspor</strong> memberi OTA satu URL berisi seluruh
-        booking kamar ini, supaya tanggal yang sudah terjual — termasuk lewat
-        WhatsApp — otomatis terblokir di semua platform.
+      <datalist id="saran-situs">
+        {SARAN.map((n) => <option key={n} value={n} />)}
+      </datalist>
+
+      <div className="mb-1 flex flex-wrap items-end gap-3">
+        <div className="text-[22px] font-bold">Sinkronisasi kalender</div>
+        <button
+          type="button"
+          onClick={onJalankan}
+          disabled={sedangJalan || sambungan.length === 0}
+          className="ml-auto cursor-pointer rounded-[10px] border-none bg-teal px-[16px] py-[9px] text-[13px] font-bold text-white hover:bg-teal-deep disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {sedangJalan ? "Membaca…" : "Sinkronkan sekarang"}
+        </button>
+      </div>
+      <div className="mb-4 max-w-[780px] text-[13.5px] leading-[1.55] text-slate-soft">
+        Sambungkan kamar ke situs pemesanan atau agen perjalanan mana pun yang
+        memberi tautan iCal, tanpa daftar yang membatasi. <strong>Dibaca</strong>{" "}
+        berarti malam yang terjual di sana muncul di kalender ini dan ikut
+        diperiksa bentroknya. <strong>Dikirim</strong> berarti situs itu
+        membaca tautan ekspor kita, supaya malam yang terjual di sini terblokir
+        di sana. Server membaca ulang tiap 15 menit
+        {terakhir ? `, bacaan terakhir ${fmtDateTime(new Date(terakhir))}` : ""}.
       </div>
 
-      <div className="mb-6 flex items-start gap-[12px] rounded-[14px] border border-amber-soft bg-amber-soft/40 px-4 py-[13px]">
-        <span className="mt-[5px] h-[9px] w-[9px] shrink-0 rounded-full bg-amber-shade" />
-        <div className="text-[13px] leading-[1.55] text-amber-ink">
-          <strong>Penarikan otomatis belum berjalan.</strong> URL yang Anda
-          simpan di sini tersimpan sebagai pengaturan, tapi belum ada yang
-          menariknya — itu butuh database dan penjadwal di server. URL ekspor
-          juga <strong>belum bisa diakses OTA</strong>, jadi jangan dipasang di
-          extranet dulu; kumpulkan saja URL impornya sekarang.
-        </div>
+      <div className="mb-6 grid gap-2 rounded-[14px] border border-amber-soft bg-amber-soft/40 px-4 py-[13px] text-[13px] leading-[1.55] text-amber-ink">
+        <div><strong>Yang perlu diketahui.</strong> iCal hanya membawa terisi atau kosong. Harga, nama tamu, dan jumlah tamu tidak ikut.</div>
+        <div>Situs yang membaca tautan kita punya jeda, dari belasan menit sampai beberapa jam, jadi pesanan ganda masih mungkin. Bentrok yang terlihat di kalender ini harus diselesaikan manual.</div>
+        <div>Tidak semua situs memakai iCal. Setahu kami Traveloka dan Tiket.com tidak, dan Booking.com hanya untuk tipe kamar berisi satu unit. Periksa lagi di extranet masing-masing sebelum memasang.</div>
+        {turtleDariLama && (
+          <div><strong>Kamar Turtle.</strong> Pesanannya dibaca dari sistem lama dan <strong>belum ikut</strong> ke tautan ekspor. Hanya pesanan yang dicatat di dashboard ini yang terkirim. Jangan memasang tautan ekspor Turtle di situs lain sebelum itu diselesaikan.</div>
+        )}
       </div>
 
       <div className="flex flex-col gap-4">
         {props.map((p) => (
-          <div
-            key={p.key}
-            className="overflow-hidden rounded-[20px] border border-line-soft bg-surface"
-          >
-            <div className="flex flex-wrap items-center gap-3 border-b border-line-fine px-5 py-4">
+          <div key={p.key} className="overflow-hidden rounded-[20px] border border-line-soft bg-surface">
+            <div className="flex flex-wrap items-center gap-3 px-5 py-4">
               <div className="text-[16px] font-bold">{p.name}</div>
               <div className="text-[12.5px] text-slate-soft">{p.location}</div>
               <div className="ml-auto font-mono text-[11.5px] text-slate-mute">
-                {
-                  feeds.filter((f) =>
-                    rooms.some((r) => r.id === f.roomId && r.prop === p.key),
-                  ).length
-                }{" "}
-                feed impor
+                {sambungan.filter((s) => rooms.some((r) => r.id === s.roomId && r.prop === p.key)).length} sambungan
               </div>
             </div>
-
-            <div className="flex flex-col">
-              {rooms
-                .filter((r) => r.prop === p.key)
-                .map((room) => (
-                  <RoomRow
-                    key={room.id}
-                    room={room}
-                    feeds={feedsFor(room.id)}
-                    token={tokenFor.get(room.id)}
-                    origin={origin}
-                    onAddFeed={(c, u) => onAddFeed(room.id, c, u)}
-                    onRemoveFeed={onRemoveFeed}
-                    onIssueToken={() => onIssueToken(room.id)}
-                    onResetToken={() => onResetToken(room.id)}
-                  />
-                ))}
+            <div className="flex flex-col px-2 pb-2">
+              {rooms.filter((r) => r.prop === p.key).map((room) => (
+                <BarisKamar
+                  key={room.id}
+                  room={room}
+                  daftar={sambungan.filter((s) => s.roomId === room.id)}
+                  origin={origin}
+                  onAdd={onAdd}
+                  onRemove={onRemove}
+                  onUbahUrl={onUbahUrl}
+                  onTokenBaru={onTokenBaru}
+                />
+              ))}
             </div>
           </div>
         ))}

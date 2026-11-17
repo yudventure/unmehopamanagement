@@ -24,6 +24,8 @@ export type SumberData =
   | { keadaan: "kosong" }
   /** `DATABASE_URL` belum diisi di server. Layar memakai data contoh. */
   | { keadaan: "contoh" }
+  /** Tanpa database, tetapi buku di berkas server terbaca: kamar, pesanan, sambungan. */
+  | { keadaan: "lokal" }
   | { keadaan: "gagal"; pesan: string };
 
 const KOTAK =
@@ -58,6 +60,18 @@ export function DataSourceNote({
     return (
       <div className={`${KOTAK} border-line-strong bg-surface-mute text-slate`}>
         Memuat dari database…
+      </div>
+    );
+  }
+
+  if (sumber.keadaan === "lokal") {
+    return (
+      <div className={`${KOTAK} border-line-strong bg-surface-mute text-slate`}>
+        <strong className="font-semibold">Tersimpan di server.</strong> Kamar,
+        booking yang Anda catat, dan sambungan kalender disimpan di berkas
+        server, belum di database. Booking dari sistem lama dan dari situs
+        pemesanan terbaca dari sumbernya masing-masing.
+        {catatanLama}
       </div>
     );
   }

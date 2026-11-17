@@ -24,7 +24,14 @@ export type ChannelKey =
    * tidak pernah dicatat siapa pun. Komisinya nol, karena nol adalah yang
    * diketahui — bukan karena dipastikan tidak ada.
    */
-  | "Sistem lama";
+  | "Sistem lama"
+  /**
+   * Situs pemesanan atau agen perjalanan mana pun yang tersambung lewat iCal
+   * dan tidak punya saluran sendiri di atas (Airbnb, Tiket.com, Expedia,
+   * agen lokal, dan seterusnya). Namanya yang sebenarnya ada di
+   * `Booking.sumberNama`.
+   */
+  | "OTA lain";
 
 /**
  * "Tidak datang" ada di sini karena database bisa memuatnya (`NO_SHOW` di
@@ -55,21 +62,26 @@ export type Screen =
   | "website"
   | "pengguna";
 
-/** An OTA calendar pulled into a room. One room may carry several. */
-export interface IcalFeed {
+/**
+ * Satu sambungan kalender iCal antara sebuah kamar dan satu situs luar. Situs
+ * apa pun: Booking.com, Airbnb, Agoda, Tiket.com, agen perjalanan, atau
+ * Google Calendar. `url` kosong berarti sambungan hanya mengirim (agen yang
+ * membaca tautan ekspor kita tapi tidak punya tautan untuk dibaca).
+ */
+export interface Sambungan {
   id: string;
   roomId: string;
-  channel: ChannelKey;
+  /** Nama situs seperti diketik pemilik. Tidak dibatasi daftar. */
+  nama: string;
   url: string;
-  /** When the owner added it. Sync state stays empty until a backend runs. */
-  addedAt: string;
-}
-
-/** The secret in a room's outgoing feed URL, resettable. */
-export interface ExportToken {
-  roomId: string;
+  /** Rahasia di tautan ekspor `/api/ical/<token>.ics`. */
   token: string;
-  createdAt: string;
+  dibuat: string;
+  dicoba?: string;
+  berhasil?: string;
+  galat?: string;
+  /** Jumlah acara pada bacaan terakhir yang berhasil. */
+  jumlah?: number;
 }
 
 export interface Room {
@@ -129,6 +141,8 @@ export interface Booking {
    * menampilkan Rp 0 seolah itu harganya.
    */
   tanpaHarga?: boolean;
+  /** Nama situs atau agen asal booking dari sinkron iCal, apa adanya. */
+  sumberNama?: string;
   /** Set only when the booking is actually changed in-session. */
   updatedAt?: string;
   updatedBy?: string;

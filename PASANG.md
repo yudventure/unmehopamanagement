@@ -292,3 +292,51 @@ ponsel), dengan warna hijau Unmehopa. Menu tiap peran berbeda:
 
 Manajer unit memakai satu peran yang sama, dan unitnya diatur lewat kolom
 **Akses properti** saat akun dibuat.
+
+## Jumlah kamar dan sinkronisasi kalender ke situs mana pun
+
+Selama database belum tersambung, kamar, booking yang dicatat di dashboard, dan
+sambungan kalender tersimpan di berkas di folder data server
+(`~/.unmehopa-data`: `kamar.json`, `pesanan.json`, `sambungan.json`). **Cadangkan
+folder itu bersama akun.** Begitu `DATABASE_URL` diisi, dashboard membaca dari
+database dan berkas ini tidak dipakai lagi, jadi isinya perlu dipindahkan dulu.
+
+**Jumlah kamar.** Di Properti & Kamar, **+ Tambah kamar** di tiap unit dan
+**Edit lalu Hapus** untuk kamar yang belum pernah punya booking atau sambungan.
+Yang pernah dipakai cukup dinonaktifkan. Hanya developer, pemilik, dan general
+manager. Kalender dan Laporan ikut menghitung kamar baru. **Website publik
+Turtle dan Eddo belum ikut**: daftar kamar dan tarif di sana tetap dari kode.
+
+**Sinkronisasi.** Menu **Sinkronisasi kalender**. Situs apa pun yang bisa memberi
+tautan iCal boleh disambungkan: Booking.com, Airbnb, Agoda, Tiket.com, Expedia,
+Google Calendar, atau agen perjalanan lokal. Namanya diketik sendiri. Per
+kamar bisa banyak situs sekaligus.
+
+- **Dibaca.** Server membaca tautan dari situs itu tiap 15 menit, dan tombol
+  **Sinkronkan sekarang** membacanya saat itu juga. Malam yang terisi di sana
+  tampil di kalender (saluran "OTA lain" atau Booking.com, Traveloka, Agoda
+  bila namanya cocok) dan ikut diperiksa bentroknya. Harga dan jumlah tamu
+  ditandai tidak diketahui. Bacaan yang gagal tidak membuka malam dari bacaan
+  terakhir yang berhasil.
+- **Dikirim.** Tiap sambungan punya tautan ekspor `/api/ical/<token>.ics` untuk
+  ditempel ke situs itu. Isinya malam terisi dari booking di dashboard dan dari
+  situs lain di kamar yang sama, tanpa malam dari situs itu sendiri supaya tidak
+  memantul. Tanpa nama tamu. **Buat tautan baru** mematikan yang lama.
+- Agen yang hanya membaca cukup dengan sambungan tanpa tautan impor.
+
+Keterbatasan yang perlu dikatakan ke pemilik: iCal hanya membawa terisi atau
+kosong. Situs yang membaca tautan kita punya jeda belasan menit sampai beberapa
+jam, jadi pesanan ganda masih mungkin dan bentrok harus diselesaikan manual.
+Setahu kami Traveloka dan Tiket.com tidak memakai iCal, dan Booking.com hanya
+untuk tipe kamar berisi satu unit. **Periksa lagi di extranet masing-masing
+sebelum memasang.**
+
+**Turtle.** Selama sistem lama tersambung, kamar dan booking Turtle dibaca dari
+sana, jadi kamar Turtle belum bisa disambungkan ke situs luar dari dashboard, dan
+booking sistem lama belum ikut ke tautan ekspor mana pun.
+
+Keamanan tautan yang dibaca server: hanya `https`/`http`, alamat jaringan dalam
+(localhost, 10.x, 192.168.x, dan sejenisnya, juga nama yang menunjuk ke sana)
+ditolak, pengalihan diperiksa ulang, batas 20 detik dan 5 MB.
+`SINKRON_IZINKAN_LOKAL=1` hanya untuk uji di komputer sendiri, **jangan** diisi di
+Hostinger. Uji pembaca iCal: `npm run uji`.

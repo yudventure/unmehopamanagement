@@ -398,9 +398,18 @@ export function DashboardRail({
   }
 
   return (
-    <aside className="flex w-[352px] shrink-0 flex-col gap-6 border-l border-line bg-surface px-[22px] pt-[22px] pb-[26px]">
-      {atas}
-      {sections}
+    /*
+     * Setinggi kolom kalender, tidak lebih. Isinya diletakkan mutlak di dalam,
+     * jadi panjang isi tidak ikut menentukan tinggi panel: tingginya dari
+     * baris tempat ia berdiri (items-stretch), yaitu tinggi kalender. Isi yang
+     * lebih panjang menggulir di dalam, yang lebih pendek berhenti di
+     * tempatnya. Tinggi minimal supaya kalender yang pendek tidak menjepitnya.
+     */
+    <aside className="relative min-h-[480px] w-[352px] shrink-0 border-l border-line bg-surface">
+      <div className="absolute inset-0 flex flex-col gap-6 overflow-y-auto px-[22px] pt-[22px] pb-[26px]">
+        {atas}
+        {sections}
+      </div>
     </aside>
   );
 }

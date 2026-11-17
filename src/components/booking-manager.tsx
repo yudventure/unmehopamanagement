@@ -45,6 +45,7 @@ import { PanelPesanan } from "@/components/panel-pesanan";
 import { PesananMassalModal, type BarisSiap } from "@/components/pesanan-massal-modal";
 import { bacaPesan, type BarisPesan } from "@/lib/baca-pesan";
 import { RingkasanScreen, type Pintasan } from "@/components/screens/ringkasan-screen";
+import { PengaturanScreen } from "@/components/screens/pengaturan-screen";
 import { StatistikScreen } from "@/components/screens/statistik-screen";
 import {
   bookingDariApi,
@@ -158,6 +159,7 @@ const NAV_LABELS: Record<Screen, string> = {
   lama: "Sistem lama",
   website: "Website",
   statistik: "Statistik pengunjung",
+  pengaturan: "Pengaturan",
   pengguna: "Pengguna & Peran",
 };
 
@@ -1237,7 +1239,7 @@ export function BookingManager({
           items: [butir("kalender", "divecenter", "Jadwal Dive Center")],
         });
       }
-      const umum = (["pengguna"] as Screen[]).filter(ada).map((k) => butir(k));
+      const umum = (["pengaturan", "pengguna"] as Screen[]).filter(ada).map((k) => butir(k));
       if (umum.length) grup.push({ id: "perusahaan", label: "Perusahaan", items: umum });
     } else {
       const sisa = layar
@@ -1259,7 +1261,7 @@ export function BookingManager({
     const ket: Partial<Record<Screen, string>> = {
       kalender: "Kalender booking.", laporan: "Okupansi dan pendapatan.", properti: "Kamar, tarif, dan statusnya.",
       sinkron: "Sambungan kalender ke situs luar.", lama: "Data dari sistem lama Turtle.",
-      website: "Isi dan foto website.", statistik: "Pengunjung website dan asal negara.", pengguna: "Akun, peran, dan akses unit.",
+      website: "Isi dan foto website.", statistik: "Pengunjung website dan asal negara.", pengguna: "Akun, peran, dan akses unit.", pengaturan: "Sakelar sistem lama dan penyiapan pembayaran.",
     };
     const hasil: Pintasan[] = [];
     for (const g of navGrup) {
@@ -1706,7 +1708,7 @@ export function BookingManager({
                     </div>
                   )}
 
-                {screen !== "lama" && screen !== "statistik" && (
+                {screen !== "lama" && screen !== "statistik" && screen !== "pengaturan" && (
                   <DataSourceNote sumber={sumber} lamaTersambung={lamaAktif} />
                 )}
 
@@ -1883,6 +1885,10 @@ export function BookingManager({
                     bolehPilih={isOwner || akun.peran === "pr"}
                     onPilih={(s) => setFilterProp(s)}
                   />
+                )}
+
+                {screen === "pengaturan" && layar.includes("pengaturan") && (
+                  <PengaturanScreen bolehPembayaran={aksesPenuh(akun.peran)} />
                 )}
 
                 {screen === "pengguna" && layar.includes("pengguna") && (

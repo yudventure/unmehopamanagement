@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 import { propertiBoleh } from "@/lib/server/akses";
+import { bacaPengaturan } from "@/lib/server/pengaturan";
 import { SESSION_COOKIE, valid } from "@/lib/session";
 import {
   bacaDaftarBooking,
@@ -46,6 +47,16 @@ export async function GET(req: Request) {
      mendapat tamunya, walau punya sesi yang sah. */
   if (!akun || !propertiBoleh(akun).includes("turtle")) {
     return NextResponse.json({ error: "not-found" }, { status: 404 });
+  }
+
+  /* Sakelar di Pengaturan. Dimatikan, sistem lama tidak dipanggil sama sekali. */
+  if (!(await bacaPengaturan()).sistemLamaAktif) {
+    return NextResponse.json({
+      ok: false,
+      siap: true,
+      mati: true,
+      pesan: "Sistem lama sedang dimatikan dari Pengaturan. Turtle memakai data dashboard sendiri.",
+    });
   }
 
   if (!sistemLamaSiap()) {

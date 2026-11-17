@@ -90,9 +90,9 @@ export function layarUntuk(p: Peran): Screen[] {
   switch (p) {
     case "developer":
     case "pemilik":
-      return ["ringkasan", "kalender", "laporan", "properti", "sinkron", "lama", "website", "statistik", "pengguna"];
+      return ["ringkasan", "kalender", "laporan", "properti", "sinkron", "lama", "website", "statistik", "pengaturan", "pengguna"];
     case "gm":
-      return ["ringkasan", "kalender", "laporan", "properti", "sinkron", "lama", "website", "statistik", "pengguna"];
+      return ["ringkasan", "kalender", "laporan", "properti", "sinkron", "lama", "website", "statistik", "pengaturan", "pengguna"];
     case "manajer":
       /* Semua yang berkaitan dengan unitnya. Datanya dibatasi ke unit itu di
          tiap rute server; menu hanya menampilkannya. */

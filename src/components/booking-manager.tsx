@@ -40,6 +40,10 @@ import { UsersScreen } from "@/components/screens/users-screen";
 import { WebsiteScreen } from "@/components/screens/website-screen";
 import { RangkaPanel, type Kabar, type NavGroup, type NavItem } from "@/components/rangka-panel";
 import { FilterKalender } from "@/components/filter-kalender";
+import { KalenderHero } from "@/components/kalender-hero";
+import { PanelPesanan } from "@/components/panel-pesanan";
+import { PesananMassalModal, type BarisSiap } from "@/components/pesanan-massal-modal";
+import { bacaPesan, type BarisPesan } from "@/lib/baca-pesan";
 import { RingkasanScreen, type Pintasan } from "@/components/screens/ringkasan-screen";
 import {
   bookingDariApi,
@@ -256,6 +260,8 @@ export function BookingManager({
   const [sedangJalan, setSedangJalan] = useState(false);
   const [form, setForm] = useState<BookingForm>(EMPTY_FORM);
   const [inviteOpen, setInviteOpen] = useState(false);
+  /** Pemeriksaan banyak pesanan: kosong (Tambah banyak) atau hasil bacaan. */
+  const [massal, setMassal] = useState<{ awal: BarisPesan[]; sumber: string } | null>(null);
   const [invite, setInvite] = useState<InviteForm>(EMPTY_INVITE);
 
   const [auth, setAuth] = useState(true);
@@ -874,12 +880,19 @@ export function BookingManager({
   /* The blank form defaults to Turtle; an Eddo-only account must not open it
      pointed at a property it cannot book. */
   const openForm = useCallback(() => {
-    const prop = allowedProps.includes(form.property)
-      ? form.property
-      : allowedProps[0];
+    /* Dari kalender sebuah unit, pesanan baru dimulai di unit itu. Dari Semua
+       unit, pilihannya terbuka untuk unit mana pun yang boleh dicatat. */
+    const unit = filterProp !== "all" && filterProp !== "divecenter" && allowedProps.includes(filterProp) ? filterProp : null;
+    const prop = unit ?? (allowedProps.includes(form.property) ? form.property : allowedProps[0]);
     if (prop && prop !== form.property) setFormProperty(prop);
+    /* Tanggal bawaan form adalah sisa data contoh yang lama. Bila sudah lewat,
+       mulai dari hari ini dan besok. */
+    if (form.checkIn < today) {
+      const besok = iso(new Date(parse(today).getFullYear(), parse(today).getMonth(), parse(today).getDate() + 1));
+      setForm((prev) => ({ ...prev, checkIn: today, checkOut: besok }));
+    }
     setFormOpen(true);
-  }, [allowedProps, form.property, setFormProperty]);
+  }, [allowedProps, form.property, form.checkIn, setFormProperty, filterProp, today]);
 
   const saveBooking = useCallback(
     (status: Extract<BookingStatus, "Tentative" | "Confirmed">) => {
@@ -933,6 +946,110 @@ export function BookingManager({
       );
     },
     [form, roomById, bookings.length, flash, lokal, today, muatBuku],
+  );
+
+  /** Nama sumber untuk pesan yang ditempel. Stay Raja Ampat adalah agen yang mengirim tamu lewat WhatsApp. */
+  const SUMBER_PESAN = "Stay Raja Ampat";
+
+  /** Kamar yang boleh dipilih di pemeriksaan banyak pesanan: unit yang sedang dibuka, hanya yang bisa dicatat. */
+  const kamarPesan = useMemo(
+    () =>
+      scopedRooms
+        .filter((r) => r.active && !r.id.startsWith(PREFIKS_KAMAR) && (filterProp === "all" || r.prop === filterProp))
+        .map((r) => ({ ...r, unit: PROPERTIES.find((p) => p.key === r.prop)?.name ?? r.prop })),
+    [scopedRooms, filterProp],
+  );
+
+  const bacaTeks = useCallback(
+    (teks: string): string | null => {
+      const baris = bacaPesan(teks, kamarPesan.map((r) => ({ id: r.id, name: r.name })), today);
+      if (baris.length === 0) return "Tidak ada tanggal yang bisa dikenali di pesan itu. Isi lewat Tambah banyak, atau periksa pesannya.";
+      setMassal({ awal: baris, sumber: SUMBER_PESAN });
+      return null;
+    },
+    [kamarPesan, today],
+  );
+
+  const bacaGambar = useCallback(
+    async (berkas: File): Promise<string | null> => {
+      if (berkas.size > 5 * 1024 * 1024) return "Gambar terlalu besar. Maksimal 5 MB.";
+      const data = await new Promise<string>((ok, gagal) => {
+        const r = new FileReader();
+        r.onload = () => ok(String(r.result));
+        r.onerror = () => gagal(new Error("baca"));
+        r.readAsDataURL(berkas);
+      }).catch(() => "");
+      if (!data) return "Gambar tidak bisa dibuka.";
+      try {
+        const res = await fetch("/api/baca-pesan", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ gambar: data, jenis: berkas.type, hariIni: today, kamar: kamarPesan.map((r) => r.name) }),
+        });
+        const o = (await res.json().catch(() => ({}))) as { galat?: string; baris?: BarisPesan[] };
+        if (!res.ok) return o.galat ?? `Server menjawab ${res.status}.`;
+        const baris = (o.baris ?? []).map((b) => ({
+          ...b,
+          /* Nama kamar dari bacaan dicocokkan ke kamar yang ada. */
+          room: kamarPesan.find((r) => r.name.toLowerCase() === b.room.toLowerCase())?.id ?? "",
+        }));
+        if (baris.length === 0) return "Tidak ada pesanan yang terbaca di screenshot itu. Coba tempel teksnya.";
+        setMassal({ awal: baris, sumber: SUMBER_PESAN });
+        return null;
+      } catch {
+        return "Tidak bisa menghubungi server.";
+      }
+    },
+    [kamarPesan, today],
+  );
+
+  const simpanBanyak = useCallback(
+    (baris: BarisSiap[]): string | null => {
+      const dibuat: Booking[] = [];
+      for (const [i, b] of baris.entries()) {
+        const kamar = rooms2.find((r) => r.id === b.room);
+        if (!kamar) return `Kamar untuk ${b.guest} tidak ditemukan.`;
+        const malam = Math.max(1, dayDiff(b.checkIn, b.checkOut));
+        const unik = `BK${Date.now().toString(36)}${i}`;
+        dibuat.push({
+          id: unik,
+          code: "BK" + String(9100 + bookings.length + i).slice(-4),
+          roomId: b.room,
+          guest: b.guest,
+          phone: "-",
+          pax: b.pax,
+          channel: b.channel,
+          checkIn: b.checkIn,
+          checkOut: b.checkOut,
+          /* Harga hanya bila tertulis atau bila pesanan langsung (tarif kamar).
+             Pesanan dari agen tanpa harga ditandai belum berharga, bukan nol. */
+          total: b.total ?? (b.sumberNama ? 0 : bookingTotal(kamar.rate, malam, b.channel)),
+          ...(b.total === null && b.sumberNama ? { tanpaHarga: true } : {}),
+          status: b.status,
+          notes: b.notes,
+          src: "manual",
+          createdAt: today,
+          ...(b.sumberNama ? { sumberNama: b.sumberNama } : {}),
+        });
+      }
+      setBookings((prev) => prev.concat(dibuat));
+      flash(`${dibuat.length} pesanan disimpan.`);
+      if (lokal) {
+        void (async () => {
+          const gagal: string[] = [];
+          for (const d of dibuat) {
+            const g = await kirim("/api/pesanan", "POST", d);
+            if (g) gagal.push(`${d.guest}: ${g}`);
+          }
+          if (gagal.length) {
+            flash(`${gagal.length} pesanan belum tersimpan di server. ${gagal[0]}`);
+            void muatBuku();
+          }
+        })();
+      }
+      return null;
+    },
+    [rooms2, bookings.length, today, flash, lokal, muatBuku],
   );
 
   const doLogout = useCallback(() => {
@@ -1049,6 +1166,33 @@ export function BookingManager({
    * Dive Center tidak punya kamar, jadi hanya kalender (jadwal selam). Sistem
    * lama adalah milik Turtle, jadi duduk di bagian Turtle.
    */
+  /* Kepala kalender dan panel pesanan: dari booking unit yang sedang dibuka,
+     tanpa saringan saluran dan pencarian, supaya angkanya tidak ikut berubah
+     saat orang mengetik di kotak cari. */
+  const unitAktifIds = useMemo(
+    () => new Set(scopedRooms.filter((r) => filterProp === "all" || r.prop === filterProp).map((r) => r.id)),
+    [scopedRooms, filterProp],
+  );
+  const daftarPanel = useMemo(
+    () =>
+      scopedBookings
+        .filter((b) => unitAktifIds.has(b.roomId))
+        .map((b) => ({ booking: b, kamar: roomById.get(b.roomId)?.name ?? "" })),
+    [scopedBookings, unitAktifIds, roomById],
+  );
+  const heroData = useMemo(() => {
+    const aktifB = daftarPanel.map((d) => d.booking).filter((b) => b.status !== "Cancelled" && b.status !== "Tidak datang");
+    const kamarAktif = scopedRooms.filter((r) => r.active && (filterProp === "all" || r.prop === filterProp));
+    const ids = new Set(kamarAktif.map((r) => r.id));
+    const terisi = new Set(aktifB.filter((b) => ids.has(b.roomId) && b.checkIn <= today && b.checkOut > today).map((b) => b.roomId)).size;
+    const batas = iso(new Date(parse(today).getFullYear(), parse(today).getMonth(), parse(today).getDate() + 7));
+    return {
+      kamar: kamarAktif.length,
+      terisi,
+      kedatangan: aktifB.filter((b) => b.checkIn >= today && b.checkIn <= batas).length,
+    };
+  }, [daftarPanel, scopedRooms, filterProp, today]);
+
   const navGrup = useMemo<NavGroup[]>(() => {
     const butir = (k: Screen, unit?: string, label?: string): NavItem => ({
       key: k, label: label ?? NAV_LABELS[k], unit,
@@ -1538,8 +1682,21 @@ export function BookingManager({
                     berdiri di atas daftar yang seluruhnya booking sungguhan,
                     yang persis jenis kesalahan yang catatan ini ada untuk
                     mencegahnya. Layar itu membawa keterangannya sendiri. */}
+                {screen === "kalender" && (
+                  <KalenderHero
+                    nama={filterProp === "all" ? "Semua unit" : (PROPERTIES.find((p) => p.key === filterProp)?.name ?? "")}
+                    lokasi={filterProp === "all" ? undefined : PROPERTIES.find((p) => p.key === filterProp)?.location}
+                    jumlahKamar={heroData.kamar}
+                    malamIni={heroData.kamar ? { terisi: heroData.terisi, dari: heroData.kamar } : null}
+                    kedatangan7={heroData.kedatangan}
+                    okupansiBulan={heroData.kamar ? stats.occPct : null}
+                    bulanLabel={MONTHS[month.getMonth()]}
+                    hanyaJadwal={filterProp === "divecenter"}
+                  />
+                )}
+
                 {filterProp !== "all" &&
-                  (["kalender", "laporan", "properti", "sinkron", "lama", "website"] as Screen[]).includes(screen) && (
+                  (["laporan", "properti", "sinkron", "lama", "website"] as Screen[]).includes(screen) && (
                     <div className="mb-4">
                       <p className="text-[11px] font-bold tracking-[0.16em] text-panel-aksen uppercase">Unit</p>
                       <p className="text-[1.5rem] leading-tight font-bold text-panel-utama">
@@ -1746,6 +1903,25 @@ export function BookingManager({
                   /* Aturan yang sama dengan kisi: Eddo tidak punya dive centre
                      sendiri, jadi blok ini tidak ikut ke sana. */
                   adaSelam={filterProp !== "eddo"}
+                  tanpaKedatangan={filterProp !== "divecenter"}
+                  atas={
+                    filterProp === "divecenter" ? undefined : (
+                      <PanelPesanan
+                        bolehCatat={layar.includes("kalender") && akun.peran !== "keuangan"}
+                        onTambah={openForm}
+                        onTambahBanyak={() => setMassal({ awal: [], sumber: "" })}
+                        onBacaTeks={bacaTeks}
+                        onBacaGambar={bacaGambar}
+                        sumberPesan={SUMBER_PESAN}
+                        today={today}
+                        daftar={daftarPanel}
+                        onTandai={(id, status) =>
+                          patchBooking(id, { status }, status === "Checked-in" ? "Tamu ditandai sudah datang." : "Tamu ditandai sudah pulang.")
+                        }
+                        onBuka={setSelectedId}
+                      />
+                    )
+                  }
                 />
               )}
 
@@ -1811,6 +1987,17 @@ export function BookingManager({
           onClose={() => setFormOpen(false)}
           onSaveTentative={() => saveBooking("Tentative")}
           onSaveConfirmed={() => saveBooking("Confirmed")}
+        />
+      )}
+
+      {massal && (
+        <PesananMassalModal
+          awal={massal.awal}
+          sumber={massal.sumber}
+          kamar={kamarPesan}
+          bentrok={(room, masuk, keluar) => hasClash(bookings2, room, masuk, keluar)}
+          onSimpan={simpanBanyak}
+          onClose={() => setMassal(null)}
         />
       )}
 

@@ -40,6 +40,8 @@ export async function POST(req: Request) {
     checkIn, checkOut,
     total: Number.isFinite(Number(o.total)) && Number(o.total) >= 0 ? Math.round(Number(o.total)) : 0,
     status, notes: teks(o.notes, 400), src: "manual",
+    ...(teks(o.sumberNama, 60) ? { sumberNama: teks(o.sumberNama, 60) } : {}),
+    ...(o.tanpaHarga === true ? { tanpaHarga: true } : {}),
     createdAt: teks(o.createdAt, 10) || undefined,
     updatedAt: new Date().toISOString(), updatedBy: akun.nama,
   };

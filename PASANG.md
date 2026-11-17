@@ -362,3 +362,24 @@ terlewat membuat `/` di domain itu menyajikan dashboard.
 - Yang tetap harus dilakukan di luar kode: domainnya ditambahkan di aplikasi
   Node.js Hostinger (apex dan `www`), A record bila nameserver bukan Hostinger,
   MX tidak disentuh, dan aplikasinya memakai branch `deploy`.
+
+
+## Menu per unit
+
+Menu dashboard dipisah per unit. Developer, Pemilik, dan General Manager melihat
+bagian **Semua unit** (gabungan) dan satu bagian untuk tiap unit, masing-masing
+dengan halamannya sendiri:
+
+| Bagian | Halaman |
+|---|---|
+| Semua unit | Kalender, Laporan, Properti & Kamar, Sinkronisasi kalender (gabungan) |
+| Turtle Homestay | Kalender, Laporan, Properti & Kamar, Sinkronisasi kalender, Sistem lama |
+| Eddo Homestay | Kalender, Laporan, Properti & Kamar, Sinkronisasi kalender |
+| Dive Center | Kalender (jadwal selam). Tidak punya kamar |
+| Perusahaan | Website, Pengguna & Peran |
+
+Memilih sebuah unit membatasi kalender, laporan, kamar, dan sinkronisasi ke unit
+itu saja, dan judul **Unit** tampil di atas halaman. Peran lain hanya melihat
+bagiannya: manajer unit dan staf hanya bagian unit di kolom **Akses properti**
+akunnya, keuangan hanya Laporan dan Kalender, HRD hanya Pengguna, PR hanya
+Website. Bagian yang hanya satu terbuka sejak awal, yang lain terlipat.

@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 
 import { akunMasuk, bolehCatat, galat, tidakAda } from "@/lib/server/akses";
 import { alamatPeminta, catat } from "@/lib/server/batas";
+import { catatGalat } from "@/lib/server/galat";
+import { kunciAnthropic } from "@/lib/server/kunci";
 
 /**
  * Membaca screenshot pesan booking (misalnya WhatsApp dari Stay Raja Ampat)
@@ -9,7 +11,7 @@ import { alamatPeminta, catat } from "@/lib/server/batas";
  *
  * Pembacanya model bahasa dengan kemampuan gambar. Karena itu:
  *
- *  - **Mati sampai `ANTHROPIC_API_KEY` diisi** di server. Tanpa kunci, jawabannya
+ *  - **Mati sampai kuncinya diisi**, dari layar Pengaturan atau `ANTHROPIC_API_KEY`. Tanpa kunci, jawabannya
  *    503 yang menjelaskan, bukan hasil palsu.
  *  - **Gambar dikirim ke layanan itu** untuk dibaca (berisi nama dan nomor
  *    tamu), dan setiap pembacaan dikenai biaya di akun pemilik kunci. Layar
@@ -66,12 +68,12 @@ export async function POST(req: Request) {
   const akun = await akunMasuk();
   if (!akun || !bolehCatat(akun)) return tidakAda();
 
-  const kunci = process.env.ANTHROPIC_API_KEY?.trim();
+  const { kunci } = await kunciAnthropic();
   if (!kunci) {
     return NextResponse.json(
       {
         galat:
-          "Pembaca screenshot belum diaktifkan di server (ANTHROPIC_API_KEY belum diisi). Tempel teks pesannya saja, atau minta developer mengisinya.",
+          "Pembaca screenshot belum diaktifkan di server (kuncinya belum diisi). Tempel teks pesannya saja, atau minta pemilik mengisinya di Pengaturan.",
       },
       { status: 503 },
     );
@@ -118,10 +120,12 @@ export async function POST(req: Request) {
       }),
     });
   } catch {
+    await catatGalat("Pembaca screenshot", "Tidak bisa menghubungi layanan pembaca (jaringan atau waktu habis).");
     return galat("Tidak bisa menghubungi pembaca screenshot. Coba lagi sebentar.", 502);
   }
   if (!jawaban.ok) {
-    return galat(jawaban.status === 401 ? "Kunci pembaca screenshot ditolak. Minta developer memeriksanya." : `Pembaca screenshot menjawab ${jawaban.status}.`, 502);
+    await catatGalat("Pembaca screenshot", jawaban.status === 401 ? "Kunci API pembaca screenshot ditolak. Ganti kuncinya di Pengaturan." : jawaban.status === 429 ? "Pembaca screenshot kena batas pemakaian atau saldo kuncinya habis." : `Layanan pembaca menjawab ${jawaban.status}.`);
+    return galat(jawaban.status === 401 ? "Kunci pembaca screenshot ditolak. Minta pemilik menggantinya di Pengaturan." : `Pembaca screenshot menjawab ${jawaban.status}.`, 502);
   }
 
   const hasil = (await jawaban.json().catch(() => null)) as { content?: { type: string; text?: string }[] } | null;

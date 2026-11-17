@@ -45,6 +45,7 @@ import { PanelPesanan } from "@/components/panel-pesanan";
 import { PesananMassalModal, type BarisSiap } from "@/components/pesanan-massal-modal";
 import { bacaPesan, type BarisPesan } from "@/lib/baca-pesan";
 import { RingkasanScreen, type Pintasan } from "@/components/screens/ringkasan-screen";
+import { PitaGalat, useGalat } from "@/components/galat-panel";
 import { PengaturanScreen } from "@/components/screens/pengaturan-screen";
 import { StatistikScreen } from "@/components/screens/statistik-screen";
 import {
@@ -274,6 +275,7 @@ export function BookingManager({
   const [menuOpen, setMenuOpen] = useState(false);
 
   const [toast, setToast] = useState("");
+  const galat = useGalat(lihatSemua(akun.peran));
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const flash = useCallback((msg: string) => {
@@ -1700,6 +1702,7 @@ export function BookingManager({
       >
         <div className={`flex gap-6 ${nw ? "flex-col" : "flex-row items-stretch"}`}>
           <div className="w-full min-w-0 flex-1">
+                {screen !== "pengaturan" && <PitaGalat jumlah={galat.data?.peringatan.length ?? 0} onLihat={() => setScreen("pengaturan")} />}
                 {/* Di atas isi tiap layar, bukan hanya kalender: okupansi di
                     Laporan dan tarif di Properti dibangkitkan dari sumber yang
                     sama, jadi peringatan yang cuma muncul di satu layar akan
@@ -1924,7 +1927,7 @@ export function BookingManager({
                 )}
 
                 {screen === "pengaturan" && layar.includes("pengaturan") && (
-                  <PengaturanScreen bolehPembayaran={aksesPenuh(akun.peran)} />
+                  <PengaturanScreen galat={galat.data} muatGalat={galat.muat} />
                 )}
 
                 {screen === "pengguna" && layar.includes("pengguna") && (

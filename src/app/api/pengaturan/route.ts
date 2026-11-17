@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { sistemLamaSiap } from "@/lib/sistem-lama";
-import { lihatSemua } from "@/lib/peran";
+import { aksesPenuh } from "@/lib/peran";
 import { akunMasuk, galat, tidakAda } from "@/lib/server/akses";
 import { bacaPengaturan, ubahPengaturan } from "@/lib/server/pengaturan";
 
@@ -10,7 +10,7 @@ import { bacaPengaturan, ubahPengaturan } from "@/lib/server/pengaturan";
  *
  *   GET   keadaan sakelar, untuk siapa pun yang masuk, beserta apakah akun itu
  *         boleh membaliknya
- *   PUT   { sistemLamaAktif }   hanya developer, pemilik, dan general manager
+ *   PUT   { sistemLamaAktif }   hanya developer dan pemilik; general manager hanya melihat
  */
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -26,13 +26,13 @@ export async function GET() {
     sistemLamaSiap: sistemLamaSiap(),
     diubahOleh: p.diubahOleh ?? null,
     diubahPada: p.diubahPada ?? null,
-    bolehUbah: lihatSemua(akun.peran),
+    bolehUbah: aksesPenuh(akun.peran),
   });
 }
 
 export async function PUT(req: Request) {
   const akun = await akunMasuk();
-  if (!akun || !lihatSemua(akun.peran)) return tidakAda();
+  if (!akun || !aksesPenuh(akun.peran)) return tidakAda();
   const o = (await req.json().catch(() => ({}))) as { sistemLamaAktif?: unknown };
   if (typeof o.sistemLamaAktif !== "boolean") return galat("Nilai sakelar tidak sah.");
   const p = await ubahPengaturan({ sistemLamaAktif: o.sistemLamaAktif }, akun.nama);

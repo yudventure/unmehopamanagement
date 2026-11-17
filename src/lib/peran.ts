@@ -47,8 +47,8 @@ export const LABEL_PERAN: Record<Peran, string> = {
 
 export const KET_PERAN: Record<Peran, string> = {
   developer: "Memegang sistem. Akses penuh, termasuk akun.",
-  pemilik: "Akses penuh, termasuk akun.",
-  gm: "Melihat semua unit dan angka rupiah. Tidak mengatur akun.",
+  pemilik: "Akses penuh seperti developer: semua pengaturan, kunci, dan akun.",
+  gm: "Melihat semua unit dan angka rupiah, dan melihat Pengaturan. Tidak mengubah pengaturan, kunci, atau akun.",
   manajer: "Mengelola unitnya sendiri: kalender, laporan dan angka rupiah, kamar, sinkronisasi, dan website unitnya. Tidak melihat unit lain dan tidak mengatur akun.",
   hrd: "Melihat daftar pengguna dan perannya.",
   keuangan: "Laporan dan angka rupiah semua unit, serta kalender.",
@@ -66,6 +66,9 @@ export const rapikanPeran = (v: unknown): Peran => {
 
 /** Boleh menambah akun, mengubah peran, dan menonaktifkan orang lain. */
 export const aksesPenuh = (p: Peran) => p === "developer" || p === "pemilik";
+
+/** Mengubah Pengaturan: sakelar, kunci API, dan tes koneksi. General manager hanya melihat. */
+export const ubahPengaturan = (p: Peran) => aksesPenuh(p);
 
 /** Melihat semua properti dan mengubah kamar. Manajer dibatasi ke unitnya. */
 export const lihatSemua = (p: Peran) =>

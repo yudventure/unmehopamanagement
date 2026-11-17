@@ -112,8 +112,19 @@ const TAHUN_PERTAMA = PERIODE[0].harga;
  */
 const EMAIL = { perBulan: 28900 };
 
-/** Dua nama: `turtlehomestay.com` dan `eddohomestay.com`. */
-const DOMAIN = { perTahun: 209900, berapa: 2 };
+/**
+ * Tiga nama: `turtlehomestay.com`, `eddohomestay.com`, dan
+ * `unmehopamanagement.com` untuk dashboard-nya.
+ *
+ * Yang ketiga ditambahkan 17 November 2026 atas keputusan pemilik. Sebelum
+ * itu dashboard menumpang di `eddohomestay.com/kelola`, yang bekerja tapi
+ * membuat cookie sesinya ikut terkirim ke halaman publik Eddo. Dengan
+ * domainnya sendiri, pemisahan itu didapat tanpa menulis kode apa pun.
+ *
+ * Harga paketnya tidak ikut naik, jadi biaya nama ketiga ini keluar dari
+ * bagian jasa. Angkanya ada di RINCIAN-INTERNAL.md.
+ */
+const DOMAIN = { perTahun: 209900, berapa: 3 };
 
 /** ICANN's levy, per name per year. Not Hostinger's, and not waived with the
     plan's free domain, so it is charged on both names every year. */

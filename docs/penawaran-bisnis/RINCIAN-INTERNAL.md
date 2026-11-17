@@ -64,15 +64,15 @@ melakukan persis itu, dan angkanya jatuh ke Rp 133 ribu per bulan.
 
 | | A · 1 tahun | B · 2 tahun | C · 3 tahun |
 |---|---:|---:|---:|
-| Ke Hostinger, seluruh masa | Rp 1.985.319 | Rp 4.588.576 | Rp 7.191.832 |
-| Pengerjaan + pendampingan thn 1 | Rp 7.014.681 | Rp 5.911.424 | Rp 4.808.168 |
+| Ke Hostinger, seluruh masa | Rp 2.229.340 | Rp 5.076.616 | Rp 7.923.893 |
+| Pengerjaan + pendampingan thn 1 | Rp 6.770.660 | Rp 5.423.384 | Rp 4.076.107 |
 | **Dibayar di muka** | **Rp 9.000.000** | **Rp 10.500.000** | **Rp 12.000.000** |
 | Uang muka 70% / sisa 30% | 6.300.000 / 2.700.000 | 7.350.000 / 3.150.000 | 8.400.000 / 3.600.000 |
-| Pendampingan tahun berikutnya | — | 1× Rp 3.503.304 | 2× Rp 3.503.304 |
-| **Jumlah selama masa paket** | **Rp 9.000.000** | **Rp 14.003.304** | **Rp 19.006.608** |
-| Biaya per tahun | Rp 9.000.000 | Rp 7.001.652 | Rp 6.335.536 |
+| Pendampingan tahun berikutnya | — | 1× Rp 3.259.283 | 2× Rp 3.259.283 |
+| **Jumlah selama masa paket** | **Rp 9.000.000** | **Rp 13.759.283** | **Rp 18.518.566** |
+| Biaya per tahun | Rp 9.000.000 | Rp 6.879.642 | Rp 6.172.855 |
 | Kalau tanpa mengunci | Rp 9.000.000 | Rp 15.000.000 | Rp 21.000.000 |
-| Hemat buat klien | — | Rp 996.696 | Rp 1.993.392 |
+| Hemat buat klien | — | Rp 1.240.717 | Rp 2.481.434 |
 | Biaya lanjutan penuh mulai | tahun ke-2 | tahun ke-3 | tahun ke-4 |
 
 Biaya per tahun tetap menurun dari A ke C, jadi C tetap pilihan yang paling
@@ -88,14 +88,14 @@ bukan angka pemilik. Pemilik baru menyebut 9 juta dan 12 juta. Ubah di
 |---|---:|---:|
 | Paket Unlimited, harga perpanjangan | Rp 121.900 / bln | Rp 1.462.800 |
 | Kotak surat email | Rp 28.900 / bln | Rp 346.800 |
-| Dua nama domain | Rp 209.900 / thn | Rp 419.800 |
-| Biaya ICANN | Rp 9.938 × 2 | Rp 19.876 |
-| Pajak 11% | | Rp 247.420 |
-| **Ke Hostinger** | | **Rp 2.496.696** |
-| **Pendampingan** | **Rp 291.942 / bln** | **Rp 3.503.304** |
+| Tiga nama domain | Rp 209.900 / thn | Rp 629.700 |
+| Biaya ICANN | Rp 9.938 × 3 | Rp 29.814 |
+| Pajak 11% | | Rp 271.603 |
+| **Ke Hostinger** | | **Rp 2.740.717** |
+| **Pendampingan** | **Rp 271.607 / bln** | **Rp 3.259.283** |
 | **Jumlah** | | **Rp 6.000.000** |
 
-**Rp 3.503.304 itu satu angka yang dipakai di dua tempat**, dan di
+**Rp 3.259.283 itu satu angka yang dipakai di dua tempat**, dan di
 `angka.mjs` ia memang satu konstanta (`DAMPING`): tarif tahun berjalan di
 dalam masa paket, dan bagian pendampingan di biaya lanjutan. Bedanya cuma
 hostingnya — di dalam masa paket hostingnya sudah dibayar, jadi tidak
@@ -105,15 +105,36 @@ ditagih lagi.
 
 | | Jasa selama masanya | Per bulan |
 |---|---:|---:|
-| A · 1 tahun | Rp 7.014.681 | Rp 584.557 |
-| B · 2 tahun | Rp 9.414.728 | Rp 392.280 |
-| C · 3 tahun | Rp 11.814.776 | Rp 328.188 |
-| Klien bayar tahunan, 3 thn | Rp 14.021.289 | Rp 389.480 |
+| A · 1 tahun | Rp 6.770.660 | Rp 564.222 |
+| B · 2 tahun | Rp 8.682.667 | Rp 361.778 |
+| C · 3 tahun | Rp 10.594.673 | Rp 294.296 |
+| Klien bayar tahunan, 3 thn | Rp 13.289.226 | Rp 369.145 |
 
-C masih di bawah jalur tahunan, **tapi selisihnya tinggal Rp 2.206.513**
-untuk tiga tahun, bukan Rp 9,2 juta seperti versi sebelumnya. Rp 328 ribu
-per bulan untuk kesiapsiagaan harian masih bisa dipertahankan, dan itu
-harga yang dibayar untuk mendapat klien yang terkunci tiga tahun.
+C masih di bawah jalur tahunan, **selisihnya Rp 2.694.553** untuk tiga tahun
+— bukan Rp 9,2 juta seperti versi yang mengunci pendampingan di muka.
+Rp 294 ribu per bulan untuk kesiapsiagaan harian masih bisa dipertahankan,
+dan itu harga yang dibayar untuk mendapat klien yang terkunci tiga tahun.
+
+### Nama domain ketiga memotong jasa Rp 1,22 juta, dan itu tidak terlihat klien
+
+Pemilik menetapkan tiga domain pada 17 November 2026:
+`turtlehomestay.com`, `eddohomestay.com`, dan `unmehopamanagement.com` untuk
+dashboard-nya. Harga paketnya **tidak ikut naik** — tetap 9 / 10,5 / 12 juta
+— jadi biaya nama ketiga keluar dari bagian jasa, bukan dari kantong klien:
+
+| | Dua domain | Tiga domain | Selisih |
+|---|---:|---:|---:|
+| Jasa pilihan C, 36 bulan | Rp 11.814.776 | Rp 10.594.673 | **−Rp 1.220.103** |
+| Pendampingan per tahun | Rp 3.503.304 | Rp 3.259.283 | −Rp 244.021 |
+
+Dua jalan kalau itu tidak diinginkan, dan keduanya satu baris di
+`angka.mjs`: naikkan `PERIODE[].harga`, atau naikkan `LANJUT` di atas
+Rp 6 juta — tapi yang kedua mengubah angka yang sudah disebut ke pemilik.
+Kalau dibiarkan, sadari saja bahwa nama ketiga itu dibayar dari jasa.
+
+Yang didapat sebagai gantinya nyata, dan bukan cuma alamat yang rapi:
+dashboard berdiri di domainnya sendiri, jadi cookie sesinya tidak pernah ikut
+terkirim ke halaman yang dibuka tamu. Halaman 8 menjelaskannya.
 
 Kalau mau lebih rapat lagi, yang dinaikkan **harga di muka pilihan C**, bukan
 tarif pendampingannya — tarif itu dipakai di dua tempat dan menaikkannya

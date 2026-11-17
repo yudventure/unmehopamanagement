@@ -27,23 +27,27 @@ __CSS__
 
   <div>
     <div class="eyebrow">Untuk pengerjaan</div>
-    <h1 style="margin-top:10px">Paket __N_nama-paket__,<br>dua nama domain sendiri</h1>
+    <h1 style="margin-top:10px">Paket __N_nama-paket__,<br>tiga nama domain sendiri</h1>
     <p style="margin-top:14px;font-size:11pt;line-height:1.6;max-width:150mm">
       Tiga situs dan satu dashboard sudah jalan dan sudah membaca database.
       Dokumen ini menaruhnya di paket hosting yang pas, menyambungkannya ke
-      dua nama domain, dan menjaganya tetap jalan. Harganya per masa paket,
+      tiga nama domain, dan menjaganya tetap jalan. Harganya per masa paket,
       dan biaya lanjutannya disebut terang-terangan di halaman 14, bukan
       ditemukan setahun kemudian.
     </p>
 
-    <div class="grid g2" style="margin-top:9mm">
+    <div class="grid g3" style="margin-top:8mm">
       <div class="chip">
-        <div class="t mono" style="font-size:8.5pt">turtlehomestay.com</div>
+        <div class="t mono" style="font-size:8pt">turtlehomestay.com</div>
         <div class="s">Situs publik Turtle Dive Homestay dan dive center. Tujuh bahasa, enam paket selam</div>
       </div>
       <div class="chip">
-        <div class="t mono" style="font-size:8.5pt">eddohomestay.com</div>
-        <div class="s">Situs publik Eddo Homestay, dan dashboard pengelolaan di <span class="mono">/kelola</span></div>
+        <div class="t mono" style="font-size:8pt">eddohomestay.com</div>
+        <div class="s">Situs publik Eddo Homestay. Kamar dan tarifnya dari tabel yang sama</div>
+      </div>
+      <div class="chip">
+        <div class="t mono" style="font-size:8pt">unmehopamanagement.com</div>
+        <div class="s">Dashboard pengelolaan booking, hanya untuk pemilik dan staf</div>
       </div>
     </div>
 
@@ -83,7 +87,7 @@ __CSS__
       dashboard-nya membaca booking sungguhan dari sana, dan tiap kali kode
       dikirim, situsnya membangun dan menayangkan dirinya sendiri tanpa ada
       yang menyentuh server. Yang tersisa bukan lagi menyiapkan, melainkan
-      menaruhnya di paket yang benar dan memberinya dua alamat.
+      menaruhnya di paket yang benar dan memberinya tiga alamat.
     </p>
 
     <div class="grid g3" style="margin-top:6mm">
@@ -119,7 +123,7 @@ __CSS__
 
     <div class="note" style="margin-top:5mm">
       <strong>Yang ditawarkan di dokumen ini adalah tempat menjalankannya dan
-      kedua alamatnya</strong>, bukan keempat hal di kolom kanan. Setelah
+      ketiga alamatnya</strong>, bukan keempat hal di kolom kanan. Setelah
       pekerjaan ini selesai, kedua situs publik tayang di nama domainnya
       sendiri dan dashboard-nya dibuka dari mana saja; booking masih dicatat
       lewat tahap berikutnya di halaman 15.
@@ -348,7 +352,7 @@ __CSS__
 <section class="slide">
   <div class="head">
     <div class="eyebrow">Bagian 4 &middot; Arsitektur</div>
-    <h2 style="margin-top:5px">Dua domain, satu kode, satu aplikasi</h2>
+    <h2 style="margin-top:5px">Tiga domain, satu kode, satu aplikasi</h2>
   </div>
   <div class="body">
     <p class="lede" style="margin-top:4mm">
@@ -363,7 +367,7 @@ __CSS__
       <div style="display:flex;flex-direction:column;gap:3mm">
         <div class="box"><div class="t mono" style="font-size:8.5pt">turtlehomestay.com</div><div class="s">Tamu, calon tamu, mesin pencari</div></div>
         <div class="box"><div class="t mono" style="font-size:8.5pt">eddohomestay.com</div><div class="s">Tamu properti kedua. Kamar dan tarifnya dari tabel yang sama</div></div>
-        <div class="box"><div class="t mono" style="font-size:8.5pt">eddohomestay.com/kelola</div><div class="s">Pemilik dan staf saja</div></div>
+        <div class="box"><div class="t mono" style="font-size:8pt">unmehopamanagement.com</div><div class="s">Pemilik dan staf saja</div></div>
       </div>
       <div class="arrow">&rarr;</div>
       <div class="box" style="background:var(--teal-tint);border-color:var(--teal-line)">
@@ -372,17 +376,17 @@ __CSS__
       </div>
     </div>
 
-    <div class="card warn" style="margin-top:5mm">
-      <h3>Satu hal yang hilang karena dashboard-nya ikut di domain Eddo</h3>
-      <p>Kalau dashboard punya domainnya sendiri, cookie sesinya tidak akan
-      pernah ikut terkirim ke situs publik, karena beda domain. Dengan
-      <span class="mono">eddohomestay.com/kelola</span>, cookie itu ikut ke
-      halaman publik Eddo juga. Yang menahannya adalah cookie-nya
-      <span class="mono">httpOnly</span>, jadi tidak ada skrip yang bisa
-      membacanya, dan <span class="mono">sameSite=lax</span> serta
-      <span class="mono">secure</span>. Itu cukup, dan pemisahan domain tetap
-      lebih baik: kalau nanti mau, satu nama domain lagi mengembalikannya
-      tanpa mengubah kode.</p>
+    <div class="card green" style="margin-top:5mm">
+      <h3>Nama ketiga itu membeli pemisahan, bukan alamat yang rapi saja</h3>
+      <p>Cookie sesi dashboard <strong>tidak pernah ikut terkirim ke situs
+      publik</strong>, karena beda domain &mdash; peramban yang menegakkannya,
+      bukan kode. Kalau dashboard menumpang di <span class="mono">/kelola</span>
+      salah satu domain homestay, cookie itu ikut ke tiap halaman yang dibuka
+      tamu; masih ditahan <span class="mono">httpOnly</span>,
+      <span class="mono">sameSite=lax</span>, dan
+      <span class="mono">secure</span>, dan itu cukup. Tapi pemisahan yang
+      datang dari nama domain sendiri tidak bergantung pada satu pun dari
+      ketiganya.</p>
     </div>
 
     <div class="rule"></div>
@@ -499,7 +503,7 @@ __CSS__
         <div class="eyebrow" style="font-size:7.2pt;margin-bottom:8px">Yang berjalan di paket ini</div>
         <div style="display:flex;flex-direction:column;gap:6px">
           <div class="box" style="border-color:var(--teal-line);background:var(--teal-tint)">
-            <div class="t">Dua domain, TLS otomatis</div>
+            <div class="t">Tiga domain, TLS otomatis</div>
             <div class="s">Sertifikat dipasang dan diperpanjang dari panel, satu untuk tiap nama</div>
           </div>
           <div class="arrow" style="font-size:10pt">&darr;</div>
@@ -553,7 +557,7 @@ __CSS__
     <table style="margin-top:2mm">
       <tbody>
         <tr><td style="width:52mm"><strong>Versi Node</strong></td><td>Harus bisa disetel ke 22. Versi yang lebih lama menolak sebagian kode yang dipakai</td></tr>
-        <tr><td><strong>Dua domain dalam satu paket</strong></td><td>Kedua nama menunjuk ke aplikasi yang sama, bukan ke dua paket terpisah</td></tr>
+        <tr><td><strong>Tiga domain dalam satu paket</strong></td><td>Ketiga nama menunjuk ke aplikasi yang sama, bukan ke tiga paket terpisah</td></tr>
         <tr><td><strong>Koneksi HTTPS keluar</strong></td><td>Aplikasinya memanggil database, sumber kurs, pembayaran, dan pengirim email dari sisi server. Kalau keluarnya diblokir, bagian-bagian itu mati satu per satu</td></tr>
         <tr><td><strong>Proses yang dihidupkan lagi</strong></td><td>Kalau prosesnya mati, panelnya harus menyalakannya sendiri, termasuk setelah server di-restart</td></tr>
       </tbody>
@@ -602,7 +606,7 @@ __CSS__
     <div class="grid g2" style="margin-top:5mm">
       <div class="card green">
         <h3>Kepemilikan ada di pemilik</h3>
-        <p>Paket hosting, kedua nama domain, dan seluruh kata sandinya
+        <p>Paket hosting, ketiga nama domain, dan seluruh kata sandinya
         <strong>atas nama pemilik</strong>, bukan atas nama pengerja. Tidak ada
         bagian dari susunan ini yang mengunci pemilik ke satu orang.</p>
       </div>
@@ -648,13 +652,13 @@ __CSS__
       <tbody>
         <tr>
           <td class="num">1</td>
-          <td><strong>Paket dan dua domain</strong></td>
-          <td>Pesan paketnya atas nama pemilik, daftarkan nama domain yang belum ada, arahkan keduanya ke aplikasinya, pasang sertifikat yang memperpanjang sendiri. <span class="small">Cek: gembok di kedua alamat.</span></td>
+          <td><strong>Paket dan tiga domain</strong></td>
+          <td>Pesan paketnya atas nama pemilik, daftarkan nama domain yang belum ada, arahkan ketiganya ke aplikasinya, pasang sertifikat yang memperpanjang sendiri. <span class="small">Cek: gembok di ketiga alamat.</span></td>
         </tr>
         <tr>
           <td class="num">2</td>
           <td><strong>Aplikasi Node dan domainnya</strong></td>
-          <td>Pasang aplikasinya di slot Node, isi variabel yang dibaca saat jalan, atur supaya tiap domain membuka situsnya sendiri dan <span class="mono">/kelola</span> membuka dashboard. <span class="small">Cek: dua alamat, tiga tampilan, satu proses.</span></td>
+          <td>Pasang aplikasinya di slot Node, isi variabel yang dibaca saat jalan, atur supaya tiap nama domain membuka situsnya sendiri. <span class="small">Cek: tiga alamat, tiga tampilan berbeda, satu proses.</span></td>
         </tr>
         <tr>
           <td class="num">3</td>
@@ -700,7 +704,7 @@ __CSS__
       <div class="card">
         <h3>Jadwal</h3>
         <p><strong>__N_jasa-hari__ hari kerja</strong> sejak uang muka masuk
-        dan kedua nama domain siap. Kedua alamatnya sudah bisa dibuka di hari
+        dan ketiga nama domain siap. Ketiganya sudah bisa dibuka di hari
         kedua.</p>
       </div>
       <div class="card mute">
@@ -752,7 +756,7 @@ __CSS__
           <td class="num">__N_c-email__</td>
         </tr>
         <tr>
-          <td><strong>Dua nama domain</strong> <span class="small">&middot; satu gratis di tahun pertama</span></td>
+          <td><strong>Tiga nama domain</strong> <span class="small">&middot; satu gratis di tahun pertama</span></td>
           <td class="num">__N_domain-thn__</td>
           <td class="num">__N_a-domain__</td>
           <td class="num">__N_b-domain__</td>
@@ -856,7 +860,7 @@ __CSS__
     <div class="price-badge" style="margin-top:4mm">
       <div>
         <div style="font-size:11pt;font-weight:700;color:var(--ink)">Perpanjangan, per tahun</div>
-        <div class="k">Hosting, email, kedua nama domain, dan pendampingan penuh &mdash; __N_lanjut-bln__</div>
+        <div class="k">Hosting, email, ketiga nama domain, dan pendampingan penuh &mdash; __N_lanjut-bln__</div>
       </div>
       <div class="v">__N_lanjut__</div>
     </div>
@@ -866,8 +870,8 @@ __CSS__
       <tbody>
         <tr><td><strong>Paket __N_nama-paket__</strong> <span class="small">&middot; harga perpanjangan yang tertulis di kartunya sendiri</span></td><td class="num" style="width:30mm">__N_l-hosting-bln__</td><td class="num" style="width:30mm">__N_l-hosting__</td></tr>
         <tr><td><strong>Kotak surat email</strong> <span class="small">&middot; tahun gratisnya sudah lewat di titik ini</span></td><td class="num">__N_email-bln__</td><td class="num">__N_l-email__</td></tr>
-        <tr><td><strong>Dua nama domain</strong></td><td class="num">__N_domain-thn__</td><td class="num">__N_l-domain__</td></tr>
-        <tr><td><strong>Biaya ICANN</strong></td><td class="num" style="color:var(--slate-mute)">__N_icann-satuan__ &times; 2</td><td class="num">__N_l-icann__</td></tr>
+        <tr><td><strong>Tiga nama domain</strong></td><td class="num">__N_domain-thn__</td><td class="num">__N_l-domain__</td></tr>
+        <tr><td><strong>Biaya ICANN</strong></td><td class="num" style="color:var(--slate-mute)">__N_icann-satuan__ &times; 3</td><td class="num">__N_l-icann__</td></tr>
         <tr><td><strong>Pajak</strong> <span class="small">__N_pajak-persen__</span></td><td class="num" style="color:var(--slate-mute)">&mdash;</td><td class="num">__N_l-pajak__</td></tr>
         <tr><td>Jumlah ke Hostinger</td><td class="num" style="color:var(--slate-mute)">&mdash;</td><td class="num">__N_lanjut-hostinger__</td></tr>
         <tr><td><strong>Pendampingan 12 bulan</strong> <span class="small">&middot; kotak di bawah</span></td><td class="num">__N_lanjut-damping-bln__</td><td class="num">__N_lanjut-damping__</td></tr>
@@ -990,7 +994,7 @@ __CSS__
       </tr></thead>
       <tbody>
         <tr><td>Pengerjaan + pendampingan tahun pertama</td><td class="num">__N_a-jasa__</td><td class="num">__N_b-jasa__</td><td class="num">__N_c-jasa__</td></tr>
-        <tr><td>Hosting <span class="small">&middot; paket + email + dua domain + ICANN + pajak</span></td><td class="num">__N_a-hostinger__</td><td class="num">__N_b-hostinger__</td><td class="num">__N_c-hostinger__</td></tr>
+        <tr><td>Hosting <span class="small">&middot; paket + email + tiga domain + ICANN + pajak</span></td><td class="num">__N_a-hostinger__</td><td class="num">__N_b-hostinger__</td><td class="num">__N_c-hostinger__</td></tr>
         <tr class="total"><td>Dibayar di muka</td><td class="num">__N_a-total__</td><td class="num">__N_b-total__</td><td class="num">__N_c-total__</td></tr>
         <tr><td>Uang muka __N_muka-persen__ <span class="small">&middot; Hostinger menagih penuh di depan</span></td><td class="num">__N_a-muka__</td><td class="num">__N_b-muka__</td><td class="num">__N_c-muka__</td></tr>
         <tr><td>Saat serah terima __N_sisa-persen__ <span class="small">&middot; setelah semuanya dicek bersama</span></td><td class="num">__N_a-sisa__</td><td class="num">__N_b-sisa__</td><td class="num">__N_c-sisa__</td></tr>
@@ -1026,9 +1030,9 @@ __CSS__
     <div class="card green" style="margin-top:4mm">
       <h3>Yang diterima pemilik saat serah terima</h3>
       <ul>
-        <li>Dua alamat yang sudah hidup dengan sertifikat keamanan aktif, plus dashboard di <span class="mono">/kelola</span></li>
+        <li>Tiga alamat yang sudah hidup dengan sertifikat keamanan aktif: dua situs publik dan dashboard-nya sendiri</li>
         <li>Satu alamat email berakhiran nama domain sendiri, sudah diuji kirim dan terima</li>
-        <li>Akses penuh ke paket hosting, kedua domain, email, dan database, atas nama pemilik</li>
+        <li>Akses penuh ke paket hosting, ketiga domain, email, dan database, atas nama pemilik</li>
         <li>Salinan database otomatis ke penyimpanan terpisah, sudah dibuktikan bisa dipulihkan</li>
         <li>Pemantauan yang mengirim pesan kalau situsnya tidak menjawab</li>
         <li>Catatan tertulis cara memperbarui dan cara memulihkan, plus pendampingan tahun pertama (halaman 12)</li>

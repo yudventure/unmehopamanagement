@@ -4,13 +4,17 @@ Daftar yang tinggal diikuti, untuk jalur yang dipakai sekarang: **deploy lewat
 Git, satu domain dulu, domain berikutnya menyusul.** Alasan di balik tiap
 pilihan ada di `DEPLOY.md`; halaman ini cuma urutannya.
 
-Tiga situs hidup dari **satu aplikasi**, jadi yang dipasang satu, bukan tiga:
+Tiga situs hidup dari **satu aplikasi**, jadi yang dipasang satu, bukan tiga.
+Yang membedakan mereka cuma nama domain yang diminta pengunjung:
 
-| | |
+| Domain | Yang disajikan |
 |---|---|
-| Turtle Dive Homestay | situs publik |
-| Eddo Homestay | situs publik |
-| Unmehopa Management | dashboard booking |
+| `turtlehomestay.com` | situs publik Turtle Dive Homestay |
+| `eddohomestay.com` | situs publik Eddo Homestay |
+| `unmehopamanagement.com` | dashboard booking |
+
+Domain dashboard **tidak perlu variabel apa pun**: ia menyajikan `/`, dan `/`
+memang sudah dashboard.
 
 ## Yang sudah siap, jadi tidak perlu dikerjakan lagi
 
@@ -27,13 +31,17 @@ Tiga situs hidup dari **satu aplikasi**, jadi yang dipasang satu, bukan tiga:
 Satu domain menyajikan ketiganya lewat jalur. Ini keadaan yang benar untuk
 memastikan semuanya jalan sebelum alamat yang sesungguhnya dipasang.
 
+Pasang **`unmehopamanagement.com`** dulu, karena itu satu-satunya domain yang
+tidak butuh variabel apa pun — jadi tidak ada yang bisa salah diisi, dan
+ketiga situsnya tetap bisa dibuka dan diperiksa:
+
 | Alamat | Yang disajikan |
 |---|---|
-| `domainnya.com/` | Dashboard |
-| `domainnya.com/kelola` | Dashboard, alamat tetapnya |
-| `domainnya.com/turtle` | Situs Turtle |
-| `domainnya.com/eddo` | Situs Eddo |
-| `domainnya.com/version.json` | Bukti versi mana yang sedang tayang |
+| `unmehopamanagement.com/` | Dashboard |
+| `unmehopamanagement.com/kelola` | Dashboard, alamat tetapnya |
+| `unmehopamanagement.com/turtle` | Situs Turtle |
+| `unmehopamanagement.com/eddo` | Situs Eddo |
+| `unmehopamanagement.com/version.json` | Bukti versi mana yang sedang tayang |
 
 ### 1. Buat aplikasi Node.js dari Git
 
@@ -53,19 +61,28 @@ Root directory : ./
 Deploy otomatis menyala sendiri begitu aplikasinya dibuat dari Git. Tidak ada
 webhook yang perlu ditempel.
 
-### 2. Putuskan domain pertamanya, lalu samakan variabel build-nya
+### 2. Kosongkan dulu variabel domainnya
 
-Nama domain **tertanam saat build**, bukan dibaca saat jalan, jadi yang satu
-ini ditentukan sebelum deploy. Ada di GitHub: **Settings → Secrets and
-variables → Actions → Variables**.
+Nama domain **tertanam saat build**, bukan dibaca saat jalan. Di tahap 1
+keduanya dibiarkan kosong, dan itu memang keadaan yang benar: tanpa keduanya
+`next.config.ts` mati total dan routing-nya jadi berbasis jalur, persis
+tabel di atas.
 
-| Domain pertamanya | `SITE_DOMAIN_EDDO` / `SITE_DOMAIN_TURTLE` | Akibatnya |
-|---|---|---|
-| `eddohomestay.com` | biarkan `SITE_DOMAIN_EDDO` terisi | `/` jadi situs Eddo, dashboard di `/kelola` |
-| apa pun yang lain | **kosongkan keduanya**, lalu jalankan ulang workflow Build | `/` jadi dashboard, kedua situs di jalurnya |
+Tempatnya di GitHub: **Settings → Secrets and variables → Actions →
+Variables**. Pastikan keduanya kosong atau belum ada:
 
-Kalau variabelnya diubah, **jalankan ulang workflow Build di `main`**. Me-restart
-server tidak mengubah apa pun: yang berubah cuma ada di hasil build berikutnya.
+```
+SITE_DOMAIN_TURTLE =            (kosong)
+SITE_DOMAIN_EDDO   =            (kosong)
+```
+
+Kalau salah satunya pernah diisi, kosongkan lalu **jalankan ulang workflow
+Build di `main`**. Me-restart server tidak mengubah apa pun: yang berubah cuma
+ada di hasil build berikutnya.
+
+Variabel yang sama **jangan** diisi di panel Hostinger. Panel itu untuk
+variabel yang dibaca saat jalan; yang dibaca saat build diisinya di GitHub,
+dan diisi di panel ia tidak terpakai sama sekali tanpa ada pesan apa pun.
 
 ### 3. Isi variabel yang dibaca saat jalan
 
@@ -92,31 +109,44 @@ berawalan itu ikut terkirim ke peramban pengunjung.
 ### 4. Buktikan
 
 ```
-https://domainnya.com/version.json
+https://unmehopamanagement.com/version.json
 ```
 
 `commit` di situ harus sama dengan commit terakhir di `main`. Kalau tidak,
 yang tayang build lama dan sisanya tidak perlu diperiksa dulu. Sesudah cocok,
 buka keempat alamat di tabel atas.
 
-## Tahap 2 — domain berikutnya, setelah semuanya mapan
+## Tahap 2 — dua domain homestay, setelah semuanya mapan
 
-1. **Arahkan domainnya ke aplikasi yang sama.** Tambahkan domainnya di panel
-   aplikasi Node-nya. Kalau nameserver-nya bukan Hostinger, arahkan A record
-   apex dan `www` ke alamat yang ditunjukkan panel. **MX record jangan
-   disentuh**: emailnya catatan yang berbeda dan tidak ikut pindah.
+1. **Arahkan kedua domainnya ke aplikasi yang sama.** Tambahkan
+   `turtlehomestay.com` dan `eddohomestay.com` di panel aplikasi Node-nya,
+   apex dan `www` dua-duanya. Kalau nameserver-nya bukan Hostinger, arahkan A
+   record keduanya ke alamat yang ditunjukkan panel. **MX record jangan
+   disentuh**: emailnya catatan DNS yang berbeda dan tidak ikut pindah, jadi
+   memindahkan situsnya tidak ikut mematikan emailnya.
 2. **Isi variabelnya di GitHub**, apex dulu baru `www`, dipisah koma:
    ```
    SITE_DOMAIN_TURTLE = turtlehomestay.com,www.turtlehomestay.com
    SITE_DOMAIN_EDDO   = eddohomestay.com,www.eddohomestay.com
    ```
-   Yang pertama dianggap alamat resmi dan dipakai sebagai canonical.
+   Yang pertama dianggap alamat resmi dan dipakai sebagai canonical. Tidak ada
+   variabel untuk `unmehopamanagement.com`, dan itu memang benar: ia
+   menyajikan `/`, yang sudah dashboard.
 3. **Jalankan ulang workflow Build di `main`.** Sekali lagi: tertanam saat
    build, bukan saat jalan.
-4. **Buktikan lagi** lewat `/version.json`, lalu buka tiap domain di akarnya.
+4. **Buktikan lagi** lewat `/version.json`, lalu buka ketiga domain di
+   akarnya.
 
-Sesudah itu tiap domain menyajikan situsnya sendiri di `/`, dan dashboard
-tetap ada di `/kelola` pada domain mana pun.
+Sesudah itu:
+
+| Alamat | Yang disajikan |
+|---|---|
+| `turtlehomestay.com/` | situs Turtle |
+| `turtlehomestay.com/turtle` | memantul ke `turtlehomestay.com/` |
+| `eddohomestay.com/` | situs Eddo |
+| `eddohomestay.com/turtle` | situs Turtle &mdash; tautan "homestay saudara kami" tetap hidup |
+| `unmehopamanagement.com/` | dashboard |
+| `unmehopamanagement.com/kelola` | dashboard |
 
 ## Lima hal yang menggagalkan deploy, dan bentuk gagalnya
 
@@ -127,6 +157,7 @@ tetap ada di `/kelola` pada domain mana pun.
 | Entry diisi `npm start` | di arsip itu tidak ada `next`, yang ada `server.js` |
 | Port dipatok di panel | `server.js` membaca `PORT` dan `HOSTNAME` dari lingkungan |
 | Domain diisi tanpa build ulang | tidak ada efek apa pun, dan tidak ada pesan apa pun |
+| `SITE_DOMAIN_*` diisi di panel Hostinger | tidak terpakai; tempatnya GitHub Variables, bukan panel |
 
 ## Dibuktikan, bukan diduga
 

@@ -23,12 +23,18 @@ const SITE_ENV = {
 export type PublicSite = keyof typeof SITE_ENV;
 
 /**
- * Domain bawaan, sama dengan yang dipakai `next.config.mjs` untuk mengarahkan
- * host ke situsnya. Variabel yang terlewat tidak boleh membuat alamat resmi
- * situs berubah menjadi jalur.
+ * Domain bawaan untuk alamat resmi (canonical dan tautan antar situs).
+ *
+ * Eddo sudah tayang di domainnya. Turtle sengaja `null` sampai
+ * `turtlehomestay.com` benar-benar melayani situsnya: domain itu masih
+ * terparkir, dan alamat resmi yang menunjuk ke halaman parkir lebih buruk
+ * daripada jalur `/turtle` yang hidup. Begitu domainnya tayang, isi
+ * `SITE_DOMAIN_TURTLE` di GitHub Variables (atau ganti nilai ini) dan bangun
+ * ulang. Aturan host di `next.config.mjs` tidak terpengaruh: ia hanya bereaksi
+ * pada permintaan yang memang datang dengan host itu.
  */
-const BAWAAN: Record<PublicSite, string> = {
-  turtle: "turtlehomestay.com",
+const BAWAAN: Record<PublicSite, string | null> = {
+  turtle: null,
   eddo: "eddohomestay.com",
 };
 
@@ -52,7 +58,8 @@ export const isPublicSite = (v: string): v is PublicSite =>
  */
 export function siteDomain(site: PublicSite): string | null {
   const first = (process.env[SITE_ENV[site]] ?? "").split(",")[0]?.trim();
-  return (first || BAWAAN[site]).toLowerCase();
+  const host = first || BAWAAN[site];
+  return host ? host.toLowerCase() : null;
 }
 
 /**

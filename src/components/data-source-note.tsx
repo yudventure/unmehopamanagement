@@ -49,7 +49,7 @@ export function DataSourceNote({
   const catatanLama = lamaTersambung ? (
     <>
       {" "}
-      <strong className="font-semibold">Kecuali Turtle Homestay:</strong> kamar
+      <strong className="font-semibold">Turtle Homestay:</strong> kamar
       dan bookingnya dibaca dari sistem lama dan sungguhan.
     </>
   ) : null;
@@ -68,11 +68,11 @@ export function DataSourceNote({
         className={`${KOTAK} border-amber-soft bg-amber-soft/40 text-amber-ink`}
       >
         <strong className="font-semibold">
-          Ini data contoh, bukan buku Anda.
+          Database belum tersambung, jadi kalender ini kosong.
         </strong>{" "}
-        Nama tamu, tanggal, okupansi, dan pendapatan di layar ini dibangkitkan
-        untuk mengisi tampilan — tidak satu pun berasal dari booking sungguhan.
-        Server belum diberi alamat database (<code>DATABASE_URL</code>).
+        Tidak ada data karangan yang mengisinya. Booking yang dicatat di layar
+        ini belum tersimpan ke mana pun. Server belum diberi alamat database (
+        <code>DATABASE_URL</code>).
         {catatanLama}
       </div>
     );

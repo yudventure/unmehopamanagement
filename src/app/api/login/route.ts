@@ -1,58 +1,46 @@
 import { NextResponse } from "next/server";
 
 import { isSecureRequest } from "@/lib/request-url";
-import { SESSION_COOKIE, issue, loginConfigured, passwordOk } from "@/lib/session";
+import { SESSION_COOKIE, terbitkan } from "@/lib/session";
+import { cocokSandi, publik, rapikanEmail, semuaAkun } from "@/lib/server/akun";
+import { alamatPeminta, catat } from "@/lib/server/batas";
 
 /**
- * Signing in and out of the booking manager.
+ * Masuk dan keluar dari dashboard.
  *
- *   POST  { password }   correct, and a signed session cookie comes back
- *   DELETE               hands the cookie back
+ *   POST  { email, password }   cocok, dan cookie sesi bertanda tangan kembali
+ *   DELETE                      mengembalikan cookie
  *
- * The comparison happens here rather than in the browser, which is the whole
- * point: the previous login could be satisfied by typing any character at all,
- * and even a strict check shipped to the browser is a check the browser is
- * free to skip.
- *
- * The cookie is `httpOnly`, so no script can read it, and `sameSite=lax`, so
- * it travels with a normal visit but not with a request another site makes on
- * the reader's behalf.
+ * Jawabannya sama untuk email yang tidak ada, sandi yang salah, dan akun yang
+ * dinonaktifkan: tidak ada yang bisa dipelajari dari bedanya kecuali apakah
+ * layak menebak lagi. Satu-satunya jawaban yang berbeda adalah 409 saat belum
+ * ada akun sama sekali, supaya halaman menawarkan penyiapan.
  */
-
 export const runtime = "nodejs";
 
 export async function POST(req: Request) {
-  if (!loginConfigured()) {
-    /* Said out loud rather than answered as a wrong password, because this is
-       the one failure the person typing can do nothing about and the operator
-       needs to recognise immediately. */
-    return NextResponse.json({ error: "not-configured" }, { status: 503 });
+  const o = (await req.json().catch(() => ({}))) as { email?: unknown; password?: unknown };
+  const email = rapikanEmail(o.email);
+  const sandi = typeof o.password === "string" ? o.password : "";
+
+  if (catat(`masuk:${alamatPeminta(req)}`, 15 * 60 * 1000) > 20) {
+    return NextResponse.json({ error: "terlalu-banyak" }, { status: 429 });
   }
 
-  let body: { password?: string };
-  try {
-    body = (await req.json()) as { password?: string };
-  } catch {
-    return NextResponse.json({ error: "bad-json" }, { status: 400 });
-  }
+  const semua = await semuaAkun();
+  if (semua.length === 0) return NextResponse.json({ error: "belum-ada-akun" }, { status: 409 });
 
-  if (!passwordOk(body.password ?? "")) {
-    /* No detail, and the same answer whether the password was wrong, empty or
-       missing. There is nothing to learn from the difference except whether to
-       keep guessing. */
-    return NextResponse.json({ error: "no" }, { status: 401 });
-  }
+  const akun = semua.find((a) => a.email === email);
+  /* Selalu menghitung hash, ada atau tidak akunnya, supaya waktu jawab tidak
+     membocorkan email mana yang terdaftar. */
+  const cocok = await cocokSandi(sandi, akun?.sandi ?? "scrypt$00$00");
+  if (!akun || !akun.aktif || !cocok) return NextResponse.json({ error: "no" }, { status: 401 });
 
-  const { value, maxAge } = issue();
-  const res = NextResponse.json({ ok: true });
+  const { value, maxAge } = await terbitkan(akun);
+  const res = NextResponse.json({ ok: true, akun: publik(akun) });
   res.cookies.set(SESSION_COOKIE, value, {
     httpOnly: true,
     sameSite: "lax",
-    /* Secure over https and not over plain http, so a local server still works
-       while the cookie never travels in the clear in production. Taken from
-       the forwarding header where there is one: behind a proxy that speaks TLS
-       to the browser and http to us, the request's own scheme says http and
-       the session cookie would go out unmarked. */
     secure: isSecureRequest(req),
     path: "/",
     maxAge,
@@ -60,8 +48,14 @@ export async function POST(req: Request) {
   return res;
 }
 
-export async function DELETE() {
+export async function DELETE(req: Request) {
   const res = NextResponse.json({ ok: true });
-  res.cookies.delete(SESSION_COOKIE);
+  res.cookies.set(SESSION_COOKIE, "", {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: isSecureRequest(req),
+    path: "/",
+    maxAge: 0,
+  });
   return res;
 }

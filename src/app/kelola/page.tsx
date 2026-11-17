@@ -5,6 +5,8 @@ import { cookies } from "next/headers";
 import { BookingManager } from "@/components/booking-manager";
 import { SignIn } from "@/components/sign-in";
 import { SESSION_COOKIE, valid } from "@/lib/session";
+import { semuaAkun, publik } from "@/lib/server/akun";
+import { aksesPenuh } from "@/lib/peran";
 
 /**
  * The booking manager, reachable from a homestay's own domain.
@@ -38,13 +40,17 @@ export const metadata: Metadata = {
 
 export default async function KelolaPage() {
   const jar = await cookies();
-  const inside = valid(jar.get(SESSION_COOKIE)?.value);
+  const saya = await valid(jar.get(SESSION_COOKIE)?.value);
+  /* Daftar akun hanya dikirim ke yang boleh mengaturnya. Yang lain cukup tahu
+     dirinya sendiri: daftar rekan kerja bukan urusan staf. */
+  const daftar = saya && aksesPenuh(saya.peran) ? (await semuaAkun()).map(publik) : saya ? [publik(saya)] : [];
+  const perluPenyiapan = !saya && (await semuaAkun()).length === 0;
   /* The whole manager sits inside this one attribute. `globals.css` redefines
      the theme variables under it, so every screen is restyled at once while
      the homestay sites, which share most of those variables, are untouched. */
   return (
     <div data-manager className="min-h-screen bg-canvas">
-      {inside ? <BookingManager signedIn /> : <SignIn />}
+      {saya ? <BookingManager akun={publik(saya)} daftarAkun={daftar} /> : <SignIn perluPenyiapan={perluPenyiapan} />}
     </div>
   );
 }

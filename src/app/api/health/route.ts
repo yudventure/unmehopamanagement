@@ -63,7 +63,7 @@ const TOKEN_MIN = 60;
 
 export async function GET() {
   const jar = await cookies();
-  if (!valid(jar.get(SESSION_COOKIE)?.value)) {
+  if (!(await valid(jar.get(SESSION_COOKIE)?.value))) {
     return NextResponse.json({ error: "not-found" }, { status: 404 });
   }
 
@@ -78,8 +78,6 @@ export async function GET() {
     );
   };
 
-  need("DASHBOARD_PASSWORD", "tidak ada yang bisa masuk ke dashboard");
-  need("SESSION_SECRET", "sesi putus tiap server restart");
   need("CMS_PASSWORD", "CMS menolak menyimpan sama sekali");
   need("GITHUB_REPO", "CMS tidak tahu harus menulis ke mana");
   need("RESEND_API_KEY", "tombol Kirim beralih membuka WhatsApp");

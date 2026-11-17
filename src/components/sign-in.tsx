@@ -3,36 +3,35 @@
 import { useEffect, useState } from "react";
 
 import { LoginScreen } from "@/components/login-screen";
-import { OWNER_EMAIL, STAFF_EMAIL } from "@/lib/data";
-import type { Role } from "@/lib/types";
 
 /**
- * The sign-in screen, standing on its own in front of the booking manager.
+ * Layar masuk, berdiri sendiri di depan dashboard.
  *
- * Separate from the manager rather than inside it, because the page decides
- * which of the two to render and an unsigned visitor should not be sent the
- * manager at all. A login drawn on top of a page that has already arrived is a
- * curtain, not a door.
+ * Terpisah dari dashboard karena halamanlah yang memutuskan mana yang
+ * dirender, dan pengunjung tanpa sesi tidak boleh dikirimi dashboardnya sama
+ * sekali. Login yang digambar di atas halaman yang sudah tiba adalah tirai,
+ * bukan pintu.
  *
- * The password is checked by `/api/login`, never here. What comes back is an
- * `httpOnly` cookie this component cannot read, which is the point: nothing on
- * this page can hand that cookie to anyone.
+ * Kedua kotak mulai kosong dan tidak ada pilihan peran: peran datang dari akun
+ * tempat alamat itu terdaftar, di server. Kata sandi diperiksa oleh
+ * `/api/login`, bukan di sini; yang kembali adalah cookie `httpOnly` yang tidak
+ * bisa dibaca skrip mana pun di halaman ini.
+ *
+ * Kalau belum ada akun sama sekali, layar yang sama berganti menjadi
+ * penyiapan akun developer pertama (`/api/penyiapan`).
  */
-export function SignIn() {
-  /* Both boxes start empty, and the role chooser starts on neither. A sign-in
-     that opens with somebody's address already in it is a demo: it publishes
-     what an account here is called, and it makes a member of staff clear the
-     owner's address before typing their own. */
+export function SignIn({ perluPenyiapan = false }: { perluPenyiapan?: boolean }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState<Role | null>(null);
+  const [kunci, setKunci] = useState("");
+  const [nama, setNama] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [narrow, setNarrow] = useState(false);
+  const [siap, setSiap] = useState(perluPenyiapan);
 
-  /* The illustration half is dropped on a phone. Measured after mount rather
-     than guessed, and kept in step with the window so rotating a tablet does
-     not leave it wrong. */
+  /* Separuh ilustrasi dibuang di ponsel. Diukur setelah mount, dan mengikuti
+     jendela supaya memutar tablet tidak meninggalkan ukuran yang salah. */
   useEffect(() => {
     const check = () => setNarrow(window.innerWidth < 900);
     check();
@@ -40,47 +39,40 @@ export function SignIn() {
     return () => window.removeEventListener("resize", check);
   }, []);
 
-  /* The chooser only fills an address in, and only when somebody presses it.
-     What a signed-in person may see is decided from the account the address
-     belongs to, never from this. */
-  const pickRole = (next: Role) => {
-    setRole(next);
-    setEmail(next === "owner" ? OWNER_EMAIL : STAFF_EMAIL);
-  };
-
   const submit = async () => {
     if (busy) return;
-    if (!email.trim() || !password.trim()) {
+    if (!email.trim() || !password) {
       setError("Email dan kata sandi wajib diisi.");
+      return;
+    }
+    if (siap && (!kunci.trim() || !nama.trim())) {
+      setError("Kunci penyiapan, nama, email, dan kata sandi wajib diisi.");
       return;
     }
     setBusy(true);
     setError("");
     try {
-      const res = await fetch("/api/login", {
+      const res = await fetch(siap ? "/api/penyiapan" : "/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify(
+          siap ? { kunci, nama, email, sandi: password } : { email, password },
+        ),
       });
-
       if (res.ok) {
-        /* Remembered so the manager opens as the person who just signed in.
-           It is a label, not a permission: the cookie is what grants access,
-           and the account behind the address is what limits it. */
-        try {
-          window.sessionStorage.setItem("unmehopa_email", email.trim());
-        } catch {
-          /* Private windows refuse storage. Losing the prefill is not worth
-             refusing the sign-in over. */
-        }
-        /* A reload rather than a state flip, so the page is rendered again by
-           the server with the cookie in hand. */
+        /* Dimuat ulang, bukan membalik state, supaya halaman dirender lagi
+           oleh server dengan cookie di tangan. */
         window.location.reload();
         return;
       }
-
-      if (res.status === 503) {
-        setError("Login belum disiapkan di server. Isi DASHBOARD_PASSWORD.");
+      const o = (await res.json().catch(() => ({}))) as { galat?: string; error?: string };
+      if (res.status === 409 && o.error === "belum-ada-akun") {
+        setSiap(true);
+        setError("");
+      } else if (res.status === 429) {
+        setError("Terlalu banyak percobaan. Tunggu beberapa menit.");
+      } else if (siap) {
+        setError(o.galat ?? "Penyiapan gagal.");
       } else {
         setError("Email atau kata sandi salah.");
       }
@@ -96,12 +88,27 @@ export function SignIn() {
       narrow={narrow}
       email={email}
       password={password}
-      role={role}
       error={error}
+      busy={busy}
       onEmail={setEmail}
       onPassword={setPassword}
-      onRole={pickRole}
       onSubmit={submit}
+      plain={siap}
+      heading={siap ? "Buat akun developer pertama" : undefined}
+      intro={
+        siap
+          ? "Belum ada akun. Isi kunci penyiapan dari panel hosting, lalu buat akun yang akan mengatur semua akun lain. Kata sandi paling sedikit 10 huruf."
+          : undefined
+      }
+      submitLabel={siap ? "Buat akun dan masuk" : undefined}
+      extraFields={
+        siap
+          ? [
+              { label: "Kunci penyiapan", value: kunci, onChange: setKunci, type: "password", placeholder: "Dari panel hosting", autoComplete: "off" },
+              { label: "Nama", value: nama, onChange: setNama, placeholder: "Nama lengkap", autoComplete: "name" },
+            ]
+          : []
+      }
     />
   );
 }

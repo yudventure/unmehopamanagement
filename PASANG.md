@@ -52,20 +52,36 @@ aksesnya saat diminta.
 ```
 Repositori       : yudventure/unmehopamanagement
 Branch           : deploy          <- bukan main
-Build command    : KOSONGKAN       <- penting
-Direktori output : KOSONGKAN       <- penting
+Preset framework : Next.js         <- biarkan, lihat catatan
+Build command    : npm run build   <- di branch deploy ini TIDAK membangun
+Direktori output : ./              <- bukan .next
 Entry file       : server.js
 Versi Node       : 22
 Root directory   : ./
 ```
 
-**Dua field itu tidak kosong waktu wizard-nya selesai, dan itu bukan
-kelalaian yang mengisi.** Hostinger mendeteksi sendiri bahwa repositorinya
-Next.js lalu mengisikan `next build` dan `.next` ke keduanya. Untuk
-repositori biasa itu benar; untuk branch `deploy` itu salah, karena
-isinya sudah hasil build. Dokumentasi Hostinger sendiri menyebutnya:
-direktori output *"leave empty for apps without a build step"*. Jadi
-keduanya harus dihapus dengan tangan sesudah wizard-nya mengisi.
+**Kenapa build command-nya tidak dikosongkan saja.** Dokumentasi Hostinger
+memang menyebut direktori output boleh kosong untuk aplikasi tanpa langkah
+build, tapi formulirnya tidak begitu: diperiksa 17 November 2026, **Build
+command dan Direktori output dua-duanya wajib** &mdash; bertanda bintang, dan
+dikosongkan ia menolak dengan *"Masukkan folder tempat file yang telah Anda
+buat berada."*
+
+Jadi jalan keluarnya bukan mengosongkan, melainkan membuat keduanya benar:
+
+- **Build command** itu pemilih atas daftar script di `package.json`. Branch
+  `deploy` sengaja membawa script `build` yang **cuma mencetak satu kalimat
+  lalu selesai** (0,1 detik, lihat `scripts/package.mjs`). Jadi `npm run
+  build` di sana aman, dan log-nya mengatakan sendiri kenapa tidak ada yang
+  dibangun. Tanpa script itu, satu-satunya pilihan yang ditawarkan adalah
+  `npm run start`, yang akan menyalakan server sebagai langkah build lalu
+  menggantung sampai deploy-nya kehabisan waktu.
+- **Direktori output** artinya "folder tempat berkas hasil build berada". Di
+  branch `deploy` berkas hasil build **adalah akar repositorinya** &mdash;
+  `server.js`, `.next`, `node_modules`, `public` semuanya di situ. Jadi `./`,
+  dan itu bukan akal-akalan melainkan jawaban yang jujur. Diisi `.next`
+  jawabannya salah: di dalam `.next` tidak ada `server.js` maupun
+  `node_modules`.
 
 Deploy otomatis menyala sendiri begitu aplikasinya dibuat dari Git. Tidak ada
 webhook yang perlu ditempel. Sesudah mengubah setelannya, pilih **Save and

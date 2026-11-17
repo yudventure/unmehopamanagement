@@ -191,8 +191,21 @@ if (usesNextImage) {
  * file.
  *
  * So the archive gets a `package.json` that describes itself: the runtime
- * dependencies and nothing else, and one script, `start`, pointing at the
- * server that is actually here.
+ * dependencies and nothing else, and two scripts pointing at what is actually
+ * here — `start`, which runs the server, and a `build` that does nothing.
+ *
+ * The do-nothing `build` is not decoration either. Measured on 17 November
+ * 2026, first install attempt: Hostinger's build settings form marks both
+ * "Build command" and "Direktori output" REQUIRED, and the build command is a
+ * picker over the scripts in this file. So "leave it empty", which is what
+ * their own docs say for an app with no build step, is not a thing the form
+ * will accept. Without a `build` script here the only choice the picker
+ * offers is `npm run start`, which would launch the server as the build step
+ * and hang until the deploy times out.
+ *
+ * A `build` that succeeds instantly and says why is the honest answer: the
+ * build genuinely did happen, in GitHub Actions, and its result is what this
+ * folder already is.
  *
  * The dependency list is not decoration, and leaving it empty was tried and is
  * actively dangerous. `npm install` reifies `node_modules` to match
@@ -247,7 +260,12 @@ writeFileSync(
       private: true,
       /* Deliberately no "type": the compiled server is CommonJS, and declaring
          it a module here makes Node refuse to load it. */
-      scripts: { start: "node server.js" },
+      scripts: {
+        /* Dibangun di GitHub Actions; isi folder ini sudah hasilnya. Lihat
+           catatan panjang di atas sebelum menghapusnya. */
+        build: "echo Sudah dibangun di GitHub Actions - tidak ada yang perlu dibangun di sini",
+        start: "node server.js",
+      },
       dependencies: pinned(shipped.dependencies),
     },
     null,

@@ -15,6 +15,9 @@ export const CH: Record<ChannelKey, ChannelStyle> = {
   WhatsApp: { bg: "#D6F2E7", fg: "#0B5F52", dot: "#0E7C6B", com: 0 },
   Blokir: { bg: "#ECEFEE", fg: "#5C6E68", dot: "#9BABA5", com: 0 },
   "Sistem lama": { bg: "#EDEFF3", fg: "#3F4756", dot: "#7C8797", com: 0 },
+  /* Komisi situs yang tidak dikenal tidak diketahui, bukan nol. Nol di sini
+     hanya supaya hitungan tidak menebak; ubah saat tarif situsnya diketahui. */
+  "OTA lain": { bg: "#E3EEF7", fg: "#1F4E79", dot: "#4A90C2", com: 0 },
 };
 
 export const CHANNEL_KEYS = Object.keys(CH) as ChannelKey[];
@@ -32,6 +35,7 @@ export const CHANNEL_LABELS: Record<ChannelKey, string> = {
   WhatsApp: "WA / langsung",
   Blokir: "Blokir",
   "Sistem lama": "Sistem lama",
+  "OTA lain": "OTA lain",
 };
 
 export const PROPERTIES: {

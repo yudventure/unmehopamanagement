@@ -55,6 +55,7 @@ export function PropertyScreen({
   showMoney,
   canEdit,
   onSaveRoom,
+  onDeleteRoom,
 }: {
   cards: PropertyCard[];
   /** Phone widths, where the room table becomes one card per room. */
@@ -64,18 +65,34 @@ export function PropertyScreen({
   /** Only an owner may change how a room is configured. */
   canEdit: boolean;
   onSaveRoom: (id: string, patch: RoomPatch) => string | null;
+  onDeleteRoom: (id: string) => string | null;
 }) {
   /* Draft state belongs to the dialog, so it lives here rather than in the
      app shell: nothing outside this screen needs to know a room is open for
      editing, and closing the dialog throws the draft away. */
   const [editing, setEditing] = useState<PropertyRoomRow | null>(null);
+  /* Kamar baru memakai id sementara `__baru__:<properti>`, yang dikenali
+     penyimpanannya dan diganti id sungguhan. */
+  const [barunya, setBarunya] = useState<PropertyRoomRow | null>(null);
+  const tambah = (prop: string) =>
+    setBarunya({
+      id: `__baru__:${prop}`,
+      name: "",
+      cap: "2 dewasa",
+      rate: 0,
+      active: true,
+      upcoming: 0,
+      price: "",
+      ical: "",
+      status: "Aktif",
+    });
 
   return (
     <div>
       <div className="mb-1 text-[22px] font-bold">Properti &amp; Kamar</div>
       <div className="mb-5 text-[13.5px] text-slate-soft">
         {canEdit
-          ? "Klik Edit untuk mengubah nama, kapasitas, harga, atau status kamar. Booking baru memakai harga yang berlaku saat disimpan."
+          ? "Atur jumlah kamar dengan Tambah kamar, atau Edit lalu Hapus untuk kamar yang belum pernah dipakai. Klik Edit untuk mengubah nama, kapasitas, harga, atau status kamar. Booking baru memakai harga yang berlaku saat disimpan."
           : "Kapasitas dan status kamar."}
       </div>
 
@@ -118,6 +135,15 @@ export function PropertyScreen({
                   <div className="text-[15px] font-bold">{p.price}</div>
                 </div>
               </div>
+              {canEdit && (
+                <button
+                  type="button"
+                  onClick={() => tambah(p.key)}
+                  className="cursor-pointer rounded-[10px] border-none bg-teal px-[14px] py-[8px] text-[12.5px] font-bold text-white hover:bg-teal-deep"
+                >
+                  + Tambah kamar
+                </button>
+              )}
             </div>
 
             {/*
@@ -225,6 +251,17 @@ export function PropertyScreen({
           room={editing}
           showMoney={showMoney}
           onClose={() => setEditing(null)}
+          onSave={onSaveRoom}
+          onDelete={onDeleteRoom}
+        />
+      )}
+
+      {barunya && (
+        <RoomEditModal
+          room={barunya}
+          showMoney
+          baru
+          onClose={() => setBarunya(null)}
           onSave={onSaveRoom}
         />
       )}

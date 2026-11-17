@@ -26,7 +26,7 @@ import {
   useSesiLama,
   useSistemLama,
 } from "@/components/sistem-lama-data";
-import { bookingDariLama } from "@/lib/dari-sistem-lama";
+import { PREFIKS_KAMAR, bookingDariLama } from "@/lib/dari-sistem-lama";
 import {
   AKTIVITAS,
   ringkasSelam,
@@ -79,11 +79,11 @@ import { bookingTotal } from "@/lib/pricing";
 import { downloadCsv, downloadPdf, type ReportData } from "@/lib/report-export";
 import type {
   Booking,
+  Room,
   BookingForm,
   BookingStatus,
   ChannelKey,
-  ExportToken,
-  IcalFeed,
+  Sambungan,
   InviteForm,
   PropertyKey,
   Role,
@@ -140,7 +140,7 @@ const NAV_LABELS: Record<Screen, string> = {
   kalender: "Kalender",
   laporan: "Laporan",
   properti: "Properti & Kamar",
-  sinkron: "Sinkronisasi OTA",
+  sinkron: "Sinkronisasi kalender",
   lama: "Sistem lama",
   website: "Website",
   pengguna: "Pengguna & Peran",
@@ -183,6 +183,22 @@ const EMPTY_INVITE: InviteForm = {
   scope: "Turtle Homestay",
   sandi: "",
 };
+
+/** Kirim JSON ke server. Kembali berisi pesan galat untuk pemilik, atau null bila berhasil. */
+async function kirim(url: string, metode: string, isi: unknown): Promise<string | null> {
+  try {
+    const res = await fetch(url, {
+      method: metode,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(isi),
+    });
+    if (res.ok) return null;
+    const o = (await res.json().catch(() => ({}))) as { galat?: string };
+    return o.galat ?? `Server menjawab ${res.status}.`;
+  } catch {
+    return "Tidak bisa menghubungi server.";
+  }
+}
 
 /** Pengganti sesaat sebelum jam peramban terbaca; bukan jawabannya. */
 const AWAL_BULAN = new Date(2026, 0, 1);
@@ -227,8 +243,8 @@ export function BookingManager({
   const [conflictOpen, setConflictOpen] = useState(false);
   const [compare, setCompare] = useState(false);
   const [pdfBusy, setPdfBusy] = useState(false);
-  const [feeds, setFeeds] = useState<IcalFeed[]>([]);
-  const [tokens, setTokens] = useState<ExportToken[]>([]);
+  const [sambungan, setSambungan] = useState<Sambungan[]>([]);
+  const [sedangJalan, setSedangJalan] = useState(false);
   const [form, setForm] = useState<BookingForm>(EMPTY_FORM);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [invite, setInvite] = useState<InviteForm>(EMPTY_INVITE);
@@ -287,6 +303,38 @@ export function BookingManager({
    * mengatakan mana yang sedang dilihat.
    */
   const [sumber, setSumber] = useState<SumberData>({ keadaan: "memuat" });
+
+  /** Kamar, pesanan, dan sambungan dari buku di server. Benar bila berhasil. */
+  const muatBuku = useCallback(async (signal?: AbortSignal): Promise<boolean> => {
+    try {
+      const res = await fetch("/api/buku", { signal, cache: "no-store" });
+      if (!res.ok) return false;
+      const d = (await res.json()) as {
+        kamar: Room[];
+        pesanan: Booking[];
+        sambungan: Sambungan[];
+      };
+      setRooms(d.kamar);
+      setBookings(d.pesanan);
+      setSambungan(d.sambungan);
+      setSumber({ keadaan: "lokal" });
+      return true;
+    } catch {
+      return false;
+    }
+  }, []);
+  const lokal = sumber.keadaan === "lokal";
+
+  /* Kamar dan pesanan bisa berubah di perangkat lain, dan bacaan latar server
+     menambah malam dari situs luar. Segarkan tiap menit selagi tab terbuka. */
+  useEffect(() => {
+    if (!lokal) return;
+    const t = setInterval(() => {
+      if (document.visibilityState === "visible") void muatBuku();
+    }, 60_000);
+    return () => clearInterval(t);
+  }, [lokal, muatBuku]);
+
   useEffect(() => {
     if (!auth) return;
 
@@ -313,7 +361,11 @@ export function BookingManager({
         }
         const data = (await res.json()) as ApiKalender;
         if (!data.configured) {
-          setSumber({ keadaan: "contoh" });
+          /* Tanpa database, kamar, pesanan, dan sambungan kalender hidup di
+             berkas server. Gagal membacanya jatuh ke keadaan "contoh" yang
+             jujur: layar kosong dan tidak ada yang tersimpan. */
+          const ok = await muatBuku(batal.signal);
+          if (!ok && !batal.signal.aborted) setSumber({ keadaan: "contoh" });
           return;
         }
 
@@ -625,6 +677,11 @@ export function BookingManager({
      prints. Nothing else writes those two fields. */
   const patchBooking = useCallback(
     (id: string, patch: Partial<Booking>, msg: string) => {
+      const asal = bookings.find((b) => b.id === id);
+      if (asal?.src === "iCal") {
+        flash("Booking dari situs luar diubah di situs itu, bukan di sini.");
+        return;
+      }
       const stamp = {
         updatedAt: new Date().toISOString(),
         updatedBy: userName,
@@ -633,78 +690,90 @@ export function BookingManager({
         prev.map((b) => (b.id === id ? { ...b, ...patch, ...stamp } : b)),
       );
       flash(msg);
+      /* Tersimpan di server supaya tidak hilang dan ikut ke tautan ekspor. */
+      if (lokal && asal) {
+        void kirim("/api/pesanan", "PATCH", {
+          id,
+          status: patch.status,
+          notes: patch.notes,
+          paid: patch.paid,
+        }).then((g) => {
+          if (g) {
+            flash(g);
+            void muatBuku();
+          }
+        });
+      }
     },
-    [flash, userName],
+    [flash, userName, bookings, lokal, muatBuku],
   );
 
-  /* Tokens are minted in the click handler, never during render: the page is
-     prerendered, so a random value at render time would not match on hydrate. */
-  const newToken = () => {
-    const bytes = new Uint8Array(16);
-    crypto.getRandomValues(bytes);
-    return Array.from(bytes, (x) => x.toString(16).padStart(2, "0")).join("");
-  };
-
-  const addFeed = useCallback(
-    (roomId: string, channel: ChannelKey, url: string): string | null => {
-      if (!url) return "URL iCal wajib diisi.";
-      if (!/^https?:\/\/\S+$/i.test(url))
-        return "URL harus diawali http:// atau https://.";
-      if (feeds.some((f) => f.roomId === roomId && f.url === url))
-        return "URL ini sudah terdaftar untuk kamar tersebut.";
-      setFeeds((prev) =>
-        prev.concat({
-          id: `FD${Date.now().toString(36)}`,
-          roomId,
-          channel,
-          url,
-          addedAt: new Date().toISOString(),
-        }),
-      );
-      flash("Feed impor ditambahkan.");
+  /* Sambungan kalender ke situs luar. Semua lewat server: tautannya dibaca
+     di sana, dan tautan ekspornya disajikan dari sana. */
+  const tambahSambungan = useCallback(
+    async (roomId: string, nama: string, url: string): Promise<string | null> => {
+      if (roomId.startsWith(PREFIKS_KAMAR))
+        return "Kamar Turtle masih dibaca dari sistem lama, jadi belum bisa disambungkan ke situs luar dari sini.";
+      const g = await kirim("/api/sinkron", "POST", { roomId, nama, url });
+      if (g) return g;
+      await muatBuku();
+      flash(url ? `${nama} tersambung.` : `${nama} ditambahkan, tautan ekspor siap.`);
       return null;
     },
-    [feeds, flash],
+    [flash, muatBuku],
   );
 
-  const removeFeed = useCallback(
-    (id: string) => {
-      setFeeds((prev) => prev.filter((f) => f.id !== id));
-      flash("Feed impor dihapus.");
+  const hapusSambungan = useCallback(
+    async (id: string) => {
+      const g = await kirim("/api/sinkron", "DELETE", { id });
+      if (g) return flash(g);
+      await muatBuku();
+      flash("Sambungan dihapus.");
     },
-    [flash],
+    [flash, muatBuku],
   );
 
-  const mintToken = useCallback((roomId: string) => {
-    setTokens((prev) =>
-      prev
-        .filter((t) => t.roomId !== roomId)
-        .concat({
-          roomId,
-          token: newToken(),
-          createdAt: new Date().toISOString(),
-        }),
-    );
-  }, []);
-
-  const issueToken = useCallback(
-    (roomId: string) => {
-      mintToken(roomId);
-      flash("URL ekspor dibuat.");
+  const ubahUrlSambungan = useCallback(
+    async (id: string, url: string): Promise<string | null> => {
+      const g = await kirim("/api/sinkron", "PATCH", { id, url });
+      if (g) return g;
+      await muatBuku();
+      flash("Tautan disimpan dan dibaca.");
+      return null;
     },
-    [mintToken, flash],
+    [flash, muatBuku],
   );
 
-  const resetToken = useCallback(
-    (roomId: string) => {
-      mintToken(roomId);
-      flash("Token direset. URL lama tidak berlaku lagi.");
+  const tokenBaruSambungan = useCallback(
+    async (id: string) => {
+      const g = await kirim("/api/sinkron", "PATCH", { id, tokenBaru: true });
+      if (g) return flash(g);
+      await muatBuku();
+      flash("Tautan ekspor baru dibuat. Yang lama tidak berlaku lagi.");
     },
-    [mintToken, flash],
+    [flash, muatBuku],
   );
+
+  const jalankanSinkron = useCallback(async () => {
+    setSedangJalan(true);
+    const g = await kirim("/api/sinkron/jalankan", "POST", {});
+    await muatBuku();
+    setSedangJalan(false);
+    flash(g ?? "Semua sambungan dibaca ulang.");
+  }, [flash, muatBuku]);
 
   /* Room configuration now moves as one saved edit rather than a live field,
      so it validates in one place and can be rejected as a whole. */
+  /** Menyimpan seluruh daftar kamar ke server, dan memulihkan dari server bila ditolak. */
+  const simpanKamar = useCallback(
+    async (daftar: Room[]): Promise<string | null> => {
+      const g = await kirim("/api/kamar", "PUT", { kamar: daftar });
+      if (g) void muatBuku();
+      return g;
+    },
+    [muatBuku],
+  );
+
   const saveRoom = useCallback(
     (roomId: string, patch: RoomPatch): string | null => {
       const name = patch.name.trim();
@@ -720,17 +789,48 @@ export function BookingManager({
       );
       if (taken) return `Sudah ada kamar bernama "${name}".`;
 
-      setRooms((prev) =>
-        prev.map((r) =>
+      let next: Room[];
+      if (roomId.startsWith("__baru__:")) {
+        const prop = roomId.slice("__baru__:".length) as PropertyKey;
+        /* Awalan dan nomor dari kamar yang sudah ada di properti itu, supaya
+           kamar baru mengikuti penamaan yang berlaku (T11 setelah T10). */
+        const milik = rooms.filter((r) => r.prop === prop);
+        const awalan = milik[0]?.id.replace(/\d+$/, "") || prop.charAt(0).toUpperCase();
+        const nomor = Math.max(
+          0,
+          ...rooms
+            .filter((r) => r.id.startsWith(awalan) && /^\d+$/.test(r.id.slice(awalan.length)))
+            .map((r) => Number(r.id.slice(awalan.length))),
+        );
+        let id = `${awalan}${nomor + 1}`;
+        while (rooms.some((r) => r.id === id)) id += "x";
+        next = [...rooms, { id, prop, name, cap, rate: patch.rate, active: patch.active }];
+      } else {
+        next = rooms.map((r) =>
           r.id === roomId
             ? { ...r, name, cap, rate: patch.rate, active: patch.active }
             : r,
-        ),
-      );
-      flash(`${name} diperbarui.`);
+        );
+      }
+      setRooms(next);
+      flash(roomId.startsWith("__baru__:") ? `${name} ditambahkan.` : `${name} diperbarui.`);
+      if (lokal) void simpanKamar(next).then((g) => g && flash(g));
       return null;
     },
-    [rooms, flash],
+    [rooms, flash, lokal, simpanKamar],
+  );
+
+  const deleteRoom = useCallback(
+    (roomId: string): string | null => {
+      const r = rooms.find((x) => x.id === roomId);
+      if (!r) return null;
+      if (!lokal) return "Menghapus kamar butuh penyimpanan di server.";
+      const next = rooms.filter((x) => x.id !== roomId);
+      setRooms(next);
+      void simpanKamar(next).then((g) => g ? flash(g) : flash(`${r.name} dihapus.`));
+      return null;
+    },
+    [rooms, lokal, simpanKamar, flash],
   );
 
   const setFormField = useCallback(
@@ -785,7 +885,8 @@ export function BookingManager({
          database dan `code` dari kolomnya sendiri. */
       const kode = "BK" + String(9100 + bookings.length).slice(-4);
       const booking: Booking = {
-        id: kode,
+        /* Id unik lintas perangkat; kode hanya yang diucapkan ke tamu. */
+        id: `BK${Date.now().toString(36)}`,
         code: kode,
         roomId: form.room,
         guest: form.guest.trim(),
@@ -798,9 +899,18 @@ export function BookingManager({
         status,
         notes: form.notes || "Booking baru dari input manual.",
         src: "manual",
+        createdAt: today,
       };
 
       setBookings((prev) => prev.concat(booking));
+      if (lokal) {
+        void kirim("/api/pesanan", "POST", booking).then((g) => {
+          if (g) {
+            flash(g);
+            void muatBuku();
+          }
+        });
+      }
       setFormOpen(false);
       setSelectedId(booking.id);
       setScreen("kalender");
@@ -810,7 +920,7 @@ export function BookingManager({
           : "Booking disimpan, hold 1×24 jam.",
       );
     },
-    [form, roomById, bookings.length, flash],
+    [form, roomById, bookings.length, flash, lokal, today, muatBuku],
   );
 
   const doLogout = useCallback(() => {
@@ -1260,8 +1370,8 @@ export function BookingManager({
         cap: r.cap,
         price: showMoney ? fmt(r.rate) : "",
         rate: r.rate,
-        ical: feeds.some((f) => f.roomId === r.id)
-          ? `${feeds.filter((f) => f.roomId === r.id).length} feed`
+        ical: sambungan.some((f) => f.roomId === r.id)
+          ? `${sambungan.filter((f) => f.roomId === r.id).length} situs`
           : "Belum diatur",
         status: r.active ? "Aktif" : "Renovasi",
         active: r.active,
@@ -1466,19 +1576,22 @@ export function BookingManager({
                     showMoney={showMoney}
                     canEdit={isOwner}
                     onSaveRoom={saveRoom}
+                    onDeleteRoom={deleteRoom}
                   />
                 )}
 
                 {screen === "sinkron" && layar.includes("sinkron") && (
                   <SyncScreen
                     rooms={scopedRooms}
-                    feeds={feeds}
-                    tokens={tokens}
-                    onAddFeed={addFeed}
-                    onRemoveFeed={removeFeed}
-                    onIssueToken={issueToken}
-                    onResetToken={resetToken}
+                    sambungan={sambungan}
                     origin={origin}
+                    onAdd={tambahSambungan}
+                    onRemove={hapusSambungan}
+                    onUbahUrl={ubahUrlSambungan}
+                    onTokenBaru={tokenBaruSambungan}
+                    onJalankan={jalankanSinkron}
+                    sedangJalan={sedangJalan}
+                    turtleDariLama={lamaAktif}
                   />
                 )}
 

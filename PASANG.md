@@ -340,3 +340,21 @@ Keamanan tautan yang dibaca server: hanya `https`/`http`, alamat jaringan dalam
 ditolak, pengalihan diperiksa ulang, batas 20 detik dan 5 MB.
 `SINKRON_IZINKAN_LOKAL=1` hanya untuk uji di komputer sendiri, **jangan** diisi di
 Hostinger. Uji pembaca iCal: `npm run uji`.
+
+
+## Domain homestay sudah dikenali kode
+
+Sejak 17 November 2026, `turtlehomestay.com` (dan `www`) menyajikan situs Turtle,
+dan `eddohomestay.com` (dan `www`) menyajikan situs Eddo, **tanpa** variabel
+apa pun. Sebelumnya domain hanya dikenali kalau `SITE_DOMAIN_TURTLE` dan
+`SITE_DOMAIN_EDDO` terisi di GitHub Variables saat build, dan variabel yang
+terlewat membuat `/` di domain itu menyajikan dashboard.
+
+- Variabel itu tetap menang kalau diisi (untuk domain lain). Kosong berarti
+  domain bawaan di `next.config.mjs` dan `src/lib/site-domains.ts`.
+- `/kelola` di domain homestay dialihkan ke `unmehopamanagement.com/kelola`
+  (domain lain bisa lewat `MANAGEMENT_DOMAIN` saat build). Tamu yang membuka
+  alamat homestay tidak melihat layar masuk manajemen.
+- Yang tetap harus dilakukan di luar kode: domainnya ditambahkan di aplikasi
+  Node.js Hostinger (apex dan `www`), A record bila nameserver bukan Hostinger,
+  MX tidak disentuh, dan aplikasinya memakai branch `deploy`.

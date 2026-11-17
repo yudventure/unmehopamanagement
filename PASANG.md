@@ -273,3 +273,22 @@ dibuat ulang.
 
 Developer atau pemilik terakhir yang aktif tidak bisa dinonaktifkan atau
 diturunkan, supaya tidak ada yang mengunci diri dari dashboard.
+
+## Peran dan menu di dashboard
+
+Rangka dashboard mengikuti panel pengelola Mambetron (bilah atas putih, menu
+samping dengan pil gelap, kartu HARI INI, dan lembar menu dari bawah di
+ponsel), dengan warna hijau Unmehopa. Menu tiap peran berbeda:
+
+| Peran | Menu |
+|---|---|
+| Developer, Pemilik | Ringkasan, Kalender, Laporan, Properti & Kamar, Sinkronisasi OTA, Sistem lama, Website, Pengguna & Peran. Mengatur akun |
+| General Manager | Sama, tanpa mengatur akun |
+| Manajer unit | Ringkasan, Kalender, Properti & Kamar, hanya untuk unitnya (Turtle Homestay, Eddo Homestay, atau Dive Center). Tanpa angka rupiah |
+| HRD | Ringkasan, Pengguna & Peran (hanya melihat) |
+| Keuangan | Ringkasan, Laporan, Kalender. Melihat angka rupiah semua unit |
+| Public Relation | Ringkasan, Website |
+| Staf | Ringkasan, Kalender, Properti & Kamar di unit yang diizinkan. Tanpa angka rupiah |
+
+Manajer unit memakai satu peran yang sama, dan unitnya diatur lewat kolom
+**Akses properti** saat akun dibuat.

@@ -39,8 +39,9 @@ export function UsersScreen({
         <div>
           <div className="mb-1 text-[22px] font-bold">Pengguna &amp; Peran</div>
           <div className="text-[13.5px] text-slate-soft">
-            Owner melihat semua properti dan laporan keuangan. Staf hanya
-            kalender, input booking, dan pembayaran di properti yang diizinkan.
+            Pemilik dan developer mengatur akun. General Manager dan HRD
+            melihat daftar ini. Manajer unit dan staf hanya bekerja di unit
+            yang diizinkan, tanpa angka rupiah.
           </div>
         </div>
         {bolehAtur && (

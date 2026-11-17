@@ -1077,3 +1077,30 @@ input[type="search"]::-webkit-search-decoration {
   --color-danger-edge: #eed9d0;
   --color-neutral-soft: #eeedE8;
 }
+
+/* ---------------------------------------------------------------------------
+   Rangka panel pengelola (pola panel-homestay dari Mambetron).
+
+   Enam token, dipilih dari hijau logo Unmehopa dan sudah lulus
+   `scripts/cek-token.mjs` milik skill panel-homestay (13 dari 13). Nama
+   `panel-*` tidak dipakai situs publik, jadi tidak mengubah warna situs
+   Turtle dan Eddo.
+   --------------------------------------------------------------------------- */
+@theme {
+  --color-panel-utama: #2b5443;
+  --color-panel-utama-2: #3a6b56;
+  --color-panel-aksen: #1f6b4a;
+  --color-panel-lembut: #e6f1ea;
+  --color-panel-latar: #f3f6f4;
+  --color-panel-garis: #e2e9e5;
+  --color-panel-merah: #b03826;
+  --color-panel-merah-lembut: #fde3dc;
+  --shadow-panel-lembut: 0 8px 28px rgb(43 84 67 / 0.09);
+  --shadow-panel-angkat: 0 18px 44px rgb(43 84 67 / 0.16);
+}
+
+/* Lembar menu ponsel. svh supaya tidak tertutup bilah peramban, vh cadangan. */
+.tinggi-lembar {
+  max-height: 88vh;
+  max-height: 88svh;
+}

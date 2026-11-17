@@ -1,6 +1,6 @@
-import { readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 /**
  * Bakes a document folder into one self-contained HTML file, then it is ready
@@ -101,7 +101,45 @@ function shots(markup) {
   return out;
 }
 
-const html = shots(readFileSync(one(".html", [".built.html"]), "utf8"))
+/*
+ * Numbers, if the folder has an `angka.mjs` beside its HTML. The module
+ * default-exports a function returning `{ marker: text }`, and `__N_name__`
+ * in the markup becomes that text.
+ *
+ * It exists because a priced document's figures are nearly all derived: a
+ * monthly price times a term, the tax on the sum, a deposit that is one part
+ * plus half of another. Typed into the markup one by one they are eleven
+ * chances to be wrong, and the one that is wrong is the one nobody adds up.
+ * Here the inputs live in one place, the arithmetic happens once, and
+ * changing a price is changing a price rather than a page.
+ *
+ * Checked in both directions, like the screenshots: a marker with no value
+ * would print as `__N_total__` on a document somebody signs, and a value no
+ * page uses is a figure that was moved or renamed with its twin left behind.
+ */
+async function angka(markup) {
+  const file = join(dir, "angka.mjs");
+  if (!existsSync(file)) return markup;
+  const nilai = await (await import(pathToFileURL(file).href)).default();
+  const asked = new Set([...markup.matchAll(/__N_([A-Za-z0-9-]+)__/g)].map((m) => m[1]));
+  const have = new Set(Object.keys(nilai));
+  const missing = [...asked].filter((n) => !have.has(n));
+  if (missing.length) {
+    throw new Error(`numbers used by the markup but not in ${file}: ${missing.join(", ")}`);
+  }
+  const unused = [...have].filter((n) => !asked.has(n));
+  if (unused.length) {
+    throw new Error(`numbers in ${file} that no page uses: ${unused.join(", ")}`);
+  }
+  let out = markup;
+  for (const [name, text] of Object.entries(nilai)) {
+    out = out.replaceAll(`__N_${name}__`, String(text));
+  }
+  console.log(`  ${asked.size} numbers from angka.mjs`);
+  return out;
+}
+
+const html = (await angka(shots(readFileSync(one(".html", [".built.html"]), "utf8"))))
   .replace("__DMSANS__", b64(fontFile("DM Sans")))
   .replace("__MONO__", b64(fontFile("JetBrains Mono")))
   .replace("__LOGO__", b64(join(root, "public", "logo.png")))

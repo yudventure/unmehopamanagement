@@ -1,7 +1,7 @@
 /**
  * Which domain each public site answers on, when it has one.
  *
- * The same two variables `next.config.ts` reads to route by host, read here
+ * The same two variables `next.config.mjs` reads to route by host, read here
  * for the one thing routing cannot fix by itself: the canonical address.
  *
  * Without this, a page served at `turtlehomestay.com/` would still declare its

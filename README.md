@@ -28,8 +28,9 @@ Tiga situs, satu aplikasi:
 | `http://localhost:3000/turtle` | situs publik Turtle Dive Homestay |
 | `http://localhost:3000/eddo` | situs publik Eddo Homestay |
 
-Di produksi ketiganya dipetakan ke domainnya masing-masing; caranya ada di
-[`DEPLOY.md`](DEPLOY.md).
+Di produksi ketiganya dipetakan ke domainnya masing-masing. Langkah
+memasangnya, berurutan dan tinggal diikuti, ada di [`PASANG.md`](PASANG.md);
+alasan di balik tiap pilihan ada di [`DEPLOY.md`](DEPLOY.md).
 
 Kamar dan paket selam di situs Turtle bisa dipesan dan dibayar langsung lewat
 Midtrans. Tanpa kunci Midtrans tombolnya tidak digambar sama sekali dan situs

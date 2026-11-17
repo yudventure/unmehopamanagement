@@ -352,6 +352,10 @@ terlewat membuat `/` di domain itu menyajikan dashboard.
 
 - Variabel itu tetap menang kalau diisi (untuk domain lain). Kosong berarti
   domain bawaan di `next.config.mjs` dan `src/lib/site-domains.ts`.
+- **Alamat resmi (canonical) dan tautan antar situs** memakai domain hanya bila
+  domain itu benar-benar tayang. Eddo sudah. Turtle belum (`turtlehomestay.com`
+  masih terparkir), jadi tetap `/turtle` sampai `SITE_DOMAIN_TURTLE` diisi di
+  GitHub Variables dan build diulang.
 - `/kelola` di domain homestay dialihkan ke `unmehopamanagement.com/kelola`
   (domain lain bisa lewat `MANAGEMENT_DOMAIN` saat build). Tamu yang membuka
   alamat homestay tidak melihat layar masuk manajemen.

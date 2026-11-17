@@ -35,7 +35,7 @@ const standalone = join(root, ".next", "standalone");
 if (!existsSync(standalone)) {
   console.error(
     "Tidak ada .next/standalone.\n" +
-      "Jalankan `npm run build` dulu, dan pastikan next.config.ts memakai output: \"standalone\".",
+      "Jalankan `npm run build` dulu, dan pastikan next.config.mjs memakai output: \"standalone\".",
   );
   process.exit(1);
 }
@@ -181,7 +181,7 @@ if (usesNextImage) {
  *
  * What it carries is `"build": "next build"`, `"start": "next start"`, and a
  * full dependency list. None of that is true here: there is no `src`, no
- * `next.config.ts` and no `next` binary in the archive, only the compiled
+ * `next.config.mjs` and no `next` binary in the archive, only the compiled
  * server. A hosting panel that reads this file and helpfully does the standard
  * thing will run `npm install`, pulling back the 563 MB of dependencies this
  * archive exists to avoid, and then run `next build` against no source at all.

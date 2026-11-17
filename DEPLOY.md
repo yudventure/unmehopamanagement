@@ -170,9 +170,9 @@ memang halaman sungguhan ditemukan lebih dulu dan tidak pernah ikut ditulis
 ulang. Begitu `SITE_DOMAIN_TURTLE` diisi, tautannya berhenti memakai jalur itu
 dan langsung menyeberang ke domain Turtle.
 
-## Kenapa ini ada di `next.config.ts` dan bukan di setelan panel hosting
+## Kenapa ini ada di `next.config.mjs` dan bukan di setelan panel hosting
 
-Pemetaannya ditulis sebagai rewrite berbasis host di `next.config.ts`. Tiga
+Pemetaannya ditulis sebagai rewrite berbasis host di `next.config.mjs`. Tiga
 alasan:
 
 1. **Diselesaikan sebelum apa pun berjalan**, jadi tidak ada biaya per
@@ -219,7 +219,7 @@ menariknya.
 
 Yang ada di branch itu **hasil build, bukan kode sumber**: `server.js`, `.next`,
 `public`, dan `node_modules` hasil penelusuran, tersusun persis seperti yang
-diminta server. Tidak ada `src`, tidak ada `next.config.ts`, jadi tidak ada yang
+diminta server. Tidak ada `src`, tidak ada `next.config.mjs`, jadi tidak ada yang
 perlu dibangun di sana.
 
 Tiap jalannya dimulai dengan `git init` baru lalu didorong paksa, sehingga
@@ -601,7 +601,7 @@ tersebar di proses pekerjanya. Di mesin build itu lega, di hosting bersama itu
 jatah paket, dan build yang kehabisan memori mati di tengah jalan tanpa pesan
 yang jelas. Jadi build dilakukan di luar, lalu hasilnya yang diunggah.
 
-`next.config.ts` memakai `output: "standalone"`, yang membuat `next build`
+`next.config.mjs` memakai `output: "standalone"`, yang membuat `next build`
 menelusuri berkas apa saja yang benar-benar dipakai tiap route lalu menyalin
 hanya itu ke `.next/standalone`, lengkap dengan `server.js` kecil pengganti
 `next start`. Bedanya bukan sedikit:

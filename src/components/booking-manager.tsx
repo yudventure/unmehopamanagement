@@ -135,6 +135,15 @@ const JENDELA_BULAN = 12;
 const TREND_BACK = 8;
 const TREND_FORWARD = 3;
 
+/**
+ * Unit yang punya dive center. Sekarang hanya Turtle; Eddo menyiapkannya untuk
+ * tahun depan. Mengubah Eddo menjadi `true` cukup untuk memunculkan "Jadwal
+ * Dive Center" di bagian Eddo, bagi akun yang memegang properti Dive Center.
+ * Datanya sendiri (jadwal, booking selam) masih satu unit `divecenter`; yang
+ * dipisah per unit induk saat Eddo benar-benar mulai.
+ */
+const DIVE_CENTER_DI: Record<"turtle" | "eddo", boolean> = { turtle: true, eddo: false };
+
 const NAV_LABELS: Record<Screen, string> = {
   ringkasan: "Ringkasan",
   kalender: "Kalender",
@@ -1038,7 +1047,9 @@ export function BookingManager({
    * lama adalah milik Turtle, jadi duduk di bagian Turtle.
    */
   const navGrup = useMemo<NavGroup[]>(() => {
-    const butir = (k: Screen, unit?: string): NavItem => ({ key: k, label: NAV_LABELS[k], unit });
+    const butir = (k: Screen, unit?: string, label?: string): NavItem => ({
+      key: k, label: label ?? NAV_LABELS[k], unit,
+    });
     const ada = (k: Screen) => layar.includes(k);
     const grup: NavGroup[] = [{ id: "awal", label: "", items: [butir("ringkasan")] }];
     const perUnit = isOwner || akun.peran === "manajer" || akun.peran === "staf";
@@ -1051,14 +1062,33 @@ export function BookingManager({
           items: bergantungUnit.filter(ada).map((k) => butir(k, "all")),
         });
       }
+      const punyaDive = allowedProps.includes("divecenter");
       for (const u of allowedProps) {
+        if (u === "divecenter") continue;
         const nama = PROPERTIES.find((p) => p.key === u)?.name ?? u;
-        const layarUnit: Screen[] =
-          u === "divecenter" ? ["kalender"] : [...bergantungUnit, ...(u === "turtle" ? (["lama"] as Screen[]) : [])];
-        const items = layarUnit.filter(ada).map((k) => butir(k, u));
+        const items: NavItem[] = [
+          ...bergantungUnit.filter(ada).map((k) => butir(k, u)),
+          ...(ada("website") ? [butir("website", u)] : []),
+          ...(u === "turtle" && ada("lama") ? [butir("lama", u)] : []),
+          /* Dive center ikut di bawah unit yang menjalankannya. */
+          ...(DIVE_CENTER_DI[u as "turtle" | "eddo"] && punyaDive && ada("kalender")
+            ? [butir("kalender", "divecenter", "Jadwal Dive Center")]
+            : []),
+        ];
         if (items.length) grup.push({ id: u, label: nama, items });
       }
-      const umum = (["website", "pengguna"] as Screen[]).filter(ada).map((k) => butir(k));
+      /* Dive center yang akunnya tidak memegang unit induknya, misalnya
+         manajer dive center: bagiannya sendiri, dengan nama induknya. */
+      const induk = (["turtle", "eddo"] as const).find((u) => DIVE_CENTER_DI[u]);
+      if (punyaDive && induk && !allowedProps.includes(induk) && ada("kalender")) {
+        const nama = PROPERTIES.find((p) => p.key === induk)?.name ?? induk;
+        grup.push({
+          id: "divecenter",
+          label: `Dive Center ${nama.split(" ")[0]}`,
+          items: [butir("kalender", "divecenter", "Jadwal Dive Center")],
+        });
+      }
+      const umum = (["pengguna"] as Screen[]).filter(ada).map((k) => butir(k));
       if (umum.length) grup.push({ id: "perusahaan", label: "Perusahaan", items: umum });
     } else {
       const sisa = layar
@@ -1506,7 +1536,7 @@ export function BookingManager({
                     yang persis jenis kesalahan yang catatan ini ada untuk
                     mencegahnya. Layar itu membawa keterangannya sendiri. */}
                 {filterProp !== "all" &&
-                  (["kalender", "laporan", "properti", "sinkron", "lama"] as Screen[]).includes(screen) && (
+                  (["kalender", "laporan", "properti", "sinkron", "lama", "website"] as Screen[]).includes(screen) && (
                     <div className="mb-4">
                       <p className="text-[11px] font-bold tracking-[0.16em] text-panel-aksen uppercase">Unit</p>
                       <p className="text-[1.5rem] leading-tight font-bold text-panel-utama">
@@ -1674,7 +1704,16 @@ export function BookingManager({
                 {screen === "lama" && layar.includes("lama") && <SistemLamaScreen />}
 
                 {screen === "website" && layar.includes("website") && (
-                  <WebsiteScreen editor={userName} />
+                  <WebsiteScreen
+                    editor={userName}
+                    situs={
+                      filterProp === "eddo"
+                        ? "eddo"
+                        : filterProp === "turtle" || filterProp === "divecenter"
+                          ? "turtle"
+                          : undefined
+                    }
+                  />
                 )}
 
                 {screen === "pengguna" && layar.includes("pengguna") && (

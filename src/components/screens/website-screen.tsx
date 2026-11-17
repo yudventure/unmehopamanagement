@@ -218,9 +218,15 @@ const grouped = (n: number) => n.toLocaleString("id-ID");
 export interface WebsiteScreenProps {
   /** The signed-in name, recorded on the commit. */
   editor: string;
+  /**
+   * Mengunci layar ke satu situs, dari menu unit (Turtle atau Eddo). Kosong
+   * berarti kedua situs dengan tab seperti dulu, untuk peran yang mengurus
+   * keduanya tanpa melalui unit.
+   */
+  situs?: PublicSite;
 }
 
-export function WebsiteScreen({ editor }: WebsiteScreenProps) {
+export function WebsiteScreen({ editor, situs }: WebsiteScreenProps) {
   const [config, setConfig] = useState<SiteConfig | null>(null);
   /* What the server last gave us, kept so a tab can say it has been touched.
      Replaced on a successful save, which is what clears the marks. */
@@ -230,7 +236,12 @@ export function WebsiteScreen({ editor }: WebsiteScreenProps) {
   const [writable, setWritable] = useState(false);
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState<Status>({ kind: "idle" });
-  const [tab, setTab] = useState<TabKey>("eddo");
+  const [tab, setTab] = useState<TabKey>(situs ?? "eddo");
+  /* Pindah antar unit di menu mempertahankan layar ini tetap terpasang, jadi
+     draf yang belum disimpan tidak hilang; hanya situsnya yang berganti. */
+  useEffect(() => {
+    if (situs) setTab(situs);
+  }, [situs]);
   /* The share links, per site. Null until the answer arrives; an object with
      `configured: false` once it has and there is no token on the server. Kept
      apart from `config` because it comes from somewhere else and for a
@@ -387,9 +398,13 @@ export function WebsiteScreen({ editor }: WebsiteScreenProps) {
 
   return (
     <div>
-      <div className="mb-1 text-[22px] font-bold">Website</div>
+      <div className="mb-1 text-[22px] font-bold">
+        {situs ? `Website ${LABEL_OF[situs]}` : "Website"}
+      </div>
       <div className="mb-3 max-w-[760px] text-[13.5px] leading-[1.55] text-slate-soft">
-        Pengaturan situs publik, satu tab per properti.
+        {situs
+          ? `Pengaturan situs publik ${LABEL_OF[situs]}.`
+          : "Pengaturan situs publik, satu tab per properti."}
       </div>
       <div className="mb-5">
         <Explain>
@@ -437,7 +452,7 @@ export function WebsiteScreen({ editor }: WebsiteScreenProps) {
         aria-label="Bagian pengaturan website"
         className="scrollbar-none mb-4 flex gap-[6px] overflow-x-auto"
       >
-        {TABS.map((t) => {
+        {TABS.filter((t) => !situs || t.key === situs).map((t) => {
           const on = tab === t.key;
           return (
             <button

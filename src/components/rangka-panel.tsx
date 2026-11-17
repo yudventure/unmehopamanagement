@@ -182,7 +182,11 @@ function GrupMenu({
   screen: Screen;
   unit: string;
   onScreen: (item: NavItem) => void;
-  /** Terbuka sejak awal: bagian satu-satunya, misalnya manajer satu unit. */
+  /**
+   * Terbuka sejak awal: bagian satu-satunya (manajer satu unit), serta "Semua
+   * unit" dan "Perusahaan" (tempat Pengguna & Peran). Bagian tiap unit terlipat
+   * sampai dipilih, supaya menu tidak panjang.
+   */
   awalBuka: boolean;
 }) {
   const diDalam = g.items.some((n) => sama(n, screen, unit));
@@ -233,7 +237,7 @@ function Navigasi({
       <ul className="grid gap-1">
         {nav.map((g) =>
           g.label ? (
-            <GrupMenu key={g.id} g={g} screen={screen} unit={unit} onScreen={onScreen} awalBuka={tunggal} />
+            <GrupMenu key={g.id} g={g} screen={screen} unit={unit} onScreen={onScreen} awalBuka={tunggal || g.id === "semua" || g.id === "perusahaan"} />
           ) : (
             g.items.map((n) => (
               <ButirMenu

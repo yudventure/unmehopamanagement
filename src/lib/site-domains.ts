@@ -23,6 +23,16 @@ const SITE_ENV = {
 export type PublicSite = keyof typeof SITE_ENV;
 
 /**
+ * Domain bawaan, sama dengan yang dipakai `next.config.mjs` untuk mengarahkan
+ * host ke situsnya. Variabel yang terlewat tidak boleh membuat alamat resmi
+ * situs berubah menjadi jalur.
+ */
+const BAWAAN: Record<PublicSite, string> = {
+  turtle: "turtlehomestay.com",
+  eddo: "eddohomestay.com",
+};
+
+/**
  * The public sites, as a list something can check a string against.
  *
  * The type alone cannot do that at runtime, and a route taking `?site=` from a
@@ -42,7 +52,7 @@ export const isPublicSite = (v: string): v is PublicSite =>
  */
 export function siteDomain(site: PublicSite): string | null {
   const first = (process.env[SITE_ENV[site]] ?? "").split(",")[0]?.trim();
-  return first ? first.toLowerCase() : null;
+  return (first || BAWAAN[site]).toLowerCase();
 }
 
 /**

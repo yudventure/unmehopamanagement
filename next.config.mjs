@@ -29,22 +29,47 @@
  * are found first and never get a site prefix glued to the front of them.
  */
 
+/**
+ * Domain bawaan tiap situs, dipakai bila variabelnya kosong.
+ *
+ * Sebelumnya domain hanya dikenali kalau `SITE_DOMAIN_*` terisi di GitHub
+ * Variables saat build. Variabel yang terlewat berarti `eddohomestay.com/`
+ * menyajikan dashboard, bukan situs Eddo, tanpa pesan apa pun. Domainnya
+ * sudah diputuskan pemilik, jadi tertulis di sini; variabel tetap menang kalau
+ * diisi (untuk domain lain atau uji). Apex lebih dulu: yang pertama dianggap
+ * alamat resmi.
+ */
 const SITES = [
-  { env: "SITE_DOMAIN_TURTLE", base: "/turtle" },
-  { env: "SITE_DOMAIN_EDDO", base: "/eddo" },
+  {
+    env: "SITE_DOMAIN_TURTLE",
+    base: "/turtle",
+    bawaan: ["turtlehomestay.com", "www.turtlehomestay.com"],
+  },
+  {
+    env: "SITE_DOMAIN_EDDO",
+    base: "/eddo",
+    bawaan: ["eddohomestay.com", "www.eddohomestay.com"],
+  },
 ];
+
+/** Alamat dashboard. Pintu masuk dashboard ada di sini, bukan di domain homestay. */
+const DOMAIN_MANAJEMEN = (process.env.MANAGEMENT_DOMAIN ?? "unmehopamanagement.com").trim();
 
 /**
  * Hosts for one site. A comma-separated list, because the apex and the `www.`
  * form are two different hosts as far as matching is concerned, and a redirect
  * between them is a setting on the host rather than something this can assume.
+ *
+ * @param {string} name
+ * @returns {string[]}
  */
-/** @param {string} name @returns {string[]} */
 function hostsFor(name) {
-  return (process.env[name] ?? "")
+  const dariEnv = (process.env[name] ?? "")
     .split(",")
     .map((h) => h.trim().toLowerCase())
     .filter(Boolean);
+  if (dariEnv.length) return dariEnv;
+  return SITES.find((s) => s.env === name)?.bawaan ?? [];
 }
 
 function hostRewrites() {
@@ -105,6 +130,30 @@ function canonicalPathRedirects() {
         source: `${site.base}/:path+`,
         has,
         destination: "/:path+",
+        permanent: false,
+      });
+    }
+  }
+  return out;
+}
+
+/**
+ * Dashboard tidak punya pintu di domain homestay.
+ *
+ * `/kelola` dulu dibuat supaya dashboard punya alamat di satu-satunya domain
+ * yang waktu itu menunjuk ke aplikasi. Sekarang dashboard punya domainnya
+ * sendiri, dan tamu yang membuka alamat homestay tidak seharusnya melihat layar
+ * masuk manajemen. Pengelola dibawa ke domain manajemen. Sementara, bukan
+ * permanen, karena alasan yang sama seperti pengalihan lain di sini.
+ */
+function pintuDashboard() {
+  const out = [];
+  for (const site of SITES) {
+    for (const host of hostsFor(site.env)) {
+      out.push({
+        source: "/kelola",
+        has: [{ type: "host", value: host }],
+        destination: `https://${DOMAIN_MANAJEMEN}/kelola`,
         permanent: false,
       });
     }
@@ -201,7 +250,7 @@ const nextConfig = {
     return { beforeFiles, afterFiles, fallback: [] };
   },
   async redirects() {
-    return [...canonicalPathRedirects(), ...systemRedirects()];
+    return [...canonicalPathRedirects(), ...pintuDashboard(), ...systemRedirects()];
   },
   async headers() {
     return systemHeaders();

@@ -127,7 +127,11 @@ function canonicalPathRedirects() {
        */
       out.push({ source: site.base, has, destination: "/", permanent: false });
       out.push({
-        source: `${site.base}/:path+`,
+        /* Hanya halaman, bukan berkas. Berkas seperti `icon.png` dan
+           `apple-icon.png` ada di dua tempat: milik situs di bawah jalurnya,
+           dan milik dashboard di akar. Dialihkan ke akar, tab eddohomestay.com
+           menampilkan ikon Unmehopa. Jalur tanpa titik adalah halaman. */
+        source: `${site.base}/:path((?!.*\\.).+)`,
         has,
         destination: "/:path+",
         permanent: false,

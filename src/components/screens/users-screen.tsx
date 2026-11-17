@@ -40,8 +40,9 @@ export function UsersScreen({
           <div className="mb-1 text-[22px] font-bold">Pengguna &amp; Peran</div>
           <div className="text-[13.5px] text-slate-soft">
             Pemilik dan developer mengatur akun. General Manager dan HRD
-            melihat daftar ini. Manajer unit dan staf hanya bekerja di unit
-            yang diizinkan, tanpa angka rupiah.
+            melihat daftar ini. Manajer unit mengelola semua yang berkaitan
+            dengan unitnya, termasuk laporan dan website unitnya. Staf hanya
+            kalender dan kamar di unit yang diizinkan, tanpa angka rupiah.
           </div>
         </div>
         {bolehAtur && (

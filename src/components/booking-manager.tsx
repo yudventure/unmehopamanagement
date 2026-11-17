@@ -34,7 +34,7 @@ import {
   type SesiLama,
 } from "@/lib/sistem-lama-bentuk";
 import { SyncScreen } from "@/components/screens/sync-screen";
-import { LABEL_PERAN, aksesPenuh, layarUntuk, lihatSemua, lihatUang } from "@/lib/peran";
+import { LABEL_PERAN, aksesPenuh, layarUntuk, lihatSemua, lihatUang, ubahKamar } from "@/lib/peran";
 import type { AkunPublik } from "@/lib/server/akun";
 import { UsersScreen } from "@/components/screens/users-screen";
 import { WebsiteScreen } from "@/components/screens/website-screen";
@@ -427,6 +427,9 @@ export function BookingManager({
     const all = PROPERTIES.map((p) => p.key);
     if (isOwner || currentUser?.scope === "Semua properti") return all;
     const match = PROPERTIES.find((p) => p.name === currentUser?.scope);
+    /* Dive center dijalankan Turtle, jadi yang memegang Turtle memegangnya juga
+       (sama dengan `propertiBoleh` di server). */
+    if (match?.key === "turtle") return ["turtle", "divecenter"];
     return match ? [match.key] : [];
   }, [isOwner, currentUser]);
 
@@ -1555,7 +1558,7 @@ export function BookingManager({
                     tempat lain. Kenapa tidak dilebur ke kisi di bawahnya ada
                     di `sistem-lama-panel.tsx`. */}
                 {screen === "kalender" &&
-                  isOwner &&
+                  (isOwner || allowedProps.includes("turtle")) &&
                   /* Sistem lamanya milik Turtle. Waktu filternya disetel ke
                      Eddo, menampilkan kalender Turtle di sana bukan sekadar
                      tidak relevan — ia menjawab pertanyaan yang tidak
@@ -1680,7 +1683,7 @@ export function BookingManager({
                     compact={phone}
                     cards={propertyCards.filter((c) => filterProp === "all" || c.key === filterProp)}
                     showMoney={showMoney}
-                    canEdit={isOwner}
+                    canEdit={ubahKamar(akun.peran)}
                     onSaveRoom={saveRoom}
                     onDeleteRoom={deleteRoom}
                   />

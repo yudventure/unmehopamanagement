@@ -49,7 +49,7 @@ export const KET_PERAN: Record<Peran, string> = {
   developer: "Memegang sistem. Akses penuh, termasuk akun.",
   pemilik: "Akses penuh, termasuk akun.",
   gm: "Melihat semua unit dan angka rupiah. Tidak mengatur akun.",
-  manajer: "Kalender dan kamar untuk unitnya saja. Tanpa angka rupiah.",
+  manajer: "Mengelola unitnya sendiri: kalender, laporan dan angka rupiah, kamar, sinkronisasi, dan website unitnya. Tidak melihat unit lain dan tidak mengatur akun.",
   hrd: "Melihat daftar pengguna dan perannya.",
   keuangan: "Laporan dan angka rupiah semua unit, serta kalender.",
   pr: "Mengelola isi website dan media sosial.",
@@ -73,7 +73,13 @@ export const lihatSemua = (p: Peran) =>
 
 /** Melihat angka rupiah. */
 export const lihatUang = (p: Peran) =>
-  p === "developer" || p === "pemilik" || p === "gm" || p === "keuangan";
+  p === "developer" || p === "pemilik" || p === "gm" || p === "keuangan" || p === "manajer";
+
+/**
+ * Mengubah kamar (tambah, ubah, hapus). Di server hanya yang berada di unit yang
+ * boleh disentuh akun itu: manajer unit mengatur kamar unitnya.
+ */
+export const ubahKamar = (p: Peran) => lihatSemua(p) || p === "manajer";
 
 /**
  * Layar yang boleh dibuka, dalam urutan menu. Disembunyikan di menu dan juga
@@ -88,6 +94,9 @@ export function layarUntuk(p: Peran): Screen[] {
     case "gm":
       return ["ringkasan", "kalender", "laporan", "properti", "sinkron", "lama", "website", "pengguna"];
     case "manajer":
+      /* Semua yang berkaitan dengan unitnya. Datanya dibatasi ke unit itu di
+         tiap rute server; menu hanya menampilkannya. */
+      return ["ringkasan", "kalender", "laporan", "properti", "sinkron", "website", "lama"];
     case "staf":
       return ["ringkasan", "kalender", "properti"];
     case "keuangan":

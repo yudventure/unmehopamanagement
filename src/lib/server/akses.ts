@@ -25,7 +25,15 @@ export function propertiBoleh(a: Akun): PropertyKey[] {
   const semua = PROPERTIES.map((p) => p.key);
   if (lihatSemua(a.peran) || a.scope === "Semua properti") return semua;
   const cocok = PROPERTIES.find((p) => p.name === a.scope);
+  /* Dive center dijalankan Turtle, jadi yang memegang Turtle memegangnya juga. */
+  if (cocok?.key === "turtle") return ["turtle", "divecenter"];
   return cocok ? [cocok.key] : [];
+}
+
+/** Properti sebuah kamar, atau null kalau kamarnya tidak ada. */
+export async function propertiKamar(roomId: string): Promise<PropertyKey | null> {
+  const { ambilKamar } = await import("@/lib/server/buku");
+  return (await ambilKamar()).find((r) => r.id === roomId)?.prop ?? null;
 }
 
 /** Boleh mencatat dan mengubah pesanan: yang punya Kalender, kecuali keuangan yang hanya melihat. */

@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
+import { propertiBoleh } from "@/lib/server/akses";
 import { SESSION_COOKIE, valid } from "@/lib/session";
 import {
   bacaDaftarBooking,
@@ -40,7 +41,10 @@ export const dynamic = "force-dynamic";
 
 export async function GET(req: Request) {
   const jar = await cookies();
-  if (!(await valid(jar.get(SESSION_COOKIE)?.value))) {
+  const akun = await valid(jar.get(SESSION_COOKIE)?.value);
+  /* Sistem lama adalah milik Turtle: akun yang tidak memegang Turtle tidak
+     mendapat tamunya, walau punya sesi yang sah. */
+  if (!akun || !propertiBoleh(akun).includes("turtle")) {
     return NextResponse.json({ error: "not-found" }, { status: 404 });
   }
 

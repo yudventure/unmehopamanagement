@@ -340,3 +340,50 @@ export function isSiteConfig(v: unknown): v is SiteConfig {
         )))
   );
 }
+
+
+/** JSON dengan kunci berurut, supaya dua isi yang sama selalu sama sebagai teks. */
+function stabil(v: unknown): string {
+  if (Array.isArray(v)) return `[${v.map(stabil).join(",")}]`;
+  if (v && typeof v === "object") {
+    const o = v as Record<string, unknown>;
+    return `{${Object.keys(o).sort().map((k) => `${JSON.stringify(k)}:${stabil(o[k])}`).join(",")}}`;
+  }
+  return JSON.stringify(v) ?? "null";
+}
+
+/**
+ * Bagian berkas yang dimiliki satu situs, di luar `sites[situs]`: Turtle
+ * memegang dive centre (tahun berdiri, harga, video), Eddo memegang layanan
+ * yang disewakan. Selain itu, `contact`, `social`, dan `maintenance`, dipakai
+ * bersama kedua situs.
+ */
+const MILIK_SITUS: Record<"turtle" | "eddo", (keyof SiteConfig)[]> = {
+  turtle: ["founded", "divePrices", "diveVideo"],
+  eddo: ["eddoServices"],
+};
+
+function tanpa(c: SiteConfig, kunci: (keyof SiteConfig)[], situs?: "turtle" | "eddo") {
+  const o: Record<string, unknown> = { ...c };
+  for (const k of ["updatedAt", "updatedBy", ...kunci]) delete o[k];
+  if (situs && o.sites && typeof o.sites === "object") {
+    const sites = { ...(o.sites as Record<string, unknown>) };
+    delete sites[situs];
+    o.sites = sites;
+  }
+  return stabil(o);
+}
+
+/**
+ * Apakah `baru` hanya mengubah bagian milik `situs` dari `lama`. Dipakai server
+ * untuk manajer unit: ia boleh mengubah websitenya sendiri, tidak website unit
+ * lain dan tidak yang dipakai bersama.
+ */
+export function hanyaMengubahSitus(lama: SiteConfig, baru: SiteConfig, situs: "turtle" | "eddo"): boolean {
+  return tanpa(lama, MILIK_SITUS[situs], situs) === tanpa(baru, MILIK_SITUS[situs], situs);
+}
+
+/** Apakah `baru` tidak menyentuh penutupan situs (`maintenance`), yang menutup semua halaman publik. */
+export function tidakMenyentuhPenutupan(lama: SiteConfig, baru: SiteConfig): boolean {
+  return lama.maintenance === baru.maintenance;
+}

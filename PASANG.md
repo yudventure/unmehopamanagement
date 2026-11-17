@@ -447,3 +447,36 @@ dijaga **di server**, tidak hanya di menu:
 Kata sandi CMS (`CMS_PASSWORD`) masih diminta. Karena sekarang ada sesi dan
 peran per orang, ia bisa dihapus nanti kalau pemilik mau; sementara tetap
 sebagai lapis tambahan.
+
+## Kalender per unit: kepala, panel pesanan, dan pembaca pesan
+
+Kalender tiap unit (dan **Semua unit**) mengikuti kalender mitra DAMPIER:
+
+- **Kepala unit**: nama, jumlah kamar, dan tiga angka (kamar terisi malam ini,
+  kedatangan 7 hari, terisi bulan ini), dengan penjelasan "Cara kalender ini
+  bekerja".
+- **Panel samping**: **Tambah pesanan**, **Tambah banyak**, kotak **Pesan Stay
+  Raja Ampat**, dan **Check-in dan check-out** (Hari ini, Besok, 7 hari ke
+  depan, 7 hari lalu) dengan tombol **Sudah datang** dan **Sudah pulang**.
+  Manajer unit, staf, dan pemilik, developer, serta GM bisa mencatat. Dari
+  **Semua unit**, pemilik, developer, dan GM mencatat untuk unit mana pun
+  (Turtle atau Eddo); dari kalender sebuah unit, pesanan dimulai di unit itu.
+  Keuangan hanya melihat.
+- **Tambah banyak** dan hasil bacaan pesan memakai layar pemeriksaan yang sama:
+  tiap baris bisa diubah, yang tidak terbaca berbingkai merah, dan tidak ada
+  yang tersimpan sebelum Simpan. Harga dibiarkan kosong bila tidak tertulis
+  (pesanan agen ditandai belum berharga), dan bentrok diberi peringatan.
+
+**Membaca pesan.** Teks yang ditempel dibaca di peramban tanpa dikirim ke mana
+pun, dengan pola umum: tanggal (beberapa penulisan, termasuk rentang "12-15 Nov"
+dan "check in / check out"), nama setelah "atas nama" atau "a/n", jumlah tamu,
+dan nama kamar. **Format pesan Stay Raja Ampat belum diketahui**, jadi tidak ada
+yang ditebak dari satu format; kirim dua tiga contoh pesan aslinya (tanpa data
+sensitif) untuk disetel. Uji: `npm run uji`.
+
+**Membaca screenshot** memakai model AI dengan kemampuan gambar lewat
+`/api/baca-pesan`. **Mati sampai `ANTHROPIC_API_KEY` diisi** di panel Hostinger.
+Perlu diketahui sebelum mengaktifkan: gambar (berisi nama dan nomor tamu) dikirim
+ke layanan itu, tiap pembacaan berbiaya di akun pemilik kunci, dan hasilnya
+tetap hanya usulan. Dibatasi 20 pembacaan per 10 menit per akun, 5 MB per gambar.
+Model bawaan `claude-sonnet-5-5` (ganti lewat `BACA_PESAN_MODEL`).

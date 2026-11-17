@@ -11,7 +11,7 @@
     "start:standalone": "node .next/standalone/server.js",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "uji": "node --test src/lib/*.test.mjs",
+    "uji": "node --test src/lib/*.test.mjs && tsx --test src/lib/*.test.ts",
     "peta": "node --max-old-space-size=8192 scripts/peta.mjs",
     "postinstall": "prisma generate",
     "db:migrate": "prisma migrate deploy",

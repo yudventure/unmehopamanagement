@@ -116,6 +116,14 @@ export interface DashboardRailProps {
   selamMendatang?: SesiLama[];
   /** Eddo tidak punya dive centre sendiri, jadi blok ini tidak ikut ke sana. */
   adaSelam?: boolean;
+  /** Dirender di paling atas kolom, misalnya panel pesanan. */
+  atas?: React.ReactNode;
+  /**
+   * Daftar "Check-in terdekat" bawaan disembunyikan bila ada panel lain yang
+   * sudah menampilkannya (panel pesanan punya check-in dan check-out sendiri).
+   * Daftar booking pada tanggal yang dipilih tetap tampil.
+   */
+  tanpaKedatangan?: boolean;
 }
 
 /** "Hari ini" / "Besok" earn a marker; past that the date itself is clearer. */
@@ -245,6 +253,8 @@ export function DashboardRail({
   selamHari = [],
   selamMendatang = [],
   adaSelam = false,
+  atas,
+  tanpaKedatangan = false,
 }: DashboardRailProps) {
   const stay = (b: Booking) =>
     `${fmtShort(b.checkIn)} – ${fmtShort(b.checkOut)}`;
@@ -338,6 +348,15 @@ export function DashboardRail({
         />
       )}
     </section>
+  ) : tanpaKedatangan ? (
+    adaSelam ? (
+      <BlokSelam
+        judul="Selam & trip"
+        ringkas={ringkasSelam(selamMendatang)}
+        sesi={selamMendatang}
+        kosong={`Tidak ada sesi selam dalam ${upcomingDays} hari ke depan.`}
+      />
+    ) : null
   ) : (
     <Section
       title="Check-in terdekat"
@@ -371,14 +390,16 @@ export function DashboardRail({
 
   if (narrow) {
     return (
-      <div className="flex flex-wrap gap-4 bg-surface-soft px-[14px] pb-6">
-        {sections}
+      <div className="flex flex-col gap-4 bg-surface-soft px-[14px] pb-6">
+        {atas}
+        <div className="flex flex-wrap gap-4">{sections}</div>
       </div>
     );
   }
 
   return (
     <aside className="flex max-h-screen w-[352px] shrink-0 flex-col gap-6 overflow-auto border-l border-line bg-surface px-[22px] pt-[22px] pb-[26px]">
+      {atas}
       {sections}
     </aside>
   );

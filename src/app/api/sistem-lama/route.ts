@@ -40,7 +40,7 @@ export const dynamic = "force-dynamic";
 
 export async function GET(req: Request) {
   const jar = await cookies();
-  if (!valid(jar.get(SESSION_COOKIE)?.value)) {
+  if (!(await valid(jar.get(SESSION_COOKIE)?.value))) {
     return NextResponse.json({ error: "not-found" }, { status: 404 });
   }
 

@@ -133,8 +133,11 @@ export interface Booking {
   updatedBy?: string;
 }
 
+import type { Peran } from "@/lib/peran";
+
 export interface User {
   id: string;
+  peran: Peran;
   name: string;
   email: string;
   role: "Owner" | "Staf";
@@ -157,6 +160,8 @@ export interface BookingForm {
 export interface InviteForm {
   name: string;
   email: string;
-  role: "Owner" | "Staf";
+  peran: Peran;
   scope: string;
+  /** Kata sandi awal; orangnya menggantinya lewat developer atau pemilik. */
+  sandi: string;
 }

@@ -2,6 +2,7 @@
 
 import { Pill } from "@/components/ui/pill";
 import { activeColors, roleColors } from "@/lib/pills";
+import { LABEL_PERAN } from "@/lib/peran";
 import type { User } from "@/lib/types";
 
 export interface UsersScreenProps {
@@ -10,6 +11,10 @@ export interface UsersScreenProps {
   compact: boolean;
   onOpenInvite: () => void;
   onToggleUser: (user: User) => void;
+  /** Hanya developer dan pemilik yang boleh menambah dan menonaktifkan akun. */
+  bolehAtur: boolean;
+  /** Email akun yang sedang masuk; dirinya sendiri tidak bisa dinonaktifkan. */
+  emailSaya: string;
 }
 
 const TABLE_GRID = {
@@ -25,6 +30,8 @@ export function UsersScreen({
   compact,
   onOpenInvite,
   onToggleUser,
+  bolehAtur,
+  emailSaya,
 }: UsersScreenProps) {
   return (
     <div>
@@ -36,6 +43,7 @@ export function UsersScreen({
             kalender, input booking, dan pembayaran di properti yang diizinkan.
           </div>
         </div>
+        {bolehAtur && (
         <button
           type="button"
           onClick={onOpenInvite}
@@ -43,8 +51,9 @@ export function UsersScreen({
             compact ? "w-full" : "ml-auto"
           }`}
         >
-          + Undang pengelola
+          + Tambah pengguna
         </button>
+        )}
       </div>
 
       {/*
@@ -73,11 +82,11 @@ export function UsersScreen({
               </div>
 
               <div className="mt-[10px] flex flex-wrap items-center gap-2">
-                <Pill colors={roleColors(u.role)}>{u.role}</Pill>
+                <Pill colors={roleColors(u.role)}>{LABEL_PERAN[u.peran]}</Pill>
                 <span className="text-[12.5px] text-slate">{u.scope}</span>
               </div>
 
-              {u.role !== "Owner" && (
+              {bolehAtur && u.email !== emailSaya && (
                 <button
                   type="button"
                   onClick={() => onToggleUser(u)}
@@ -118,7 +127,7 @@ export function UsersScreen({
                 <div className="text-[12px] text-slate-soft">{u.email}</div>
               </div>
               <div>
-                <Pill colors={roleColors(u.role)}>{u.role}</Pill>
+                <Pill colors={roleColors(u.role)}>{LABEL_PERAN[u.peran]}</Pill>
               </div>
               <div className="text-[13px] text-slate">{u.scope}</div>
               <div>
@@ -127,7 +136,7 @@ export function UsersScreen({
                 </Pill>
               </div>
               <div>
-                {u.role === "Owner" ? (
+                {!bolehAtur || u.email === emailSaya ? (
                   <span className="text-[12.5px] text-slate-mute">—</span>
                 ) : (
                   <button

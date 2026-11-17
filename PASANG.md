@@ -119,9 +119,9 @@ bisa dipakai:
 
 | Variabel | Tanpa ini |
 |---|---|
-| `DASHBOARD_PASSWORD` | tidak ada yang bisa masuk ke dashboard sama sekali |
-| `SESSION_SECRET` | semua orang keluar sendiri tiap server menyala ulang |
-| `DATABASE_URL` | dashboard memakai data contoh, tidak menyimpan apa pun |
+| `PENYIAPAN_KUNCI` (atau `DASHBOARD_PASSWORD` yang lama) | akun developer pertama tidak bisa dibuat, jadi tidak ada yang bisa masuk. Kunci ini hanya untuk penyiapan, bukan untuk masuk sehari-hari |
+| `SESSION_SECRET` | opsional: kosong berarti dibuatkan sekali dan disimpan di folder data |
+| `DATABASE_URL` | kalender kosong dan booking tidak tersimpan; tidak ada data contoh |
 | `DIRECT_URL` | migrasi database tidak bisa jalan dari Actions |
 | `CMS_PASSWORD` | tab Website menolak menyimpan |
 | `RESEND_API_KEY`, `ENQUIRY_FROM` | tombol Kirim beralih membuka WhatsApp |
@@ -250,3 +250,26 @@ variabel domain, sekali dengan keduanya terisi dan `Host` dipalsukan.
 
 Yang **tidak** ikut ditulis ulang, dan itu memang syaratnya: `/api/*`,
 `/version.json`, dan berkas di `public/` menjawab sama persis di ketiga host.
+
+## Masuk ke dashboard: akun per orang
+
+Dashboard tidak lagi memakai satu kata sandi bersama. Tiap orang punya akun
+(email dan kata sandi) yang tersimpan di server, di folder `~/.unmehopa-data`
+(atau `UNMEHOPA_DATA_DIR`), di luar folder aplikasi sehingga deploy ulang tidak
+menghapusnya. **Cadangkan folder itu**: kehilangannya berarti semua akun harus
+dibuat ulang.
+
+1. Buka `unmehopamanagement.com`. Selama belum ada akun, halaman masuk berubah
+   menjadi **Buat akun developer pertama**.
+2. Isi **Kunci penyiapan** dengan nilai `PENYIAPAN_KUNCI` di panel hosting
+   (atau `DASHBOARD_PASSWORD` kalau itu yang sudah terisi), lalu nama, email,
+   dan kata sandi (paling sedikit 10 huruf). Kunci ini hanya dipakai di sini.
+3. Sesudahnya, **Pengguna & Peran** di dashboard dipakai untuk menambah akun,
+   mengganti peran, dan menonaktifkan. Peran: Developer, Pemilik (akses penuh),
+   Admin (semua properti dan angka rupiah, tanpa mengatur akun), Staf
+   (properti yang diizinkan, tanpa angka rupiah).
+4. Lupa kata sandi: developer atau pemilik menyetel ulang dari halaman
+   Pengguna. Menyetel ulang mengeluarkan sesi lama orang itu.
+
+Developer atau pemilik terakhir yang aktif tidak bisa dinonaktifkan atau
+diturunkan, supaya tidak ada yang mengunci diri dari dashboard.

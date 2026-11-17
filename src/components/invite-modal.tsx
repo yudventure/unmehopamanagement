@@ -7,6 +7,7 @@ import {
   Modal,
   ModalHeader,
 } from "@/components/ui/modal";
+import { LABEL_PERAN, PERAN } from "@/lib/peran";
 import type { InviteForm } from "@/lib/types";
 
 export interface InviteModalProps {
@@ -17,7 +18,6 @@ export interface InviteModalProps {
 }
 
 const SCOPES = ["Turtle Homestay", "Eddo Homestay", "Semua properti"];
-const ROLES: InviteForm["role"][] = ["Staf", "Owner"];
 
 export function InviteModal({
   invite,
@@ -27,9 +27,9 @@ export function InviteModal({
 }: InviteModalProps) {
   return (
     <Modal onClose={onClose} z={70} maxWidth={460} labelledBy="invite-title">
-      <ModalHeader id="invite-title" title="Undang pengelola" onClose={onClose} />
+      <ModalHeader id="invite-title" title="Tambah pengguna" onClose={onClose} />
       <div className="mb-[18px] text-[13px] text-slate-soft">
-        Staf hanya bisa mengelola properti yang dipilih di bawah.
+        Staf hanya bisa mengelola properti yang dipilih di bawah. Beri kata sandi awal (paling sedikit 10 huruf) dan sampaikan langsung ke orangnya.
       </div>
 
       <div className="flex flex-col gap-[14px]">
@@ -49,7 +49,18 @@ export function InviteModal({
             type="text"
             value={invite.email}
             onChange={(e) => onChange("email", e.target.value)}
-            placeholder="nama@rumahpapua.id"
+            placeholder="nama@perusahaan.com"
+            className={FIELD_INPUT}
+          />
+        </label>
+        <label className={FIELD_LABEL}>
+          Kata sandi awal
+          <input
+            type="text"
+            value={invite.sandi}
+            onChange={(e) => onChange("sandi", e.target.value)}
+            placeholder="Paling sedikit 10 huruf"
+            autoComplete="off"
             className={FIELD_INPUT}
           />
         </label>
@@ -57,15 +68,15 @@ export function InviteModal({
           <label className={FIELD_LABEL}>
             Peran
             <select
-              value={invite.role}
+              value={invite.peran}
               onChange={(e) =>
-                onChange("role", e.target.value as InviteForm["role"])
+                onChange("peran", e.target.value as InviteForm["peran"])
               }
               className={FIELD_SELECT}
             >
-              {ROLES.map((r) => (
+              {PERAN.map((r) => (
                 <option key={r} value={r}>
-                  {r}
+                  {LABEL_PERAN[r]}
                 </option>
               ))}
             </select>
@@ -92,7 +103,7 @@ export function InviteModal({
         onClick={onSend}
         className="mt-5 w-full cursor-pointer rounded-xl border-none bg-teal py-3 text-[13.5px] font-bold text-white hover:bg-teal-deep"
       >
-        Kirim undangan
+        Buat akun
       </button>
     </Modal>
   );

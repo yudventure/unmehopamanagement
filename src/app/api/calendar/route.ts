@@ -74,7 +74,7 @@ const polos = (d: Date) => d.toISOString().slice(0, 10);
 
 export async function GET(req: Request) {
   const jar = await cookies();
-  if (!valid(jar.get(SESSION_COOKIE)?.value)) {
+  if (!(await valid(jar.get(SESSION_COOKIE)?.value))) {
     return NextResponse.json({ error: "not-found" }, { status: 404 });
   }
 

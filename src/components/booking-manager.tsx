@@ -8,7 +8,6 @@ import { BookingFormModal } from "@/components/booking-form-modal";
 import { ConflictModal } from "@/components/conflict-modal";
 import { DashboardRail } from "@/components/dashboard-rail";
 import { InviteModal } from "@/components/invite-modal";
-import { LoginScreen } from "@/components/login-screen";
 import type { RoomPatch } from "@/components/room-edit-modal";
 import { CalendarScreen } from "@/components/screens/calendar-screen";
 import {
@@ -35,6 +34,8 @@ import {
   type SesiLama,
 } from "@/lib/sistem-lama-bentuk";
 import { SyncScreen } from "@/components/screens/sync-screen";
+import { tampilanOwner, aksesPenuh } from "@/lib/peran";
+import type { AkunPublik } from "@/lib/server/akun";
 import { UsersScreen } from "@/components/screens/users-screen";
 import { WebsiteScreen } from "@/components/screens/website-screen";
 import { Sidebar, type NavItem } from "@/components/sidebar";
@@ -50,16 +51,9 @@ import {
   CH,
   CHANNEL_KEYS,
   CHANNEL_LABELS,
-  SEED_MONTH,
-  SEED_TODAY,
-  OWNER_EMAIL,
   PROPERTIES,
   PROPERTIES_BERKAMAR,
-  STAFF_EMAIL,
-  seedBookings,
-  seedLedger,
   seedRooms,
-  seedUsers,
 } from "@/lib/data";
 import {
   activeRoomsFor,
@@ -168,10 +162,11 @@ const NAV_LABELS: Record<Screen, string> = {
 export interface BookingManagerProps {
   /** Screen shown right after signing in. */
   layarAwal?: Screen;
-  /** Whether the page already found a valid session cookie. The manager is
-      only rendered at all when it did, so this starts the view signed in
-      instead of drawing a login over a page that has already arrived. */
-  signedIn?: boolean;
+  /** Akun yang sedang masuk. Dashboard hanya dirender kalau halamannya sudah
+      menemukan sesi yang sah, jadi tidak ada login yang digambar di atasnya. */
+  akun: AkunPublik;
+  /** Semua akun untuk developer dan pemilik; selain itu hanya akun sendiri. */
+  daftarAkun: AkunPublik[];
   /** Hide every rupiah figure, the way staff accounts see the app. */
   modeStaf?: boolean;
   /**
@@ -197,28 +192,43 @@ const EMPTY_FORM: BookingForm = {
 const EMPTY_INVITE: InviteForm = {
   name: "",
   email: "",
-  role: "Staf",
+  peran: "staf",
   scope: "Turtle Homestay",
+  sandi: "",
 };
+
+/** Pengganti sesaat sebelum jam peramban terbaca; bukan jawabannya. */
+const AWAL_BULAN = new Date(2026, 0, 1);
+const AWAL_HARI = "2026-01-01";
+
+/** Akun di server jadi baris di halaman Pengguna. */
+function keUser(a: AkunPublik): User {
+  return {
+    id: a.email,
+    peran: a.peran,
+    name: a.nama,
+    email: a.email,
+    role: tampilanOwner(a.peran) ? "Owner" : "Staf",
+    scope: a.scope,
+    active: a.aktif,
+  };
+}
 
 export function BookingManager({
   layarAwal = "kalender",
-  signedIn = false,
+  akun,
+  daftarAkun,
   modeStaf = false,
   bookingPerHari = 4,
 }: BookingManagerProps) {
   const [rooms, setRooms] = useState(seedRooms);
-  /* August is the seeded month; the year around it comes from `seedLedger`, on
-     its own generator, so the report has a season to plot rather than a single
-     column. It is handed the seeded book so it can step around those nights. */
-  const [bookings, setBookings] = useState<Booking[]>(() => {
-    const seeded = seedBookings(rooms);
-    return seeded.concat(seedLedger(rooms, seeded));
-  });
-  const [users, setUsers] = useState<User[]>(seedUsers);
+  /* Kosong sampai ada booking sungguhan. Tidak ada booking karangan: kalender
+     dan laporan menampilkan apa yang ada di database dan sistem lama. */
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [users, setUsers] = useState<User[]>(() => daftarAkun.map(keUser));
 
   const [screen, setScreen] = useState<Screen>(layarAwal);
-  const [month, setMonth] = useState(SEED_MONTH);
+  const [month, setMonth] = useState(AWAL_BULAN);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   /** Day picked on the calendar, listed in the rail. Null = default rail. */
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -236,14 +246,10 @@ export function BookingManager({
   const [inviteOpen, setInviteOpen] = useState(false);
   const [invite, setInvite] = useState<InviteForm>(EMPTY_INVITE);
 
-  const [auth, setAuth] = useState(signedIn);
-  const [role, setRole] = useState<Role>("owner");
-  /* Empty, and on neither role, for the reason `sign-in.tsx` gives: a login
-     that arrives pre-filled is a demo of a login. */
-  const [loginEmail, setLoginEmail] = useState("");
-  const [loginPass, setLoginPass] = useState("");
-  const [loginRole, setLoginRole] = useState<Role | null>(null);
-  const [loginError, setLoginError] = useState("");
+  const [auth, setAuth] = useState(true);
+  /* Peran dan alamat datang dari akun di server, bukan dari pilihan di layar. */
+  const [role, setRole] = useState<Role>(tampilanOwner(akun.peran) ? "owner" : "staf");
+  const loginEmail = akun.email;
   const [menuOpen, setMenuOpen] = useState(false);
 
   const [toast, setToast] = useState("");
@@ -272,9 +278,9 @@ export function BookingManager({
    * both settled after mount for the same reason as `origin`. A page rendered
    * at build time cannot know what day it is when somebody opens it.
    *
-   * `SEED_TODAY` is only the first paint's stand-in, never the answer.
+   * `AWAL_HARI` is only the first paint's stand-in, never the answer.
    */
-  const [today, setToday] = useState(SEED_TODAY);
+  const [today, setToday] = useState(AWAL_HARI);
   useEffect(() => {
     const now = new Date();
     setToday(iso(now));
@@ -818,68 +824,6 @@ export function BookingManager({
     [form, roomById, bookings.length, flash],
   );
 
-  /**
-   * The role comes from the account the email belongs to, never from the
-   * chooser on the login screen, which only prefills an address.
-   * Reading it from the chooser meant signing in with a staff address while it
-   * still said "Owner" handed out Owner access, including the screens and the
-   * rupiah figures staff are not supposed to see.
-   */
-  const doLogin = useCallback(async () => {
-    const email = loginEmail.trim().toLowerCase();
-    if (!email || !loginPass.trim()) {
-      setLoginError("Email dan kata sandi wajib diisi.");
-      return;
-    }
-    const account = users.find((u) => u.email.toLowerCase() === email);
-    if (!account) {
-      setLoginError("Email tidak terdaftar.");
-      return;
-    }
-    if (!account.active) {
-      setLoginError("Akun ini dinonaktifkan. Hubungi Owner.");
-      return;
-    }
-
-    /* The password is checked by the server, which is the only place a check
-       means anything. This used to be the line that was missing entirely: the
-       field was tested for being non-empty and then anyone was let in. */
-    let ok = false;
-    try {
-      const res = await fetch("/api/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password: loginPass }),
-      });
-      if (res.status === 503) {
-        setLoginError(
-          "Login belum disiapkan di server. Isi DASHBOARD_PASSWORD.",
-        );
-        return;
-      }
-      ok = res.ok;
-    } catch {
-      setLoginError("Tidak bisa menghubungi server.");
-      return;
-    }
-    if (!ok) {
-      setLoginError("Email atau kata sandi salah.");
-      return;
-    }
-
-    const actual: Role = account.role === "Owner" ? "owner" : "staf";
-    const allowed = actual === "owner" ? OWNER_SCREENS : STAFF_SCREENS;
-    setAuth(true);
-    setRole(actual);
-    setLoginRole(actual);
-    setLoginEmail(account.email);
-    setLoginError("");
-    setLoginPass("");
-    setScreen(allowed.includes(layarAwal) ? layarAwal : "kalender");
-    setSelectedId(null);
-    setSelectedDate(null);
-  }, [loginEmail, loginPass, users, layarAwal]);
-
   const doLogout = useCallback(() => {
     /* The cookie is what grants access, so signing out has to reach the server
        for it. Fire and forget, then reload: a failed request must still clear
@@ -900,14 +844,18 @@ export function BookingManager({
     setInviteOpen(false);
   }, []);
 
-  const pickLoginRole = useCallback((next: Role) => {
-    setLoginRole(next);
-    setLoginEmail(next === "owner" ? OWNER_EMAIL : STAFF_EMAIL);
-  }, []);
-
   const toggleUser = useCallback(
-    (user: User) => {
-      if (user.role === "Owner") return;
+    async (user: User) => {
+      const res = await fetch("/api/akun", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: user.email, aktif: !user.active }),
+      }).catch(() => null);
+      if (!res?.ok) {
+        const o = (await res?.json().catch(() => ({}))) as { galat?: string } | undefined;
+        flash(o?.galat ?? "Tidak bisa menyimpan perubahan akun.");
+        return;
+      }
       setUsers((prev) =>
         prev.map((u) => (u.id === user.id ? { ...u, active: !u.active } : u)),
       );
@@ -920,23 +868,32 @@ export function BookingManager({
     [flash],
   );
 
-  const sendInvite = useCallback(() => {
-    if (!invite.name.trim() || !invite.email.trim()) {
-      flash("Nama dan email pengelola wajib diisi.");
+  const sendInvite = useCallback(async () => {
+    if (!invite.name.trim() || !invite.email.trim() || !invite.sandi) {
+      flash("Nama, email, dan kata sandi awal wajib diisi.");
       return;
     }
-    setUsers((prev) =>
-      prev.concat({
-        id: "U" + (prev.length + 1),
-        name: invite.name.trim(),
-        email: invite.email.trim(),
-        role: invite.role,
+    const res = await fetch("/api/akun", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        nama: invite.name,
+        email: invite.email,
+        sandi: invite.sandi,
+        peran: invite.peran,
         scope: invite.scope,
-        active: true,
       }),
-    );
+    }).catch(() => null);
+    const o = (await res?.json().catch(() => ({}))) as
+      | { galat?: string; akun?: AkunPublik }
+      | undefined;
+    if (!res?.ok || !o?.akun) {
+      flash(o?.galat ?? "Tidak bisa membuat akun.");
+      return;
+    }
+    setUsers((prev) => prev.concat(keUser(o.akun!)));
     setInviteOpen(false);
-    flash(`Undangan dikirim ke ${invite.email.trim()}.`);
+    flash(`Akun ${o.akun.email} dibuat.`);
     setInvite(EMPTY_INVITE);
   }, [invite, flash]);
 
@@ -1551,6 +1508,8 @@ export function BookingManager({
                     users={users}
                     onOpenInvite={() => setInviteOpen(true)}
                     onToggleUser={toggleUser}
+                    bolehAtur={aksesPenuh(akun.peran)}
+                    emailSaya={akun.email}
                   />
                 )}
               </div>
@@ -1646,20 +1605,6 @@ export function BookingManager({
           onChange={setInviteField}
           onClose={() => setInviteOpen(false)}
           onSend={sendInvite}
-        />
-      )}
-
-      {!auth && (
-        <LoginScreen
-          narrow={nw}
-          email={loginEmail}
-          password={loginPass}
-          role={loginRole}
-          error={loginError}
-          onEmail={setLoginEmail}
-          onPassword={setLoginPass}
-          onRole={pickLoginRole}
-          onSubmit={doLogin}
         />
       )}
 

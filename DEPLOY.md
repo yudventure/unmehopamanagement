@@ -49,7 +49,7 @@ bersangkutan, dan matinya dijelaskan di layar, bukan berupa error.
 | `CMS_PASSWORD` | ditanyakan sebelum menyimpan | endpoint menolak jalan sama sekali |
 | `RATES_URL` | opsional, sumber kurs | memakai open.er-api.com |
 | `PREVIEW_TOKEN` | membuka situs yang sedang ditutup, buat developer | tidak ada jalan masuk ke situs yang ditutup |
-| `DASHBOARD_PASSWORD` | kata sandi masuk dashboard booking | tidak ada yang bisa masuk ke dashboard |
+| `PENYIAPAN_KUNCI` (atau `DASHBOARD_PASSWORD`) | kunci untuk membuat akun developer pertama; sesudah itu masuk dengan email dan kata sandi masing-masing | akun pertama tidak bisa dibuat, jadi tidak ada yang bisa masuk |
 | `SESSION_SECRET` | menandatangani cookie sesi dashboard | dibuat acak tiap restart, semua sesi putus |
 | `NEXT_PUBLIC_LOGIN_HERO` | foto panel login | panel tampil sebagai bingkai kosong |
 | `SITE_DOMAIN_TURTLE` | domain situs Turtle | Turtle tetap di `/turtle` |

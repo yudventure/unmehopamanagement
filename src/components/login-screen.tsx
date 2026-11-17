@@ -3,8 +3,6 @@
 import { useState } from "react";
 import { BrandLogo } from "@/components/brand-logo";
 import { LoginIllustration } from "@/components/login-illustration";
-import { OWNER_EMAIL, STAFF_EMAIL } from "@/lib/data";
-import type { Role } from "@/lib/types";
 
 /**
  * The hero panel ships an inline illustration, so nothing is required in
@@ -19,22 +17,29 @@ export interface LoginScreenProps {
   narrow: boolean;
   email: string;
   password: string;
-  /**
-   * Which of the two shortcuts filled the address in, or null when nobody
-   * pressed one.
-   *
-   * Null is the state this screen opens in. It used to open with the owner's
-   * address already typed and "Owner" underlined, which is a demo's habit
-   * rather than a sign-in's: it tells every visitor what an account here is
-   * called, it puts somebody else's address in the box a member of staff has
-   * to clear before typing their own, and it marks a choice nobody made.
-   */
-  role: Role | null;
   error: string;
   onEmail: (value: string) => void;
   onPassword: (value: string) => void;
-  onRole: (role: Role) => void;
   onSubmit: () => void;
+  /** Sedang mengirim; tombol menahan klik kedua. */
+  busy?: boolean;
+  /**
+   * Penyiapan akun developer pertama memakai layar yang sama, dengan isian
+   * tambahan di atas email (kunci, nama) dan kalimat sendiri.
+   */
+  heading?: string;
+  intro?: string;
+  submitLabel?: string;
+  extraFields?: {
+    label: string;
+    value: string;
+    onChange: (value: string) => void;
+    type?: string;
+    placeholder: string;
+    autoComplete: string;
+  }[];
+  /** Tanpa "Ingat saya" dan "Lupa kata sandi", untuk layar penyiapan. */
+  plain?: boolean;
 }
 
 function LoginHero() {
@@ -142,12 +147,16 @@ export function LoginScreen({
   narrow,
   email,
   password,
-  role,
   error,
   onEmail,
   onPassword,
-  onRole,
   onSubmit,
+  busy = false,
+  heading = "Satu kalender untuk semua booking homestay Anda",
+  intro = "Selamat datang kembali, silakan masuk ke akun Anda.",
+  submitLabel = "Masuk",
+  extraFields = [],
+  plain = false,
 }: LoginScreenProps) {
   /* Cosmetic until real sessions land — there is nothing yet to remember. */
   const [remember, setRemember] = useState(false);
@@ -183,20 +192,33 @@ export function LoginScreen({
         <div className="flex flex-1 flex-col justify-center py-10">
           <div>
             <h1 className="text-[26px] leading-[1.28] font-bold tracking-[-.02em] text-balance text-ink">
-              Satu kalender untuk semua booking homestay Anda
+              {heading}
             </h1>
             <p className="mt-[14px] text-[13.5px] leading-[1.5] text-pretty text-slate-soft">
-              Selamat datang kembali, silakan masuk ke akun Anda.
+              {intro}
             </p>
           </div>
 
           <div className="mt-[26px] overflow-hidden rounded-[12px] border-[1.5px] border-line-input">
+            {extraFields.map((f) => (
+              <div key={f.label}>
+                <Field
+                  label={f.label}
+                  value={f.value}
+                  onChange={f.onChange}
+                  type={f.type ?? "text"}
+                  placeholder={f.placeholder}
+                  autoComplete={f.autoComplete}
+                />
+                <div className="h-px bg-line-input" />
+              </div>
+            ))}
             <Field
               label="Alamat Email"
               value={email}
               onChange={onEmail}
               type="email"
-              placeholder="nama@rumahpapua.id"
+              placeholder="nama@perusahaan.com"
               autoComplete="username"
             />
             <div className="h-px bg-line-input" />
@@ -209,7 +231,7 @@ export function LoginScreen({
                  a password already typed — which is exactly what it was taken
                  for — and a field that looks filled is a field nobody fills. */
               placeholder="Masukkan kata sandi"
-              autoComplete="current-password"
+              autoComplete={plain ? "new-password" : "current-password"}
               trailing={
                 <button
                   type="button"
@@ -233,29 +255,31 @@ export function LoginScreen({
             />
           </div>
 
-          <div className="mt-[14px] flex items-center justify-between">
-            <label className="flex cursor-pointer items-center gap-[7px] text-[12.5px] text-slate-soft">
-              <input
-                type="checkbox"
-                checked={remember}
-                onChange={(e) => setRemember(e.target.checked)}
-                className="h-[13px] w-[13px] accent-teal"
-              />
-              Ingat saya
-            </label>
-            <button
-              type="button"
-              onClick={() => setShowReset((v) => !v)}
-              className="cursor-pointer border-none bg-transparent p-0 text-[12.5px] text-slate-soft hover:text-teal hover:underline"
-            >
-              Lupa kata sandi?
-            </button>
-          </div>
+          {!plain && (
+            <div className="mt-[14px] flex items-center justify-between">
+              <label className="flex cursor-pointer items-center gap-[7px] text-[12.5px] text-slate-soft">
+                <input
+                  type="checkbox"
+                  checked={remember}
+                  onChange={(e) => setRemember(e.target.checked)}
+                  className="h-[13px] w-[13px] accent-teal"
+                />
+                Ingat saya
+              </label>
+              <button
+                type="button"
+                onClick={() => setShowReset((v) => !v)}
+                className="cursor-pointer border-none bg-transparent p-0 text-[12.5px] text-slate-soft hover:text-teal hover:underline"
+              >
+                Lupa kata sandi?
+              </button>
+            </div>
+          )}
 
-          {showReset && (
+          {showReset && !plain && (
             <div className="mt-[10px] rounded-[10px] bg-teal-tint px-[13px] py-[9px] text-[12px] leading-[1.5] text-slate">
-              Hubungi Owner untuk mereset akun Anda. Reset mandiri lewat email
-              belum tersedia.
+              Hubungi developer atau pemilik untuk mengatur ulang kata sandi
+              Anda dari halaman Pengguna.
             </div>
           )}
 
@@ -268,35 +292,13 @@ export function LoginScreen({
           <div className="mt-[22px]">
             <button
               type="submit"
-              className="w-full cursor-pointer rounded-[9px] border-[1.5px] border-teal bg-teal py-[12px] text-[14px] font-bold text-white hover:border-teal-deep hover:bg-teal-deep"
+              disabled={busy}
+              className="w-full disabled:cursor-wait disabled:opacity-70 cursor-pointer rounded-[9px] border-[1.5px] border-teal bg-teal py-[12px] text-[14px] font-bold text-white hover:border-teal-deep hover:bg-teal-deep"
             >
-              Masuk
+              {busy ? "Memproses…" : submitLabel}
             </button>
           </div>
 
-          <div className="mt-[26px] flex flex-wrap items-center gap-x-[18px] gap-y-[6px]">
-            <span className="text-[12.5px] text-slate-mute">
-              Atau masuk sebagai
-            </span>
-            {(
-              [
-                { key: "owner", name: "Owner" },
-                { key: "staf", name: "Staf" },
-              ] as const
-            ).map((r) => (
-              <button
-                key={r.key}
-                type="button"
-                onClick={() => onRole(r.key)}
-                aria-pressed={role === r.key}
-                className={`cursor-pointer border-none bg-transparent p-0 text-[12.5px] font-bold hover:underline ${
-                  role === r.key ? "text-teal underline" : "text-slate-mute"
-                }`}
-              >
-                {r.name}
-              </button>
-            ))}
-          </div>
         </div>
       </form>
 

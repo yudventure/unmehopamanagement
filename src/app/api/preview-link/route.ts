@@ -50,7 +50,7 @@ export async function GET(req: Request) {
      that this endpoint exists tells them the site has a way in worth looking
      for, and a refusal that names itself is an invitation to come back with a
      session. */
-  if (!valid(jar.get(SESSION_COOKIE)?.value)) {
+  if (!(await valid(jar.get(SESSION_COOKIE)?.value))) {
     return NextResponse.json({ error: "not-found" }, { status: 404 });
   }
 

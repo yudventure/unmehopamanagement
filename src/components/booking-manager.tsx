@@ -1669,7 +1669,7 @@ export function BookingManager({
         onQuery={setQuery}
         onLogout={doLogout}
       >
-        <div className={`flex items-start gap-6 ${nw ? "flex-col" : "flex-row"}`}>
+        <div className={`flex gap-6 ${nw ? "flex-col" : "flex-row items-stretch"}`}>
           <div className="w-full min-w-0 flex-1">
                 {/* Di atas isi tiap layar, bukan hanya kalender: okupansi di
                     Laporan dan tarif di Properti dibangkitkan dari sumber yang

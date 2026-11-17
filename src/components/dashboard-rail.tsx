@@ -398,7 +398,7 @@ export function DashboardRail({
   }
 
   return (
-    <aside className="flex max-h-screen w-[352px] shrink-0 flex-col gap-6 overflow-auto border-l border-line bg-surface px-[22px] pt-[22px] pb-[26px]">
+    <aside className="flex w-[352px] shrink-0 flex-col gap-6 border-l border-line bg-surface px-[22px] pt-[22px] pb-[26px]">
       {atas}
       {sections}
     </aside>

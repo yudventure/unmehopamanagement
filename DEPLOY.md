@@ -11,6 +11,11 @@ diterbitkan ke branch `deploy`, dan Hostinger menariknya. Bagian **Deploy
 otomatis lewat branch `deploy`** di bawah adalah jalur yang benar-benar
 dipakai.
 
+**Mau memasangnya sekarang, bukan memahaminya?** [`PASANG.md`](PASANG.md)
+adalah urutannya saja: setelan panel hPanel, variabel mana yang diisi di mana,
+satu domain dulu lalu domain berikutnya menyusul. Dokumen ini yang menjelaskan
+kenapa tiap langkah di sana begitu.
+
 | Alamat | Isi | Siapa yang membukanya |
 |---|---|---|
 | `/` | Dashboard booking | pemilik dan staf |

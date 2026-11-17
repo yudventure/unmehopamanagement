@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 
-import { SITE_CONFIG, isSiteConfig, type SiteConfig } from "@/lib/site-config";
+import { lihatSemua } from "@/lib/peran";
+import { akunMasuk, bolehLayar, propertiBoleh } from "@/lib/server/akses";
+import {
+  SITE_CONFIG, hanyaMengubahSitus, isSiteConfig, tidakMenyentuhPenutupan, type SiteConfig,
+} from "@/lib/site-config";
 
 /**
  * Reads and writes `content/site.json` — the file the website's contact
@@ -19,9 +23,17 @@ import { SITE_CONFIG, isSiteConfig, type SiteConfig } from "@/lib/site-config";
  *   GITHUB_BRANCH  optional, defaults to main
  *   CMS_PASSWORD   what the CMS tab asks for before it will save
  *
- * The password is the whole of the authorisation here, so it is checked in
- * constant time and the endpoint refuses to run at all when it is unset —
- * an unset password must never mean "no password required".
+ * The password is checked in constant time and the endpoint refuses to run at
+ * all when it is unset — an unset password must never mean "no password
+ * required".
+ *
+ * Selain kata sandi itu, penyimpan harus punya sesi dashboard yang sah dan
+ * layar Website. Apa yang boleh diubah mengikuti perannya, diperiksa terhadap
+ * berkas yang sedang ada di GitHub (bukan salinan di peramban):
+ *
+ *   developer, pemilik, general manager   seluruh berkas
+ *   public relation                       seluruh berkas kecuali penutupan situs
+ *   manajer unit                          hanya bagian situs unitnya
  */
 
 export const runtime = "nodejs";
@@ -67,6 +79,11 @@ export async function PUT(req: Request) {
     return NextResponse.json({ error: "unauthorised" }, { status: 401 });
   }
 
+  const akun = await akunMasuk();
+  if (!akun || !bolehLayar(akun, "website")) {
+    return NextResponse.json({ error: "unauthorised" }, { status: 401 });
+  }
+
   const config = body.config;
   if (!isSiteConfig(config)) {
     return NextResponse.json({ error: "bad-config" }, { status: 422 });
@@ -75,10 +92,11 @@ export async function PUT(req: Request) {
   const next: SiteConfig = {
     ...config,
     updatedAt: new Date().toISOString(),
-    updatedBy: String(body.by ?? "").slice(0, 80),
+    updatedBy: akun.nama.slice(0, 80),
   };
 
-  const api = `https://api.github.com/repos/${repo}/contents/${PATH}`;
+  /* Dapat diganti untuk uji dengan GitHub tiruan; di produksi tidak diisi. */
+  const api = `${process.env.GITHUB_API_URL ?? "https://api.github.com"}/repos/${repo}/contents/${PATH}`;
   const headers = {
     Authorization: `Bearer ${token}`,
     Accept: "application/vnd.github+json",
@@ -99,7 +117,31 @@ export async function PUT(req: Request) {
       { status: 502 },
     );
   }
-  const { sha } = (await head.json()) as { sha: string };
+  const { sha, content: isiLama } = (await head.json()) as { sha: string; content?: string };
+
+  /* Yang bukan pemegang semua unit hanya boleh mengubah bagiannya. */
+  if (!lihatSemua(akun.peran)) {
+    let lama: SiteConfig | null = null;
+    try {
+      const o: unknown = JSON.parse(Buffer.from(isiLama ?? "", "base64").toString("utf8"));
+      lama = isSiteConfig(o) ? o : null;
+    } catch {
+      lama = null;
+    }
+    if (!lama) return NextResponse.json({ error: "read-failed" }, { status: 502 });
+    const unit = propertiBoleh(akun);
+    const situs = unit.includes("turtle") ? "turtle" : unit.includes("eddo") ? "eddo" : null;
+    const boleh =
+      akun.peran === "manajer"
+        ? situs !== null && hanyaMengubahSitus(lama, config, situs)
+        : tidakMenyentuhPenutupan(lama, config);
+    if (!boleh) {
+      return NextResponse.json(
+        { error: "forbidden", pesan: "Anda hanya bisa mengubah bagian website yang menjadi milik Anda." },
+        { status: 403 },
+      );
+    }
+  }
 
   const write = await fetch(api, {
     method: "PUT",

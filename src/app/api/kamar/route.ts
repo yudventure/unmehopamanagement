@@ -1,14 +1,15 @@
 import { NextResponse } from "next/server";
 
 import { PROPERTIES_BERKAMAR } from "@/lib/data";
-import { lihatSemua } from "@/lib/peran";
-import { akunMasuk, galat, tidakAda } from "@/lib/server/akses";
+import { lihatSemua, ubahKamar } from "@/lib/peran";
+import { akunMasuk, galat, propertiBoleh, tidakAda } from "@/lib/server/akses";
 import { ambilPesanan, daftarSambungan, simpanKamar, ambilKamar } from "@/lib/server/buku";
 import type { Room } from "@/lib/types";
 
 /**
  * Mengatur daftar kamar: tambah, ubah nama, kapasitas, tarif, dan hapus.
- * Hanya yang melihat semua unit (developer, pemilik, general manager).
+ * Developer, pemilik, dan general manager untuk semua unit. Manajer unit hanya
+ * untuk kamar di unitnya: kamar unit lain harus persis sama seperti tersimpan.
  *
  * Kamar yang sudah punya pesanan atau sambungan tidak bisa dihapus. Pesanan
  * yang kamarnya hilang tidak punya tempat di kalender, jadi jalannya
@@ -20,7 +21,7 @@ const BATAS_KAMAR = 200;
 
 export async function PUT(req: Request) {
   const akun = await akunMasuk();
-  if (!akun || !lihatSemua(akun.peran)) return tidakAda();
+  if (!akun || !ubahKamar(akun.peran)) return tidakAda();
   const o = (await req.json().catch(() => ({}))) as { kamar?: unknown };
   if (!Array.isArray(o.kamar) || o.kamar.length > BATAS_KAMAR) return galat("Daftar kamar tidak sah.");
 
@@ -53,6 +54,14 @@ export async function PUT(req: Request) {
       const nama = lama.find((r) => r.id === tertahan)?.name ?? tertahan;
       return galat(`${nama} masih punya pesanan atau sambungan kalender. Nonaktifkan saja, jangan dihapus.`, 409);
     }
+  }
+  /* Yang bukan pemegang semua unit: kamar di luar unitnya tidak boleh
+     berubah, ditambah, atau hilang. Dibandingkan dengan yang tersimpan. */
+  if (!lihatSemua(akun.peran)) {
+    const boleh = new Set<string>(propertiBoleh(akun));
+    const luar = (daftar: Room[]) =>
+      JSON.stringify(daftar.filter((r) => !boleh.has(r.prop)).sort((a, b) => a.id.localeCompare(b.id)));
+    if (luar(rapi) !== luar(lama)) return galat("Anda hanya bisa mengatur kamar di unit Anda.", 403);
   }
   await simpanKamar(rapi);
   return NextResponse.json({ kamar: rapi });

@@ -284,7 +284,7 @@ ponsel), dengan warna hijau Unmehopa. Menu tiap peran berbeda:
 |---|---|
 | Developer, Pemilik | Ringkasan, Kalender, Laporan, Properti & Kamar, Sinkronisasi OTA, Sistem lama, Website, Pengguna & Peran. Mengatur akun |
 | General Manager | Sama, tanpa mengatur akun |
-| Manajer unit | Ringkasan, Kalender, Properti & Kamar, hanya untuk unitnya (Turtle Homestay, Eddo Homestay, atau Dive Center). Tanpa angka rupiah |
+| Manajer unit | **Semua yang berkaitan dengan unitnya**: Kalender, Laporan (dengan angka rupiah), Properti & Kamar (tambah, ubah, hapus), Sinkronisasi kalender, Website unitnya, dan untuk Turtle juga Sistem lama dan Jadwal Dive Center. Tidak melihat unit lain dan tidak mengatur akun |
 | HRD | Ringkasan, Pengguna & Peran (hanya melihat) |
 | Keuangan | Ringkasan, Laporan, Kalender. Melihat angka rupiah semua unit |
 | Public Relation | Ringkasan, Website |
@@ -420,3 +420,30 @@ tahun yang SUDAH ada di CDN tidak hilang sendiri. Bersihkan cache CDN di hPanel
 (aplikasi Node.js atau Websites, lalu menu Cache atau CDN, lalu Purge atau
 Clear cache), kemudian muat ulang keras di peramban (Ctrl+Shift+R di Windows,
 Cmd+Shift+R di Mac). Sesudah itu deploy berikutnya tidak perlu langkah ini.
+
+
+## Kewenangan manajer unit
+
+Manajer unit mengelola semua yang berkaitan dengan unitnya. Pembatasannya
+dijaga **di server**, tidak hanya di menu:
+
+- **Kamar** (`/api/kamar`): kamar di unit lain harus persis sama seperti
+  tersimpan. Menambah, mengubah, atau menghapusnya ditolak.
+- **Sinkronisasi** (`/api/sinkron`, `/api/buku`): hanya sambungan di kamar
+  unitnya yang terlihat dan bisa diubah. Tautan ekspor memuat rahasia, jadi
+  tidak dikirim ke manajer unit lain.
+- **Pesanan** (`/api/pesanan`): hanya di kamar unitnya.
+- **Website** (`/api/content`): penyimpan harus punya sesi dashboard dan layar
+  Website, **selain** kata sandi CMS yang lama. Isinya dibandingkan dengan
+  berkas yang sedang ada di GitHub: manajer Turtle hanya boleh mengubah situs
+  Turtle, tahun berdiri, harga dan video dive center. Manajer Eddo hanya situs
+  Eddo dan layanan yang disewakan. Kontak dan media sosial bersama serta
+  **penutupan situs** hanya developer, pemilik, dan general manager. PR boleh
+  semuanya kecuali penutupan situs. Nama penyimpan di riwayat GitHub kini diambil
+  dari akunnya, bukan dari isian di peramban.
+- **Sistem lama** (`/api/sistem-lama`): hanya akun yang memegang Turtle.
+- **Dive center** dijalankan Turtle, jadi akun yang memegang Turtle memegangnya.
+
+Kata sandi CMS (`CMS_PASSWORD`) masih diminta. Karena sekarang ada sesi dan
+peran per orang, ia bisa dihapus nanti kalau pemilik mau; sementara tetap
+sebagai lapis tambahan.

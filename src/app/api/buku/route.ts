@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { akunMasuk, bolehLayar, tidakAda } from "@/lib/server/akses";
+import { akunMasuk, bolehLayar, propertiBoleh, tidakAda } from "@/lib/server/akses";
 import { ambilKamar, ambilPesanan, bacaSemua, bookingDariLuar, daftarSambungan } from "@/lib/server/buku";
 
 /**
@@ -22,6 +22,13 @@ export async function GET() {
   return NextResponse.json({
     kamar,
     pesanan: [...manual, ...luar],
-    sambungan: bolehLayar(akun, "sinkron") ? sambungan : [],
+    /* Hanya sambungan di kamar yang boleh disentuh akun ini; tautan ekspornya
+       memuat rahasia. */
+    sambungan: bolehLayar(akun, "sinkron")
+      ? sambungan.filter((s) => {
+          const prop = kamar.find((r) => r.id === s.roomId)?.prop;
+          return prop !== undefined && propertiBoleh(akun).includes(prop);
+        })
+      : [],
   });
 }

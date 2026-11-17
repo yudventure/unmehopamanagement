@@ -169,7 +169,7 @@ export async function GET() {
   }
 
   /*
-   * Read only by `next.config.ts`, so the server never sees it and its absence
+   * Read only by `next.config.mjs`, so the server never sees it and its absence
    * here is the normal case rather than a fault.
    *
    * There is a better test than the variable anyway, and the reader is already

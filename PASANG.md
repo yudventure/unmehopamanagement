@@ -92,7 +92,7 @@ berikutnya.
 
 Nama domain **tertanam saat build**, bukan dibaca saat jalan. Di tahap 1
 keduanya dibiarkan kosong, dan itu memang keadaan yang benar: tanpa keduanya
-`next.config.ts` mati total dan routing-nya jadi berbasis jalur, persis
+`next.config.mjs` mati total dan routing-nya jadi berbasis jalur, persis
 tabel di atas.
 
 Tempatnya di GitHub: **Settings → Secrets and variables → Actions →
@@ -211,7 +211,7 @@ Log-nya begini, dan tiga barisnya layak dikenali:
 | `> next build` | servernya sedang membangun. Itu sudah salah sebelum error pertama muncul |
 | `source/repository` | yang ditarik kode sumber, berarti branch-nya `main`, bukan `deploy` |
 | `GLIBC_2.29 not found` | glibc mesin shared hosting-nya lebih tua dari yang dibutuhkan binary SWC Next |
-| `Failed to load next.config.ts` | branch `deploy` tidak punya berkas itu sama sekali, jadi ini bukti lain bahwa yang ditarik `main` |
+| `Failed to load next.config.ts` | branch `deploy` tidak punya berkas config sama sekali, jadi ini bukti lain bahwa yang ditarik `main`. Berkasnya sudah berganti nama jadi `next.config.mjs` sejak #33, jadi kalau terulang bunyinya ikut berganti |
 
 Baris GLIBC-nya **bukan masalah yang perlu diperbaiki**, dan mengejarnya
 membuang waktu. Ia justru alasan seluruh rancangan ini ada: mesin shared

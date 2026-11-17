@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build --webpack",
     "package": "node scripts/package.mjs",
     "package:archive": "node scripts/package.mjs --archive",
     "start": "next start",

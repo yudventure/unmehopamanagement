@@ -50,16 +50,27 @@ Penyambungannya lewat GitHub App, dan repositori ini privat, jadi beri izin
 aksesnya saat diminta.
 
 ```
-Repositori     : yudventure/unmehopamanagement
-Branch         : deploy          <- bukan main
-Build command  : kosong          <- penting
-Entry file     : server.js
-Versi Node     : 22
-Root directory : ./
+Repositori       : yudventure/unmehopamanagement
+Branch           : deploy          <- bukan main
+Build command    : KOSONGKAN       <- penting
+Direktori output : KOSONGKAN       <- penting
+Entry file       : server.js
+Versi Node       : 22
+Root directory   : ./
 ```
 
+**Dua field itu tidak kosong waktu wizard-nya selesai, dan itu bukan
+kelalaian yang mengisi.** Hostinger mendeteksi sendiri bahwa repositorinya
+Next.js lalu mengisikan `next build` dan `.next` ke keduanya. Untuk
+repositori biasa itu benar; untuk branch `deploy` itu salah, karena
+isinya sudah hasil build. Dokumentasi Hostinger sendiri menyebutnya:
+direktori output *"leave empty for apps without a build step"*. Jadi
+keduanya harus dihapus dengan tangan sesudah wizard-nya mengisi.
+
 Deploy otomatis menyala sendiri begitu aplikasinya dibuat dari Git. Tidak ada
-webhook yang perlu ditempel.
+webhook yang perlu ditempel. Sesudah mengubah setelannya, pilih **Save and
+redeploy** kalau mau berlaku sekarang; **Save** saja baru berlaku di push
+berikutnya.
 
 ### 2. Kosongkan dulu variabel domainnya
 
@@ -152,12 +163,45 @@ Sesudah itu:
 
 | Kalau | Yang terjadi |
 |---|---|
-| Build command tidak dikosongkan | `next build` dijalankan terhadap hasil build, lalu gagal |
-| Branch diisi `main`, bukan `deploy` | server menarik kode sumber lalu mencoba membangunnya; memori paket habis |
+| Build command tidak dikosongkan | `next build` dijalankan di server, lalu gagal &mdash; lihat di bawah |
+| Direktori output dibiarkan `.next` | setelan untuk aplikasi yang dibangun di server; di sini tidak ada yang dibangun |
+| Branch diisi `main`, bukan `deploy` | server menarik kode sumber lalu mencoba membangunnya; lihat di bawah |
 | Entry diisi `npm start` | di arsip itu tidak ada `next`, yang ada `server.js` |
 | Port dipatok di panel | `server.js` membaca `PORT` dan `HOSTNAME` dari lingkungan |
 | Domain diisi tanpa build ulang | tidak ada efek apa pun, dan tidak ada pesan apa pun |
 | `SITE_DOMAIN_*` diisi di panel Hostinger | tidak terpakai; tempatnya GitHub Variables, bukan panel |
+
+## Bentuk gagalnya kalau servernya terlanjur membangun sendiri
+
+Terjadi sungguhan pada 17 November 2026, percobaan pasang yang pertama.
+Log-nya begini, dan tiga barisnya layak dikenali:
+
+```
+> booking-manager-homestay@0.1.0 build
+> next build
+
+▲ Next.js 16.3.0 (Turbopack)
+  Downloading swc package @next/swc-wasm-nodejs…
+⚠ Attempted to load @next/swc-linux-x64-gnu, but an error occurred:
+  /lib64/libm.so.6: version `GLIBC_2.29' not found (required by
+  …/hbuilds/source/repository/node_modules/@next/swc-linux-x64-gnu/…)
+⚠ Attempted to load @next/swc-linux-x64-musl, but an error occurred:
+  /lib64/libc.so: invalid ELF header
+× Failed to load next.config.ts
+```
+
+| Baris | Yang sebenarnya dikatakannya |
+|---|---|
+| `> next build` | servernya sedang membangun. Itu sudah salah sebelum error pertama muncul |
+| `source/repository` | yang ditarik kode sumber, berarti branch-nya `main`, bukan `deploy` |
+| `GLIBC_2.29 not found` | glibc mesin shared hosting-nya lebih tua dari yang dibutuhkan binary SWC Next |
+| `Failed to load next.config.ts` | branch `deploy` tidak punya berkas itu sama sekali, jadi ini bukti lain bahwa yang ditarik `main` |
+
+Baris GLIBC-nya **bukan masalah yang perlu diperbaiki**, dan mengejarnya
+membuang waktu. Ia justru alasan seluruh rancangan ini ada: mesin shared
+hosting-nya memang tidak sanggup membangun Next, dan memang tidak perlu.
+Yang diperbaiki satu, yaitu membuatnya berhenti mencoba &mdash; branch
+`deploy`, build command kosong, direktori output kosong.
 
 ## Dibuktikan, bukan diduga
 

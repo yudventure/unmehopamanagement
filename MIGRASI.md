@@ -81,7 +81,7 @@ Alamatnya sekarang `/sistem/<nama berkas>` — `dashboard.html`, `staff.html`,
 dan seterusnya. Karena dilayani dari `public/`, alamat itu berlaku di semua
 domain proyek ini, bukan cuma domain Turtle.
 
-`X-Robots-Tag: noindex` dipasang untuk `/sistem/*` di `next.config.ts`, dan
+`X-Robots-Tag: noindex` dipasang untuk `/sistem/*` di `next.config.mjs`, dan
 `public/robots.txt` melarang jalur itu. Keduanya rambu, bukan kunci: yang tahu
 alamatnya tetap bisa membuka, persis seperti di hosting lama.
 

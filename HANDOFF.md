@@ -634,7 +634,7 @@ tanpa yang lain ikut berubah.
 setelan domain di panel hosting dan bukan perubahan kode. Itu keliru: domain yang
 ditambahkan ke sebuah proyek menyajikan `/`, dan `/` adalah dashboard, jadi
 tamu yang mengetik alamat homestay akan mendarat di halaman login. Pemetaan
-domain ke situs sekarang ada di `next.config.ts`, mati kalau tidak diisi, dan
+domain ke situs sekarang ada di `next.config.mjs`, mati kalau tidak diisi, dan
 caranya ada di `DEPLOY.md`.
 
 Isinya: hero foto, bagian nilai, kamar, dive center, musim, cara sampai, FAQ,

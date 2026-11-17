@@ -1,4 +1,4 @@
-import type { NextConfig } from "next";
+/** @typedef {import("next").NextConfig} NextConfig */
 
 /**
  * One application, three sites, told apart by the domain that was asked for.
@@ -32,14 +32,15 @@ import type { NextConfig } from "next";
 const SITES = [
   { env: "SITE_DOMAIN_TURTLE", base: "/turtle" },
   { env: "SITE_DOMAIN_EDDO", base: "/eddo" },
-] as const;
+];
 
 /**
  * Hosts for one site. A comma-separated list, because the apex and the `www.`
  * form are two different hosts as far as matching is concerned, and a redirect
  * between them is a setting on the host rather than something this can assume.
  */
-function hostsFor(name: string): string[] {
+/** @param {string} name @returns {string[]} */
+function hostsFor(name) {
   return (process.env[name] ?? "")
     .split(",")
     .map((h) => h.trim().toLowerCase())
@@ -47,12 +48,14 @@ function hostsFor(name: string): string[] {
 }
 
 function hostRewrites() {
+  /** @type {any[]} */
   const beforeFiles = [];
+  /** @type {any[]} */
   const afterFiles = [];
 
   for (const site of SITES) {
     for (const host of hostsFor(site.env)) {
-      const has = [{ type: "host" as const, value: host }];
+      const has = [{ type: "host", value: host }];
       beforeFiles.push({ source: "/", has, destination: site.base });
       afterFiles.push({
         source: "/:path*",
@@ -84,10 +87,11 @@ function hostRewrites() {
  * turns out to be wrong. It can be promoted once the addresses have settled.
  */
 function canonicalPathRedirects() {
+  /** @type {any[]} */
   const out = [];
   for (const site of SITES) {
     for (const host of hostsFor(site.env)) {
-      const has = [{ type: "host" as const, value: host }];
+      const has = [{ type: "host", value: host }];
       /*
        * Two rules, and the split is not tidiness. A single `/:path*` covers
        * the bare `/turtle` as well, matching zero segments — and a zero-segment
@@ -169,7 +173,8 @@ function systemRedirects() {
   }));
 }
 
-const nextConfig: NextConfig = {
+/** @type {NextConfig} */
+const nextConfig = {
   reactStrictMode: true,
   /**
    * Ship the server, not the toolchain.

@@ -68,6 +68,18 @@ export function NavIcon({ screen, size = 17 }: { screen: Screen; size?: number }
   };
 
   switch (screen) {
+    /* Garis naik di atas alas: statistik kunjungan, bukan batang laporan. */
+    case "statistik":
+      return (
+        <svg {...bingkai}>
+          <g {...GARIS}>
+            <path d="M2.5 16.5h15" />
+            <path d="M3.5 12.5 7.5 8.5l3 3 5-6" />
+            <path d="M12.5 5.5h3v3" />
+          </g>
+        </svg>
+      );
+
     /* Empat petak, satu lebih lebar: meja ringkasan, bukan daftar. */
     case "ringkasan":
       return (

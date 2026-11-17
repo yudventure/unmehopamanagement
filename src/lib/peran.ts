@@ -52,7 +52,7 @@ export const KET_PERAN: Record<Peran, string> = {
   manajer: "Mengelola unitnya sendiri: kalender, laporan dan angka rupiah, kamar, sinkronisasi, dan website unitnya. Tidak melihat unit lain dan tidak mengatur akun.",
   hrd: "Melihat daftar pengguna dan perannya.",
   keuangan: "Laporan dan angka rupiah semua unit, serta kalender.",
-  pr: "Mengelola isi website dan media sosial.",
+  pr: "Mengelola isi website dan media sosial, dan melihat statistik pengunjung kedua situs.",
   staf: "Kalender dan kamar di properti yang diizinkan. Tanpa angka rupiah.",
 };
 
@@ -90,13 +90,13 @@ export function layarUntuk(p: Peran): Screen[] {
   switch (p) {
     case "developer":
     case "pemilik":
-      return ["ringkasan", "kalender", "laporan", "properti", "sinkron", "lama", "website", "pengguna"];
+      return ["ringkasan", "kalender", "laporan", "properti", "sinkron", "lama", "website", "statistik", "pengguna"];
     case "gm":
-      return ["ringkasan", "kalender", "laporan", "properti", "sinkron", "lama", "website", "pengguna"];
+      return ["ringkasan", "kalender", "laporan", "properti", "sinkron", "lama", "website", "statistik", "pengguna"];
     case "manajer":
       /* Semua yang berkaitan dengan unitnya. Datanya dibatasi ke unit itu di
          tiap rute server; menu hanya menampilkannya. */
-      return ["ringkasan", "kalender", "laporan", "properti", "sinkron", "website", "lama"];
+      return ["ringkasan", "kalender", "laporan", "properti", "sinkron", "website", "statistik", "lama"];
     case "staf":
       return ["ringkasan", "kalender", "properti"];
     case "keuangan":
@@ -104,6 +104,6 @@ export function layarUntuk(p: Peran): Screen[] {
     case "hrd":
       return ["ringkasan", "pengguna"];
     case "pr":
-      return ["ringkasan", "website"];
+      return ["ringkasan", "website", "statistik"];
   }
 }

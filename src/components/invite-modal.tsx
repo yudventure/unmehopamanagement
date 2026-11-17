@@ -17,7 +17,7 @@ export interface InviteModalProps {
   onSend: () => void;
 }
 
-const SCOPES = ["Turtle Homestay", "Eddo Homestay", "Semua properti"];
+const SCOPES = ["Turtle Homestay", "Eddo Homestay", "Dive Center", "Semua properti"];
 
 export function InviteModal({
   invite,
@@ -29,7 +29,7 @@ export function InviteModal({
     <Modal onClose={onClose} z={70} maxWidth={460} labelledBy="invite-title">
       <ModalHeader id="invite-title" title="Tambah pengguna" onClose={onClose} />
       <div className="mb-[18px] text-[13px] text-slate-soft">
-        Staf hanya bisa mengelola properti yang dipilih di bawah. Beri kata sandi awal (paling sedikit 10 huruf) dan sampaikan langsung ke orangnya.
+        Manajer unit dan staf hanya bisa mengelola properti yang dipilih di bawah. Beri kata sandi awal (paling sedikit 10 huruf) dan sampaikan langsung ke orangnya.
       </div>
 
       <div className="flex flex-col gap-[14px]">

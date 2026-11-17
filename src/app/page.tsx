@@ -17,9 +17,9 @@ import { aksesPenuh } from "@/lib/peran";
 export default async function Home() {
   const jar = await cookies();
   const saya = await valid(jar.get(SESSION_COOKIE)?.value);
-  /* Daftar akun hanya dikirim ke yang boleh mengaturnya. Yang lain cukup tahu
-     dirinya sendiri: daftar rekan kerja bukan urusan staf. */
-  const daftar = saya && aksesPenuh(saya.peran) ? (await semuaAkun()).map(publik) : saya ? [publik(saya)] : [];
+  /* Daftar akun dikirim ke yang mengaturnya, dan ke general manager dan HRD
+     yang boleh melihatnya. Yang lain cukup tahu dirinya sendiri. */
+  const daftar = saya && (aksesPenuh(saya.peran) || saya.peran === "gm" || saya.peran === "hrd") ? (await semuaAkun()).map(publik) : saya ? [publik(saya)] : [];
   const perluPenyiapan = !saya && (await semuaAkun()).length === 0;
   /* The whole manager sits inside this one attribute. `globals.css` redefines
      the theme variables under it, so every screen is restyled at once while

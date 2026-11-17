@@ -34,18 +34,19 @@ import {
   type SesiLama,
 } from "@/lib/sistem-lama-bentuk";
 import { SyncScreen } from "@/components/screens/sync-screen";
-import { tampilanOwner, aksesPenuh } from "@/lib/peran";
+import { LABEL_PERAN, aksesPenuh, layarUntuk, lihatSemua, lihatUang } from "@/lib/peran";
 import type { AkunPublik } from "@/lib/server/akun";
 import { UsersScreen } from "@/components/screens/users-screen";
 import { WebsiteScreen } from "@/components/screens/website-screen";
-import { Sidebar, type NavItem } from "@/components/sidebar";
+import { RangkaPanel, type Kabar, type NavItem } from "@/components/rangka-panel";
+import { FilterKalender } from "@/components/filter-kalender";
+import { RingkasanScreen } from "@/components/screens/ringkasan-screen";
 import {
   bookingDariApi,
   kamarDariApi,
   terlewat,
   type ApiKalender,
 } from "@/lib/dari-database";
-import { TopBar } from "@/components/top-bar";
 import { useViewportWidth } from "@/hooks/use-viewport-width";
 import {
   CH,
@@ -134,22 +135,8 @@ const JENDELA_BULAN = 12;
 const TREND_BACK = 8;
 const TREND_FORWARD = 3;
 
-const OWNER_SCREENS: Screen[] = [
-  "kalender",
-  "laporan",
-  "properti",
-  "sinkron",
-  "lama",
-  "website",
-  "pengguna",
-];
-/* `lama` is owner-only, and that is the most it can be: the session cookie
-   says somebody signed in, not who, so hiding the tab is a courtesy rather
-   than a lock. The endpoint behind it is safe under that limit because it
-   cannot write — see `src/app/api/sistem-lama/route.ts`. */
-const STAFF_SCREENS: Screen[] = ["kalender", "properti"];
-
 const NAV_LABELS: Record<Screen, string> = {
+  ringkasan: "Ringkasan",
   kalender: "Kalender",
   laporan: "Laporan",
   properti: "Properti & Kamar",
@@ -208,14 +195,14 @@ function keUser(a: AkunPublik): User {
     peran: a.peran,
     name: a.nama,
     email: a.email,
-    role: tampilanOwner(a.peran) ? "Owner" : "Staf",
+    role: lihatSemua(a.peran) ? "Owner" : "Staf",
     scope: a.scope,
     active: a.aktif,
   };
 }
 
 export function BookingManager({
-  layarAwal = "kalender",
+  layarAwal = "ringkasan",
   akun,
   daftarAkun,
   modeStaf = false,
@@ -248,7 +235,6 @@ export function BookingManager({
 
   const [auth, setAuth] = useState(true);
   /* Peran dan alamat datang dari akun di server, bukan dari pilihan di layar. */
-  const [role, setRole] = useState<Role>(tampilanOwner(akun.peran) ? "owner" : "staf");
   const loginEmail = akun.email;
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -359,8 +345,11 @@ export function BookingManager({
   }, [auth]);
 
   const vw = useViewportWidth();
-  const isOwner = role === "owner";
-  const showMoney = isOwner && !modeStaf;
+  /* Layar yang boleh dibuka, dan siapa yang melihat semua unit dan rupiah,
+     ditentukan peran akunnya di `lib/peran.ts`. */
+  const layar = layarUntuk(akun.peran);
+  const isOwner = lihatSemua(akun.peran);
+  const showMoney = lihatUang(akun.peran) && !modeStaf;
   const perDay = bookingPerHari;
 
   const currentUser = users.find((u) => u.email === loginEmail);
@@ -899,7 +888,37 @@ export function BookingManager({
 
   // ------------------------------------------------------------ view models
 
-  const nav: NavItem[] = (isOwner ? OWNER_SCREENS : STAFF_SCREENS).map((k) => ({
+  /* Kartu HARI INI di bawah menu: satu kalimat utuh dari booking yang ada. */
+  const hariIniKalimat = useMemo(() => {
+    if (!layar.includes("kalender")) return "Pilih halaman yang Anda butuhkan dari menu.";
+    const aktif = scopedBookings.filter(
+      (b) => b.status !== "Cancelled" && b.status !== "Tidak datang",
+    );
+    const tiba = aktif.filter((b) => b.checkIn === today).length;
+    const pulang = aktif.filter((b) => b.checkOut === today).length;
+    const tunggu = aktif.filter((b) => b.status === "Tentative").length;
+    if (!tiba && !pulang && !tunggu) return "Belum ada tamu tiba atau pulang hari ini.";
+    const bagian: string[] = [];
+    if (tiba) bagian.push(`${tiba} tamu tiba`);
+    if (pulang) bagian.push(`${pulang} pulang`);
+    const awal = bagian.length ? bagian.join(" dan ") + " hari ini." : "";
+    return `${awal}${tunggu ? ` ${tunggu} booking menunggu konfirmasi.` : ""}`.trim();
+  }, [scopedBookings, today, layar]);
+
+  const kabarMenunggu = useMemo<Kabar[]>(
+    () =>
+      scopedBookings
+        .filter((b) => b.status === "Tentative")
+        .sort((a, b) => a.checkIn.localeCompare(b.checkIn))
+        .map((b) => ({
+          id: b.id,
+          judul: b.guest,
+          baris: `${b.code}, tiba ${fmtShort(b.checkIn)}`,
+        })),
+    [scopedBookings],
+  );
+
+  const nav: NavItem[] = layar.map((k) => ({
     key: k,
     label: NAV_LABELS[k],
   }));
@@ -1282,79 +1301,22 @@ export function BookingManager({
        * the rest of the manager does, a white panel and a hairline, and the
        * green is spent where it means something: the screen you are on.
        */}
-      <div className="min-h-screen">
-        <div
-          className={
-            nw
-              ? "flex min-h-screen flex-col bg-surface"
-              : "flex min-h-screen bg-canvas"
-          }
-        >
-          {!nw && (
-            <Sidebar
-              narrow={false}
-              nav={nav}
-              screen={screen}
-              onScreen={setScreen}
-              propCounts={propCounts}
-              feedCount={feeds.length}
-              filterProp={filterProp}
-              onFilterProp={setFilterProp}
-              channelCounts={channelCounts}
-              filterCh={filterCh}
-              onFilterCh={setFilterCh}
-            />
-          )}
-
-          <div
-            className={
-              nw
-                ? "flex min-h-screen flex-col"
-                : "flex min-w-0 flex-1 flex-col bg-surface"
-            }
-          >
-            <TopBar
-              showBrand={nw}
-              compact={phone}
-              query={query}
-              onQuery={setQuery}
-              onOpenForm={openForm}
-              userName={userName}
-              userInitial={userInitial}
-              roleLabel={isOwner ? "Owner" : "Staf"}
-              loginEmail={loginEmail}
-              menuOpen={menuOpen}
-              onToggleMenu={() => setMenuOpen((v) => !v)}
-              onCloseMenu={() => setMenuOpen(false)}
-              onLogout={doLogout}
-            />
-
-            {nw && (
-              <Sidebar
-                narrow
-                nav={nav}
-                screen={screen}
-                onScreen={setScreen}
-                propCounts={propCounts}
-                feedCount={feeds.length}
-                filterProp={filterProp}
-                onFilterProp={setFilterProp}
-                channelCounts={channelCounts}
-                filterCh={filterCh}
-                onFilterCh={setFilterCh}
-              />
-            )}
-
-            <div
-              className={`flex flex-1 items-stretch ${
-                nw ? "flex-col" : "flex-row"
-              }`}
-            >
-              <div
-                className={`min-w-0 flex-1 bg-surface-soft ${
-                  nw ? "px-[14px] pt-4 pb-6" : "px-[26px] pt-[22px] pb-[30px]"
-                }`}
-              >
+      <RangkaPanel
+        nav={nav}
+        screen={screen}
+        onScreen={setScreen}
+        nama={userName}
+        email={loginEmail}
+        peran={LABEL_PERAN[akun.peran]}
+        hariIni={hariIniKalimat}
+        kabar={kabarMenunggu}
+        query={query}
+        onQuery={setQuery}
+        onOpenForm={layar.includes("kalender") && akun.peran !== "keuangan" ? openForm : undefined}
+        onLogout={doLogout}
+      >
+        <div className={`flex items-start gap-6 ${nw ? "flex-col" : "flex-row"}`}>
+          <div className="w-full min-w-0 flex-1">
                 {/* Di atas isi tiap layar, bukan hanya kalender: okupansi di
                     Laporan dan tarif di Properti dibangkitkan dari sumber yang
                     sama, jadi peringatan yang cuma muncul di satu layar akan
@@ -1385,6 +1347,30 @@ export function BookingManager({
                   (filterProp === "all" || filterProp === "turtle") && (
                     <SistemLamaPanel onBuka={() => setScreen("lama")} />
                   )}
+
+                {screen === "ringkasan" && (
+                  <RingkasanScreen
+                    nama={userName}
+                    peran={LABEL_PERAN[akun.peran]}
+                    bookings={scopedBookings}
+                    rooms={scopedRooms}
+                    today={today}
+                    showMoney={showMoney}
+                    pintasan={nav.filter((n) => n.key !== "ringkasan")}
+                    onScreen={setScreen}
+                  />
+                )}
+
+                {screen === "kalender" && (
+                  <FilterKalender
+                    propCounts={propCounts}
+                    filterProp={filterProp}
+                    onFilterProp={setFilterProp}
+                    channelCounts={channelCounts}
+                    filterCh={filterCh}
+                    onFilterCh={setFilterCh}
+                  />
+                )}
 
                 {screen === "kalender" && (
                   <CalendarScreen
@@ -1443,7 +1429,7 @@ export function BookingManager({
                   />
                 )}
 
-                {screen === "laporan" && isOwner && (
+                {screen === "laporan" && layar.includes("laporan") && (
                   <ReportScreen
                     compact={phone}
                     monthLabel={monthLabel}
@@ -1483,7 +1469,7 @@ export function BookingManager({
                   />
                 )}
 
-                {screen === "sinkron" && isOwner && (
+                {screen === "sinkron" && layar.includes("sinkron") && (
                   <SyncScreen
                     rooms={scopedRooms}
                     feeds={feeds}
@@ -1496,13 +1482,13 @@ export function BookingManager({
                   />
                 )}
 
-                {screen === "lama" && isOwner && <SistemLamaScreen />}
+                {screen === "lama" && layar.includes("lama") && <SistemLamaScreen />}
 
-                {screen === "website" && isOwner && (
+                {screen === "website" && layar.includes("website") && (
                   <WebsiteScreen editor={userName} />
                 )}
 
-                {screen === "pengguna" && isOwner && (
+                {screen === "pengguna" && layar.includes("pengguna") && (
                   <UsersScreen
                     compact={phone}
                     users={users}
@@ -1554,10 +1540,8 @@ export function BookingManager({
                   }
                 />
               )}
-            </div>
-          </div>
         </div>
-      </div>
+      </RangkaPanel>
 
       {conflictOpen && bannerPairs.length > 0 && (
         <ConflictModal

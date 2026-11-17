@@ -45,6 +45,7 @@ export type BookingSource = "manual" | "iCal";
 export type Role = "owner" | "staf";
 
 export type Screen =
+  | "ringkasan"
   | "kalender"
   | "laporan"
   | "properti"

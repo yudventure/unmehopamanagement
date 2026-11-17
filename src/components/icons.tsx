@@ -68,6 +68,19 @@ export function NavIcon({ screen, size = 17 }: { screen: Screen; size?: number }
   };
 
   switch (screen) {
+    /* Empat petak, satu lebih lebar: meja ringkasan, bukan daftar. */
+    case "ringkasan":
+      return (
+        <svg {...bingkai}>
+          <g {...GARIS}>
+            <rect x="2.5" y="2.5" width="6" height="8" rx="1.8" />
+            <rect x="11.5" y="2.5" width="6" height="4.5" rx="1.8" />
+            <rect x="2.5" y="13.5" width="6" height="4" rx="1.8" />
+            <rect x="11.5" y="10" width="6" height="7.5" rx="1.8" />
+          </g>
+        </svg>
+      );
+
     /* Kisi berbingkai dengan dua gantungan — bentuk kalender dinding, bukan
        kotak polos yang bisa berarti apa saja. */
     case "kalender":

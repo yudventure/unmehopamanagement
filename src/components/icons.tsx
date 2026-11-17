@@ -68,6 +68,18 @@ export function NavIcon({ screen, size = 17 }: { screen: Screen; size?: number }
   };
 
   switch (screen) {
+    /* Dua penggeser, bentuk pengaturan yang tidak bisa disangka lain. */
+    case "pengaturan":
+      return (
+        <svg {...bingkai}>
+          <g {...GARIS}>
+            <path d="M3 6h14M3 14h14" />
+            <circle cx="7" cy="6" r="2" />
+            <circle cx="13" cy="14" r="2" />
+          </g>
+        </svg>
+      );
+
     /* Garis naik di atas alas: statistik kunjungan, bukan batang laporan. */
     case "statistik":
       return (

@@ -1,5 +1,6 @@
 "use client";
 
+import { SakelarSistemLama } from "@/components/sakelar-sistem-lama";
 import { useEffect, useMemo, useState } from "react";
 
 import { sejak, useSistemLama } from "@/components/sistem-lama-data";
@@ -245,6 +246,10 @@ export function SistemLamaScreen() {
         muncul di sini tanpa perlu menekan apa pun. Bacaan saja:{" "}
         <strong>tidak ada satu pun yang diubah, ditambah, atau dihapus</strong>{" "}
         di sistem lamanya, dan tidak ada tombol di layar ini yang bisa.
+      </div>
+
+      <div className="mb-5">
+        <SakelarSistemLama ringkas />
       </div>
 
       <div className="mb-5 flex items-start gap-[12px] rounded-[14px] border border-line-soft bg-surface-soft px-4 py-[13px]">

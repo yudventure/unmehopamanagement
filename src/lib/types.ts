@@ -61,6 +61,7 @@ export type Screen =
   | "lama"
   | "website"
   | "statistik"
+  | "pengaturan"
   | "pengguna";
 
 /**

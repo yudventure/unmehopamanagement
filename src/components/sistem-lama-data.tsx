@@ -40,6 +40,8 @@ import {
 export interface JawabanLama {
   ok: boolean;
   siap: boolean;
+  /** Dimatikan dari Pengaturan, bukan gagal. */
+  mati?: boolean;
   pesan: string | null;
   ms?: number;
   bookings?: BookingLama[];

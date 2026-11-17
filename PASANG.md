@@ -508,3 +508,34 @@ diperkirakan dari bahasa peramban: `en-US` berarti US, tetapi bahasa tanpa wilay
 apakah CDN Hostinger mengirim header negara; kalau tidak, angka negara
 tetap perkiraan dari bahasa.
 Angka beberapa situs dijumlahkan: orang yang membuka kedua situs dihitung dua kali.
+
+## Pengaturan: sakelar sistem lama dan penyiapan Midtrans
+
+Menu **Pengaturan** (bagian Perusahaan) untuk developer, pemilik, dan general manager.
+
+**Sakelar sistem lama.** Menyala (bawaan, seperti sebelum sakelar ada): dashboard
+membaca booking dan jadwal Turtle dari sistem staf lama. Mati: Turtle memakai data
+dashboard sendiri, dan **sistem lama tidak dipanggil sama sekali** (terbukti: kuota
+Apps Script milik client tidak terpakai). Tidak ada data yang dihapus; menyalakannya
+lagi membaca sistem lama seperti semula. Siapa yang membalik dan kapan tercatat di
+`pengaturan.json`. Sakelar yang sama ada di layar Sistem lama; manajer Turtle
+melihat keadaannya tanpa bisa membaliknya. Membalik memuat ulang halaman.
+Kalau sistem lama dimatikan, kamar Turtle kembali bisa dicatat dan disambungkan dari
+dashboard (yang selama sistem lama menyala tidak bisa).
+
+**Pembayaran Midtrans.** Hanya developer dan pemilik. Layar ini **tidak menyimpan
+dan tidak menampilkan kunci**. Yang ditampilkan: apakah server key dan client key
+terpasang, bentuknya (sandbox atau produksi, dari awalan), empat huruf terakhir
+untuk mengenali kunci mana, mode, peringatan bila kunci tidak cocok dengan mode atau
+satu sama lain, URL notifikasi pembayaran untuk ditempel di dashboard Midtrans, dan
+tombol **Tes server key**: menanyakan satu pesanan yang tidak ada ke Midtrans.
+Kunci yang benar dijawab "tidak ditemukan", yang salah "ditolak". Tidak ada yang
+dibuat atau ditagih. Dibatasi 6 kali per menit.
+
+Kunci tetap dipasang di tempat yang sama dengan sebelumnya:
+- `MIDTRANS_SERVER_KEY` di variabel environment Hostinger (rahasia).
+- `NEXT_PUBLIC_MIDTRANS_CLIENT_KEY` di GitHub Variables, tertanam saat build.
+- `MIDTRANS_IS_PRODUCTION=true` hanya untuk kunci produksi.
+Kunci Midtrans ada di dashboard Midtrans pada Settings lalu Access Keys, terpisah
+untuk sandbox dan produksi. Cobalah sandbox sebelum produksi.
+`MIDTRANS_API_URL` opsional, hanya untuk uji dengan Midtrans tiruan.

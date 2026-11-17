@@ -1132,6 +1132,27 @@ export function BookingManager({
   // ------------------------------------------------------------ view models
 
   /* Kartu HARI INI di bawah menu: satu kalimat utuh dari booking yang ada. */
+  /* Siapa yang datang dan pulang hari ini, untuk tombol di kartu HARI INI. */
+  const tamuHariIni = useMemo(() => {
+    const aktifB = scopedBookings.filter((b) => b.status !== "Cancelled" && b.status !== "Tidak datang");
+    const unitDari = (roomId: string) => {
+      const r = roomById.get(roomId);
+      return PROPERTIES.find((p) => p.key === r?.prop)?.name ?? "";
+    };
+    const ke = (b: Booking, sudah: boolean) => ({
+      id: b.id,
+      guest: b.guest,
+      kamar: roomById.get(b.roomId)?.name ?? b.roomId,
+      unit: unitDari(b.roomId),
+      saluran: b.sumberNama ?? CHANNEL_LABELS[b.channel],
+      sudah,
+    });
+    return {
+      masuk: aktifB.filter((b) => b.checkIn === today).map((b) => ke(b, b.status === "Checked-in" || b.status === "Checked-out")),
+      keluar: aktifB.filter((b) => b.checkOut === today).map((b) => ke(b, b.status === "Checked-out")),
+    };
+  }, [scopedBookings, roomById, today]);
+
   const hariIniKalimat = useMemo(() => {
     if (!layar.includes("kalender")) return "Pilih halaman yang Anda butuhkan dari menu.";
     const aktif = scopedBookings.filter(
@@ -1666,6 +1687,12 @@ export function BookingManager({
         email={loginEmail}
         peran={LABEL_PERAN[akun.peran]}
         hariIni={hariIniKalimat}
+        tamuHariIni={tamuHariIni}
+        onBukaTamu={(id) => {
+          /* Rinciannya ada di kalender: berpindah ke sana lalu membuka booking itu. */
+          setScreen("kalender");
+          setSelectedId(id);
+        }}
         kabar={kabarMenunggu}
         query={query}
         onQuery={setQuery}

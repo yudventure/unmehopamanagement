@@ -27,6 +27,17 @@ export interface NavGroup {
 const sama = (n: NavItem, screen: Screen, unit: string) =>
   n.key === screen && (n.unit === undefined || n.unit === unit);
 
+/** Satu tamu yang datang atau pulang hari ini. */
+export interface TamuHariIni {
+  id: string;
+  guest: string;
+  kamar: string;
+  unit: string;
+  saluran: string;
+  /** Sudah ditandai datang atau pulang. */
+  sudah: boolean;
+}
+
 export interface Kabar {
   id: string;
   judul: string;
@@ -45,6 +56,10 @@ export interface RangkaPanelProps {
   peran: string;
   /** Satu kalimat utuh untuk kartu HARI INI di bawah menu. */
   hariIni: string;
+  /** Siapa yang check-in dan check-out hari ini, untuk tombol di kartu HARI INI. */
+  tamuHariIni?: { masuk: TamuHariIni[]; keluar: TamuHariIni[] };
+  /** Membuka satu booking dari daftar tamu hari ini. */
+  onBukaTamu?: (id: string) => void;
   /** Booking yang menunggu konfirmasi, untuk lonceng. */
   kabar: Kabar[];
   query: string;
@@ -140,6 +155,71 @@ function useKunciGulir(aktif: boolean) {
   }, [aktif]);
 }
 
+function DaftarTamuHariIni({
+  tamu, onTutup, onBuka,
+}: {
+  tamu: { masuk: TamuHariIni[]; keluar: TamuHariIni[] };
+  onTutup: () => void;
+  onBuka: (id: string) => void;
+}) {
+  useEffect(() => {
+    const esc = (e: KeyboardEvent) => e.key === "Escape" && onTutup();
+    document.addEventListener("keydown", esc);
+    return () => document.removeEventListener("keydown", esc);
+  }, [onTutup]);
+
+  const Bagian = ({ judul, daftar, tanda }: { judul: string; daftar: TamuHariIni[]; tanda: string }) => (
+    <section className="mt-5 first:mt-0">
+      <p className="mb-2 flex items-center gap-2 text-[0.9375rem] font-bold text-panel-utama">
+        {judul}
+        <span className="rounded-full bg-panel-lembut px-2 py-[1px] text-[0.75rem]">{daftar.length}</span>
+      </p>
+      {daftar.length === 0 ? (
+        <p className="text-[0.8125rem] text-panel-utama/70">Tidak ada.</p>
+      ) : (
+        <ul className="grid gap-2">
+          {daftar.map((t) => (
+            <li key={t.id}>
+              <button
+                type="button"
+                onClick={() => onBuka(t.id)}
+                className="flex w-full cursor-pointer items-center gap-3 rounded-2xl border-none bg-panel-latar px-4 py-3 text-left hover:bg-panel-lembut"
+              >
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-[0.9375rem] font-semibold text-panel-utama">{t.guest}</span>
+                  <span className="block truncate text-[0.8125rem] text-panel-utama/70">{t.kamar} · {t.unit} · {t.saluran}</span>
+                </span>
+                <span className={`shrink-0 rounded-full px-2 py-[2px] text-[11px] font-bold ${t.sudah ? "bg-panel-lembut text-panel-aksen" : "bg-white text-panel-utama/70 ring-1 ring-panel-garis"}`}>
+                  {t.sudah ? tanda : "Belum"}
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+
+  return (
+    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-panel-utama/40 p-4" onPointerDown={(e) => e.target === e.currentTarget && onTutup()}>
+      <div role="dialog" aria-modal="true" aria-labelledby="tamu-hari-ini" className="max-h-[85vh] w-full max-w-[34rem] overflow-y-auto rounded-3xl bg-white p-5 shadow-panel-angkat">
+        <div className="mb-4 flex items-start gap-3">
+          <div>
+            <p className="text-[11px] font-bold tracking-[0.16em] text-panel-aksen uppercase">Hari ini</p>
+            <h2 id="tamu-hari-ini" className="text-[1.25rem] font-bold text-panel-utama">Tamu datang dan pulang</h2>
+          </div>
+          <button type="button" onClick={onTutup} aria-label="Tutup" className="ml-auto flex size-9 cursor-pointer items-center justify-center rounded-full border-none bg-panel-latar text-panel-utama hover:bg-panel-lembut">
+            <Ikon nama="silang" className="size-4" />
+          </button>
+        </div>
+        <Bagian judul="Check-in, tamu datang" daftar={tamu.masuk} tanda="Sudah datang" />
+        <Bagian judul="Check-out, tamu pulang" daftar={tamu.keluar} tanda="Sudah pulang" />
+        <p className="mt-5 text-[0.75rem] text-panel-utama/60">Pilih satu tamu untuk membuka rincian bookingnya.</p>
+      </div>
+    </div>
+  );
+}
+
 const inisial = (nama: string) =>
   (nama.trim().split(/\s+/).slice(0, 2).map((k) => k[0]).join("") || "A").toUpperCase();
 
@@ -223,8 +303,11 @@ function GrupMenu({
 }
 
 function Navigasi({
-  nav, screen, unit, onScreen, hariIni,
-}: Pick<RangkaPanelProps, "nav" | "screen" | "unit" | "onScreen" | "hariIni">) {
+  nav, screen, unit, onScreen, hariIni, jumlahTamu, onLihatTamu,
+}: Pick<RangkaPanelProps, "nav" | "screen" | "unit" | "onScreen" | "hariIni"> & {
+  jumlahTamu: number;
+  onLihatTamu: () => void;
+}) {
   /* Satu bagian bernama saja berarti tidak ada yang perlu dipilih di antara. */
   const tunggal = nav.filter((g) => g.label).length === 1;
   return (
@@ -255,6 +338,15 @@ function Navigasi({
         <p className="mt-2 text-[0.9375rem] leading-relaxed text-panel-utama/80">
           {hariIni}
         </p>
+        {jumlahTamu > 0 && (
+          <button
+            type="button"
+            onClick={onLihatTamu}
+            className="mt-3 cursor-pointer rounded-full border-none bg-panel-utama px-4 py-2 text-[0.8125rem] font-bold text-white hover:bg-panel-utama-2"
+          >
+            Lihat siapa ({jumlahTamu})
+          </button>
+        )}
       </div>
     </nav>
   );
@@ -269,6 +361,8 @@ export function RangkaPanel({
   email,
   peran,
   hariIni,
+  tamuHariIni,
+  onBukaTamu,
   kabar,
   query,
   onQuery,
@@ -276,6 +370,12 @@ export function RangkaPanel({
   children,
 }: RangkaPanelProps) {
   const [lembar, setLembar] = useState(false);
+  const [daftarTamu, setDaftarTamu] = useState(false);
+  const jumlahTamu = (tamuHariIni?.masuk.length ?? 0) + (tamuHariIni?.keluar.length ?? 0);
+  const lihatTamu = () => {
+    setLembar(false);
+    setDaftarTamu(true);
+  };
   const [buka, setBuka] = useState<"" | "lonceng" | "akun">("");
   const tutup = useCallback(() => setBuka(""), []);
   const tutupLembar = useCallback(() => setLembar(false), []);
@@ -426,7 +526,7 @@ export function RangkaPanel({
 
       <div className="mx-auto flex max-w-[100rem]">
         <aside className="sticky top-[4.5rem] hidden h-[calc(100svh-4.5rem)] w-[18.5rem] shrink-0 overflow-y-auto px-6 py-8 lg:block">
-          <Navigasi nav={nav} screen={screen} unit={unit} onScreen={pilih} hariIni={hariIni} />
+          <Navigasi nav={nav} screen={screen} unit={unit} onScreen={pilih} hariIni={hariIni} jumlahTamu={jumlahTamu} onLihatTamu={lihatTamu} />
         </aside>
         <main id="isi" className="min-w-0 flex-1 px-4 py-6 sm:px-6 lg:py-8 lg:pr-10 lg:pl-4">
           {children}
@@ -457,8 +557,19 @@ export function RangkaPanel({
             className="h-11 w-full rounded-full border-none bg-panel-latar pr-4 pl-11 text-[0.9375rem] text-panel-utama outline-none placeholder:text-panel-utama/50"
           />
         </label>
-        <Navigasi nav={nav} screen={screen} unit={unit} onScreen={pilih} hariIni={hariIni} />
+        <Navigasi nav={nav} screen={screen} unit={unit} onScreen={pilih} hariIni={hariIni} jumlahTamu={jumlahTamu} onLihatTamu={lihatTamu} />
       </div>
+
+      {daftarTamu && tamuHariIni && (
+        <DaftarTamuHariIni
+          tamu={tamuHariIni}
+          onTutup={() => setDaftarTamu(false)}
+          onBuka={(id) => {
+            setDaftarTamu(false);
+            onBukaTamu?.(id);
+          }}
+        />
+      )}
     </div>
   );
 }

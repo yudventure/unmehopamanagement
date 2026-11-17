@@ -49,8 +49,6 @@ export interface RangkaPanelProps {
   kabar: Kabar[];
   query: string;
   onQuery: (value: string) => void;
-  /** Kosong berarti tombol + Booking disembunyikan (peran tanpa kalender). */
-  onOpenForm?: () => void;
   onLogout: () => void;
   children: React.ReactNode;
 }
@@ -274,7 +272,6 @@ export function RangkaPanel({
   kabar,
   query,
   onQuery,
-  onOpenForm,
   onLogout,
   children,
 }: RangkaPanelProps) {
@@ -311,7 +308,7 @@ export function RangkaPanel({
                 Unmehopa
               </div>
               <div className="text-[0.6875rem] font-bold tracking-[0.28em] text-panel-aksen">
-                MANAJEMEN
+                MANAGEMENT
               </div>
             </div>
           </div>
@@ -331,16 +328,6 @@ export function RangkaPanel({
           </label>
 
           <div className="ml-auto flex items-center gap-2 sm:gap-3">
-            {onOpenForm && (
-              <button
-                type="button"
-                onClick={onOpenForm}
-                className="inline-flex h-11 cursor-pointer items-center gap-2 rounded-full border-none bg-panel-utama px-4 text-[0.9375rem] font-bold text-white hover:bg-panel-utama-2 sm:px-5"
-              >
-                <Ikon nama="tambah" className="size-4" /> Booking
-              </button>
-            )}
-
             <div ref={lonceng} className="relative">
               <button
                 type="button"

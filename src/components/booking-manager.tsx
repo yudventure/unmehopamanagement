@@ -1665,7 +1665,6 @@ export function BookingManager({
         kabar={kabarMenunggu}
         query={query}
         onQuery={setQuery}
-        onOpenForm={layar.includes("kalender") && akun.peran !== "keuangan" ? openForm : undefined}
         onLogout={doLogout}
       >
         <div className={`flex items-start gap-6 ${nw ? "flex-col" : "flex-row"}`}>

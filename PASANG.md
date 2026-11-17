@@ -373,10 +373,23 @@ dengan halamannya sendiri:
 | Bagian | Halaman |
 |---|---|
 | Semua unit | Kalender, Laporan, Properti & Kamar, Sinkronisasi kalender (gabungan) |
-| Turtle Homestay | Kalender, Laporan, Properti & Kamar, Sinkronisasi kalender, Sistem lama |
-| Eddo Homestay | Kalender, Laporan, Properti & Kamar, Sinkronisasi kalender |
-| Dive Center | Kalender (jadwal selam). Tidak punya kamar |
-| Perusahaan | Website, Pengguna & Peran |
+| Turtle Homestay | Kalender, Laporan, Properti & Kamar, Sinkronisasi kalender, Website, Sistem lama, **Jadwal Dive Center** |
+| Eddo Homestay | Kalender, Laporan, Properti & Kamar, Sinkronisasi kalender, Website |
+| Perusahaan | Pengguna & Peran |
+
+**Dive Center ikut di bawah Turtle**, karena yang menjalankan dive center
+sekarang hanya Turtle. Ia tidak punya kamar, jadi hanya jadwal selam. Eddo
+menyiapkannya untuk tahun depan: ubah `DIVE_CENTER_DI.eddo` menjadi `true` di
+`src/components/booking-manager.tsx`, dan "Jadwal Dive Center" muncul di bagian
+Eddo untuk akun yang memegang properti Dive Center. Datanya masih satu unit
+`divecenter`, yang perlu dipisah per unit induk saat Eddo benar-benar mulai.
+Akun manajer Dive Center melihat bagian "Dive Center Turtle" berisi jadwalnya.
+
+**Website dipisah per unit.** Website Turtle di bagian Turtle, Website Eddo di
+bagian Eddo, masing-masing hanya satu situs. Laporan (angka keuangan) sudah per
+unit sejak awal. PR yang tidak memegang unit tetap melihat satu halaman Website
+dengan kedua tab. Draf yang belum disimpan tidak hilang saat berpindah antara
+Website Turtle dan Website Eddo; Simpan menulis seluruh berkas isi.
 
 Memilih sebuah unit membatasi kalender, laporan, kamar, dan sinkronisasi ke unit
 itu saja, dan judul **Unit** tampil di atas halaman. Peran lain hanya melihat

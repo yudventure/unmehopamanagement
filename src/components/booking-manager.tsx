@@ -45,6 +45,7 @@ import { PanelPesanan } from "@/components/panel-pesanan";
 import { PesananMassalModal, type BarisSiap } from "@/components/pesanan-massal-modal";
 import { bacaPesan, type BarisPesan } from "@/lib/baca-pesan";
 import { RingkasanScreen, type Pintasan } from "@/components/screens/ringkasan-screen";
+import { StatistikScreen } from "@/components/screens/statistik-screen";
 import {
   bookingDariApi,
   kamarDariApi,
@@ -156,6 +157,7 @@ const NAV_LABELS: Record<Screen, string> = {
   sinkron: "Sinkronisasi kalender",
   lama: "Sistem lama",
   website: "Website",
+  statistik: "Statistik pengunjung",
   pengguna: "Pengguna & Peran",
 };
 
@@ -1201,7 +1203,7 @@ export function BookingManager({
     const grup: NavGroup[] = [{ id: "awal", label: "", items: [butir("ringkasan")] }];
     const perUnit = isOwner || akun.peran === "manajer" || akun.peran === "staf";
     if (perUnit) {
-      const bergantungUnit: Screen[] = ["kalender", "laporan", "properti", "sinkron"];
+      const bergantungUnit: Screen[] = ["kalender", "laporan", "properti", "sinkron", "statistik"];
       if (isOwner && allowedProps.length > 1) {
         grup.push({
           id: "semua",
@@ -1240,7 +1242,7 @@ export function BookingManager({
     } else {
       const sisa = layar
         .filter((k) => k !== "ringkasan")
-        .map((k) => butir(k, (["kalender", "laporan", "properti", "sinkron"] as Screen[]).includes(k) ? "all" : undefined));
+        .map((k) => butir(k, (["kalender", "laporan", "properti", "sinkron", "statistik"] as Screen[]).includes(k) ? "all" : undefined));
       if (sisa.length) grup.push({ id: "peran", label: "", items: sisa });
     }
     return grup;
@@ -1257,7 +1259,7 @@ export function BookingManager({
     const ket: Partial<Record<Screen, string>> = {
       kalender: "Kalender booking.", laporan: "Okupansi dan pendapatan.", properti: "Kamar, tarif, dan statusnya.",
       sinkron: "Sambungan kalender ke situs luar.", lama: "Data dari sistem lama Turtle.",
-      website: "Isi dan foto website.", pengguna: "Akun, peran, dan akses unit.",
+      website: "Isi dan foto website.", statistik: "Pengunjung website dan asal negara.", pengguna: "Akun, peran, dan akses unit.",
     };
     const hasil: Pintasan[] = [];
     for (const g of navGrup) {
@@ -1704,7 +1706,7 @@ export function BookingManager({
                     </div>
                   )}
 
-                {screen !== "lama" && (
+                {screen !== "lama" && screen !== "statistik" && (
                   <DataSourceNote sumber={sumber} lamaTersambung={lamaAktif} />
                 )}
 
@@ -1872,6 +1874,14 @@ export function BookingManager({
                           ? "turtle"
                           : undefined
                     }
+                  />
+                )}
+
+                {screen === "statistik" && layar.includes("statistik") && (
+                  <StatistikScreen
+                    situs={filterProp === "eddo" ? "eddo" : filterProp === "turtle" || filterProp === "divecenter" ? "turtle" : "all"}
+                    bolehPilih={isOwner || akun.peran === "pr"}
+                    onPilih={(s) => setFilterProp(s)}
                   />
                 )}
 

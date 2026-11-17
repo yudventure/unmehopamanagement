@@ -60,6 +60,7 @@ export type Screen =
   /** Read-only view onto the client's old Turtle staff system. Owner only. */
   | "lama"
   | "website"
+  | "statistik"
   | "pengguna";
 
 /**

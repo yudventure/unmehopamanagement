@@ -480,3 +480,31 @@ Perlu diketahui sebelum mengaktifkan: gambar (berisi nama dan nomor tamu) dikiri
 ke layanan itu, tiap pembacaan berbiaya di akun pemilik kunci, dan hasilnya
 tetap hanya usulan. Dibatasi 20 pembacaan per 10 menit per akun, 5 MB per gambar.
 Model bawaan `claude-sonnet-5-5` (ganti lewat `BACA_PESAN_MODEL`).
+
+## Statistik pengunjung website
+
+Menu **Statistik pengunjung**: pemilik, developer, dan GM melihat gabungan dengan
+tombol **Semua situs / Turtle / Eddo**; manajer Turtle hanya Turtle, manajer Eddo
+hanya Eddo (tanpa tombol pilih, dan server menolak situs lain dengan 403); PR
+melihat kedua situs. Staf, keuangan, dan HRD tidak punya menu ini.
+
+Isinya: aktif sekarang (5 menit), hari ini, 7 dan 30 hari terakhir (pengunjung
+unik dan tampilan halaman), grafik per hari (7 atau 30 hari, pilih batang untuk
+rincian: negara dan halaman teratas), dan asal negara 30 hari.
+
+**Penghitungnya milik sendiri**, di `/api/kunjungan`, dipasang di layout situs
+Turtle dan Eddo (`pencatat-kunjungan.tsx`). Tanpa cookie. Alamat IP tidak
+disimpan: pengunjung dikenali dalam satu hari lewat sidik acak 16 huruf yang tidak
+bisa dilacak ke hari lain. Do Not Track dan Global Privacy Control dihormati,
+robot disaring, dan pengelola yang sedang masuk tidak dihitung. Dibatasi 60
+pencatatan per menit per alamat. Data di `kunjungan.json` di folder data server
+(dibuang setelah 400 hari); **cadangkan folder itu**. Penghitungan mulai dari
+tayangnya fitur ini, tidak ada data sebelumnya.
+
+**Negara hanya perkiraan bila server tidak memberinya.** Dipakai header negara
+dari server atau CDN bila ada (`cf-ipcountry` dan sejenisnya). Kalau tidak,
+diperkirakan dari bahasa peramban: `en-US` berarti US, tetapi bahasa tanpa wilayah
+(`en`) tidak diketahui dan dihitung terpisah, tidak ditebak. Belum diketahui
+apakah CDN Hostinger mengirim header negara; kalau tidak, angka negara
+tetap perkiraan dari bahasa.
+Angka beberapa situs dijumlahkan: orang yang membuka kedua situs dihitung dua kali.

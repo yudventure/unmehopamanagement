@@ -585,3 +585,61 @@ rentang malamnya: kalau tanggal booking diubah sesudahnya, rentangnya berubah
 dan bentroknya muncul lagi. Booking sistem lama (kamar `lama-…`, milik Turtle)
 juga bisa, karena catatannya per pasangan, bukan di bookingnya. API:
 `/api/bentrok` (akun yang boleh mencatat pesanan dan memegang unit itu).
+
+## Keuangan & Aset, SDM & Gaji, dan Stok Gudang (per unit)
+
+Tiga layar baru di menu, per unit seperti Kalender (Semua unit, Turtle, Eddo;
+Dive Center ikut Turtle). **Semuanya kosong sampai diisi**: nama aset, gaji,
+harga barang, dan jumlah stok adalah fakta pengelola, tidak ada data karangan.
+Disimpan di `modul-keuangan.json`, `modul-sdm.json`, dan `modul-gudang.json`
+(folder data server). Skema dan hitungannya satu: `src/lib/modul.ts`; server
+memeriksa tiap bidang, dan rujukan (absensi ke pegawai, mutasi ke barang) harus
+menunjuk catatan di unit yang sama. Catatan yang masih dirujuk tidak bisa
+dihapus.
+
+**Siapa boleh apa** (`aksesModul` di `peran.ts`, dijaga di `/api/modul/[modul]`):
+
+| | Keuangan | SDM & Gaji | Stok Gudang |
+|---|---|---|---|
+| Developer, pemilik, GM | tulis | tulis | tulis |
+| Manajer unit | tulis, unitnya | tulis, unitnya | tulis, unitnya |
+| Keuangan | tulis | hanya lihat | hanya lihat |
+| HRD | tidak | tulis | tidak |
+| Staf | tidak | tidak | hanya mencatat keluar masuk |
+| PR | tidak | tidak | tidak |
+
+Data gaji dan pegawai hanya terlihat oleh yang punya akses SDM. Angka acuan gaji
+(iuran) hanya diubah developer, pemilik, GM, dan HRD.
+
+**Keuangan & Aset.** Ringkasan bulanan: pendapatan booking dibaca dari kalender
+(yang tiba di bulan itu dan sudah diberi harga; yang belum berharga disebut),
+pemasukan dan pengeluaran yang dicatat, penyusutan aset garis lurus, dan laba
+bersih perkiraan. Pembelian aset dicatat sebagai pengeluaran tapi tidak
+dibebankan di laba (bebannya lewat penyusutan). Aset: harga perolehan, umur
+manfaat (0 untuk tanah), nilai sisa, nilai buku.
+
+**SDM & Gaji.** Pegawai, absen harian (pilih status, langsung tersimpan; rekap
+bulanan), asuransi dan BPJS per pegawai, inventaris dan kebutuhan pegawai
+(seragam, alat, APD; kekurangan × perkiraan harga), dan **estimasi biaya
+gaji**: gaji + tunjangan + iuran BPJS perusahaan + cadangan THR, plus perkiraan
+yang diterima pegawai (potongan alpa dan iuran pekerja; PPh 21 tidak dihitung).
+Peringatan: pegawai tanpa BPJS Kesehatan atau Ketenagakerjaan aktif, gaji di
+bawah UMP acuan, asuransi lewat masa berlaku.
+
+**Angka acuan** (tab sendiri, bisa diubah, dengan sumbernya): BPJS Kesehatan 4%
+perusahaan dan 1% pekerja (batas upah Rp12 juta); JHT 3,7% dan 2%; Jaminan
+Pensiun 2% dan 1%; JKM 0,3%; JKK 0,24% (kelas risiko untuk penginapan **belum
+terkonfirmasi**, tanyakan ke BPJS Ketenagakerjaan); UMP Papua Barat Daya 2026
+Rp3.766.000 (Raja Ampat memakai angka provinsi). Sumbernya blog dan berita, bukan
+situs resmi BPJS, dan beberapa angka berbeda antar sumber (batas upah Jaminan
+Pensiun dikosongkan: isi sesuai pengumuman). Cadangan THR (1 bulan gaji per
+tahun) dan hari kerja per bulan (26) adalah perkiraan awal yang belum dicek ke
+sumber resmi. Cocokkan semuanya sebelum dipakai untuk membayar.
+
+**Stok Gudang.** Daftar barang (tisu, amenitis, linen, kebersihan, dapur, dll),
+stok minimum, harga perkiraan, dan pemakaian per kamar terisi per malam.
+Stok dihitung dari catatan keluar masuk (Masuk, Keluar, Koreksi stok), dengan
+tombol cepat + Masuk dan − Keluar di tiap baris. Status Habis, Menipis, Cukup;
+**daftar belanja** sampai stok minimum atau sampai cukup untuk 30 hari ke depan
+(kamar terisi dari kalender × pemakaian per malam; barang yang pemakaiannya belum
+diisi tidak diperkirakan), dengan perkiraan biayanya.

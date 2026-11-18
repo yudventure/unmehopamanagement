@@ -61,6 +61,12 @@ export type Screen =
   | "lama"
   | "website"
   | "statistik"
+  /** Akuntansi per unit: pemasukan, pengeluaran, aset. */
+  | "keuangan"
+  /** Pegawai per unit: absensi, gaji, asuransi kesehatan, inventaris. */
+  | "sdm"
+  /** Stok gudang per unit: barang pelayanan dan operasional. */
+  | "gudang"
   | "pengaturan"
   | "pengguna";
 

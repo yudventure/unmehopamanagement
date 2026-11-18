@@ -188,6 +188,43 @@ export function NavIcon({ screen, size = 17 }: { screen: Screen; size?: number }
         </svg>
       );
 
+    /* Lembaran uang: persegi panjang dengan satu lingkaran di tengah. */
+    case "keuangan":
+      return (
+        <svg {...bingkai}>
+          <g {...GARIS}>
+            <rect x="2" y="5" width="16" height="10" rx="2" />
+            <circle cx="10" cy="10" r="2.4" />
+            <path d="M5 8v.01M15 12v.01" />
+          </g>
+        </svg>
+      );
+
+    /* Tanda pengenal pegawai: kartu dengan kepala dan dua garis. Bukan dua
+       orang, yang sudah dipakai layar akun dan peran. */
+    case "sdm":
+      return (
+        <svg {...bingkai}>
+          <g {...GARIS}>
+            <rect x="2.5" y="3.5" width="15" height="13" rx="2.5" />
+            <circle cx="7.5" cy="9" r="1.8" />
+            <path d="M4.8 13.5c.4-1.3 1.5-2 2.7-2s2.3.7 2.7 2" />
+            <path d="M12 8h3.5M12 11h3.5" />
+          </g>
+        </svg>
+      );
+
+    /* Kardus: kotak dengan tutup dan satu lipatan. */
+    case "gudang":
+      return (
+        <svg {...bingkai}>
+          <g {...GARIS}>
+            <path d="M3 6.5 10 3l7 3.5v7L10 17l-7-3.5v-7Z" />
+            <path d="M3 6.5 10 10l7-3.5M10 10v7" />
+          </g>
+        </svg>
+      );
+
     /* Dua orang, bukan satu: layarnya soal peran dan siapa boleh melihat apa,
        dan itu selalu tentang lebih dari satu orang. */
     case "pengguna":

@@ -14,6 +14,8 @@ export interface CalendarScreenProps {
   compact: boolean;
   showMoney: boolean;
   conflictCount: number;
+  /** Bentrok yang sudah diselesaikan (kompensasi dan sebagainya); ditautkan ke jendela bentrok. */
+  selesaiCount?: number;
   /**
    * Which kind of overlap the banner is speaking for. `danger` is one whose
    * contested nights are still ahead and is drawn to interrupt; `past` is one
@@ -195,6 +197,7 @@ export function CalendarScreen({
   compact,
   showMoney,
   conflictCount,
+  selesaiCount = 0,
   conflictTone,
   conflictText,
   onReviewConflict,
@@ -338,6 +341,14 @@ export function CalendarScreen({
           {lamaTersambung
             ? "Tidak ada sesi terjadwal pada bulan ini."
             : "Jadwal dive centre dibaca dari sistem lama, dan sistem itu belum tersambung — jadi bulan yang kosong di sini belum tentu bulan yang lowong."}
+        </div>
+      )}
+
+      {selesaiCount > 0 && !hanyaJadwal && (
+        <div className="mb-4 flex flex-wrap items-center gap-3 rounded-[14px] border border-teal bg-surface-mute px-4 py-[10px] text-[13px] text-teal-deep">
+          <span aria-hidden className="flex h-[20px] w-[20px] items-center justify-center rounded-full bg-teal text-[12px] font-bold text-white">✓</span>
+          <span className="font-semibold">{selesaiCount} bentrok sudah diselesaikan</span>
+          <button type="button" onClick={onReviewConflict} className="cursor-pointer border-none bg-transparent text-[12.5px] text-slate underline hover:text-teal">Lihat</button>
         </div>
       )}
 

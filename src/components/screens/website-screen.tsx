@@ -351,7 +351,7 @@ export function WebsiteScreen({ editor, situs }: WebsiteScreenProps) {
     const res = await fetch("/api/content", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password, config, by: editor }),
+      body: JSON.stringify({ sandi: password, config, by: editor }),
     }).catch(() => null);
 
     if (!res) {
@@ -380,13 +380,19 @@ export function WebsiteScreen({ editor, situs }: WebsiteScreenProps) {
     setStatus({
       kind: "error",
       message:
-        error === "unauthorised"
-          ? "Kata sandi salah."
-          : error === "not-configured"
-            ? "Server belum punya token GitHub. Lihat catatan di bawah."
-            : error === "bad-config"
-              ? "Ada isian yang belum benar."
-              : "Gagal menyimpan. Coba lagi.",
+        error === "wrong-password"
+          ? "Kata sandi akun Anda salah."
+          : error === "too-many"
+            ? "Terlalu banyak percobaan. Tunggu beberapa menit."
+            : error === "unauthorised"
+              ? "Sesi Anda berakhir atau tidak berhak menyimpan. Masuk lagi."
+              : error === "not-configured"
+                ? "Server belum punya token GitHub. Lihat catatan di bawah."
+                : error === "bad-config"
+                  ? "Ada isian yang belum benar."
+                  : error === "forbidden"
+                    ? "Anda hanya bisa mengubah bagian website yang menjadi milik Anda."
+                    : "Gagal menyimpan. Coba lagi.",
     });
   };
 
@@ -418,13 +424,12 @@ export function WebsiteScreen({ editor, situs }: WebsiteScreenProps) {
         <div className="mb-5 flex items-start gap-3 rounded-[14px] border border-amber-soft bg-amber-soft/40 px-4 py-[13px]">
           <span className="mt-[5px] h-[9px] w-[9px] shrink-0 rounded-full bg-amber-shade" />
           <div className="text-[13px] leading-[1.55] text-amber-ink">
-            <strong>Belum bisa menyimpan dari sini.</strong> Server butuh tiga
+            <strong>Belum bisa menyimpan dari sini.</strong> Server butuh dua
             variabel: <code className="font-mono">GITHUB_TOKEN</code>{" "}
             (fine-grained, izin Contents: read and write untuk repo ini),{" "}
             <code className="font-mono">GITHUB_REPO</code> berisi{" "}
-            <code className="font-mono">yudventure/unmehopamanagement</code>,
-            dan <code className="font-mono">CMS_PASSWORD</code> yang akan
-            ditanyakan sebelum menyimpan. Isian di bawah tetap bisa dilihat.
+            <code className="font-mono">yudventure/unmehopamanagement</code>.
+            Isian di bawah tetap bisa dilihat.
           </div>
         </div>
       )}
@@ -867,9 +872,10 @@ export function WebsiteScreen({ editor, situs }: WebsiteScreenProps) {
         <section className={card}>
           <div className="flex flex-wrap items-end gap-4">
             <label className={`${LABEL} w-full max-w-[260px]`}>
-              Kata sandi CMS
+              Kata sandi akun Anda
               <input
                 type="password"
+                autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"

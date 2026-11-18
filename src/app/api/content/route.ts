@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 
 import { lihatSemua } from "@/lib/peran";
 import { akunMasuk, bolehLayar, propertiBoleh } from "@/lib/server/akses";
+import { cocokSandi } from "@/lib/server/akun";
+import { catat } from "@/lib/server/batas";
 import {
   SITE_CONFIG, hanyaMengubahSitus, isSiteConfig, tidakMenyentuhPenutupan, type SiteConfig,
 } from "@/lib/site-config";
@@ -21,14 +23,12 @@ import {
  *   GITHUB_TOKEN   fine-grained token, Contents: read and write, this repo
  *   GITHUB_REPO    "owner/name"
  *   GITHUB_BRANCH  optional, defaults to main
- *   CMS_PASSWORD   what the CMS tab asks for before it will save
  *
- * The password is checked in constant time and the endpoint refuses to run at
- * all when it is unset — an unset password must never mean "no password
- * required".
- *
- * Selain kata sandi itu, penyimpan harus punya sesi dashboard yang sah dan
- * layar Website. Apa yang boleh diubah mengikuti perannya, diperiksa terhadap
+ * Tidak ada lagi kata sandi CMS bersama (`CMS_PASSWORD`). Yang menyimpan harus
+ * punya sesi dashboard yang sah, layar Website, dan mengetik ulang kata sandi
+ * AKUNNYA SENDIRI sebagai konfirmasi: menyimpan menayangkan situs ke publik,
+ * jadi sesi yang tertinggal terbuka di komputer bersama tidak cukup. Percobaan
+ * dibatasi per akun. Apa yang boleh diubah mengikuti perannya, diperiksa terhadap
  * berkas yang sedang ada di GitHub (bukan salinan di peramban):
  *
  *   developer, pemilik, general manager   seluruh berkas
@@ -40,21 +40,10 @@ export const runtime = "nodejs";
 
 const PATH = "content/site.json";
 
-function timingSafeEqual(a: string, b: string) {
-  if (a.length !== b.length) return false;
-  let diff = 0;
-  for (let i = 0; i < a.length; i += 1) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  return diff === 0;
-}
-
 export async function GET() {
   return NextResponse.json({
     config: SITE_CONFIG,
-    writable: Boolean(
-      process.env.GITHUB_TOKEN &&
-        process.env.GITHUB_REPO &&
-        process.env.CMS_PASSWORD,
-    ),
+    writable: Boolean(process.env.GITHUB_TOKEN && process.env.GITHUB_REPO),
   });
 }
 
@@ -62,26 +51,27 @@ export async function PUT(req: Request) {
   const token = process.env.GITHUB_TOKEN;
   const repo = process.env.GITHUB_REPO;
   const branch = process.env.GITHUB_BRANCH ?? "main";
-  const password = process.env.CMS_PASSWORD;
 
-  if (!token || !repo || !password) {
+  if (!token || !repo) {
     return NextResponse.json({ error: "not-configured" }, { status: 503 });
   }
 
-  let body: { password?: string; config?: unknown; by?: string };
+  let body: { sandi?: string; config?: unknown; by?: string };
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ error: "bad-json" }, { status: 400 });
   }
 
-  if (!timingSafeEqual(String(body.password ?? ""), password)) {
-    return NextResponse.json({ error: "unauthorised" }, { status: 401 });
-  }
-
   const akun = await akunMasuk();
   if (!akun || !bolehLayar(akun, "website")) {
     return NextResponse.json({ error: "unauthorised" }, { status: 401 });
+  }
+  if (catat(`cms:${akun.email}`, 10 * 60 * 1000) > 10) {
+    return NextResponse.json({ error: "too-many" }, { status: 429 });
+  }
+  if (!(await cocokSandi(String(body.sandi ?? ""), akun.sandi))) {
+    return NextResponse.json({ error: "wrong-password" }, { status: 401 });
   }
 
   const config = body.config;

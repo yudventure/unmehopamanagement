@@ -1,4 +1,5 @@
 import type { Screen } from "@/lib/types";
+import type { Modul } from "@/lib/modul";
 
 /**
  * Peran akun dashboard Unmehopa.
@@ -85,6 +86,25 @@ export const lihatUang = (p: Peran) =>
 export const ubahKamar = (p: Peran) => lihatSemua(p) || p === "manajer";
 
 /**
+ * Akses ke modul keuangan, SDM, dan gudang. "tulis" mengubah catatan di unit
+ * yang boleh disentuh akun itu; "baca" hanya melihat. Staf hanya mencatat
+ * keluar masuk barang (dibatasi lagi di server per koleksi).
+ *
+ *   keuangan  developer, pemilik, GM, keuangan, manajer unit: tulis
+ *   sdm       developer, pemilik, GM, HRD, manajer unit: tulis; keuangan: baca
+ *   gudang    developer, pemilik, GM, manajer unit, staf: tulis; keuangan: baca
+ */
+export function aksesModul(p: Peran, m: Modul): "tulis" | "baca" | null {
+  const penuh = p === "developer" || p === "pemilik" || p === "gm" || p === "manajer";
+  if (m === "keuangan") return penuh || p === "keuangan" ? "tulis" : null;
+  if (m === "sdm") return penuh || p === "hrd" ? "tulis" : p === "keuangan" ? "baca" : null;
+  return penuh || p === "staf" ? "tulis" : p === "keuangan" ? "baca" : null;
+}
+
+/** Mengubah angka acuan gaji (iuran, UMP) yang berlaku untuk semua unit. */
+export const ubahParameterSdm = (p: Peran) => lihatSemua(p) || p === "hrd";
+
+/**
  * Layar yang boleh dibuka, dalam urutan menu. Disembunyikan di menu dan juga
  * tidak dirender, tetapi yang menjaga data tetap server: setiap rute API
  * memeriksa akunnya sendiri.
@@ -93,19 +113,19 @@ export function layarUntuk(p: Peran): Screen[] {
   switch (p) {
     case "developer":
     case "pemilik":
-      return ["ringkasan", "kalender", "laporan", "properti", "sinkron", "lama", "website", "statistik", "pengaturan", "pengguna"];
+      return ["ringkasan", "kalender", "laporan", "properti", "sinkron", "lama", "website", "statistik", "keuangan", "sdm", "gudang", "pengaturan", "pengguna"];
     case "gm":
-      return ["ringkasan", "kalender", "laporan", "properti", "sinkron", "lama", "website", "statistik", "pengaturan", "pengguna"];
+      return ["ringkasan", "kalender", "laporan", "properti", "sinkron", "lama", "website", "statistik", "keuangan", "sdm", "gudang", "pengaturan", "pengguna"];
     case "manajer":
       /* Semua yang berkaitan dengan unitnya. Datanya dibatasi ke unit itu di
          tiap rute server; menu hanya menampilkannya. */
-      return ["ringkasan", "kalender", "laporan", "properti", "sinkron", "website", "statistik", "lama"];
+      return ["ringkasan", "kalender", "laporan", "properti", "sinkron", "website", "statistik", "keuangan", "sdm", "gudang", "lama"];
     case "staf":
-      return ["ringkasan", "kalender", "properti"];
+      return ["ringkasan", "kalender", "properti", "gudang"];
     case "keuangan":
-      return ["ringkasan", "laporan", "kalender"];
+      return ["ringkasan", "laporan", "kalender", "keuangan", "sdm", "gudang"];
     case "hrd":
-      return ["ringkasan", "pengguna"];
+      return ["ringkasan", "sdm", "pengguna"];
     case "pr":
       return ["ringkasan", "website", "statistik"];
   }

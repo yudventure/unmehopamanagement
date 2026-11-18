@@ -46,6 +46,9 @@ import { PesananMassalModal, type BarisSiap } from "@/components/pesanan-massal-
 import { bacaPesan, type BarisPesan } from "@/lib/baca-pesan";
 import { RingkasanScreen, type Pintasan } from "@/components/screens/ringkasan-screen";
 import { PitaGalat, useGalat } from "@/components/galat-panel";
+import { GudangScreen } from "@/components/screens/gudang-screen";
+import { KeuanganScreen, type PendapatanBooking } from "@/components/screens/keuangan-screen";
+import { SdmScreen } from "@/components/screens/sdm-screen";
 import { PengaturanScreen } from "@/components/screens/pengaturan-screen";
 import { StatistikScreen } from "@/components/screens/statistik-screen";
 import {
@@ -161,6 +164,9 @@ const NAV_LABELS: Record<Screen, string> = {
   lama: "Sistem lama",
   website: "Website",
   statistik: "Statistik pengunjung",
+  keuangan: "Keuangan & Aset",
+  sdm: "SDM & Gaji",
+  gudang: "Stok Gudang",
   pengaturan: "Pengaturan",
   pengguna: "Pengguna & Peran",
 };
@@ -1197,6 +1203,46 @@ export function BookingManager({
     };
   }, [scopedBookings, roomById, today]);
 
+  /* Unit sebuah booking: kamar dari buku kita, atau Turtle bila kamarnya dari sistem lama. */
+  const unitBooking = useCallback(
+    (b: Booking): PropertyKey | null => roomById.get(b.roomId)?.prop ?? (b.roomId.startsWith("lama-") ? "turtle" : null),
+    [roomById],
+  );
+
+  /* Pendapatan booking untuk layar Keuangan: yang tiba di bulan itu, dari harga
+     yang sudah diisi di kalender. Yang belum berharga dihitung terpisah. */
+  const pendapatanBooking = useCallback(
+    (bulan: string, unit: PropFilter): PendapatanBooking => {
+      const hasil: PendapatanBooking = { total: 0, jumlah: 0, tanpaHarga: 0 };
+      for (const b of scopedBookings) {
+        if (b.status === "Cancelled" || b.status === "Tidak datang" || !b.checkIn.startsWith(bulan)) continue;
+        const u = unitBooking(b);
+        if (unit !== "all" && u !== unit) continue;
+        hasil.jumlah += 1;
+        if (b.total > 0) hasil.total += b.total;
+        else hasil.tanpaHarga += 1;
+      }
+      return hasil;
+    },
+    [scopedBookings, unitBooking],
+  );
+
+  /* Kamar terisi 30 hari ke depan per unit, untuk memperkirakan kebutuhan barang gudang. */
+  const kamarMalam30 = useMemo(() => {
+    const hasil: Partial<Record<PropertyKey, number>> = {};
+    const akhir = iso(new Date(parse(today).getTime() + 30 * 86400000));
+    for (const b of scopedBookings) {
+      if (b.status === "Cancelled" || b.status === "Tidak datang") continue;
+      const u = unitBooking(b);
+      if (!u) continue;
+      const dari = b.checkIn > today ? b.checkIn : today;
+      const sampai = b.checkOut < akhir ? b.checkOut : akhir;
+      const malam = dayDiff(dari, sampai);
+      if (malam > 0) hasil[u] = (hasil[u] ?? 0) + malam;
+    }
+    return hasil;
+  }, [scopedBookings, unitBooking, today]);
+
   const hariIniKalimat = useMemo(() => {
     if (!layar.includes("kalender")) return "Pilih halaman yang Anda butuhkan dari menu.";
     const aktif = scopedBookings.filter(
@@ -1270,7 +1316,7 @@ export function BookingManager({
     const grup: NavGroup[] = [{ id: "awal", label: "", items: [butir("ringkasan")] }];
     const perUnit = isOwner || akun.peran === "manajer" || akun.peran === "staf";
     if (perUnit) {
-      const bergantungUnit: Screen[] = ["kalender", "laporan", "properti", "sinkron", "statistik"];
+      const bergantungUnit: Screen[] = ["kalender", "laporan", "properti", "sinkron", "statistik", "keuangan", "sdm", "gudang"];
       if (isOwner && allowedProps.length > 1) {
         grup.push({
           id: "semua",
@@ -1309,7 +1355,7 @@ export function BookingManager({
     } else {
       const sisa = layar
         .filter((k) => k !== "ringkasan")
-        .map((k) => butir(k, (["kalender", "laporan", "properti", "sinkron", "statistik"] as Screen[]).includes(k) ? "all" : undefined));
+        .map((k) => butir(k, (["kalender", "laporan", "properti", "sinkron", "statistik", "keuangan", "sdm", "gudang"] as Screen[]).includes(k) ? "all" : undefined));
       if (sisa.length) grup.push({ id: "peran", label: "", items: sisa });
     }
     return grup;
@@ -1326,7 +1372,7 @@ export function BookingManager({
     const ket: Partial<Record<Screen, string>> = {
       kalender: "Kalender booking.", laporan: "Okupansi dan pendapatan.", properti: "Kamar, tarif, dan statusnya.",
       sinkron: "Sambungan kalender ke situs luar.", lama: "Data dari sistem lama Turtle.",
-      website: "Isi dan foto website.", statistik: "Pengunjung website dan asal negara.", pengguna: "Akun, peran, dan akses unit.", pengaturan: "Sakelar sistem lama dan penyiapan pembayaran.",
+      website: "Isi dan foto website.", keuangan: "Pemasukan, pengeluaran, aset, dan laba.", sdm: "Pegawai, absensi, gaji, asuransi, inventaris.", gudang: "Stok tisu, amenitis, dan barang pelayanan.", statistik: "Pengunjung website dan asal negara.", pengguna: "Akun, peran, dan akses unit.", pengaturan: "Sakelar sistem lama dan penyiapan pembayaran.",
     };
     const hasil: Pintasan[] = [];
     for (const g of navGrup) {
@@ -1780,7 +1826,7 @@ export function BookingManager({
                     </div>
                   )}
 
-                {screen !== "lama" && screen !== "statistik" && screen !== "pengaturan" && (
+                {screen !== "lama" && screen !== "statistik" && screen !== "pengaturan" && screen !== "keuangan" && screen !== "sdm" && screen !== "gudang" && (
                   <DataSourceNote sumber={sumber} lamaTersambung={lamaAktif} />
                 )}
 
@@ -1967,6 +2013,16 @@ export function BookingManager({
                     bolehPilih={isOwner || akun.peran === "pr"}
                     onPilih={(s) => setFilterProp(s)}
                   />
+                )}
+
+                {screen === "keuangan" && layar.includes("keuangan") && (
+                  <KeuanganScreen filter={filterProp} pendapatan={pendapatanBooking} hariIni={today} />
+                )}
+
+                {screen === "sdm" && layar.includes("sdm") && <SdmScreen filter={filterProp} hariIni={today} />}
+
+                {screen === "gudang" && layar.includes("gudang") && (
+                  <GudangScreen filter={filterProp} hariIni={today} kamarMalam30={kamarMalam30} />
                 )}
 
                 {screen === "pengaturan" && layar.includes("pengaturan") && (

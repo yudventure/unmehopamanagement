@@ -234,6 +234,7 @@ export function WebsiteScreen({ editor, situs }: WebsiteScreenProps) {
   /* Whether the server has the GitHub token and password it needs. Until it
      does the form is read-only rather than a Save that quietly does nothing. */
   const [writable, setWritable] = useState(false);
+  const [kurang, setKurang] = useState<string[]>([]);
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState<Status>({ kind: "idle" });
   const [tab, setTab] = useState<TabKey>(situs ?? "eddo");
@@ -258,6 +259,7 @@ export function WebsiteScreen({ editor, situs }: WebsiteScreenProps) {
         setConfig(d.config);
         setSaved(d.config);
         setWritable(Boolean(d.writable));
+        setKurang(Array.isArray(d.kurang) ? d.kurang : []);
       })
       .catch(() =>
         setStatus({ kind: "error", message: "Gagal memuat pengaturan." }),
@@ -914,6 +916,31 @@ export function WebsiteScreen({ editor, situs }: WebsiteScreenProps) {
             >
               {status.kind === "saving" ? "Menyimpan…" : "Simpan & terbitkan"}
             </button>
+
+            {!writable && (
+              <div className="w-full rounded-[10px] border border-danger-line bg-danger-tint px-3 py-[10px] text-[13px] leading-[1.5] text-danger-deep">
+                <strong>Tombol belum bisa dipakai</strong>, bukan karena kata
+                sandinya.{" "}
+                {kurang.length > 0 ? (
+                  <>
+                    Server belum punya{" "}
+                    {kurang.map((n, i) => (
+                      <span key={n}>
+                        {i > 0 && " dan "}
+                        <code className="font-mono">{n}</code>
+                      </span>
+                    ))}
+                    . Isi di panel Hostinger (Variabel environment), lalu
+                    mulai ulang aplikasinya.
+                  </>
+                ) : (
+                  <>
+                    Daftar pengaturan server belum termuat. Muat ulang
+                    halaman ini.
+                  </>
+                )}
+              </div>
+            )}
 
             {status.kind === "saved" && (
               <span className="text-[13px] text-teal-deep">

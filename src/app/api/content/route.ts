@@ -44,6 +44,9 @@ export async function GET() {
   return NextResponse.json({
     config: SITE_CONFIG,
     writable: Boolean(process.env.GITHUB_TOKEN && process.env.GITHUB_REPO),
+    /* Nama variabel yang belum terisi di server (bukan nilainya), supaya layar
+       bisa mengatakan apa yang kurang alih-alih hanya mematikan tombolnya. */
+    kurang: ["GITHUB_TOKEN", "GITHUB_REPO"].filter((n) => !process.env[n]?.trim()),
   });
 }
 

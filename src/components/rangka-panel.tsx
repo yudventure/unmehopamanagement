@@ -168,37 +168,62 @@ function DaftarTamuHariIni({
     return () => document.removeEventListener("keydown", esc);
   }, [onTutup]);
 
-  const Bagian = ({ judul, daftar, tanda }: { judul: string; daftar: TamuHariIni[]; tanda: string }) => (
-    <section className="mt-5 first:mt-0">
-      <p className="mb-2 flex items-center gap-2 text-[0.9375rem] font-bold text-panel-utama">
-        {judul}
-        <span className="rounded-full bg-panel-lembut px-2 py-[1px] text-[0.75rem]">{daftar.length}</span>
-      </p>
-      {daftar.length === 0 ? (
-        <p className="text-[0.8125rem] text-panel-utama/70">Tidak ada.</p>
-      ) : (
-        <ul className="grid gap-2">
-          {daftar.map((t) => (
-            <li key={t.id}>
-              <button
-                type="button"
-                onClick={() => onBuka(t.id)}
-                className="flex w-full cursor-pointer items-center gap-3 rounded-2xl border-none bg-panel-latar px-4 py-3 text-left hover:bg-panel-lembut"
-              >
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-[0.9375rem] font-semibold text-panel-utama">{t.guest}</span>
-                  <span className="block truncate text-[0.8125rem] text-panel-utama/70">{t.kamar} · {t.unit} · {t.saluran}</span>
-                </span>
-                <span className={`shrink-0 rounded-full px-2 py-[2px] text-[11px] font-bold ${t.sudah ? "bg-panel-lembut text-panel-aksen" : "bg-white text-panel-utama/70 ring-1 ring-panel-garis"}`}>
-                  {t.sudah ? tanda : "Belum"}
-                </span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-    </section>
-  );
+  /* Dua nada supaya terbaca sekilas: hijau untuk yang datang, jingga untuk yang
+     pulang. Yang pulang dan belum check-out paling mencolok (itu yang masih
+     harus ditangani); yang sudah pulang meredup. */
+  const Bagian = ({ judul, daftar, tanda, nada }: { judul: string; daftar: TamuHariIni[]; tanda: string; nada: "masuk" | "keluar" }) => {
+    const keluar = nada === "keluar";
+    return (
+      <section className="mt-5 first:mt-0">
+        <p className={`mb-2 flex items-center gap-2 rounded-xl px-3 py-2 text-[0.9375rem] font-bold ${keluar ? "bg-amber-100 text-amber-950" : "bg-panel-lembut text-panel-utama"}`}>
+          <span aria-hidden className={`flex size-5 items-center justify-center rounded-full text-[12px] text-white ${keluar ? "bg-amber-500" : "bg-panel-aksen"}`}>{keluar ? "↑" : "↓"}</span>
+          {judul}
+          <span className="ml-auto rounded-full bg-white px-2 py-[1px] text-[0.75rem]">{daftar.length}</span>
+        </p>
+        {daftar.length === 0 ? (
+          <p className="text-[0.8125rem] text-panel-utama/70">Tidak ada.</p>
+        ) : (
+          <ul className="grid gap-2">
+            {daftar.map((t) => (
+              <li key={t.id}>
+                <button
+                  type="button"
+                  onClick={() => onBuka(t.id)}
+                  className={`flex w-full cursor-pointer items-center gap-3 rounded-2xl border-l-4 border-y-0 border-r-0 px-4 py-3 text-left ${
+                    keluar
+                      ? t.sudah
+                        ? "border-l-amber-300 bg-panel-latar opacity-70 hover:opacity-100"
+                        : "border-l-amber-500 bg-amber-50 hover:bg-amber-100"
+                      : t.sudah
+                        ? "border-l-panel-aksen bg-panel-lembut hover:bg-panel-lembut"
+                        : "border-l-panel-garis bg-panel-latar hover:bg-panel-lembut"
+                  }`}
+                >
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-[0.9375rem] font-semibold text-panel-utama">{t.guest}</span>
+                    <span className="block truncate text-[0.8125rem] text-panel-utama/70">{t.kamar} · {t.unit} · {t.saluran}</span>
+                  </span>
+                  <span
+                    className={`shrink-0 rounded-full px-2 py-[2px] text-[11px] font-bold ${
+                      keluar
+                        ? t.sudah
+                          ? "bg-white text-panel-utama/60 ring-1 ring-panel-garis"
+                          : "bg-amber-500 text-white"
+                        : t.sudah
+                          ? "bg-panel-aksen text-white"
+                          : "bg-white text-panel-utama/70 ring-1 ring-panel-garis"
+                    }`}
+                  >
+                    {t.sudah ? tanda : keluar ? "Akan check-out" : "Belum"}
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+    );
+  };
 
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center bg-panel-utama/40 p-4" onPointerDown={(e) => e.target === e.currentTarget && onTutup()}>
@@ -212,8 +237,8 @@ function DaftarTamuHariIni({
             <Ikon nama="silang" className="size-4" />
           </button>
         </div>
-        <Bagian judul="Check-in, tamu datang" daftar={tamu.masuk} tanda="Sudah datang" />
-        <Bagian judul="Check-out, tamu pulang" daftar={tamu.keluar} tanda="Sudah pulang" />
+        <Bagian judul="Check-in, tamu datang" daftar={tamu.masuk} tanda="Sudah datang" nada="masuk" />
+        <Bagian judul="Check-out, tamu pulang" daftar={tamu.keluar} tanda="Sudah pulang" nada="keluar" />
         <p className="mt-5 text-[0.75rem] text-panel-utama/60">Pilih satu tamu untuk membuka rincian bookingnya.</p>
       </div>
     </div>

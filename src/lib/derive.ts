@@ -390,6 +390,12 @@ export function findConflicts(bookings: Booking[]): ConflictPair[] {
   return pairs;
 }
 
+/** Kunci pasangan bentrok untuk penyelesaian: dua id booking (terurut) dan rentang malamnya. Sama dengan di server. */
+export const kunciBentrok = (p: Pick<ConflictPair, "a" | "b" | "from" | "to">) => {
+  const [x, y] = [p.a.id, p.b.id].sort();
+  return `${x}|${y}|${p.from}|${p.to}`;
+};
+
 /**
  * Splits the overlaps into the ones still worth interrupting someone over and
  * the ones that are only a record now.

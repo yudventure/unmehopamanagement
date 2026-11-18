@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BookingDrawer } from "@/components/booking-drawer";
 import { DataSourceNote, type SumberData } from "@/components/data-source-note";
 import { BookingFormModal } from "@/components/booking-form-modal";
-import { ConflictModal } from "@/components/conflict-modal";
+import { ConflictModal, type Selesai, type SolusiTamu } from "@/components/conflict-modal";
 import { DashboardRail } from "@/components/dashboard-rail";
 import { InviteModal } from "@/components/invite-modal";
 import type { RoomPatch } from "@/components/room-edit-modal";
@@ -77,6 +77,7 @@ import {
   nightsInMonth,
   ringkasStats,
   splitConflicts,
+  kunciBentrok,
   visibleBookings,
   type ChannelFilter,
   type PropFilter,
@@ -259,6 +260,8 @@ export function BookingManager({
 
   const [formOpen, setFormOpen] = useState(false);
   const [conflictOpen, setConflictOpen] = useState(false);
+  /* Bentrok yang sudah dinyatakan selesai (kompensasi dan sebagainya), per kunci pasangan. */
+  const [selesaiMap, setSelesaiMap] = useState<Record<string, Selesai & { roomId: string }>>({});
   const [compare, setCompare] = useState(false);
   const [pdfBusy, setPdfBusy] = useState(false);
   const [sambungan, setSambungan] = useState<Sambungan[]>([]);
@@ -338,6 +341,11 @@ export function BookingManager({
       setRooms(d.kamar);
       setBookings(d.pesanan);
       setSambungan(d.sambungan);
+      /* Penyelesaian bentrok ikut dimuat; gagal memuatnya tidak boleh menggagalkan buku. */
+      fetch("/api/bentrok", { signal, cache: "no-store" })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((o: { selesai?: Record<string, Selesai & { roomId: string }> } | null) => o?.selesai && setSelesaiMap(o.selesai))
+        .catch(() => undefined);
       setSumber({ keadaan: "lokal" });
       return true;
     } catch {
@@ -585,14 +593,47 @@ export function BookingManager({
   /* Computed over every booking, not the filtered view: a sidebar filter must
      never be able to hide a room that has been sold twice. Declared ahead of
      the calendar, which shades its days from these. */
-  const conflicts = useMemo(
+  const semuaBentrok = useMemo(
     () => findConflicts(scopedBookings),
     [scopedBookings],
+  );
+  /* Yang sudah diselesaikan keluar dari peringatan, penanda kalender, dan
+     hitungan; ia tetap bisa dilihat dan dibuka lagi di jendela bentrok. */
+  const conflicts = useMemo(
+    () => semuaBentrok.filter((p) => !selesaiMap[kunciBentrok(p)]),
+    [semuaBentrok, selesaiMap],
+  );
+  const bentrokSelesai = useMemo(
+    () => semuaBentrok.flatMap((pair) => (selesaiMap[kunciBentrok(pair)] ? [{ pair, rec: selesaiMap[kunciBentrok(pair)] }] : [])),
+    [semuaBentrok, selesaiMap],
   );
   const conflictDays = useMemo(() => conflictDates(conflicts), [conflicts]);
   const conflictIds = useMemo(
     () => new Set(conflicts.flatMap((p) => [p.a.id, p.b.id])),
     [conflicts],
+  );
+
+  const terbukaJumlah = useRef(0);
+  const selesaikanBentrok = useCallback(
+    async (pair: { roomId: string; a: { id: string }; b: { id: string }; from: string; to: string }, solusi: Record<string, SolusiTamu>) => {
+      const g = await kirim("/api/bentrok", "PUT", { roomId: pair.roomId, a: pair.a.id, b: pair.b.id, from: pair.from, to: pair.to, selesai: true, solusi });
+      if (g) return g;
+      await muatBuku();
+      /* Yang terakhir selesai: jendelanya tidak punya pekerjaan lagi, tutup. */
+      if (terbukaJumlah.current <= 1) setConflictOpen(false);
+      flash("Bentrok ditandai sudah diselesaikan.");
+      return null;
+    },
+    [muatBuku, flash],
+  );
+  const bukaLagiBentrok = useCallback(
+    async (pair: { roomId: string; a: { id: string }; b: { id: string }; from: string; to: string }) => {
+      const g = await kirim("/api/bentrok", "PUT", { roomId: pair.roomId, a: pair.a.id, b: pair.b.id, from: pair.from, to: pair.to, selesai: false });
+      if (g) return flash(g);
+      await muatBuku();
+      flash("Bentrok dibuka lagi.");
+    },
+    [muatBuku, flash],
   );
 
   /* The banner speaks for one of these two lists, never both. A live overlap
@@ -603,6 +644,7 @@ export function BookingManager({
     [conflicts, today],
   );
   const bannerPairs = liveConflicts.length ? liveConflicts : pastConflicts;
+  terbukaJumlah.current = bannerPairs.length;
   const conflictTone = liveConflicts.length ? "danger" : "past";
 
   /* Names the room and the nights actually double-sold, instead of the fixed
@@ -1802,6 +1844,7 @@ export function BookingManager({
                     compact={phone}
                     showMoney={showMoney}
                     conflictCount={bannerPairs.length}
+                    selesaiCount={bentrokSelesai.length}
                     conflictTone={conflictTone}
                     conflictText={conflictText}
                     onReviewConflict={() => setConflictOpen(true)}
@@ -2004,9 +2047,13 @@ export function BookingManager({
         </div>
       </RangkaPanel>
 
-      {conflictOpen && bannerPairs.length > 0 && (
+      {conflictOpen && (bannerPairs.length > 0 || bentrokSelesai.length > 0) && (
         <ConflictModal
           pairs={bannerPairs}
+          selesai={bentrokSelesai}
+          bolehSelesaikan={layar.includes("kalender") && akun.peran !== "keuangan"}
+          onSelesaikan={selesaikanBentrok}
+          onBukaLagi={(p) => void bukaLagiBentrok(p)}
           roomName={(id) => roomById.get(id)?.name ?? ""}
           showMoney={showMoney}
           onClose={() => setConflictOpen(false)}

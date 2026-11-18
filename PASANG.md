@@ -567,3 +567,21 @@ Midtrans bertabrakan, sistem lama menyala tapi belum diatur di server, sambungan
 kalender yang gagal dibaca; hilang sendiri begitu diperbaiki) dan catatan galat
 `galat.json` (50 terakhir, tujuh hari; pembaca screenshot ditolak atau kena
 batas, sistem lama gagal dibaca, notifikasi Midtrans bertanda tangan salah).
+
+## Bentrok kamar: "sudah diselesaikan" dengan solusi untuk kedua tamu
+
+Overbook kadang dibereskan di luar sistem, misalnya dengan kompensasi, tanpa
+membatalkan siapa pun. Di jendela bentrok tiap pasangan punya tombol **Sudah
+diselesaikan: kedua tamu mendapat solusi**. Tiap tamu wajib punya solusi (tetap
+di kamar ini, pindah kamar, kompensasi, ganti tanggal, atau lainnya; kompensasi
+dan lainnya wajib dengan catatan), termasuk yang tetap di kamarnya. Tidak ada
+booking yang diubah atau dibatalkan.
+
+Bentrok yang selesai keluar dari pita peringatan, penanda kalender, dan
+hitungan, dan muncul di kalender sebagai "n bentrok sudah diselesaikan" dengan
+tautan Lihat; di sana solusinya terbaca dan bisa **Buka lagi**. Disimpan di
+`bentrok-selesai.json` (folder data server), dengan kunci dua id booking dan
+rentang malamnya: kalau tanggal booking diubah sesudahnya, rentangnya berubah
+dan bentroknya muncul lagi. Booking sistem lama (kamar `lama-…`, milik Turtle)
+juga bisa, karena catatannya per pasangan, bukan di bookingnya. API:
+`/api/bentrok` (akun yang boleh mencatat pesanan dan memegang unit itu).

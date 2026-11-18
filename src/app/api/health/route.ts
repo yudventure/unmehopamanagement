@@ -78,7 +78,6 @@ export async function GET() {
     );
   };
 
-  need("CMS_PASSWORD", "CMS menolak menyimpan sama sekali");
   need("GITHUB_REPO", "CMS tidak tahu harus menulis ke mana");
   need("RESEND_API_KEY", "tombol Kirim beralih membuka WhatsApp");
   need("ENQUIRY_FROM", "sama seperti di atas");

@@ -444,9 +444,11 @@ dijaga **di server**, tidak hanya di menu:
 - **Sistem lama** (`/api/sistem-lama`): hanya akun yang memegang Turtle.
 - **Dive center** dijalankan Turtle, jadi akun yang memegang Turtle memegangnya.
 
-Kata sandi CMS (`CMS_PASSWORD`) masih diminta. Karena sekarang ada sesi dan
-peran per orang, ia bisa dihapus nanti kalau pemilik mau; sementara tetap
-sebagai lapis tambahan.
+Kata sandi CMS bersama (`CMS_PASSWORD`) **sudah dihapus**. Menyimpan Website kini
+meminta kata sandi akun orang yang sedang masuk, diketik ulang sebagai
+konfirmasi (menyimpan menayangkan situs). Variabel `CMS_PASSWORD` di Hostinger
+tidak dipakai lagi dan boleh dihapus; server hanya butuh `GITHUB_TOKEN` dan
+`GITHUB_REPO`.
 
 ## Kalender per unit: kepala, panel pesanan, dan pembaca pesan
 

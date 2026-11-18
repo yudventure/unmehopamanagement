@@ -731,6 +731,21 @@ export function WebsiteScreen({ editor, situs }: WebsiteScreenProps) {
                 className={FIELD}
               />
             </label>
+            {(config.diveVideo ?? "").trim() && (
+              <div className="mt-3 flex flex-wrap items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => patch({ diveVideo: "" })}
+                  className="cursor-pointer rounded-[10px] border border-danger bg-transparent px-4 py-2 text-[13px] font-semibold text-danger hover:bg-danger hover:text-white"
+                >
+                  Hapus video
+                </button>
+                <span className="text-[12.5px] text-slate-soft">
+                  Mengosongkan kotak di atas. Videonya baru hilang dari situs
+                  setelah Anda menekan Simpan &amp; terbitkan.
+                </span>
+              </div>
+            )}
 
             {/* The same component the website draws, with what is being
                 typed. An owner filling this in should be looking at the

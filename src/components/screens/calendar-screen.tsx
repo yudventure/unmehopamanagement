@@ -343,10 +343,11 @@ export function CalendarScreen({
 
       {conflictCount > 0 && !hanyaJadwal && (
         <div
-          className={`mb-4 rounded-[14px] border px-4 py-[13px] ${
+          role="alert"
+          className={`mb-4 rounded-[14px] border-2 px-4 py-[14px] ${
             conflictTone === "danger"
-              ? "border-danger-line bg-danger-tint"
-              : "border-line-strong bg-surface-mute"
+              ? "border-danger bg-danger text-white shadow-[0_6px_18px_-6px_rgba(176,56,38,0.55)]"
+              : "border-amber-500 bg-amber-100 text-amber-950"
           } ${
             compact
               ? "flex flex-col gap-[10px]"
@@ -355,25 +356,25 @@ export function CalendarScreen({
         >
           <div className="flex items-start gap-[11px]">
             <span
-              className={`mt-[6px] h-[9px] w-[9px] shrink-0 rounded-full ${
-                conflictTone === "danger" ? "bg-danger" : "bg-slate-faint"
-              }`}
-            />
-            <div
-              className={`flex-1 text-[13.5px] leading-[1.45] ${
-                conflictTone === "danger" ? "text-danger-deep" : "text-slate"
+              aria-hidden
+              className={`flex h-[24px] w-[24px] shrink-0 items-center justify-center rounded-full text-[14px] font-bold ${
+                conflictTone === "danger" ? "bg-white text-danger" : "bg-amber-500 text-white"
               }`}
             >
+              !
+            </span>
+            <div className="flex-1 text-[14.5px] leading-[1.45] font-bold">
+              {conflictTone === "danger" && <span className="mr-2 rounded-full bg-white px-2 py-[1px] text-[11px] tracking-[0.1em] text-danger uppercase">Mendesak</span>}
               {conflictText}
             </div>
           </div>
           <button
             type="button"
             onClick={onReviewConflict}
-            className={`cursor-pointer rounded-[10px] bg-transparent px-[14px] py-2 text-[12.5px] font-medium ${
+            className={`cursor-pointer rounded-[10px] border-none px-[16px] py-2 text-[13px] font-bold ${
               conflictTone === "danger"
-                ? "border border-danger text-danger hover:bg-danger hover:text-white"
-                : "border border-line-input text-slate hover:bg-surface-hover"
+                ? "bg-white text-danger hover:bg-red-50"
+                : "bg-amber-500 text-white hover:bg-amber-600"
             } ${compact ? "w-full" : "shrink-0"}`}
           >
             Tinjau

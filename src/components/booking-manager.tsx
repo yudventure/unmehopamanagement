@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BookingDrawer } from "@/components/booking-drawer";
 import { DataSourceNote, type SumberData } from "@/components/data-source-note";
 import { BookingFormModal } from "@/components/booking-form-modal";
+import { hitungStok, type Rekaman } from "@/lib/modul";
 import { ConflictModal, type Selesai, type SolusiTamu } from "@/components/conflict-modal";
 import { DashboardRail } from "@/components/dashboard-rail";
 import { InviteModal } from "@/components/invite-modal";
@@ -44,7 +45,7 @@ import { KalenderHero } from "@/components/kalender-hero";
 import { PanelPesanan } from "@/components/panel-pesanan";
 import { PesananMassalModal, type BarisSiap } from "@/components/pesanan-massal-modal";
 import { bacaPesan, type BarisPesan } from "@/lib/baca-pesan";
-import { RingkasanScreen, type Pintasan } from "@/components/screens/ringkasan-screen";
+import { RingkasanScreen, type Pintasan, type StokPerhatian } from "@/components/screens/ringkasan-screen";
 import { PitaGalat, useGalat } from "@/components/galat-panel";
 import { GudangScreen } from "@/components/screens/gudang-screen";
 import { KeuanganScreen, type PendapatanBooking } from "@/components/screens/keuangan-screen";
@@ -1243,6 +1244,41 @@ export function BookingManager({
     return hasil;
   }, [scopedBookings, unitBooking, today]);
 
+  /* Stok gudang yang habis atau menipis, untuk Ringkasan. Hanya akun yang punya
+     layar Gudang; dimuat saat Ringkasan dibuka dan diperbarui tiap dua menit. */
+  const [gudangMentah, setGudangMentah] = useState<{ barang: Rekaman[]; mutasi: Rekaman[] } | null>(null);
+  const adaGudang = layar.includes("gudang");
+  useEffect(() => {
+    if (!adaGudang || screen !== "ringkasan") return;
+    let batal = false;
+    const muat = () =>
+      fetch("/api/modul/gudang", { cache: "no-store" })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((o: { data?: { barang?: Rekaman[]; mutasi?: Rekaman[] } } | null) => {
+          if (!batal && o?.data) setGudangMentah({ barang: o.data.barang ?? [], mutasi: o.data.mutasi ?? [] });
+        })
+        .catch(() => undefined);
+    void muat();
+    const t = setInterval(muat, 120_000);
+    return () => {
+      batal = true;
+      clearInterval(t);
+    };
+  }, [adaGudang, screen]);
+  const stokPerhatian = useMemo<(StokPerhatian & { unit: PropertyKey[] }) | null>(() => {
+    if (!gudangMentah) return null;
+    const baris = hitungStok(gudangMentah.barang, gudangMentah.mutasi, kamarMalam30);
+    const habis = baris.filter((b) => b.status === "Habis");
+    const menipis = baris.filter((b) => b.status === "Menipis");
+    if (!habis.length && !menipis.length) return null;
+    return {
+      habis: habis.length,
+      menipis: menipis.length,
+      contoh: [...habis, ...menipis].slice(0, 3).map((b) => b.nama),
+      unit: [...new Set([...habis, ...menipis].map((b) => b.unit))],
+    };
+  }, [gudangMentah, kamarMalam30]);
+
   const hariIniKalimat = useMemo(() => {
     if (!layar.includes("kalender")) return "Pilih halaman yang Anda butuhkan dari menu.";
     const aktif = scopedBookings.filter(
@@ -1855,6 +1891,15 @@ export function BookingManager({
                     showMoney={showMoney}
                     pintasan={pintasan}
                     adaKalender={layar.includes("kalender")}
+                    stok={stokPerhatian}
+                    onBukaGudang={() => {
+                      /* Satu unit yang bermasalah: langsung ke unit itu. Beberapa: semua unit bila akunnya boleh, selain itu unitnya sendiri. */
+                      const u = stokPerhatian?.unit.map((x) => (x === "divecenter" ? "turtle" : x)) ?? [];
+                      const unik = [...new Set(u)];
+                      setFilterProp(unik.length === 1 ? (unik[0] as PropFilter) : isOwner ? "all" : ((allowedProps.find((x) => x !== "divecenter") ?? "all") as PropFilter));
+                      setScreen("gudang");
+                      setSelectedId(null);
+                    }}
                     onBukaBentrok={() => {
                       /* Peninjauannya di Kalender: berpindah ke sana lalu membuka daftar bentrok. */
                       setScreen("kalender");

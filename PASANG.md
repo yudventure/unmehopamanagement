@@ -643,3 +643,9 @@ tombol cepat + Masuk dan − Keluar di tiap baris. Status Habis, Menipis, Cukup;
 **daftar belanja** sampai stok minimum atau sampai cukup untuk 30 hari ke depan
 (kamar terisi dari kalender × pemakaian per malam; barang yang pemakaiannya belum
 diisi tidak diperkirakan), dengan perkiraan biayanya.
+
+**Stok menipis di Ringkasan.** Di kartu "Perlu perhatian" muncul satu baris untuk
+barang gudang yang habis (merah) atau menipis (kuning), dengan nama beberapa
+barang yang paling mendesak dan tombol **Buka gudang** (langsung ke unit yang
+bermasalah). Hanya untuk akun yang punya layar Gudang, dan hanya barang di unit
+yang boleh dilihat akun itu; tidak muncul bila semua stok cukup.

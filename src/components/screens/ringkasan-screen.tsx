@@ -23,6 +23,17 @@ export interface RingkasanScreenProps {
   onBukaBentrok: () => void;
   /** Membuka rincian satu booking. */
   onBukaBooking: (id: string) => void;
+  /** Barang gudang yang habis atau menipis, bila akun ini punya akses gudang; null bila tidak ada yang perlu dikejar. */
+  stok?: StokPerhatian | null;
+  /** Membuka layar Stok Gudang. */
+  onBukaGudang?: () => void;
+}
+
+export interface StokPerhatian {
+  habis: number;
+  menipis: number;
+  /** Nama beberapa barang yang paling mendesak: yang habis dulu. */
+  contoh: string[];
 }
 
 export interface Pintasan {
@@ -81,7 +92,7 @@ function Ubin({ label, nilai, ket, gelap = false }: { label: string; nilai: stri
 }
 
 export function RingkasanScreen({
-  nama, peran, bookings, rooms, today, showMoney, pintasan, adaKalender, onBukaBentrok, onBukaBooking,
+  nama, peran, bookings, rooms, today, showMoney, pintasan, adaKalender, onBukaBentrok, onBukaBooking, stok = null, onBukaGudang,
 }: RingkasanScreenProps) {
   const aktif = bookings.filter(AKTIF);
   const bulan = today.slice(0, 7);
@@ -169,11 +180,11 @@ export function RingkasanScreen({
         </section>
       )}
 
-      {adaBooking && (
+      {(adaBooking || stok) && (
         <section className="grid gap-4 xl:grid-cols-2">
           <div className="rounded-3xl bg-white p-5 ring-1 ring-panel-garis">
             <p className="text-[11px] font-bold tracking-[0.16em] text-panel-aksen uppercase">Perlu perhatian</p>
-            {bentrok === 0 && mendesak.length === 0 ? (
+            {bentrok === 0 && mendesak.length === 0 && !stok ? (
               <p className="mt-3 text-[0.9375rem] text-panel-utama/80">Tidak ada yang perlu dikejar.</p>
             ) : (
               <ul className="mt-3 grid max-h-[18rem] gap-2 overflow-y-auto pr-1">
@@ -184,6 +195,23 @@ export function RingkasanScreen({
                       className="shrink-0 cursor-pointer rounded-full border-none bg-panel-merah px-4 py-[6px] text-[0.8125rem] font-bold text-white hover:opacity-90">
                       Tinjau bentrok
                     </button>
+                  </li>
+                )}
+                {stok && (
+                  <li className={`flex flex-wrap items-center gap-3 rounded-2xl px-4 py-3 text-[0.9375rem] ${stok.habis ? "bg-panel-merah-lembut text-panel-merah" : "bg-amber-100 text-amber-950"}`}>
+                    <span className="min-w-0 flex-1">
+                      <span className="font-semibold">
+                        {[stok.habis ? `${stok.habis} barang gudang habis` : "", stok.menipis ? `${stok.menipis} menipis` : ""].filter(Boolean).join(", ")}.
+                      </span>{" "}
+                      {stok.contoh.join(", ")}
+                      {stok.habis + stok.menipis > stok.contoh.length ? ", dan lainnya" : ""}.
+                    </span>
+                    {onBukaGudang && (
+                      <button type="button" onClick={onBukaGudang}
+                        className={`shrink-0 cursor-pointer rounded-full border-none px-4 py-[6px] text-[0.8125rem] font-bold text-white hover:opacity-90 ${stok.habis ? "bg-panel-merah" : "bg-amber-600"}`}>
+                        Buka gudang
+                      </button>
+                    )}
                   </li>
                 )}
                 {mendesak.map((b) => (
@@ -200,6 +228,7 @@ export function RingkasanScreen({
               </ul>
             )}
           </div>
+          {adaBooking && (
           <div className="rounded-3xl bg-white p-5 ring-1 ring-panel-garis">
             <p className="flex items-center gap-2 text-[11px] font-bold tracking-[0.16em] text-panel-aksen uppercase">
               Tiba terdekat
@@ -225,6 +254,7 @@ export function RingkasanScreen({
               </ul>
             )}
           </div>
+          )}
         </section>
       )}
 

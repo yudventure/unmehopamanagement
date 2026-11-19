@@ -1891,6 +1891,7 @@ export function BookingManager({
                     showMoney={showMoney}
                     pintasan={pintasan}
                     adaKalender={layar.includes("kalender")}
+                    bentrok={conflicts.length}
                     stok={stokPerhatian}
                     onBukaGudang={() => {
                       /* Satu unit yang bermasalah: langsung ke unit itu. Beberapa: semua unit bila akunnya boleh, selain itu unitnya sendiri. */

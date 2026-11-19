@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 
 import { NavIcon } from "@/components/icons";
-import { findConflicts } from "@/lib/derive";
 import { MONTHS, dayDiff, fmt, fmtShort, iso, parse } from "@/lib/format";
 import type { Booking, Room, Screen } from "@/lib/types";
 
@@ -19,6 +18,12 @@ export interface RingkasanScreenProps {
   pintasan: Pintasan[];
   /** Akun ini punya kalender, jadi angka booking di bawah ada artinya. */
   adaKalender: boolean;
+  /**
+   * Bentrok kamar yang masih terbuka. Dihitung di pengelola, bukan di sini,
+   * karena yang sudah dinyatakan selesai (kompensasi dan sebagainya) tidak
+   * boleh muncul lagi sebagai hal yang perlu dikejar.
+   */
+  bentrok: number;
   /** Membuka peninjauan bentrok di Kalender. */
   onBukaBentrok: () => void;
   /** Membuka rincian satu booking. */
@@ -92,7 +97,7 @@ function Ubin({ label, nilai, ket, gelap = false }: { label: string; nilai: stri
 }
 
 export function RingkasanScreen({
-  nama, peran, bookings, rooms, today, showMoney, pintasan, adaKalender, onBukaBentrok, onBukaBooking, stok = null, onBukaGudang,
+  nama, peran, bookings, rooms, today, showMoney, pintasan, adaKalender, bentrok, onBukaBentrok, onBukaBooking, stok = null, onBukaGudang,
 }: RingkasanScreenProps) {
   const aktif = bookings.filter(AKTIF);
   const bulan = today.slice(0, 7);
@@ -117,7 +122,6 @@ export function RingkasanScreen({
   const tersedia = kamarAktif.length * 30;
   const okupansi = tersedia ? Math.round((terisi / tersedia) * 100) : 0;
 
-  const bentrok = findConflicts(bookings).length;
   const mendesak = menunggu.filter((b) => b.checkIn >= today && dayDiff(today, b.checkIn) <= 3);
   /* Yang tiba dalam tiga hari ke depan, tidak dibatasi jumlahnya: daftar
      menggulir bila panjang. Lebih dari itu belum perlu dipantau dari sini. */

@@ -7,6 +7,7 @@ import { seedRooms } from "@/lib/data";
 import { bacaIcal, buatIcal, rangkai } from "@/lib/ical.mjs";
 import type { Booking, ChannelKey, Room, Sambungan } from "@/lib/types";
 import { bacaJson, ubahJson } from "./gudang";
+import { berlaku, semuaImpor, type PesananImpor } from "./impor-booking";
 
 /**
  * Buku di server: kamar, pesanan yang dicatat di dashboard, dan sambungan
@@ -108,6 +109,16 @@ export async function tambahSambungan(o: { roomId: string; nama: string; url: st
   };
   await ubahSimpanan((s) => ({ ...s, sambungan: [...s.sambungan, baru] }));
   return baru;
+}
+
+/** Acara iCal terakhir yang terbaca dari satu sambungan. */
+export async function acaraSambungan(id: string): Promise<{ mulai: string; selesai: string }[]> {
+  return ((await buka()).luar?.[id] ?? []).map((a) => ({ mulai: a.mulai, selesai: a.selesai }));
+}
+
+/** Menyimpan (atau menghapus) ringkasan impor di sambungannya, supaya layar Sinkronisasi bisa menyebutnya. */
+export async function tandaiImpor(id: string, ringkas: Sambungan["impor"] | null): Promise<void> {
+  await ubahSimpanan((s) => ({ ...s, sambungan: s.sambungan.map((x) => (x.id === id ? { ...x, impor: ringkas ?? undefined } : x)) }));
 }
 
 export async function hapusSambungan(id: string): Promise<boolean> {
@@ -331,6 +342,7 @@ export async function bookingDariLuar(): Promise<Booking[]> {
     isi(p.roomId, p.checkIn, p.checkOut);
   }
 
+  const DIBAGI = " Satu tautan untuk beberapa kamar: ditempatkan otomatis di kamar yang kosong, jadi kamarnya bisa berbeda dari yang dipakai tamu.";
   const jadi = (sb: Sambungan, a: Acara, roomId: string, dibagi: boolean): Booking => {
     const kunci = createHash("sha1").update(`${sb.id}|${a.uid}|${a.mulai}`).digest("hex").slice(0, 10);
     return {
@@ -346,31 +358,86 @@ export async function bookingDariLuar(): Promise<Booking[]> {
       total: 0,
       tanpaHarga: true,
       status: "Confirmed",
-      notes:
-        `Terbaca dari ${sb.nama} lewat iCal. Harga dan jumlah tamu tidak dikirim situs itu.` +
-        (dibagi ? " Satu tautan untuk beberapa kamar: ditempatkan otomatis di kamar yang kosong, jadi kamarnya bisa berbeda dari yang dipakai tamu." : ""),
+      notes: `Terbaca dari ${sb.nama} lewat iCal. Harga dan jumlah tamu tidak dikirim situs itu.` + (dibagi ? DIBAGI : ""),
       src: "iCal",
       sumberNama: sb.nama,
     };
   };
 
+  /* Satu kamar dari pesanan yang diimpor: pesanan tiga kamar menjadi tiga booking. */
+  const dariImpor = (sb: Sambungan, p: PesananImpor, ke: number, roomId: string, dibagi: boolean): Booking => {
+    const bagian = Math.floor(p.harga / p.kamar);
+    const total = ke === 0 ? p.harga - bagian * (p.kamar - 1) : bagian;
+    const rincian = [
+      `${sb.nama} #${p.nomor}`,
+      p.kamar > 1 ? `kamar ${ke + 1} dari ${p.kamar}` : "",
+      p.komisi ? `komisi ${p.komisiPersen ?? ""}${p.komisiPersen !== null ? "% " : ""}Rp ${p.komisi.toLocaleString("id-ID")}` : "",
+      p.negara ? `pemesan dari ${p.negara}` : "",
+      p.dipesanPada ? `dipesan ${p.dipesanPada.slice(0, 10)}` : "",
+    ].filter(Boolean);
+    return {
+      id: `ical-${sb.id}-bk${p.nomor}-${ke}`,
+      code: p.kamar > 1 ? `${p.nomor}/${ke + 1}` : p.nomor,
+      roomId,
+      guest: p.tamu || sb.nama,
+      phone: p.telepon,
+      pax: ke === 0 ? p.orang : null,
+      channel: saluranDari(sb.nama),
+      checkIn: p.checkIn,
+      checkOut: p.checkOut,
+      total,
+      tanpaHarga: p.harga <= 0,
+      status: "Confirmed",
+      notes: `Diimpor dari daftar pesanan ${sb.nama}: ${rincian.join(" · ")}.${p.catatan ? ` Catatan tamu: ${p.catatan}` : ""}` + (dibagi ? DIBAGI : ""),
+      src: "iCal",
+      sumberNama: sb.nama,
+    };
+  };
+
+  const impor = await semuaImpor();
+  /**
+   * Yang harus ditempatkan untuk satu sambungan: tiap kamar dari pesanan yang
+   * diimpor dan berlaku, lalu acara iCal yang tidak punya pasangan di impor.
+   * Pasangan dicocokkan menurut tanggal: satu pesanan impor menutup satu acara
+   * dengan check-in dan check-out yang sama.
+   */
+  type Butir = { mulai: string; selesai: string; urut: string; buat: (roomId: string, dibagi: boolean) => Booking };
+  const butirDari = (sb: Sambungan): Butir[] => {
+    const daftar: Butir[] = [];
+    const sisa = new Map<string, number>();
+    for (const p of impor[sb.id]?.pesanan ?? []) {
+      if (!berlaku(p)) continue;
+      const k = `${p.checkIn}|${p.checkOut}`;
+      sisa.set(k, (sisa.get(k) ?? 0) + 1);
+      for (let i = 0; i < p.kamar; i++) daftar.push({ mulai: p.checkIn, selesai: p.checkOut, urut: `b${p.nomor}-${i}`, buat: (r, d) => dariImpor(sb, p, i, r, d) });
+    }
+    for (const a of s.luar?.[sb.id] ?? []) {
+      const k = `${a.mulai}|${a.selesai}`;
+      const n = sisa.get(k) ?? 0;
+      if (n > 0) {
+        sisa.set(k, n - 1);
+        continue;
+      }
+      daftar.push({ mulai: a.mulai, selesai: a.selesai, urut: `i${a.uid}`, buat: (r, d) => jadi(sb, a, r, d) });
+    }
+    return daftar;
+  };
+
   const keluar: Booking[] = [];
   const semua = s.sambungan ?? [];
   for (const sb of semua.filter((x) => !x.kamarLain?.length)) {
-    for (const a of s.luar?.[sb.id] ?? []) {
-      keluar.push(jadi(sb, a, sb.roomId, false));
-      isi(sb.roomId, a.mulai, a.selesai);
+    for (const b of butirDari(sb)) {
+      keluar.push(b.buat(sb.roomId, false));
+      isi(sb.roomId, b.mulai, b.selesai);
     }
   }
   for (const sb of semua.filter((x) => x.kamarLain?.length)) {
     const kandidat = [sb.roomId, ...(sb.kamarLain ?? []).filter((r) => r !== sb.roomId)];
-    const urut = [...(s.luar?.[sb.id] ?? [])].sort(
-      (p, q) => p.mulai.localeCompare(q.mulai) || p.selesai.localeCompare(q.selesai) || p.uid.localeCompare(q.uid),
-    );
-    for (const a of urut) {
-      const room = kandidat.find((r) => kosong(r, a.mulai, a.selesai)) ?? sb.roomId;
-      keluar.push(jadi(sb, a, room, true));
-      isi(room, a.mulai, a.selesai);
+    const urut = butirDari(sb).sort((p, q) => p.mulai.localeCompare(q.mulai) || p.selesai.localeCompare(q.selesai) || p.urut.localeCompare(q.urut));
+    for (const b of urut) {
+      const room = kandidat.find((r) => kosong(r, b.mulai, b.selesai)) ?? sb.roomId;
+      keluar.push(b.buat(room, true));
+      isi(room, b.mulai, b.selesai);
     }
   }
   return keluar;

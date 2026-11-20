@@ -27,6 +27,8 @@ export interface SyncScreenProps {
   onTokenBaru: (id: string) => void;
   /** Membagikan bacaan satu sambungan ke kamar lain dalam tipe yang sama. Kembali berisi pesan galat, atau null. */
   onKamarLain: (id: string, kamar: string[]) => Promise<string | null>;
+  /** Dipanggil sesudah impor daftar pesanan disimpan atau dihapus: memuat ulang buku. */
+  onImporBerubah: (pesan: string) => Promise<void>;
   onJalankan: () => void;
   sedangJalan: boolean;
   /** Kamar Turtle dibaca dari sistem lama, yang belum ikut ke tautan ekspor. */
@@ -111,8 +113,159 @@ function BagiKamar({ s, kamarSatuUnit, onSimpan }: { s: Sambungan; kamarSatuUnit
   );
 }
 
+interface Pratinjau {
+  tipeUnit: { nama: string; jumlah: number }[];
+  dipilih: string;
+  jumlah: number;
+  berlaku: number;
+  batal: number;
+  kamar: number;
+  multiKamar: number;
+  dariTanggal: string | null;
+  sampaiTanggal: string | null;
+  nilai: number;
+  komisi: number;
+  acaraIcal: number;
+  acaraDigantikan: number;
+}
+
+const rp = (n: number) => `Rp ${Math.round(n).toLocaleString("id-ID")}`;
+
+/**
+ * Impor daftar pesanan dari ekspor situs itu (Booking.com: Extranet, Pemesanan,
+ * unduh .xls). Melengkapi iCal dengan nama tamu, harga, dan jumlah kamar.
+ * Pratinjau dulu, simpan sesudah orangnya melihat angkanya.
+ */
+function ImporPesanan({ s, onBerubah }: { s: Sambungan; onBerubah: (pesan: string) => Promise<void> }) {
+  const [buka, setBuka] = useState(false);
+  const [berkas, setBerkas] = useState<{ nama: string; isi: string } | null>(null);
+  const [tipe, setTipe] = useState("");
+  const [p, setP] = useState<Pratinjau | null>(null);
+  const [galat, setGalat] = useState("");
+  const [sibuk, setSibuk] = useState(false);
+
+  const kirim = async (isi: string, tipeUnit: string, simpan: boolean) => {
+    setSibuk(true);
+    setGalat("");
+    try {
+      const r = await fetch("/api/sinkron/impor", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: s.id, berkas: isi, tipeUnit, simpan }) });
+      const o = (await r.json().catch(() => ({}))) as { pratinjau?: Pratinjau; galat?: string; tersimpan?: number };
+      if (!r.ok) {
+        setGalat(o.galat ?? `Server menjawab ${r.status}.`);
+        return;
+      }
+      if (o.pratinjau) {
+        setP(o.pratinjau);
+        if (o.pratinjau.dipilih) setTipe(o.pratinjau.dipilih);
+      }
+      if (simpan) {
+        setBerkas(null);
+        setP(null);
+        setBuka(false);
+        await onBerubah(`${o.tersimpan ?? 0} pesanan ${s.nama} tersimpan dari impor.`);
+      }
+    } catch {
+      setGalat("Tidak bisa menghubungi server.");
+    } finally {
+      setSibuk(false);
+    }
+  };
+
+  const pilihBerkas = (f: File | undefined) => {
+    if (!f) return;
+    if (f.size > 6 * 1024 * 1024) return setGalat("Berkas terlalu besar. Maksimal 6 MB.");
+    const r = new FileReader();
+    r.onload = () => {
+      const isi = String(r.result ?? "");
+      setBerkas({ nama: f.name, isi });
+      setTipe("");
+      setP(null);
+      void kirim(isi, "", false);
+    };
+    r.readAsDataURL(f);
+  };
+
+  const hapus = async () => {
+    if (!window.confirm(`Hapus impor pesanan ${s.nama}? Nama tamu, harga, dan jumlah kamar dari impor hilang; kalender kembali memakai iCal saja.`)) return;
+    setSibuk(true);
+    const r = await fetch("/api/sinkron/impor", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: s.id }) }).catch(() => null);
+    setSibuk(false);
+    if (r?.ok) await onBerubah("Impor dihapus.");
+    else setGalat("Tidak bisa menghapus impor.");
+  };
+
+  return (
+    <div className="rounded-[10px] bg-surface-mute px-[11px] py-[9px]">
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-[12px] font-semibold">Impor daftar pesanan</span>
+        {s.impor ? (
+          <span className="text-[12px] text-slate">
+            {s.impor.berlaku} pesanan berlaku dari {s.impor.jumlah} ({s.impor.tipeUnit}), diimpor {fmtDateTime(new Date(s.impor.pada))} oleh {s.impor.oleh}
+          </span>
+        ) : (
+          <span className="text-[12px] text-slate-mute">nama tamu, harga, dan jumlah kamar yang tidak dibawa iCal</span>
+        )}
+        {!buka && (
+          <button type="button" onClick={() => setBuka(true)} className={`${TOMBOL_KECIL} ml-auto`}>
+            {s.impor ? "Impor ulang" : "Impor berkas"}
+          </button>
+        )}
+        {s.impor && !buka && (
+          <button type="button" disabled={sibuk} onClick={() => void hapus()} className="cursor-pointer rounded-[8px] border-none bg-transparent px-2 py-1 text-[12px] text-danger hover:bg-danger-tint">
+            Hapus impor
+          </button>
+        )}
+      </div>
+      {buka && (
+        <div className="mt-2 flex flex-col gap-2">
+          <p className="text-[12px] leading-[1.5] text-slate">
+            Di Extranet Booking.com: Pemesanan, pilih rentang tanggal (sertakan yang akan datang), lalu Unduh. Pilih berkas .xls atau .csv itu di sini. Pesanan yang tanggalnya sama dengan acara iCal menggantikannya; pesanan banyak kamar memakai kamar sebanyak itu. Impor ulang memperbarui menurut nomor pemesanan.
+          </p>
+          <input type="file" accept=".xls,.csv,application/vnd.ms-excel,text/csv" aria-label={`Berkas pesanan ${s.nama}`} onChange={(e) => pilihBerkas(e.target.files?.[0])} className="text-[12.5px]" />
+          {sibuk && <p className="text-[12px] text-slate">Membaca…</p>}
+          {galat && <p role="alert" className="text-[12px] text-danger-ink">{galat}</p>}
+          {p && berkas && (
+            <div className="rounded-[10px] border border-line bg-surface px-3 py-2 text-[12.5px] leading-[1.6]">
+              {p.tipeUnit.length > 1 && (
+                <label className="mb-1 flex flex-wrap items-center gap-2">
+                  <span className="font-semibold">Tipe unit untuk sambungan ini</span>
+                  <select value={tipe} onChange={(e) => { setTipe(e.target.value); void kirim(berkas.isi, e.target.value, false); }} className={KOTAK_ISIAN}>
+                    <option value="">Pilih…</option>
+                    {p.tipeUnit.map((t) => <option key={t.nama} value={t.nama}>{t.nama} ({t.jumlah})</option>)}
+                  </select>
+                </label>
+              )}
+              {p.dipilih ? (
+                <>
+                  <div><strong>{p.berlaku}</strong> pesanan berlaku ({p.kamar} kamar), {p.batal} batal; {p.dariTanggal} sampai {p.sampaiTanggal}.</div>
+                  {p.multiKamar > 0 && <div>{p.multiKamar} pesanan memesan lebih dari satu kamar: kini memblokir kamar sebanyak itu.</div>}
+                  <div>Menggantikan {p.acaraDigantikan} dari {p.acaraIcal} acara iCal sambungan ini (tanggal sama persis). Acara lain tetap terbaca.</div>
+                  <div>Nilai pesanan berlaku {rp(p.nilai)}, komisi {rp(p.komisi)}.</div>
+                  <div className="mt-2 flex gap-2">
+                    <button type="button" disabled={sibuk} onClick={() => void kirim(berkas.isi, p.dipilih, true)} className="cursor-pointer rounded-[9px] border-none bg-teal px-[15px] py-[8px] text-[12.5px] font-bold text-white hover:bg-teal-deep disabled:opacity-50">
+                      Simpan impor
+                    </button>
+                    <button type="button" onClick={() => { setBuka(false); setBerkas(null); setP(null); }} className={TOMBOL_KECIL}>Batal</button>
+                  </div>
+                </>
+              ) : (
+                <div className="text-slate">Berkas ini memuat beberapa tipe unit. Pilih yang sesuai dengan sambungan ini.</div>
+              )}
+            </div>
+          )}
+          {!p && (
+            <div>
+              <button type="button" onClick={() => { setBuka(false); setBerkas(null); setGalat(""); }} className={TOMBOL_KECIL}>Batal</button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function BarisSambungan({
-  s, origin, onRemove, onUbahUrl, onTokenBaru, kamarSatuUnit, onKamarLain,
+  s, origin, onRemove, onUbahUrl, onTokenBaru, kamarSatuUnit, onKamarLain, onImporBerubah,
 }: {
   s: Sambungan;
   origin: string;
@@ -121,6 +274,7 @@ function BarisSambungan({
   onTokenBaru: () => void;
   kamarSatuUnit: Room[];
   onKamarLain: (ids: string[]) => Promise<string | null>;
+  onImporBerubah: (pesan: string) => Promise<void>;
 }) {
   const [salin, setSalin] = useState(false);
   const [ubah, setUbah] = useState(false);
@@ -185,6 +339,7 @@ function BarisSambungan({
       </div>
 
       {s.url && <BagiKamar s={s} kamarSatuUnit={kamarSatuUnit} onSimpan={onKamarLain} />}
+      <ImporPesanan s={s} onBerubah={onImporBerubah} />
 
       <div>
         <div className="mb-1 text-[11px] text-slate-mute">Tempel ke situs itu supaya malam terjual terblokir di sana</div>
@@ -274,12 +429,13 @@ function TambahSambungan({ room, onAdd }: { room: Room; onAdd: SyncScreenProps["
  * di belakang.
  */
 function BarisKamar({
-  room, daftar, origin, onAdd, onRemove, onUbahUrl, onTokenBaru, kamarSatuUnit, onKamarLain, menerima,
+  room, daftar, origin, onAdd, onRemove, onUbahUrl, onTokenBaru, kamarSatuUnit, onKamarLain, menerima, onImporBerubah,
 }: {
   room: Room;
   daftar: Sambungan[];
   kamarSatuUnit: Room[];
   onKamarLain: SyncScreenProps["onKamarLain"];
+  onImporBerubah: SyncScreenProps["onImporBerubah"];
   /** Sambungan kamar lain yang membagikan bacaannya ke kamar ini, sebagai kalimat pendek. */
   menerima: string[];
   origin: string;
@@ -324,6 +480,7 @@ function BarisKamar({
             onTokenBaru={() => onTokenBaru(s.id)}
             kamarSatuUnit={kamarSatuUnit}
             onKamarLain={(ids) => onKamarLain(s.id, ids)}
+            onImporBerubah={onImporBerubah}
           />
         ))}
         <TambahSambungan room={room} onAdd={onAdd} />
@@ -341,7 +498,7 @@ function BarisKamar({
  * seperti banyak agen, cukup tanpa tautan impor.
  */
 export function SyncScreen({
-  rooms, sambungan, origin, onAdd, onRemove, onUbahUrl, onTokenBaru, onKamarLain, onJalankan, sedangJalan, turtleDariLama,
+  rooms, sambungan, origin, onAdd, onRemove, onUbahUrl, onTokenBaru, onKamarLain, onImporBerubah, onJalankan, sedangJalan, turtleDariLama,
 }: SyncScreenProps) {
   const props = PROPERTIES.filter((p) => rooms.some((r) => r.prop === p.key));
   const terakhir = sambungan.map((s) => s.berhasil).filter(Boolean).sort().pop();
@@ -405,6 +562,7 @@ export function SyncScreen({
                   onTokenBaru={onTokenBaru}
                   kamarSatuUnit={rooms.filter((r) => r.prop === room.prop && r.id !== room.id)}
                   onKamarLain={onKamarLain}
+                  onImporBerubah={onImporBerubah}
                   menerima={sambungan
                     .filter((s) => s.kamarLain?.includes(room.id))
                     .map((s) => `${s.nama} dari ${rooms.find((r) => r.id === s.roomId)?.name ?? "kamar lain"}`)}

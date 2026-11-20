@@ -2044,6 +2044,10 @@ export function BookingManager({
                     onUbahUrl={ubahUrlSambungan}
                     onTokenBaru={tokenBaruSambungan}
                     onKamarLain={kamarLainSambungan}
+                    onImporBerubah={async (pesan) => {
+                      await muatBuku();
+                      flash(pesan);
+                    }}
                     onJalankan={jalankanSinkron}
                     sedangJalan={sedangJalan}
                     turtleDariLama={lamaAktif}

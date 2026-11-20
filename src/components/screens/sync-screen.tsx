@@ -25,6 +25,8 @@ export interface SyncScreenProps {
   onRemove: (id: string) => void;
   onUbahUrl: (id: string, url: string) => Promise<string | null>;
   onTokenBaru: (id: string) => void;
+  /** Membagikan bacaan satu sambungan ke kamar lain dalam tipe yang sama. Kembali berisi pesan galat, atau null. */
+  onKamarLain: (id: string, kamar: string[]) => Promise<string | null>;
   onJalankan: () => void;
   sedangJalan: boolean;
   /** Kamar Turtle dibaca dari sistem lama, yang belum ikut ke tautan ekspor. */
@@ -46,14 +48,79 @@ function Status({ s }: { s: Sambungan }) {
   return <span className="rounded-full bg-teal-soft px-2 py-[2px] text-[11px] text-teal-deep">Tersambung</span>;
 }
 
+/**
+ * Satu tipe kamar dengan beberapa unit di situs itu, lewat satu tautan: bacaan
+ * dibagikan ke kamar yang kosong, bukan ditumpuk di satu kamar sampai terbaca
+ * sebagai bentrok.
+ */
+function BagiKamar({ s, kamarSatuUnit, onSimpan }: { s: Sambungan; kamarSatuUnit: Room[]; onSimpan: (ids: string[]) => Promise<string | null> }) {
+  const [ubah, setUbah] = useState(false);
+  const [pilih, setPilih] = useState<string[]>(s.kamarLain ?? []);
+  const [galat, setGalat] = useState("");
+  const [sibuk, setSibuk] = useState(false);
+  const nama = (id: string) => kamarSatuUnit.find((r) => r.id === id)?.name ?? id;
+  const aktif = s.kamarLain ?? [];
+  if (!kamarSatuUnit.length) return null;
+  return (
+    <div className="rounded-[10px] bg-surface-mute px-[11px] py-[9px]">
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-[12px] font-semibold">Satu tipe kamar, beberapa unit</span>
+        {aktif.length > 0 && !ubah && (
+          <span className="text-[12px] text-slate">dibagikan ke {aktif.map(nama).join(", ")}</span>
+        )}
+        {!ubah && (
+          <button type="button" onClick={() => { setPilih(aktif); setUbah(true); }} className={`${TOMBOL_KECIL} ml-auto`}>
+            {aktif.length ? "Ubah" : "Bagikan ke kamar lain"}
+          </button>
+        )}
+      </div>
+      {ubah && (
+        <div className="mt-2">
+          <p className="text-[12px] leading-[1.5] text-slate">
+            Pilih bila tautan ini dari tipe kamar yang punya (atau dulu punya) beberapa unit. Tiap booking yang terbaca ditempatkan di kamar pertama yang kosong: kamar ini dulu, lalu kamar yang dicentang. Bentrok hanya muncul bila semua kamar itu penuh.
+          </p>
+          <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
+            {kamarSatuUnit.map((r) => (
+              <label key={r.id} className="flex cursor-pointer items-center gap-2 text-[12.5px]">
+                <input type="checkbox" checked={pilih.includes(r.id)} onChange={(e) => setPilih((p) => (e.target.checked ? [...p, r.id] : p.filter((x) => x !== r.id)))} />
+                {r.name}
+              </label>
+            ))}
+          </div>
+          {galat && <div className="mt-1 text-[12px] text-danger-ink">{galat}</div>}
+          <div className="mt-2 flex gap-2">
+            <button
+              type="button"
+              disabled={sibuk}
+              onClick={async () => {
+                setSibuk(true);
+                const g = await onSimpan(pilih);
+                setSibuk(false);
+                setGalat(g ?? "");
+                if (!g) setUbah(false);
+              }}
+              className="cursor-pointer rounded-[9px] border-none bg-teal px-[15px] py-[8px] text-[12.5px] font-bold text-white hover:bg-teal-deep disabled:opacity-50"
+            >
+              {sibuk ? "Menyimpan…" : "Simpan"}
+            </button>
+            <button type="button" onClick={() => setUbah(false)} className={TOMBOL_KECIL}>Batal</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function BarisSambungan({
-  s, origin, onRemove, onUbahUrl, onTokenBaru,
+  s, origin, onRemove, onUbahUrl, onTokenBaru, kamarSatuUnit, onKamarLain,
 }: {
   s: Sambungan;
   origin: string;
   onRemove: () => void;
   onUbahUrl: (url: string) => Promise<string | null>;
   onTokenBaru: () => void;
+  kamarSatuUnit: Room[];
+  onKamarLain: (ids: string[]) => Promise<string | null>;
 }) {
   const [salin, setSalin] = useState(false);
   const [ubah, setUbah] = useState(false);
@@ -116,6 +183,8 @@ function BarisSambungan({
         )}
         {galat && <div className="mt-1 text-[12px] text-danger-ink">{galat}</div>}
       </div>
+
+      {s.url && <BagiKamar s={s} kamarSatuUnit={kamarSatuUnit} onSimpan={onKamarLain} />}
 
       <div>
         <div className="mb-1 text-[11px] text-slate-mute">Tempel ke situs itu supaya malam terjual terblokir di sana</div>
@@ -205,10 +274,14 @@ function TambahSambungan({ room, onAdd }: { room: Room; onAdd: SyncScreenProps["
  * di belakang.
  */
 function BarisKamar({
-  room, daftar, origin, onAdd, onRemove, onUbahUrl, onTokenBaru,
+  room, daftar, origin, onAdd, onRemove, onUbahUrl, onTokenBaru, kamarSatuUnit, onKamarLain, menerima,
 }: {
   room: Room;
   daftar: Sambungan[];
+  kamarSatuUnit: Room[];
+  onKamarLain: SyncScreenProps["onKamarLain"];
+  /** Sambungan kamar lain yang membagikan bacaannya ke kamar ini, sebagai kalimat pendek. */
+  menerima: string[];
   origin: string;
   onAdd: SyncScreenProps["onAdd"];
   onRemove: (id: string) => void;
@@ -230,7 +303,8 @@ function BarisKamar({
           <span className="rounded-full bg-amber-soft px-[8px] py-[2px] text-[11px] text-amber-ink">Nonaktif</span>
         )}
         <span className={`ml-auto text-[12.5px] ${daftar.length ? "text-ink-soft" : "text-slate-mute"}`}>
-          {daftar.length ? `${daftar.length} situs tersambung` : "belum tersambung"}
+          {daftar.length ? `${daftar.length} situs tersambung` : menerima.length ? "" : "belum tersambung"}
+          {menerima.length ? `${daftar.length ? "; " : ""}menerima bacaan ${menerima.join(", ")}` : ""}
           {gagal ? `, ${gagal} gagal dibaca` : ""}
         </span>
         <svg aria-hidden="true" viewBox="0 0 12 12" className={`h-3 w-3 shrink-0 text-slate ${buka ? "rotate-180" : ""}`}>
@@ -248,6 +322,8 @@ function BarisKamar({
             onRemove={() => onRemove(s.id)}
             onUbahUrl={(u) => onUbahUrl(s.id, u)}
             onTokenBaru={() => onTokenBaru(s.id)}
+            kamarSatuUnit={kamarSatuUnit}
+            onKamarLain={(ids) => onKamarLain(s.id, ids)}
           />
         ))}
         <TambahSambungan room={room} onAdd={onAdd} />
@@ -265,7 +341,7 @@ function BarisKamar({
  * seperti banyak agen, cukup tanpa tautan impor.
  */
 export function SyncScreen({
-  rooms, sambungan, origin, onAdd, onRemove, onUbahUrl, onTokenBaru, onJalankan, sedangJalan, turtleDariLama,
+  rooms, sambungan, origin, onAdd, onRemove, onUbahUrl, onTokenBaru, onKamarLain, onJalankan, sedangJalan, turtleDariLama,
 }: SyncScreenProps) {
   const props = PROPERTIES.filter((p) => rooms.some((r) => r.prop === p.key));
   const terakhir = sambungan.map((s) => s.berhasil).filter(Boolean).sort().pop();
@@ -327,6 +403,11 @@ export function SyncScreen({
                   onRemove={onRemove}
                   onUbahUrl={onUbahUrl}
                   onTokenBaru={onTokenBaru}
+                  kamarSatuUnit={rooms.filter((r) => r.prop === room.prop && r.id !== room.id)}
+                  onKamarLain={onKamarLain}
+                  menerima={sambungan
+                    .filter((s) => s.kamarLain?.includes(room.id))
+                    .map((s) => `${s.nama} dari ${rooms.find((r) => r.id === s.roomId)?.name ?? "kamar lain"}`)}
                 />
               ))}
             </div>

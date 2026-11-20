@@ -817,6 +817,17 @@ export function BookingManager({
     [flash, muatBuku],
   );
 
+  const kamarLainSambungan = useCallback(
+    async (id: string, kamarLain: string[]): Promise<string | null> => {
+      const g = await kirim("/api/sinkron", "PATCH", { id, kamarLain });
+      if (g) return g;
+      await muatBuku();
+      flash(kamarLain.length ? "Bacaan dibagikan ke kamar yang kosong." : "Bacaan kembali ke satu kamar.");
+      return null;
+    },
+    [flash, muatBuku],
+  );
+
   const tokenBaruSambungan = useCallback(
     async (id: string) => {
       const g = await kirim("/api/sinkron", "PATCH", { id, tokenBaru: true });
@@ -2032,6 +2043,7 @@ export function BookingManager({
                     onRemove={hapusSambungan}
                     onUbahUrl={ubahUrlSambungan}
                     onTokenBaru={tokenBaruSambungan}
+                    onKamarLain={kamarLainSambungan}
                     onJalankan={jalankanSinkron}
                     sedangJalan={sedangJalan}
                     turtleDariLama={lamaAktif}

@@ -84,6 +84,13 @@ export interface Sambungan {
   url: string;
   /** Rahasia di tautan ekspor `/api/ical/<token>.ics`. */
   token: string;
+  /**
+   * Kamar lain dalam tipe yang sama. Diisi bila situs itu menjual satu tipe
+   * kamar dengan beberapa unit lewat satu tautan (atau masih membawa booking
+   * lama dari masa itu): malam yang terbaca dibagikan ke kamar yang kosong di
+   * antara `roomId` dan kamar-kamar ini, bukan ditumpuk di satu kamar.
+   */
+  kamarLain?: string[];
   dibuat: string;
   dicoba?: string;
   berhasil?: string;

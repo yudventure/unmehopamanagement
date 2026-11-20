@@ -671,3 +671,30 @@ kamar fisik yang sedang ditempati. Bacaan sebuah sambungan tetap tidak pernah
 dikirim balik ke sambungan itu. Penempatannya otomatis (`bookingDariLuar` di
 `buku.ts`), urutannya tetap selama isinya sama, dan kamar tempatnya bisa berbeda
 dari kamar yang benar-benar dipakai tamu.
+
+## Impor daftar pesanan Booking.com
+
+iCal Booking.com tidak membawa nama tamu, harga, atau jumlah kamar: pesanan tiga
+kamar terbaca sebagai satu acara. Di Sinkronisasi kalender, tiap sambungan punya
+**Impor daftar pesanan**: unduh dari Extranet (Pemesanan, pilih rentang termasuk
+yang akan datang, Unduh) lalu pilih berkas `.xls` atau `.csv` itu. Pratinjau
+dulu (berapa berlaku dan batal, rentang tanggal, multi-kamar, nilai dan komisi,
+berapa acara iCal yang digantikan), lalu **Simpan impor**. Berkas dengan beberapa
+tipe unit meminta memilih tipe yang sesuai dengan sambungan itu.
+
+Yang disimpan (`impor-booking.json`, per sambungan, digabung menurut nomor
+pemesanan; impor ulang tidak menggandakan): nomor, nama tamu, telepon, tanggal,
+status, jumlah kamar dan orang, harga, komisi, negara pemesan, catatan. Alamat
+tidak diambil, berkasnya tidak disimpan.
+
+Pemakaiannya (`bookingDariLuar`): tiap pesanan berlaku menjadi booking sebanyak
+jumlah kamarnya (harga dibagi rata), dengan nama, telepon, nomor, dan komisi di
+catatan; acara iCal dengan check-in dan check-out yang sama digantikan satu
+lawan satu. Acara yang tidak punya pasangan (pesanan sesudah ekspor) tetap
+terbaca seperti biasa, jadi impor berkala saja supaya lengkap. Bersama "Satu
+tipe kamar, beberapa unit", pesanan multi-kamar menempati kamar sebanyak itu dan
+ikut memblokir di tautan ekspor kamar-kamar itu. Pendapatan di Keuangan ikut
+memakai harganya. Hapus impor mengembalikan kalender ke iCal saja.
+
+Pembaca berkasnya buatan sendiri (`src/lib/server/baca-tabel.ts`: Excel lama
+BIFF8 dan CSV), tanpa pustaka luar; `.xlsx` belum didukung.

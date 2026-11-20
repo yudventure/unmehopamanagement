@@ -5,6 +5,7 @@ import type { Akun } from "@/lib/server/akun";
 import {
   ambilKamar, bacaSambungan, daftarSambungan, hapusSambungan, rapikanUrl, tambahSambungan, ubahSambungan,
 } from "@/lib/server/buku";
+import { hapusImpor } from "@/lib/server/impor-booking";
 
 /**
  * Sambungan kalender iCal ke situs luar. Situs apa pun, tidak dibatasi
@@ -113,5 +114,6 @@ export async function DELETE(req: Request) {
   const id = teks(o.id, 40);
   if (!(await sambunganBoleh(akun, id))) return galat("Sambungan tidak ditemukan.", 404);
   if (!(await hapusSambungan(id))) return galat("Sambungan tidak ditemukan.", 404);
+  await hapusImpor(id);
   return NextResponse.json({ ok: true });
 }

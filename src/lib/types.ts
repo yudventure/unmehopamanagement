@@ -91,6 +91,8 @@ export interface Sambungan {
    * antara `roomId` dan kamar-kamar ini, bukan ditumpuk di satu kamar.
    */
   kamarLain?: string[];
+  /** Ringkasan daftar pesanan yang diimpor dari ekspor situs itu (Booking.com .xls), bila ada. */
+  impor?: { tipeUnit: string; jumlah: number; berlaku: number; pada: string; oleh: string };
   dibuat: string;
   dicoba?: string;
   berhasil?: string;

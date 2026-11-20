@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+<meta http-equiv="Pragma" content="no-cache">
+<title>Monitoring Tamu — Turtle Dive Homestay</title>
+<style>
+  body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#f3f7f7;color:#0e4b4f;
+       display:flex;min-height:100vh;margin:0;align-items:center;justify-content:center}
+  .box{text-align:center}
+  .spin{width:34px;height:34px;border:4px solid #cfe0db;border-top-color:#0e4b4f;border-radius:50%;
+        margin:0 auto 12px;animation:sp 0.8s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  a{color:#0e4b4f}
+</style>
+</head>
+<body>
+  <div class="box">
+    <div class="spin"></div>
+    <div>Memuat Monitoring…</div>
+    <div style="font-size:12px;color:#6b8079;margin-top:8px">Jika tidak berpindah, <a id="manual" href="#">klik di sini</a>.</div>
+  </div>
+<script>
+  /* ============================================================================
+   * CACHE-BUSTER LOADER  (jangan diubah)
+   * File ini hanya "pemuat". Aplikasi sebenarnya ada di td_monitoring_app.html.
+   * Setiap dibuka, ia menarik versi TERBARU dengan ?v=<waktu>, jadi browser/CDN
+   * tidak pernah menyajikan versi lama.
+   *
+   * CARA UPDATE ke depan: cukup TIMPA "td_monitoring_app.html" dengan nama yang
+   * SAMA — tidak perlu ganti nama file lagi. Bagikan/buka selalu td_monitoring.html.
+   * ========================================================================== */
+  var APP = 'td_monitoring_app.html';
+  var url = APP + '?v=' + Date.now();
+  document.getElementById('manual').href = url;
+  location.replace(url);
+</script>
+</body>
+</html>

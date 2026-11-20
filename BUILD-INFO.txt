@@ -1,0 +1,9 @@
+Dibuat        : 2026-11-20T03:12:52.734Z
+Domain aktif  : eddohomestay.com, turtlehomestay.com, www.eddohomestay.com, www.turtlehomestay.com
+Client Midtrans: ada
+
+Domain di atas sudah tertanam. Mengubahnya perlu build ulang.
+
+
+Jalankan dengan: node server.js
+PORT dan HOSTNAME dibaca dari lingkungan, jangan dipatok di kode.

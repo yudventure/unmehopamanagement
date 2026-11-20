@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-store">
+<title>Log Aktivitas — Turtle Dive Homestay</title>
+<style>
+  :root{ --navy:#0E4B4F; --teal:#1C8C82; --coral:#E8603C; --line:#dbe5e4; --muted:#6b8079; --ink:#10262b; --sand:#f3f7f5; }
+  *{box-sizing:border-box}
+  body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;margin:0;background:var(--sand);color:var(--ink)}
+  .wrap{max-width:1000px;margin:0 auto;padding:16px}
+  h1{font-size:20px;margin:6px 0}
+  .sub{color:var(--muted);font-size:13px;margin:0 0 12px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:14px}
+  .btn{border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px 12px;font-size:14px;font-weight:600;cursor:pointer}
+  .btn.brand{background:var(--navy);color:#fff;border-color:var(--navy)}
+  .bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  input{border:1px solid var(--line);border-radius:10px;padding:9px 10px;font-size:14px;width:100%}
+  #gate{max-width:340px;margin:60px auto;text-align:center}
+  .hidden{display:none}
+  .msg.err{color:#c0492e;font-size:13px}
+  table.cal{width:100%;border-collapse:separate;border-spacing:5px}
+  table.cal th{font-size:11px;text-transform:uppercase;color:var(--muted);padding:4px 0;font-weight:700}
+  table.cal td{width:14.28%;vertical-align:top;height:74px;border:1px solid var(--line);border-radius:10px;padding:5px 6px;background:#fff;cursor:pointer;transition:.1s}
+  table.cal td.empty{background:transparent;border:none;cursor:default}
+  table.cal td:hover:not(.empty){border-color:var(--teal)}
+  table.cal td.today{border-color:#f0c000;background:#fffdf3}
+  table.cal td.sel{outline:2px solid var(--navy)}
+  .dnum{font-size:13px;font-weight:800;color:var(--ink)}
+  .dots{display:flex;flex-wrap:wrap;gap:3px;margin-top:4px}
+  .dot{width:100%;font-size:10px;font-weight:700;color:#fff;border-radius:5px;padding:1px 4px;line-height:1.5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .trip{border:1px solid var(--line);border-left:5px solid var(--muted);border-radius:12px;padding:12px 14px;margin-bottom:10px;background:#fff}
+  .trip h3{margin:0 0 2px;font-size:15px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .time{margin-left:auto;font-size:12px;font-weight:700;color:var(--navy);background:#eaf3f1;border-radius:8px;padding:2px 8px}
+  .meta{font-size:13px;color:#33484d;margin:6px 0}
+  .meta b{color:var(--ink)}
+  .sec{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:800;margin:8px 0 3px}
+  ol.gl{margin:0;padding-left:20px;font-size:13px}
+  ol.gl li{margin:1px 0}
+  .chips{display:flex;flex-wrap:wrap;gap:5px}
+  .chip{font-size:12px;background:#eef4f3;border:1px solid var(--line);border-radius:20px;padding:2px 9px}
+  .hc{font-size:12px;font-weight:800;color:var(--navy);margin-top:6px}
+  .empty-note{color:var(--muted);font-size:13px;padding:8px 2px}
+  .synced{font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- PIN GATE -->
+  <div id="gate">
+    <div style="font-size:40px">📖</div>
+    <h1>Log Aktivitas</h1>
+    <p class="sub">Turtle Dive Homestay · masukkan PIN 6 angka</p>
+    <div class="card">
+      <input id="pinInput" inputmode="numeric" maxlength="6" placeholder="••••••" style="text-align:center;letter-spacing:6px;font-size:18px">
+      <button class="btn brand" style="width:100%;margin-top:10px" onclick="tryPin()">Masuk</button>
+      <div class="msg err" id="pinMsg"></div>
+    </div>
+  </div>
+
+  <!-- APP -->
+  <div id="app" class="hidden">
+    <h1>📖 Log Aktivitas — Turtle Dive Homestay</h1>
+    <p class="sub">Semua data dimuat & disimpan di app ini (instan saat dibuka). Tekan <b>Sync</b> untuk menambahkan data terbaru.</p>
+
+    <div class="card">
+      <div class="bar" style="justify-content:space-between">
+        <div class="bar">
+          <button class="btn" onclick="shiftMonth(-1)">←</button>
+          <button class="btn" onclick="goThisMonth()">Bulan ini</button>
+          <button class="btn" onclick="shiftMonth(1)">→</button>
+          <strong id="monLabel" style="font-size:16px;margin-left:6px"></strong>
+        </div>
+        <div class="bar">
+          <span class="synced" id="syncLabel"></span>
+          <button class="btn brand" id="syncBtn" onclick="syncAll(this)">⟳ Sync</button>
+        </div>
+      </div>
+      <div style="overflow-x:auto;margin-top:10px"><table class="cal" id="calTable"></table></div>
+      <div class="chips" style="margin-top:8px">
+        <span class="chip">🤿 Diving</span><span class="chip">🤽 Snorkeling</span>
+        <span class="chip">🚤 Transport</span><span class="chip">🏝️ Excursion</span><span class="chip">🎓 Course</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <strong id="dayLabel">Pilih tanggal di kalender</strong>
+      <div id="dayDetail" style="margin-top:10px"><div class="empty-note">Belum ada tanggal dipilih.</div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===== SETTINGS ===== */
+var PIN        = '112233';
+var DATA_URL   = 'https://script.google.com/macros/s/AKfycbyGcPCLDGlBB5TzdBov_GJEWz7pms792Ifd9ENN2UmcuMAHwz20Vc7YaUI9yF5UPbX5/exec';
+var BACKEND_PW = 'turtlestaff007';
+/* ==================== */
+
+var LS='tdh_actlog_unlocked', LS_DATA='tdh_actlog_data', LS_TS='tdh_actlog_ts';
+var DOW=['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
+var MON=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+var ACT={
+  'Diving':{e:'🤿',c:'#1C8C82'}, 'Snorkeling':{e:'🤽',c:'#2a9dd6'},
+  'Transport':{e:'🚤',c:'#E8603C'}, 'Excursion Trip':{e:'🏝️',c:'#2e9e5b'},
+  'SSI Dive Course':{e:'🎓',c:'#7c5cd0'}, 'Try Dive':{e:'🥽',c:'#c78a1e'}
+};
+var viewY, viewM, selDate=null;
+var ALL = lsGet(LS_DATA) || [];          // ALL trips, cached locally
+var byDate = {};                          // date -> [trips]
+
+function lsGet(k){ try{return JSON.parse(localStorage.getItem(k)||'null');}catch(e){return null;} }
+function lsSet(k,v){ try{localStorage.setItem(k,JSON.stringify(v));}catch(e){} }
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function p2(n){ return String(n).padStart(2,'0'); }
+function iso(y,m,d){ return y+'-'+p2(m+1)+'-'+p2(d); }
+function todayISO(){ var d=new Date(); return iso(d.getFullYear(),d.getMonth(),d.getDate()); }
+function actMeta(a){ return ACT[a]||{e:'📋',c:'#6b8079'}; }
+function actShort(label){ return String(label||'').split(' — ')[0]; }
+
+function reindex(){ byDate={}; (ALL||[]).forEach(function(t){ (byDate[t.date]=byDate[t.date]||[]).push(t); }); }
+
+function tryPin(){ if(document.getElementById('pinInput').value===PIN){ try{localStorage.setItem(LS,'1')}catch(e){}; unlock(); } else document.getElementById('pinMsg').textContent='PIN salah.'; }
+function unlock(){
+  document.getElementById('gate').classList.add('hidden'); document.getElementById('app').classList.remove('hidden');
+  var d=new Date(); viewY=d.getFullYear(); viewM=d.getMonth();
+  reindex(); renderCal(); updateSyncLabel();
+  if(!ALL.length) syncAll(document.getElementById('syncBtn'));   // first run: auto load all
+}
+
+function updateSyncLabel(){
+  var ts=lsGet(LS_TS);
+  document.getElementById('syncLabel').textContent = ts ? ('Sinkron: '+ts+' · '+ALL.length+' trip') : 'Belum sinkron';
+}
+
+function syncAll(btn){
+  var o=btn?btn.textContent:''; if(btn){btn.disabled=true;btn.textContent='⏳ Sync…';}
+  fetch(DATA_URL+'?mode=activityLogAll&password='+encodeURIComponent(BACKEND_PW))
+    .then(function(r){return r.json();})
+    .then(function(res){
+      if(res&&res.status==='ok'){
+        ALL=res.trips||[]; lsSet(LS_DATA,ALL);
+        var now=new Date(); var ts=now.getFullYear()+'-'+p2(now.getMonth()+1)+'-'+p2(now.getDate())+' '+p2(now.getHours())+':'+p2(now.getMinutes());
+        lsSet(LS_TS,ts);
+        reindex(); renderCal(); updateSyncLabel();
+        if(selDate) renderDay(byDate[selDate]||[]);
+      } else { alert('Gagal sync: '+((res&&res.message)||'')); }
+    })
+    .catch(function(e){ alert('Gagal terhubung: '+e); })
+    .then(function(){ if(btn){btn.disabled=false;btn.textContent=o;} });
+}
+
+function shiftMonth(n){ viewM+=n; if(viewM<0){viewM=11;viewY--;} if(viewM>11){viewM=0;viewY++;} renderCal(); }
+function goThisMonth(){ var d=new Date(); viewY=d.getFullYear(); viewM=d.getMonth(); renderCal(); }
+
+function monthCountsFor(y,m){
+  var counts={};
+  var pre=y+'-'+p2(m+1)+'-';
+  Object.keys(byDate).forEach(function(dt){
+    if(dt.indexOf(pre)!==0) return;
+    var rec=counts[dt]={date:dt,total:0,byActivity:{}};
+    byDate[dt].forEach(function(t){ var a=actShort(t.activityLabel); rec.total++; rec.byActivity[a]=(rec.byActivity[a]||0)+1; });
+  });
+  return counts;
+}
+
+function renderCal(){
+  document.getElementById('monLabel').textContent=MON[viewM]+' '+viewY;
+  var counts=monthCountsFor(viewY,viewM);
+  var first=new Date(viewY,viewM,1).getDay();
+  var ndays=new Date(viewY,viewM+1,0).getDate();
+  var tIso=todayISO();
+  var html='<tr>'+DOW.map(function(d){return '<th>'+d+'</th>';}).join('')+'</tr><tr>';
+  for(var i=0;i<first;i++) html+='<td class="empty"></td>';
+  for(var day=1;day<=ndays;day++){
+    var cur=iso(viewY,viewM,day);
+    var cell=counts[cur];
+    var cls=''; if(cur===tIso) cls+=' today'; if(cur===selDate) cls+=' sel';
+    var dots='';
+    if(cell){ Object.keys(cell.byActivity).forEach(function(a){ var m=actMeta(a); dots+='<span class="dot" style="background:'+m.c+'" title="'+esc(a)+'">'+m.e+' '+cell.byActivity[a]+'</span>'; }); }
+    html+='<td class="'+cls.trim()+'" onclick="selectDay(\''+cur+'\')"><div class="dnum">'+day+'</div><div class="dots">'+dots+'</div></td>';
+    if((first+day)%7===0 && day!==ndays) html+='</tr><tr>';
+  }
+  html+='</tr>';
+  document.getElementById('calTable').innerHTML=html;
+}
+
+function fmtLong(isoStr){ var q=isoStr.split('-'); var d=new Date(isoStr+'T00:00:00'); return DOW[d.getDay()]+', '+parseInt(q[2],10)+' '+MON[parseInt(q[1],10)-1]+' '+q[0]; }
+
+function selectDay(isoStr){
+  selDate=isoStr; renderCal();
+  document.getElementById('dayLabel').textContent='📅 '+fmtLong(isoStr);
+  renderDay(byDate[isoStr]||[]);          // INSTANT — from local cache
+}
+
+function renderDay(trips){
+  trips=(trips||[]).slice();
+  if(!trips.length){ document.getElementById('dayDetail').innerHTML='<div class="empty-note">Tidak ada aktivitas pada tanggal ini.</div>'; return; }
+  var order=['Diving','Snorkeling','Transport','Excursion Trip','SSI Dive Course','Try Dive'];
+  trips.sort(function(a,b){ var ia=order.indexOf(actShort(a.activityLabel)), ib=order.indexOf(actShort(b.activityLabel)); if(ia<0)ia=99; if(ib<0)ib=99; if(ia!==ib) return ia-ib; return (a.departureTime||'').localeCompare(b.departureTime||''); });
+  var html='';
+  trips.forEach(function(t){
+    var m=actMeta(actShort(t.activityLabel));
+    var time=(t.departureTime||t.returnTime)?('⏰ '+(t.departureTime||'-')+' – '+(t.returnTime||'-')):'';
+    var isTransport=actShort(t.activityLabel)==='Transport';
+    var crew = isTransport
+      ? '<div class="meta"><b>Jenis:</b> '+(t.guide1==='dropoff'?'Drop Off / Antar':'Pick Up / Jemput')+'</div>'
+      : '<div class="meta"><b>Guide:</b> '+([t.guide1,t.guide2].filter(Boolean).map(esc).join(', ')||'-')+'</div>';
+    var dest = (t.destinations&&t.destinations.length) ? '<div class="sec">Lokasi</div><div class="chips">'+t.destinations.map(function(d){return '<span class="chip">'+esc(d)+'</span>';}).join('')+'</div>' : '';
+    var guests = (t.guestNames&&t.guestNames.length) ? '<div class="sec">Tamu ('+t.guestCount+')</div><ol class="gl">'+t.guestNames.map(function(n){return '<li>'+esc(n)+'</li>';}).join('')+'</ol>' : '<div class="hc">👤 '+(t.guestCount||0)+' tamu</div>';
+    var dive = (actShort(t.activityLabel)==='Diving' && t.diveCount) ? ('<div class="meta"><b>Dive:</b> '+t.diveCount+'×</div>') : '';
+    html+='<div class="trip" style="border-left-color:'+m.c+'">'
+      +'<h3>'+m.e+' '+esc(t.activityLabel)+(time?'<span class="time">'+esc(time)+'</span>':'')+'</h3>'
+      +'<div class="meta"><b>Boat:</b> '+esc(t.boat||'-')+' &nbsp;·&nbsp; <b>Kapten:</b> '+esc(t.driver||'-')+'</div>'
+      +dive+crew+dest+guests
+      +'</div>';
+  });
+  document.getElementById('dayDetail').innerHTML=html;
+}
+
+/* auto-unlock */
+(function(){ var ok=false; try{ok=localStorage.getItem(LS)==='1';}catch(e){} if(ok) unlock(); })();
+document.getElementById('pinInput').addEventListener('keydown',function(e){ if(e.key==='Enter') tryPin(); });
+</script>
+</body>
+</html>

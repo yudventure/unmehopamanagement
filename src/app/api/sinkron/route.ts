@@ -13,7 +13,8 @@ import {
  *
  *   GET                              daftar sambungan
  *   POST   { roomId, nama, url? }    tambah, langsung dibaca kalau ada url
- *   PATCH  { id, nama?, url?, tokenBaru? }   ubah, atau buat tautan ekspor baru
+ *   PATCH  { id, nama?, url?, tokenBaru?, kamarLain? }   ubah, buat tautan ekspor baru,
+ *          atau bagikan bacaannya ke kamar lain dalam tipe yang sama
  *   DELETE { id }                    hapus
  *
  * Hanya akun yang punya layar Sinkronisasi.
@@ -71,7 +72,20 @@ export async function PATCH(req: Request) {
   const o = (await req.json().catch(() => ({}))) as Record<string, unknown>;
   const id = teks(o.id, 40);
   if (!(await sambunganBoleh(akun, id))) return galat("Sambungan tidak ditemukan.", 404);
-  const patch: { nama?: string; url?: string; tokenBaru?: boolean } = {};
+  const patch: { nama?: string; url?: string; tokenBaru?: boolean; kamarLain?: string[] } = {};
+  if (o.kamarLain !== undefined) {
+    if (!Array.isArray(o.kamarLain) || o.kamarLain.length > 40) return galat("Daftar kamar tidak sah.");
+    const utama = (await daftarSambungan()).find((x) => x.id === id)!;
+    const kamar = await ambilKamar();
+    const propUtama = kamar.find((r) => r.id === utama.roomId)?.prop;
+    const ids = [...new Set(o.kamarLain.map((v) => teks(v, 20)).filter((v) => v && v !== utama.roomId))];
+    for (const r of ids) {
+      const k = kamar.find((x) => x.id === r);
+      if (!k || k.prop !== propUtama) return galat("Kamar lain harus kamar yang ada, di unit yang sama.");
+      if (!(await kamarBoleh(akun, r))) return galat("Kamar itu bukan di unit Anda.", 403);
+    }
+    patch.kamarLain = ids;
+  }
   if (o.nama !== undefined) {
     const n = teks(o.nama, 60);
     if (!n) return galat("Nama situs tidak boleh kosong.");

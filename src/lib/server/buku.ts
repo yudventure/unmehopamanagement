@@ -123,7 +123,7 @@ export async function hapusSambungan(id: string): Promise<boolean> {
 
 export async function ubahSambungan(
   id: string,
-  patch: { nama?: string; url?: string; tokenBaru?: boolean },
+  patch: { nama?: string; url?: string; tokenBaru?: boolean; kamarLain?: string[] },
 ): Promise<Sambungan | null> {
   let hasil: Sambungan | null = null;
   await ubahSimpanan((s) => ({
@@ -135,6 +135,7 @@ export async function ubahSambungan(
         ...(patch.nama !== undefined ? { nama: patch.nama } : {}),
         ...(patch.url !== undefined ? { url: patch.url, galat: undefined } : {}),
         ...(patch.tokenBaru ? { token: acak(16) } : {}),
+        ...(patch.kamarLain !== undefined ? { kamarLain: patch.kamarLain.length ? patch.kamarLain : undefined } : {}),
       };
       return hasil;
     }),
@@ -300,30 +301,76 @@ function saluranDari(nama: string): ChannelKey {
 
 const UMUM = /^(reserved|not available|unavailable|closed|blocked|busy|tidak tersedia|booked)\b/i;
 
-/** Malam yang terbaca dari situs luar, dalam bentuk booking supaya kalender dan bentrok memperlakukannya sama. */
+const bertumpuk = (a: string, b: string, x: string, y: string) => a < y && x < b;
+
+/**
+ * Malam yang terbaca dari situs luar, dalam bentuk booking supaya kalender dan
+ * bentrok memperlakukannya sama.
+ *
+ * Sambungan biasa menaruh semua bacaannya di kamarnya sendiri. Sambungan yang
+ * punya `kamarLain` (satu tipe kamar, beberapa unit) membagikan tiap bacaan ke
+ * kamar pertama yang kosong pada malam-malam itu, di antara kamarnya dan
+ * kamar-kamar lain itu, setelah pesanan dashboard dan sambungan biasa ditaruh
+ * lebih dulu. Hanya bila semua unit penuh bacaannya ditaruh di kamar utama, dan
+ * di sana terbaca sebagai bentrok, karena memang itulah kelebihan jual.
+ *
+ * Urutannya tetap (tanggal mulai, lalu selesai, lalu uid), jadi hasilnya sama
+ * tiap kali dibaca selama isinya sama.
+ */
 export async function bookingDariLuar(): Promise<Booking[]> {
   const s = await buka();
+  const sibuk = new Map<string, [string, string][]>();
+  const isi = (room: string, a: string, b: string) => {
+    const l = sibuk.get(room);
+    if (l) l.push([a, b]);
+    else sibuk.set(room, [[a, b]]);
+  };
+  const kosong = (room: string, a: string, b: string) => !(sibuk.get(room) ?? []).some(([x, y]) => bertumpuk(a, b, x, y));
+  for (const p of await ambilPesanan()) {
+    if (p.status === "Cancelled" || p.status === "Tidak datang") continue;
+    isi(p.roomId, p.checkIn, p.checkOut);
+  }
+
+  const jadi = (sb: Sambungan, a: Acara, roomId: string, dibagi: boolean): Booking => {
+    const kunci = createHash("sha1").update(`${sb.id}|${a.uid}|${a.mulai}`).digest("hex").slice(0, 10);
+    return {
+      id: `ical-${sb.id}-${kunci}`,
+      code: `IC-${kunci.slice(0, 5).toUpperCase()}`,
+      roomId,
+      guest: a.ringkas && !UMUM.test(a.ringkas) ? a.ringkas : sb.nama,
+      phone: "",
+      pax: null,
+      channel: saluranDari(sb.nama),
+      checkIn: a.mulai,
+      checkOut: a.selesai,
+      total: 0,
+      tanpaHarga: true,
+      status: "Confirmed",
+      notes:
+        `Terbaca dari ${sb.nama} lewat iCal. Harga dan jumlah tamu tidak dikirim situs itu.` +
+        (dibagi ? " Satu tautan untuk beberapa kamar: ditempatkan otomatis di kamar yang kosong, jadi kamarnya bisa berbeda dari yang dipakai tamu." : ""),
+      src: "iCal",
+      sumberNama: sb.nama,
+    };
+  };
+
   const keluar: Booking[] = [];
-  for (const sb of s.sambungan ?? []) {
+  const semua = s.sambungan ?? [];
+  for (const sb of semua.filter((x) => !x.kamarLain?.length)) {
     for (const a of s.luar?.[sb.id] ?? []) {
-      const kunci = createHash("sha1").update(`${sb.id}|${a.uid}|${a.mulai}`).digest("hex").slice(0, 10);
-      keluar.push({
-        id: `ical-${sb.id}-${kunci}`,
-        code: `IC-${kunci.slice(0, 5).toUpperCase()}`,
-        roomId: sb.roomId,
-        guest: a.ringkas && !UMUM.test(a.ringkas) ? a.ringkas : sb.nama,
-        phone: "",
-        pax: null,
-        channel: saluranDari(sb.nama),
-        checkIn: a.mulai,
-        checkOut: a.selesai,
-        total: 0,
-        tanpaHarga: true,
-        status: "Confirmed",
-        notes: `Terbaca dari ${sb.nama} lewat iCal. Harga dan jumlah tamu tidak dikirim situs itu.`,
-        src: "iCal",
-        sumberNama: sb.nama,
-      });
+      keluar.push(jadi(sb, a, sb.roomId, false));
+      isi(sb.roomId, a.mulai, a.selesai);
+    }
+  }
+  for (const sb of semua.filter((x) => x.kamarLain?.length)) {
+    const kandidat = [sb.roomId, ...(sb.kamarLain ?? []).filter((r) => r !== sb.roomId)];
+    const urut = [...(s.luar?.[sb.id] ?? [])].sort(
+      (p, q) => p.mulai.localeCompare(q.mulai) || p.selesai.localeCompare(q.selesai) || p.uid.localeCompare(q.uid),
+    );
+    for (const a of urut) {
+      const room = kandidat.find((r) => kosong(r, a.mulai, a.selesai)) ?? sb.roomId;
+      keluar.push(jadi(sb, a, room, true));
+      isi(room, a.mulai, a.selesai);
     }
   }
   return keluar;
@@ -342,7 +389,8 @@ function malamDari(mulai: string, selesai: string): string[] {
 
 /**
  * Kalender ekspor satu sambungan, `/api/ical/<token>.ics`. Malam yang terisi
- * oleh pesanan di dashboard dan malam dari sambungan LAIN di kamar yang sama,
+ * oleh pesanan di dashboard dan malam dari sambungan LAIN yang jatuh di kamar
+ * yang sama (termasuk bacaan tipe kamar yang dibagikan ke kamar ini),
  * tapi tidak malam dari sambungan itu sendiri: kalau dikirim balik, blokir
  * yang dibaca dari sebuah situs akan kembali ke situs itu dan tidak pernah
  * terbuka lagi walau tamunya batal. Tanpa nama tamu, kode, atau kontak.
@@ -358,9 +406,12 @@ export async function feedSambungan(token: string): Promise<string | null> {
     if (p.status === "Cancelled" || p.status === "Tidak datang") continue;
     malam.push(...malamDari(p.checkIn, p.checkOut));
   }
-  for (const lain of s.sambungan ?? []) {
-    if (lain.id === sb.id || lain.roomId !== sb.roomId) continue;
-    for (const a of s.luar?.[lain.id] ?? []) malam.push(...malamDari(a.mulai, a.selesai));
+  /* Bacaan dari situs lain yang (setelah dibagikan) jatuh di kamar ini, tapi
+     tidak bacaan sambungan ini sendiri. */
+  const milikSendiri = `ical-${sb.id}-`;
+  for (const b of await bookingDariLuar()) {
+    if (b.roomId !== sb.roomId || b.id.startsWith(milikSendiri)) continue;
+    malam.push(...malamDari(b.checkIn, b.checkOut));
   }
   const kamar = (await ambilKamar()).find((r) => r.id === sb.roomId);
   const acara = rangkai(malam).map((r) => ({

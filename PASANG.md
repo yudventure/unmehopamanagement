@@ -649,3 +649,25 @@ barang gudang yang habis (merah) atau menipis (kuning), dengan nama beberapa
 barang yang paling mendesak dan tombol **Buka gudang** (langsung ke unit yang
 bermasalah). Hanya untuk akun yang punya layar Gudang, dan hanya barang di unit
 yang boleh dilihat akun itu; tidak muncul bila semua stok cukup.
+
+## Sinkronisasi: satu tipe kamar, beberapa unit
+
+Booking.com hanya memberi tautan iCal untuk tipe kamar berisi satu unit. Tipe
+yang dulu punya beberapa unit (misalnya 7) lalu diubah menjadi 1 tetap membawa
+booking lamanya di tautan tipe itu, dan semuanya tertumpuk di satu kamar sampai
+terbaca sebagai ratusan bentrok.
+
+Di Sinkronisasi kalender, tiap sambungan yang membaca tautan punya bagian
+**Satu tipe kamar, beberapa unit**: centang kamar lain di unit yang sama. Tiap
+booking yang terbaca lalu ditempatkan di kamar pertama yang kosong (kamar
+sambungan itu dulu, lalu yang dicentang), setelah pesanan dashboard dan bacaan
+sambungan biasa. Bentrok hanya muncul bila semua kamar itu penuh, karena itulah
+kelebihan jual yang sebenarnya. Kamar yang menerima bacaan menulis "menerima
+bacaan … dari …" di barisnya.
+
+Tautan ekspor ikut penempatan itu: kamar yang menerima booking tipe lama
+memblokir malam itu di tautan ekspornya sendiri, supaya situs tidak menjual
+kamar fisik yang sedang ditempati. Bacaan sebuah sambungan tetap tidak pernah
+dikirim balik ke sambungan itu. Penempatannya otomatis (`bookingDariLuar` di
+`buku.ts`), urutannya tetap selama isinya sama, dan kamar tempatnya bisa berbeda
+dari kamar yang benar-benar dipakai tamu.

@@ -3,10 +3,11 @@
 import { useMemo, useState } from "react";
 
 import { KepalaModul, cocokUnit, Stat, TabBar, TabelModul, bulanIni, kartu, judulKecil, namaUnit, tombolUtama, useModul, type DataModul, type FilterUnit } from "@/components/data-modul";
+import { SertifikatMagang } from "@/components/sertifikat-magang";
 import { fmt } from "@/lib/format";
 import { LABEL_PARAMETER, PARAMETER_AWAL, STATUS_ABSEN, SUMBER_PARAMETER, hitungGaji, type ParameterSdm, type Rekaman } from "@/lib/modul";
 
-type Tab = "biaya" | "pegawai" | "absensi" | "asuransi" | "inventaris" | "acuan";
+type Tab = "biaya" | "pegawai" | "absensi" | "asuransi" | "inventaris" | "sertifikat" | "acuan";
 
 const isian = "w-full rounded-xl border border-panel-garis bg-panel-latar px-3 py-2 text-[0.875rem] text-panel-utama outline-none focus:border-panel-aksen";
 
@@ -207,6 +208,7 @@ export function SdmScreen({ filter, hariIni }: { filter: FilterUnit; hariIni: st
             { id: "absensi", label: "Absensi" },
             { id: "asuransi", label: "Asuransi" },
             { id: "inventaris", label: "Inventaris & kebutuhan", jumlah: kebutuhan.jumlah },
+            { id: "sertifikat", label: "Sertifikat magang" },
             { id: "acuan", label: "Angka acuan" },
           ]}
           aktif={tab}
@@ -289,6 +291,8 @@ export function SdmScreen({ filter, hariIni }: { filter: FilterUnit; hariIni: st
           <TabelModul modul={sdm} koleksiId="inventaris" filter={filter} urut={(a, b) => String(a.barang).localeCompare(String(b.barang))} ket="Barang yang dipegang pegawai dan yang masih dibutuhkan: seragam, alat kerja, alat keselamatan." kosong="Belum ada barang. Tekan Tambah, misalnya seragam atau alat kerja." kolomTambahan={[{ judul: "Kurang", kanan: true, isi: (r) => Math.max(0, Number(r.butuh) - Number(r.punya)) || "—" }]} />
         </>
       )}
+
+      {tab === "sertifikat" && <SertifikatMagang modul={sdm} filter={filter} hariIni={hariIni} />}
 
       {tab === "acuan" && <Acuan modul={sdm} />}
     </div>

@@ -1,12 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { TabelModul, kartu, judulKecil, namaUnit, tombolTepi, tombolUtama, cocokUnit, type DataModul, type FilterUnit } from "@/components/data-modul";
 import { PROPERTIES } from "@/lib/data";
 import { fmtDate } from "@/lib/format";
 import type { Rekaman } from "@/lib/modul";
-import { amankanTeks, buatSertifikatPdf, namaBerkasSertifikat, type DataSertifikat } from "@/lib/sertifikat-pdf";
+import { amankanTeks, buatSertifikatPdf, namaBerkasSertifikat, siapkanGambarTtd, type DataSertifikat } from "@/lib/sertifikat-pdf";
 import type { PropertyKey } from "@/lib/types";
 import { PROPERTY } from "@/lib/web-content";
 
@@ -19,7 +19,19 @@ function identitas(unit: PropertyKey): Pick<DataSertifikat, "penerbit" | "alamat
   return { penerbit: PROPERTY.name, alamat: `${PROPERTY.village}, ${PROPERTY.island}, Raja Ampat`, logo: "/logo.png", warna: [43, 84, 67] };
 }
 
-async function unduh(r: Rekaman) {
+interface Ttd {
+  ttd?: { gambar: string; nama: string; jabatan: string; oleh: string; pada: string };
+  stempel?: { gambar: string; oleh: string; pada: string };
+}
+type PetaTtd = Partial<Record<PropertyKey, Ttd>>;
+
+/** Dive Center memakai tanda tangan dan stempel Turtle bila tidak punya sendiri. */
+const ttdUntuk = (peta: PetaTtd, unit: PropertyKey): Ttd => peta[unit] ?? (unit === "divecenter" ? (peta.turtle ?? {}) : {});
+
+async function unduh(r: Rekaman, peta: PetaTtd = {}) {
+  const t = ttdUntuk(peta, r.unit);
+  /* Gambar tanda tangan hanya dipakai di bawah nama pemiliknya sendiri. */
+  const ttdCocok = t.ttd && t.ttd.nama.trim().toLowerCase() === String(r.penandatangan ?? "").trim().toLowerCase();
   const blob = await buatSertifikatPdf({
     nomor: String(r.nomor ?? ""),
     nama: String(r.nama ?? ""),
@@ -33,6 +45,8 @@ async function unduh(r: Rekaman) {
     bahasa: (String(r.bahasa ?? "") as DataSertifikat["bahasa"]) || "Indonesia dan English",
     catatan: String(r.catatan ?? ""),
     ...identitas(r.unit),
+    ttd: ttdCocok ? t.ttd!.gambar : undefined,
+    stempel: t.stempel?.gambar,
   });
   const url = URL.createObjectURL(blob);
   const tautan = document.createElement("a");
@@ -47,7 +61,8 @@ async function unduh(r: Rekaman) {
 const isian = "w-full rounded-xl border border-panel-garis bg-panel-latar px-3 py-2 text-[0.875rem] text-panel-utama outline-none focus:border-panel-aksen";
 
 /** Formulir terbit: diisi dari data pegawai, sisanya orangnya yang menentukan. */
-function FormTerbit({ p, modul, hariIni, onTutup }: { p: Rekaman; modul: DataModul; hariIni: string; onTutup: () => void }) {
+function FormTerbit({ p, modul, hariIni, peta, onTutup }: { p: Rekaman; modul: DataModul; hariIni: string; peta: PetaTtd; onTutup: () => void }) {
+  const t = ttdUntuk(peta, p.unit);
   const lama = (modul.data.sertifikat ?? []).slice().sort((x, y) => String(y.terbit ?? "").localeCompare(String(x.terbit ?? "")));
   const tahun = hariIni.slice(0, 4);
   const urut = (modul.data.sertifikat ?? []).filter((x) => String(x.terbit ?? "").startsWith(tahun)).length + 1;
@@ -59,8 +74,8 @@ function FormTerbit({ p, modul, hariIni, onTutup }: { p: Rekaman; modul: DataMod
     selesai: String(p.selesai ?? ""),
     terbit: hariIni,
     kota: String(lama[0]?.kota ?? "Raja Ampat"),
-    penandatangan: String(lama[0]?.penandatangan ?? ""),
-    jabatanTtd: String(lama[0]?.jabatanTtd ?? ""),
+    penandatangan: t.ttd?.nama ?? String(lama[0]?.penandatangan ?? ""),
+    jabatanTtd: t.ttd?.jabatan ?? String(lama[0]?.jabatanTtd ?? ""),
     bahasa: String(lama[0]?.bahasa ?? "Indonesia dan English"),
     catatan: "",
   });
@@ -79,7 +94,7 @@ function FormTerbit({ p, modul, hariIni, onTutup }: { p: Rekaman; modul: DataMod
       setSibuk(false);
       return;
     }
-    await unduh({ ...v, id: "", unit: p.unit } as Rekaman);
+    await unduh({ ...v, id: "", unit: p.unit } as Rekaman, peta);
     onTutup();
   };
 
@@ -133,6 +148,14 @@ function FormTerbit({ p, modul, hariIni, onTutup }: { p: Rekaman; modul: DataMod
             Kalimat tambahan (opsional)
             <textarea rows={2} value={v.catatan} onChange={ubah("catatan")} maxLength={200} placeholder="Misalnya: dengan hasil sangat baik" className={`${isian} resize-none`} />
           </label>
+          <p className="rounded-2xl bg-panel-latar px-4 py-2 text-[0.8125rem] text-panel-utama/80">
+            {t.ttd
+              ? t.ttd.nama.trim().toLowerCase() === v.penandatangan.trim().toLowerCase()
+                ? `Tanda tangan ${t.ttd.nama} ikut tercetak.`
+                : `Tanda tangan yang tersimpan milik ${t.ttd.nama}; dengan penandatangan lain, sertifikat dicetak tanpa gambar tanda tangan untuk ditandatangani basah.`
+              : "Belum ada gambar tanda tangan untuk unit ini; tempatnya dibiarkan kosong untuk ditandatangani basah."}{" "}
+            {t.stempel ? "Stempel ikut tercetak." : "Belum ada gambar stempel."}
+          </p>
           {hurufDiubah && <p className="rounded-2xl bg-amber-100 px-4 py-2 text-[0.8125rem] text-amber-950">Ada huruf yang tidak tersedia di huruf PDF (misalnya ń atau ł); di sertifikat ditulis tanpa tanda, seperti n atau l.</p>}
         </div>
         {galat && <p role="alert" className="mt-3 rounded-2xl bg-panel-merah-lembut px-4 py-3 text-[0.875rem] text-panel-merah">{galat}</p>}
@@ -146,6 +169,95 @@ function FormTerbit({ p, modul, hariIni, onTutup }: { p: Rekaman; modul: DataMod
   );
 }
 
+/** Kotak pratinjau di atas pola papan catur, supaya latar transparan kelihatan. */
+const PAPAN = "bg-[length:16px_16px] bg-[linear-gradient(45deg,#eee_25%,transparent_25%),linear-gradient(-45deg,#eee_25%,transparent_25%),linear-gradient(45deg,transparent_75%,#eee_75%),linear-gradient(-45deg,transparent_75%,#eee_75%)] bg-[position:0_0,0_8px,8px_-8px,-8px_0]";
+
+/** Unggah dan lihat tanda tangan serta stempel satu unit. */
+function KartuTtd({ unit, t, bolehAtur, onBerubah }: { unit: PropertyKey; t: Ttd; bolehAtur: boolean; onBerubah: () => Promise<void> }) {
+  const [nama, setNama] = useState(t.ttd?.nama ?? "");
+  const [jabatan, setJabatan] = useState(t.ttd?.jabatan ?? "");
+  const [hapusLatar, setHapusLatar] = useState(true);
+  const [galat, setGalat] = useState("");
+  const [sibuk, setSibuk] = useState("");
+
+  const kirim = async (method: "PUT" | "DELETE", body: Record<string, unknown>, jenis: string) => {
+    setSibuk(jenis);
+    setGalat("");
+    const r = await fetch("/api/ttd", { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).catch(() => null);
+    const o = (await r?.json().catch(() => ({}))) as { galat?: string } | undefined;
+    setSibuk("");
+    if (!r?.ok) return setGalat(o?.galat ?? "Tidak bisa menyimpan.");
+    await onBerubah();
+  };
+  const unggah = async (jenis: "ttd" | "stempel", f?: File) => {
+    if (!f) return;
+    if (jenis === "ttd" && (!nama.trim() || !jabatan.trim())) return setGalat("Isi nama dan jabatan pemilik tanda tangan dulu.");
+    try {
+      const gambar = await siapkanGambarTtd(f, jenis === "ttd" ? 900 : 700, hapusLatar);
+      await kirim("PUT", { unit, jenis, gambar, nama: nama.trim(), jabatan: jabatan.trim() }, jenis);
+    } catch {
+      setGalat("Gambar tidak bisa dibaca. Pakai PNG atau JPG.");
+    }
+  };
+
+  const kotak = (jenis: "ttd" | "stempel", judul: string, g?: { gambar: string; oleh: string; pada: string }) => (
+    <div className="grid gap-2">
+      <p className="text-[0.8125rem] font-semibold text-panel-utama">{judul}</p>
+      <div className={`flex h-28 items-center justify-center rounded-2xl ring-1 ring-panel-garis ${PAPAN}`}>
+        {g ? <img src={g.gambar} alt={judul} className="max-h-24 max-w-[90%] object-contain" /> : <span className="text-[0.75rem] text-panel-utama/60">Belum diunggah</span>}
+      </div>
+      {g && <p className="text-[0.6875rem] text-panel-utama/60">Diunggah {fmtDate(g.pada.slice(0, 10))} oleh {g.oleh}</p>}
+      {bolehAtur && (
+        <div className="flex flex-wrap items-center gap-2">
+          <label className={`${tombolTepi} inline-flex`}>
+            {sibuk === jenis ? "Menyimpan…" : g ? "Ganti" : "Unggah"}
+            <input type="file" accept="image/png,image/jpeg,image/webp" className="sr-only" aria-label={`Unggah ${judul.toLowerCase()} ${namaUnit(unit)}`} onChange={(e) => { void unggah(jenis, e.target.files?.[0]); e.target.value = ""; }} />
+          </label>
+          {g && (
+            <button type="button" onClick={() => window.confirm(`Hapus ${judul.toLowerCase()} ${namaUnit(unit)}?`) && void kirim("DELETE", { unit, jenis }, jenis)} className="cursor-pointer rounded-full border border-panel-merah bg-white px-3 py-1.5 text-[0.75rem] font-bold text-panel-merah">
+              Hapus
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+
+  return (
+    <section className={kartu}>
+      <p className={judulKecil}>Tanda tangan dan stempel · {namaUnit(unit)}</p>
+      <p className="mt-1 text-[0.8125rem] leading-[1.5] text-panel-utama/70">
+        Foto atau pindai tanda tangan di kertas putih dan stempel asli, lalu unggah. Latar putihnya dibuang otomatis. Tanda tangan hanya tercetak bila nama penandatangan sertifikat sama dengan pemiliknya.
+        {!bolehAtur && " Hanya developer, pemilik, dan general manager yang bisa mengganti."}
+      </p>
+      {bolehAtur && (
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          <label className="grid gap-1 text-[0.8125rem] font-semibold text-panel-utama">
+            Nama pemilik tanda tangan
+            <input value={nama} onChange={(e) => setNama(e.target.value)} maxLength={80} className={isian} />
+          </label>
+          <label className="grid gap-1 text-[0.8125rem] font-semibold text-panel-utama">
+            Jabatan
+            <input value={jabatan} onChange={(e) => setJabatan(e.target.value)} maxLength={80} placeholder="Misalnya Pemilik" className={isian} />
+          </label>
+        </div>
+      )}
+      {t.ttd && <p className="mt-2 text-[0.8125rem] text-panel-utama">Tanda tangan tersimpan: <strong>{t.ttd.nama}</strong>, {t.ttd.jabatan}</p>}
+      <div className="mt-3 grid gap-4 sm:grid-cols-2">
+        {kotak("ttd", "Tanda tangan", t.ttd)}
+        {kotak("stempel", "Stempel", t.stempel)}
+      </div>
+      {bolehAtur && (
+        <label className="mt-3 flex items-center gap-2 text-[0.8125rem] text-panel-utama">
+          <input type="checkbox" checked={hapusLatar} onChange={(e) => setHapusLatar(e.target.checked)} />
+          Buang latar putih saat mengunggah
+        </label>
+      )}
+      {galat && <p role="alert" className="mt-3 rounded-2xl bg-panel-merah-lembut px-4 py-3 text-[0.875rem] text-panel-merah">{galat}</p>}
+    </section>
+  );
+}
+
 /**
  * Sertifikat magang di SDM: pegawai berstatus Magang, tombol terbitkan, dan
  * riwayat sertifikat yang bisa diunduh ulang sebagai PDF.
@@ -153,6 +265,18 @@ function FormTerbit({ p, modul, hariIni, onTutup }: { p: Rekaman; modul: DataMod
 export function SertifikatMagang({ modul, filter, hariIni }: { modul: DataModul; filter: FilterUnit; hariIni: string }) {
   const [terbit, setTerbit] = useState<Rekaman | null>(null);
   const [sibuk, setSibuk] = useState("");
+  const [peta, setPeta] = useState<PetaTtd>({});
+  const [bolehAtur, setBolehAtur] = useState(false);
+  const muatTtd = useCallback(async () => {
+    const r = await fetch("/api/ttd", { cache: "no-store" }).catch(() => null);
+    if (!r?.ok) return;
+    const o = (await r.json()) as { unit?: PetaTtd; bolehAtur?: boolean };
+    setPeta(o.unit ?? {});
+    setBolehAtur(Boolean(o.bolehAtur));
+  }, []);
+  useEffect(() => void muatTtd(), [muatTtd]);
+  /* Kartu tanda tangan per unit penerbit: Dive Center ikut Turtle. */
+  const unitTtd = modul.unit.filter((u) => u !== "divecenter" && cocokUnit(filter, u));
   const bolehTulis = modul.tulisKoleksi.includes("sertifikat");
   const magang = useMemo(
     () => (modul.data.pegawai ?? []).filter((p) => p.status === "Magang" && cocokUnit(filter, p.unit)).sort((a, b) => String(b.selesai ?? "").localeCompare(String(a.selesai ?? ""))),
@@ -210,7 +334,7 @@ export function SertifikatMagang({ modul, filter, hariIni }: { modul: DataModul;
                 onClick={async (e) => {
                   e.stopPropagation();
                   setSibuk(r.id);
-                  await unduh(r).catch(() => undefined);
+                  await unduh(r, peta).catch(() => undefined);
                   setSibuk("");
                 }}
                 className="cursor-pointer rounded-full border border-panel-utama bg-white px-3 py-1 text-[0.75rem] font-bold text-panel-utama hover:bg-panel-latar disabled:opacity-50"
@@ -222,7 +346,11 @@ export function SertifikatMagang({ modul, filter, hariIni }: { modul: DataModul;
         ]}
       />
 
-      {terbit && <FormTerbit p={terbit} modul={modul} hariIni={hariIni} onTutup={() => setTerbit(null)} />}
+      {unitTtd.map((u) => (
+        <KartuTtd key={`${u}-${peta[u]?.ttd?.pada ?? ""}-${peta[u]?.stempel?.pada ?? ""}`} unit={u} t={peta[u] ?? {}} bolehAtur={bolehAtur} onBerubah={muatTtd} />
+      ))}
+
+      {terbit && <FormTerbit p={terbit} modul={modul} hariIni={hariIni} peta={peta} onTutup={() => setTerbit(null)} />}
     </div>
   );
 }

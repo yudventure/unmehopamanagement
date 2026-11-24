@@ -716,3 +716,19 @@ unit: Turtle Dive Homestay (Dive Center diterbitkan atas namanya) atau Eddo
 Homestay. Huruf di luar Latin-1 (misalnya ń) ditulis tanpa tanda, dan formulir
 memberitahukannya. Aksesnya mengikuti SDM: developer, pemilik, GM, HRD, dan
 manajer unitnya menerbitkan; keuangan hanya melihat dan mengunduh.
+
+**Tanda tangan, stempel, dan desain sertifikat.** Di tab Sertifikat magang ada
+kartu **Tanda tangan dan stempel** per unit (Dive Center memakai milik Turtle):
+unggah foto atau pindaian tanda tangan (dengan nama dan jabatan pemiliknya) dan
+stempel asli; latar putihnya dibuang di peramban, gambar diperkecil dan disimpan
+sebagai PNG di `ttd-stempel.json` (`/api/ttd`). Mengganti dan menghapus hanya
+developer, pemilik, dan general manager; yang punya akses SDM melihat dan
+memakainya. Tanda tangan **hanya tercetak di bawah nama pemiliknya**: dengan
+penandatangan lain sertifikat dicetak tanpa gambar tanda tangan (untuk
+ditandatangani basah), dan formulir mengatakannya. Tanpa gambar, tempatnya
+dibiarkan kosong; tidak ada tanda tangan atau stempel buatan.
+
+Desainnya: bingkai berlapis (warna unit dan emas), ornamen sudut emas, judul
+berjarak huruf, pembatas emas, nama dalam huruf serif miring, segel medali
+"MAGANG <tahun>" di kiri bawah, stempel yang menimpa garis tanda tangan dengan
+sedikit tembus pandang, dan gelombang laut tipis di kaki.

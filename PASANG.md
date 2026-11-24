@@ -698,3 +698,21 @@ memakai harganya. Hapus impor mengembalikan kalender ke iCal saja.
 
 Pembaca berkasnya buatan sendiri (`src/lib/server/baca-tabel.ts`: Excel lama
 BIFF8 dan CSV), tanpa pustaka luar; `.xlsx` belum didukung.
+
+## Sertifikat magang (SDM & Gaji)
+
+Tab **Sertifikat magang** di SDM & Gaji: daftar pegawai berstatus Magang (dengan
+tanda "Selesai, belum bersertifikat" bila tanggal Selesai kerja sudah lewat),
+tombol **Buat sertifikat**, dan riwayat sertifikat yang bisa diunduh ulang.
+
+Formulir terisi dari data pegawai (nama, jabatan sebagai posisi, mulai dan
+selesai; pegawai kini punya bidang **Selesai kerja**). Nomor diusulkan
+`MAGANG-<tahun>-<urut>` dan bisa diubah. Penandatangan, jabatannya, tempat
+terbit, dan bahasa (Indonesia, English, atau keduanya) diisi orangnya; yang
+terakhir dipakai diingat untuk sertifikat berikutnya. Tersimpan di koleksi SDM
+`sertifikat` (isi tersalin, jadi sertifikat lama tidak berubah bila data
+pegawai diubah), lalu PDF A4 mendatar dibuat di peramban (jsPDF) dengan logo
+unit: Turtle Dive Homestay (Dive Center diterbitkan atas namanya) atau Eddo
+Homestay. Huruf di luar Latin-1 (misalnya ń) ditulis tanpa tanda, dan formulir
+memberitahukannya. Aksesnya mengikuti SDM: developer, pemilik, GM, HRD, dan
+manajer unitnya menerbitkan; keuangan hanya melihat dan mengunduh.

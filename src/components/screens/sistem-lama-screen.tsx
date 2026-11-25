@@ -1,5 +1,7 @@
 "use client";
 
+import { iso } from "@/lib/format";
+import { CocokBookingLama } from "@/components/cocok-booking-lama";
 import { SakelarSistemLama } from "@/components/sakelar-sistem-lama";
 import { useEffect, useMemo, useState } from "react";
 
@@ -251,6 +253,8 @@ export function SistemLamaScreen() {
       <div className="mb-5">
         <SakelarSistemLama ringkas />
       </div>
+
+      <CocokBookingLama hariIni={iso(new Date())} />
 
       <div className="mb-5 flex items-start gap-[12px] rounded-[14px] border border-line-soft bg-surface-soft px-4 py-[13px]">
         <span className="mt-[5px] h-[9px] w-[9px] shrink-0 rounded-full bg-slate-mute" />

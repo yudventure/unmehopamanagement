@@ -474,13 +474,16 @@ export function BookingManager({
    * Eddo tidak tersentuh: sistem lama ini milik Turtle.
    */
   const { jawaban: jawabanLama } = useSistemLama();
-  const lamaAktif = Boolean(jawabanLama?.ok && jawabanLama.bookings?.length);
+  const lamaAktif = Boolean(jawabanLama?.ok && jawabanLama.bookings?.length && jawabanLama.pakaiDiKalender !== false);
+  /* Jadwal dive centre punya sakelarnya sendiri: tetap terbaca walau booking
+     sistem lama tidak dipakai di kalender. */
+  const jadwalLamaAktif = Boolean(jawabanLama?.ok && jawabanLama.jadwal !== false);
   const kamarLama = useKamarLama(lamaAktif);
 
   /* Jadwal dive centre — kegiatan, bukan menginap. Tidak ikut ke `bookings`:
      sebuah trip menyelam tidak memegang kamar, dan memasukkannya ke sana akan
      terhitung sebagai malam terjual. Ia digambar di sel harinya sendiri. */
-  const sesiLama = useSesiLama(lamaAktif);
+  const sesiLama = useSesiLama(jadwalLamaAktif);
   const sesiPerTanggal = useMemo(() => sesiPerHari(sesiLama), [sesiLama]);
 
   /* Jadwal dive centre pada bulan yang sedang dilihat. Dihitung dari peta yang
@@ -1985,7 +1988,7 @@ export function BookingManager({
                     }}
                     hanyaJadwal={filterProp === "divecenter"}
                     selamBulanIni={selamBulanIni}
-                    lamaTersambung={lamaAktif}
+                    lamaTersambung={jadwalLamaAktif}
                     cells={cells}
                     onSelect={setSelectedId}
                     selectedDate={selectedDate}

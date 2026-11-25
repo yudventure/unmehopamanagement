@@ -732,3 +732,24 @@ Desainnya: bingkai berlapis (warna unit dan emas), ornamen sudut emas, judul
 berjarak huruf, pembatas emas, nama dalam huruf serif miring, segel medali
 "MAGANG <tahun>" di kiri bawah, stempel yang menimpa garis tanda tangan dengan
 sedikit tembus pandang, dan gelombang laut tipis di kaki.
+
+## Sistem lama: jadwal dive center terpisah, dan pencocokan dengan Booking.com
+
+Sakelar sistem lama di Pengaturan (dan layar Sistem lama) kini dua:
+- **Booking sistem lama di kalender** (`sistemLamaAktif`): seperti dulu, booking
+  dan kamar Turtle di kalender diambil dari sistem lama.
+- **Jadwal dive center dari sistem lama** (`jadwalLamaAktif`, bawaan menyala):
+  sistem lama tetap dibaca untuk jadwal diving, snorkeling, kursus, trip, dan
+  transport di kalender (Jadwal Dive Center), dan untuk pencocokan, walau
+  booking-nya tidak dipakai di kalender. `/api/sistem-lama` lalu menjawab dengan
+  `pakaiDiKalender: false`. Keduanya mati: sistem lama tidak dipanggil sama
+  sekali.
+
+**Cocokkan Booking.com dengan sistem lama** (layar Sistem lama,
+`/api/sistem-lama/cocok`): tiap pesanan Booking.com yang diimpor dan belum
+selesai dicari di sistem lama lewat nomor konfirmasi, atau nama (satu kata yang
+sama) dan check-in (selisih paling lama sehari). Hasil: cocok, tanggal berbeda,
+jumlah kamar kurang, belum ada di sistem lama, batal di Booking.com tapi masih
+ada di sistem lama, dan yang hanya ada di sistem lama. Tiap tamu yang cocok
+membawa kamar di sistem lama dan jadwal dive center-nya (sesi pada tanggal
+menginapnya yang memuat kamarnya). Bisa diunduh sebagai CSV. Hanya membaca.

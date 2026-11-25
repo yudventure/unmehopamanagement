@@ -50,8 +50,11 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "not-found" }, { status: 404 });
   }
 
-  /* Sakelar di Pengaturan. Dimatikan, sistem lama tidak dipanggil sama sekali. */
-  if (!(await bacaPengaturan()).sistemLamaAktif) {
+  /* Sakelar di Pengaturan. Keduanya mati: sistem lama tidak dipanggil sama
+     sekali. Hanya jadwal yang menyala: dibaca, tapi `pakaiDiKalender` false
+     memberi tahu dashboard untuk tidak memakai booking-nya di kalender. */
+  const atur = await bacaPengaturan();
+  if (!atur.sistemLamaAktif && !atur.jadwalLamaAktif) {
     return NextResponse.json({
       ok: false,
       siap: true,
@@ -59,6 +62,7 @@ export async function GET(req: Request) {
       pesan: "Sistem lama sedang dimatikan dari Pengaturan. Turtle memakai data dashboard sendiri.",
     });
   }
+  const tanda = { pakaiDiKalender: atur.sistemLamaAktif, jadwal: atur.jadwalLamaAktif || atur.sistemLamaAktif };
 
   if (!sistemLamaSiap()) {
     return NextResponse.json({
@@ -80,6 +84,7 @@ export async function GET(req: Request) {
     return NextResponse.json({
       ok: hasil.ok,
       siap: true,
+      ...tanda,
       pesan: hasil.pesan ?? null,
       ms: hasil.ms,
       bookings: hasil.data ?? [],
@@ -114,6 +119,7 @@ export async function GET(req: Request) {
   return NextResponse.json({
     ok: hasil.ok,
     siap: true,
+    ...tanda,
     pesan: hasil.pesan ?? null,
     ms: hasil.ms,
     data: hasil.data ?? null,

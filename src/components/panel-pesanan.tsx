@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 
+import { LencanaJemput } from "@/components/jemput";
 import { Pill } from "@/components/ui/pill";
 import { CH, CHANNEL_LABELS } from "@/lib/data";
 import { fmtShort } from "@/lib/format";
@@ -71,6 +72,9 @@ function Baris({
         <span className="pl-4 text-[12px] text-panel-utama/70">
           {kamar} · {fmtShort(b.checkIn)} – {fmtShort(b.checkOut)}
           {b.pax ? ` · ${b.pax} tamu` : ""}
+        </span>
+        <span className="pl-4">
+          <LencanaJemput id={b.id} lengkap />
         </span>
       </button>
       {bolehCatat && bisaDitandai(b) && (

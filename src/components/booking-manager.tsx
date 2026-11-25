@@ -47,6 +47,8 @@ import { PesananMassalModal, type BarisSiap } from "@/components/pesanan-massal-
 import { bacaPesan, type BarisPesan } from "@/lib/baca-pesan";
 import { RingkasanScreen, type Pintasan, type StokPerhatian } from "@/components/screens/ringkasan-screen";
 import { PitaGalat, useGalat } from "@/components/galat-panel";
+import { PenyediaJemput } from "@/components/jemput";
+import { KalenderSelam } from "@/components/kalender-selam";
 import { GudangScreen } from "@/components/screens/gudang-screen";
 import { KeuanganScreen, type PendapatanBooking } from "@/components/screens/keuangan-screen";
 import { SdmScreen } from "@/components/screens/sdm-screen";
@@ -1519,15 +1521,24 @@ export function BookingManager({
    * prepare — and that answer must not change because a channel filter or a
    * search term happens to be on.
    */
+  /* Hanya unit yang sedang dibuka (Turtle, Eddo, atau semua): kamar kosong
+     Turtle tidak boleh tercampur kamar Eddo. Dive Center ikut Turtle. */
+  const dalamUnitDipilih = useCallback(
+    (prop: PropertyKey | null) =>
+      filterProp === "all" || prop === filterProp || (filterProp === "turtle" && prop === "divecenter"),
+    [filterProp],
+  );
   const occupiedOn = useMemo(() => {
     if (!selectedDate) return [];
     return scopedBookings.filter(
       (b) =>
         b.status !== "Cancelled" &&
+        b.status !== "Tidak datang" &&
         b.checkIn <= selectedDate &&
-        b.checkOut > selectedDate,
+        b.checkOut > selectedDate &&
+        dalamUnitDipilih(unitBooking(b)),
     );
-  }, [selectedDate, scopedBookings]);
+  }, [selectedDate, scopedBookings, dalamUnitDipilih, unitBooking]);
 
   const dayBookings = useMemo(
     () =>
@@ -1536,22 +1547,33 @@ export function BookingManager({
           booking: b,
           roomName: roomById.get(b.roomId)?.name ?? "",
         }))
-        .sort((a, b) => a.roomName.localeCompare(b.roomName)),
+        .sort((a, b) => a.roomName.localeCompare(b.roomName, "id", { numeric: true })),
     [occupiedOn, roomById],
   );
+
+  /* Yang pulang pagi itu: tidak menginap malam itu, tapi kamarnya perlu
+     dibereskan hari itu. */
+  const dayCheckouts = useMemo(() => {
+    if (!selectedDate) return [];
+    return scopedBookings
+      .filter((b) => b.status !== "Cancelled" && b.status !== "Tidak datang" && b.checkOut === selectedDate && dalamUnitDipilih(unitBooking(b)))
+      .map((b) => ({ booking: b, roomName: roomById.get(b.roomId)?.name ?? "" }))
+      .sort((a, b) => a.roomName.localeCompare(b.roomName, "id", { numeric: true }));
+  }, [selectedDate, scopedBookings, dalamUnitDipilih, unitBooking, roomById]);
 
   /* A room under renovation is not "kosong" — it cannot be sold — so it is
      named separately instead of padding the free list. */
   const dayRooms = useMemo(() => {
-    if (!selectedDate) return { free: [], renovating: [] };
+    if (!selectedDate) return { free: [], renovating: [], total: 0 };
     const taken = new Set(occupiedOn.map((b) => b.roomId));
+    const kamarUnit = scopedRooms.filter((r) => dalamUnitDipilih(r.prop) && (PROPERTIES.find((p) => p.key === r.prop)?.kamar ?? true));
+    const urut = (a: string, b: string) => a.localeCompare(b, "id", { numeric: true });
     return {
-      free: scopedRooms
-        .filter((r) => r.active && !taken.has(r.id))
-        .map((r) => r.name),
-      renovating: scopedRooms.filter((r) => !r.active).map((r) => r.name),
+      free: kamarUnit.filter((r) => r.active && !taken.has(r.id)).map((r) => r.name).sort(urut),
+      renovating: kamarUnit.filter((r) => !r.active).map((r) => r.name).sort(urut),
+      total: kamarUnit.filter((r) => r.active).length,
     };
-  }, [selectedDate, occupiedOn, scopedRooms]);
+  }, [selectedDate, occupiedOn, scopedRooms, dalamUnitDipilih]);
 
   /* Bookings with at least one night inside the reported month. The book now
      runs a year either side, so anything averaged over "all bookings" would
@@ -1807,7 +1829,7 @@ export function BookingManager({
   // ---------------------------------------------------------------- render
 
   return (
-    <>
+    <PenyediaJemput bolehUbah={layar.includes("kalender") && akun.peran !== "keuangan"} aktif={layar.includes("kalender")}>
       {/*
        * Full-bleed: the shell is the viewport edge to edge, with no frame and
        * no ground showing around it.
@@ -1944,7 +1966,7 @@ export function BookingManager({
                        tidak ikut ke sana. Selain itu ia ikut — dan waktu
                        dive centre yang dipilih, ia satu-satunya yang ada. */
                     sesiPerTanggal={
-                      filterProp === "eddo" ? undefined : sesiPerTanggal
+                      filterProp === "divecenter" ? sesiPerTanggal : undefined
                     }
                     narrow={nw}
                     compact={phone}
@@ -1993,6 +2015,20 @@ export function BookingManager({
                     onSelect={setSelectedId}
                     selectedDate={selectedDate}
                     onSelectDate={pickDate}
+                  />
+                )}
+
+                {/* Jadwal dive center punya kalendernya sendiri di bawah kalender
+                    kamar (Turtle dan Semua unit), supaya kamar dan kegiatan
+                    tidak berdesakan di sel yang sama. */}
+                {screen === "kalender" && (filterProp === "turtle" || filterProp === "all") && allowedProps.includes("turtle") && (
+                  <KalenderSelam
+                    bulan={month}
+                    sesiPerTanggal={sesiPerTanggal}
+                    today={today}
+                    selectedDate={selectedDate}
+                    onPilih={pickDate}
+                    tersambung={jadwalLamaAktif}
                   />
                 )}
 
@@ -2115,6 +2151,7 @@ export function BookingManager({
                   selectedDate={selectedDate}
                   dayBookings={dayBookings}
                   dayRooms={dayRooms}
+                  dayCheckouts={dayCheckouts}
                   onClearDate={() => setSelectedDate(null)}
                   selamHari={selamHari}
                   selamMendatang={selamMendatang}
@@ -2240,6 +2277,6 @@ export function BookingManager({
           {toast}
         </div>
       )}
-    </>
+    </PenyediaJemput>
   );
 }

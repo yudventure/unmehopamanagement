@@ -753,3 +753,24 @@ jumlah kamar kurang, belum ada di sistem lama, batal di Booking.com tapi masih
 ada di sistem lama, dan yang hanya ada di sistem lama. Tiap tamu yang cocok
 membawa kamar di sistem lama dan jadwal dive center-nya (sesi pada tanggal
 menginapnya yang memuat kamarnya). Bisa diunduh sebagai CSV. Hanya membaca.
+
+## Kalender: detail tanggal, jadwal dive center, dan catatan jemputan
+
+**Klik tanggal** (di kalender kamar atau kalender dive center): panel kanan
+langsung menampilkan tanggal itu di paling atas (tidak lagi tenggelam di bawah
+panel pesanan): ringkasan kamar terisi dari jumlah kamar aktif unit itu,
+jumlah check-in dan check-out, daftar yang menginap malam itu, yang check-out
+pagi itu, kamar kosong, dan sesi dive center. Hanya unit yang sedang dibuka
+(Turtle tidak tercampur Eddo; Dive Center ikut Turtle).
+
+**Kalender jadwal dive center** di bawah kalender kamar (Turtle dan Semua unit):
+bulan yang sama, sesi diving, snorkeling, kursus, trip, dan transport dari
+sistem lama dengan jumlah tamu, berwarna per kegiatan. Pil sesi tidak lagi
+digambar di sel kalender kamar Turtle; di kalender Dive Center tetap.
+
+**Catatan jemputan** per tamu, seperti di sistem lama: di rincian booking,
+"Perlu dijemput" atau "Tidak perlu", dengan catatan jam dan tempat. Disimpan
+terpisah dari booking (`catatan-tamu.json`, `/api/catatan-tamu`, kunci id
+booking), jadi bisa juga untuk tamu Booking.com dan iCal. Lencana "Jemput: …"
+atau "Tanpa jemput" tampil di daftar check-in dan check-out dan di panel
+tanggal. Yang boleh mencatat: akun yang boleh mencatat pesanan; yang lain melihat.

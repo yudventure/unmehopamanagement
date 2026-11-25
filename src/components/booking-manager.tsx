@@ -1379,14 +1379,16 @@ export function BookingManager({
       for (const u of allowedProps) {
         if (u === "divecenter") continue;
         const nama = PROPERTIES.find((p) => p.key === u)?.name ?? u;
+        /* Dive center ikut di bawah unit yang menjalankannya, tepat di bawah
+           Kalender: dua kalender yang paling sering dibuka berdampingan. */
+        const jadwalDive =
+          DIVE_CENTER_DI[u as "turtle" | "eddo"] && punyaDive && ada("kalender")
+            ? [butir("kalender", "divecenter", "Jadwal Dive Center")]
+            : [];
         const items: NavItem[] = [
-          ...bergantungUnit.filter(ada).map((k) => butir(k, u)),
+          ...bergantungUnit.filter(ada).flatMap((k) => (k === "kalender" ? [butir(k, u), ...jadwalDive] : [butir(k, u)])),
           ...(ada("website") ? [butir("website", u)] : []),
           ...(u === "turtle" && ada("lama") ? [butir("lama", u)] : []),
-          /* Dive center ikut di bawah unit yang menjalankannya. */
-          ...(DIVE_CENTER_DI[u as "turtle" | "eddo"] && punyaDive && ada("kalender")
-            ? [butir("kalender", "divecenter", "Jadwal Dive Center")]
-            : []),
         ];
         if (items.length) grup.push({ id: u, label: nama, items });
       }

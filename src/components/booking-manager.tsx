@@ -48,7 +48,6 @@ import { bacaPesan, type BarisPesan } from "@/lib/baca-pesan";
 import { RingkasanScreen, type Pintasan, type StokPerhatian } from "@/components/screens/ringkasan-screen";
 import { PitaGalat, useGalat } from "@/components/galat-panel";
 import { PenyediaJemput } from "@/components/jemput";
-import { KalenderSelam } from "@/components/kalender-selam";
 import { GudangScreen } from "@/components/screens/gudang-screen";
 import { KeuanganScreen, type PendapatanBooking } from "@/components/screens/keuangan-screen";
 import { SdmScreen } from "@/components/screens/sdm-screen";
@@ -1564,14 +1563,24 @@ export function BookingManager({
   /* A room under renovation is not "kosong" — it cannot be sold — so it is
      named separately instead of padding the free list. */
   const dayRooms = useMemo(() => {
-    if (!selectedDate) return { free: [], renovating: [], total: 0 };
+    if (!selectedDate) return { free: [], renovating: [], total: 0, perUnit: [] };
     const taken = new Set(occupiedOn.map((b) => b.roomId));
     const kamarUnit = scopedRooms.filter((r) => dalamUnitDipilih(r.prop) && (PROPERTIES.find((p) => p.key === r.prop)?.kamar ?? true));
     const urut = (a: string, b: string) => a.localeCompare(b, "id", { numeric: true });
+    /* Di Semua unit, ketersediaan dipisah per unit: kamar Turtle dan Eddo
+       tidak boleh terbaca sebagai satu daftar. */
+    const perUnit = PROPERTIES.filter((p) => p.kamar)
+      .map((p) => {
+        const k = kamarUnit.filter((r) => r.prop === p.key && r.active);
+        const kosong = k.filter((r) => !taken.has(r.id)).map((r) => r.name).sort(urut);
+        return { nama: p.name, free: kosong, total: k.length };
+      })
+      .filter((u) => u.total > 0);
     return {
       free: kamarUnit.filter((r) => r.active && !taken.has(r.id)).map((r) => r.name).sort(urut),
       renovating: kamarUnit.filter((r) => !r.active).map((r) => r.name).sort(urut),
       total: kamarUnit.filter((r) => r.active).length,
+      perUnit,
     };
   }, [selectedDate, occupiedOn, scopedRooms, dalamUnitDipilih]);
 
@@ -2015,20 +2024,6 @@ export function BookingManager({
                     onSelect={setSelectedId}
                     selectedDate={selectedDate}
                     onSelectDate={pickDate}
-                  />
-                )}
-
-                {/* Jadwal dive center punya kalendernya sendiri di bawah kalender
-                    kamar (Turtle dan Semua unit), supaya kamar dan kegiatan
-                    tidak berdesakan di sel yang sama. */}
-                {screen === "kalender" && (filterProp === "turtle" || filterProp === "all") && allowedProps.includes("turtle") && (
-                  <KalenderSelam
-                    bulan={month}
-                    sesiPerTanggal={sesiPerTanggal}
-                    today={today}
-                    selectedDate={selectedDate}
-                    onPilih={pickDate}
-                    tersambung={jadwalLamaAktif}
                   />
                 )}
 

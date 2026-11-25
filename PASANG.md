@@ -763,10 +763,13 @@ jumlah check-in dan check-out, daftar yang menginap malam itu, yang check-out
 pagi itu, kamar kosong, dan sesi dive center. Hanya unit yang sedang dibuka
 (Turtle tidak tercampur Eddo; Dive Center ikut Turtle).
 
-**Kalender jadwal dive center** di bawah kalender kamar (Turtle dan Semua unit):
-bulan yang sama, sesi diving, snorkeling, kursus, trip, dan transport dari
-sistem lama dengan jumlah tamu, berwarna per kegiatan. Pil sesi tidak lagi
-digambar di sel kalender kamar Turtle; di kalender Dive Center tetap.
+**Jadwal dive center** punya menunya sendiri ("Jadwal Dive Center" di bawah
+Turtle Homestay), tidak ditaruh di bawah kalender kamar supaya kalender Turtle
+tidak terlalu panjang di ponsel. Pil sesi tidak digambar di kalender kamar
+Turtle.
+
+**Semua unit:** rincian tanggal memisahkan ketersediaan per unit: kamar terisi
+"Turtle x/y" dan "Eddo x/y", dan kamar kosong dikelompokkan per unit.
 
 **Catatan jemputan** per tamu, seperti di sistem lama: di rincian booking,
 "Perlu dijemput" atau "Tidak perlu", dengan catatan jam dan tempat. Disimpan

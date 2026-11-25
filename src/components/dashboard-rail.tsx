@@ -111,7 +111,7 @@ export interface DashboardRailProps {
   selectedDate: string | null;
   dayBookings: DayEntry[];
   /** Rooms free on the picked day, and any that cannot be sold at all. `total`: kamar aktif di unit itu. */
-  dayRooms: { free: string[]; renovating: string[]; total?: number };
+  dayRooms: { free: string[]; renovating: string[]; total?: number; perUnit?: { nama: string; free: string[]; total: number }[] };
   /** Tamu yang check-out pagi pada tanggal itu. */
   dayCheckouts?: DayEntry[];
   onClearDate: () => void;
@@ -302,16 +302,27 @@ export function DashboardRail({
           ×
         </button>
       </div>
-      {(() => {
+      {(dayRooms.total ?? 1) > 0 && (() => {
         const total = dayRooms.total ?? dayRooms.free.length + new Set(dayBookings.map((d) => d.roomName)).size;
         const isi = Math.max(0, total - dayRooms.free.length);
         const masuk = dayBookings.filter((d) => d.booking.checkIn === selectedDate).length;
         return (
           <div className="mb-4 grid grid-cols-3 gap-2 text-center">
+            {(dayRooms.perUnit?.length ?? 0) > 1 ? (
+              <div className="col-span-3 grid grid-cols-2 gap-2">
+                {dayRooms.perUnit!.map((u) => (
+                  <div key={u.nama} className="rounded-[12px] bg-teal-tint px-2 py-[8px]">
+                    <div className="text-[17px] font-bold text-teal-deep">{u.total - u.free.length}/{u.total}</div>
+                    <div className="text-[11px] text-slate-soft">{u.nama.replace(" Homestay", "")} terisi</div>
+                  </div>
+                ))}
+              </div>
+            ) : (
             <div className="rounded-[12px] bg-teal-tint px-2 py-[8px]">
               <div className="text-[17px] font-bold text-teal-deep">{isi}/{total}</div>
               <div className="text-[11px] text-slate-soft">kamar terisi</div>
             </div>
+            )}
             <div className="rounded-[12px] bg-surface-tint px-2 py-[8px]">
               <div className="text-[17px] font-bold">{masuk}</div>
               <div className="text-[11px] text-slate-soft">check-in</div>
@@ -363,6 +374,7 @@ export function DashboardRail({
 
       {/* Which rooms are free that night — the other half of the question,
           and what tells the staff what to make up. */}
+      {(dayRooms.total ?? 1) > 0 && (
       <div className="mt-5 border-t border-line-soft pt-4">
         <div className="mb-[9px] flex items-center gap-2">
           <h3 className="text-[13px] font-bold">Kamar kosong</h3>
@@ -370,22 +382,27 @@ export function DashboardRail({
             {dayRooms.free.length}
           </span>
         </div>
-        {dayRooms.free.length === 0 ? (
-          <div className="text-[13px] text-slate-mute">
-            Penuh — semua kamar terisi.
+        {((dayRooms.perUnit?.length ?? 0) > 1 ? dayRooms.perUnit! : [{ nama: "", free: dayRooms.free, total: dayRooms.total ?? 0 }]).map((u) => (
+          <div key={u.nama || "unit"} className="mb-3 last:mb-0">
+            {u.nama && (
+              <div className="mb-[6px] flex items-center gap-2 text-[12px] font-semibold text-ink-soft">
+                {u.nama}
+                <span className="font-normal text-slate-soft">{u.free.length} dari {u.total} kosong</span>
+              </div>
+            )}
+            {u.free.length === 0 ? (
+              <div className="text-[13px] text-slate-mute">Penuh — semua kamar terisi.</div>
+            ) : (
+              <div className="flex flex-wrap gap-[6px]">
+                {u.free.map((name) => (
+                  <span key={name} className="rounded-[8px] border border-teal-line bg-teal-tint px-[9px] py-[4px] text-[12px] text-teal-deep">
+                    {name}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
-        ) : (
-          <div className="flex flex-wrap gap-[6px]">
-            {dayRooms.free.map((name) => (
-              <span
-                key={name}
-                className="rounded-[8px] border border-teal-line bg-teal-tint px-[9px] py-[4px] text-[12px] text-teal-deep"
-              >
-                {name}
-              </span>
-            ))}
-          </div>
-        )}
+        ))}
         {dayRooms.renovating.length > 0 && (
           <div className="mt-[9px] text-[11.5px] leading-[1.45] text-slate-mute">
             {dayRooms.renovating.join(", ")} sedang renovasi, jadi tidak
@@ -393,6 +410,7 @@ export function DashboardRail({
           </div>
         )}
       </div>
+      )}
 
       {adaSelam && (
         <BlokSelam

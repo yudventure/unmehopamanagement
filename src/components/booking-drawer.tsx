@@ -1,5 +1,6 @@
 "use client";
 
+import { AturJemput } from "@/components/jemput";
 import { Pill } from "@/components/ui/pill";
 import { CH } from "@/lib/data";
 import { dayDiff, fmt, fmtDate, fmtDateTime } from "@/lib/format";
@@ -96,6 +97,10 @@ export function BookingDrawer({
             value={booking.pax === null ? "belum dicatat" : `${booking.pax} tamu`}
           />
         </div>
+      </div>
+
+      <div className="mb-[14px]">
+        <AturJemput booking={booking} />
       </div>
 
       <div className="mb-4 flex gap-2">

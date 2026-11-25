@@ -1,5 +1,8 @@
 "use client";
 
+import { useEffect, useRef } from "react";
+
+import { LencanaJemput } from "@/components/jemput";
 import { Pill } from "@/components/ui/pill";
 import { CH, CHANNEL_LABELS } from "@/lib/data";
 import { WARNA_AKTIVITAS } from "@/lib/dari-sistem-lama";
@@ -107,8 +110,10 @@ export interface DashboardRailProps {
   /** Day picked on the calendar, or null for the standing list. */
   selectedDate: string | null;
   dayBookings: DayEntry[];
-  /** Rooms free on the picked day, and any that cannot be sold at all. */
-  dayRooms: { free: string[]; renovating: string[] };
+  /** Rooms free on the picked day, and any that cannot be sold at all. `total`: kamar aktif di unit itu. */
+  dayRooms: { free: string[]; renovating: string[]; total?: number };
+  /** Tamu yang check-out pagi pada tanggal itu. */
+  dayCheckouts?: DayEntry[];
   onClearDate: () => void;
   /** Sesi selam pada hari yang dipilih. Kosong berarti tidak ada. */
   selamHari?: SesiLama[];
@@ -154,12 +159,15 @@ function Row({
   lead,
   channel,
   onClick,
+  id,
 }: {
   guest: string;
   meta: string;
   lead?: string;
   channel: Booking["channel"];
   onClick: () => void;
+  /** Id booking, untuk lencana jemputan. */
+  id?: string;
 }) {
   const c = CH[channel];
   return (
@@ -182,6 +190,11 @@ function Row({
         {lead && <span className="font-medium text-teal">{lead} · </span>}
         {meta}
       </span>
+      {id && (
+        <span className="pl-[17px]">
+          <LencanaJemput id={id} lengkap />
+        </span>
+      )}
     </button>
   );
 }
@@ -249,6 +262,7 @@ export function DashboardRail({
   selectedDate,
   dayBookings,
   dayRooms,
+  dayCheckouts = [],
   onClearDate,
   selamHari = [],
   selamMendatang = [],
@@ -256,6 +270,10 @@ export function DashboardRail({
   atas,
   tanpaKedatangan = false,
 }: DashboardRailProps) {
+  const gulir = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (selectedDate) gulir.current?.scrollTo({ top: 0 });
+  }, [selectedDate]);
   const stay = (b: Booking) =>
     `${fmtShort(b.checkIn)} – ${fmtShort(b.checkOut)}`;
 
@@ -272,12 +290,9 @@ export function DashboardRail({
     >
       <div className="mb-3 flex items-start gap-2">
         <div className="flex-1">
-          <div className="text-[11.5px] text-slate-soft">Booking pada</div>
-          <h2 className="text-[14px] font-bold">{fmtDate(selectedDate)}</h2>
+          <div className="text-[11.5px] text-slate-soft">Tanggal dipilih</div>
+          <h2 className="text-[15px] font-bold">{fmtDate(selectedDate)}</h2>
         </div>
-        <span className="mt-[2px] rounded-full bg-surface-tint px-[7px] py-[1px] font-mono text-[10.5px] text-slate-soft">
-          {dayBookings.length}
-        </span>
         <button
           type="button"
           onClick={onClearDate}
@@ -286,6 +301,31 @@ export function DashboardRail({
         >
           ×
         </button>
+      </div>
+      {(() => {
+        const total = dayRooms.total ?? dayRooms.free.length + new Set(dayBookings.map((d) => d.roomName)).size;
+        const isi = Math.max(0, total - dayRooms.free.length);
+        const masuk = dayBookings.filter((d) => d.booking.checkIn === selectedDate).length;
+        return (
+          <div className="mb-4 grid grid-cols-3 gap-2 text-center">
+            <div className="rounded-[12px] bg-teal-tint px-2 py-[8px]">
+              <div className="text-[17px] font-bold text-teal-deep">{isi}/{total}</div>
+              <div className="text-[11px] text-slate-soft">kamar terisi</div>
+            </div>
+            <div className="rounded-[12px] bg-surface-tint px-2 py-[8px]">
+              <div className="text-[17px] font-bold">{masuk}</div>
+              <div className="text-[11px] text-slate-soft">check-in</div>
+            </div>
+            <div className="rounded-[12px] bg-amber-soft px-2 py-[8px]">
+              <div className="text-[17px] font-bold text-amber-ink">{dayCheckouts.length}</div>
+              <div className="text-[11px] text-slate-soft">check-out</div>
+            </div>
+          </div>
+        );
+      })()}
+      <div className="mb-[9px] flex items-center gap-2">
+        <h3 className="text-[13px] font-bold">Menginap malam ini</h3>
+        <span className="rounded-full bg-surface-tint px-[7px] py-[1px] font-mono text-[10.5px] text-slate-soft">{dayBookings.length}</span>
       </div>
       <div className="flex flex-col gap-[9px]">
         {dayBookings.length === 0 ? (
@@ -296,6 +336,7 @@ export function DashboardRail({
           dayBookings.map(({ booking, roomName }) => (
             <Row
               key={booking.id}
+              id={booking.id}
               guest={booking.guest}
               lead={booking.checkIn === selectedDate ? "Check-in" : undefined}
               meta={`${roomName} · ${stay(booking)}`}
@@ -305,6 +346,20 @@ export function DashboardRail({
           ))
         )}
       </div>
+
+      {dayCheckouts.length > 0 && (
+        <div className="mt-5 border-t border-line-soft pt-4">
+          <div className="mb-[9px] flex items-center gap-2">
+            <h3 className="text-[13px] font-bold">Check-out pagi ini</h3>
+            <span className="rounded-full bg-amber-soft px-[7px] py-[1px] font-mono text-[10.5px] text-amber-ink">{dayCheckouts.length}</span>
+          </div>
+          <div className="flex flex-col gap-[9px]">
+            {dayCheckouts.map(({ booking, roomName }) => (
+              <Row key={booking.id} id={booking.id} guest={booking.guest} lead="Check-out" meta={`${roomName} · ${stay(booking)}`} channel={booking.channel} onClick={() => onSelect(booking.id)} />
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Which rooms are free that night — the other half of the question,
           and what tells the staff what to make up. */}
@@ -378,6 +433,7 @@ export function DashboardRail({
       {upcoming.map(({ booking, roomName, leadDays }) => (
         <Row
           key={booking.id}
+              id={booking.id}
           guest={booking.guest}
           lead={leadLabel(leadDays)}
           meta={`${roomName} · ${stay(booking)}`}
@@ -391,8 +447,9 @@ export function DashboardRail({
   if (narrow) {
     return (
       <div className="flex flex-col gap-4 bg-surface-soft px-[14px] pb-6">
+        {selectedDate ? <div className="flex flex-wrap gap-4">{sections}</div> : null}
         {atas}
-        <div className="flex flex-wrap gap-4">{sections}</div>
+        {!selectedDate ? <div className="flex flex-wrap gap-4">{sections}</div> : null}
       </div>
     );
   }
@@ -406,9 +463,12 @@ export function DashboardRail({
      * tempatnya. Tinggi minimal supaya kalender yang pendek tidak menjepitnya.
      */
     <aside className="relative min-h-[480px] w-[352px] shrink-0 border-l border-line bg-surface">
-      <div className="absolute inset-0 flex flex-col gap-6 overflow-y-auto px-[22px] pt-[22px] pb-[26px]">
-        {atas}
-        {sections}
+      <div ref={gulir} className="absolute inset-0 flex flex-col gap-6 overflow-y-auto px-[22px] pt-[22px] pb-[26px]">
+        {/* Tanggal yang baru diklik tampil di paling atas: itu jawaban atas
+            pertanyaan yang baru saja diajukan, jadi tidak boleh tenggelam di
+            bawah panel pesanan. */}
+        {selectedDate ? sections : atas}
+        {selectedDate ? atas : sections}
       </div>
     </aside>
   );

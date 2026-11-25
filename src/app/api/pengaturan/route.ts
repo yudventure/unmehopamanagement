@@ -10,7 +10,7 @@ import { bacaPengaturan, ubahPengaturan } from "@/lib/server/pengaturan";
  *
  *   GET   keadaan sakelar, untuk siapa pun yang masuk, beserta apakah akun itu
  *         boleh membaliknya
- *   PUT   { sistemLamaAktif }   hanya developer dan pemilik; general manager hanya melihat
+ *   PUT   { sistemLamaAktif?, jadwalLamaAktif? }   hanya developer dan pemilik; general manager hanya melihat
  */
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -21,6 +21,7 @@ export async function GET() {
   const p = await bacaPengaturan();
   return NextResponse.json({
     sistemLamaAktif: p.sistemLamaAktif,
+    jadwalLamaAktif: p.jadwalLamaAktif,
     /* Dimatikan atau menyala, ia hanya bisa menyala bila server tahu alamat dan
        kata sandinya. */
     sistemLamaSiap: sistemLamaSiap(),
@@ -33,8 +34,11 @@ export async function GET() {
 export async function PUT(req: Request) {
   const akun = await akunMasuk();
   if (!akun || !aksesPenuh(akun.peran)) return tidakAda();
-  const o = (await req.json().catch(() => ({}))) as { sistemLamaAktif?: unknown };
-  if (typeof o.sistemLamaAktif !== "boolean") return galat("Nilai sakelar tidak sah.");
-  const p = await ubahPengaturan({ sistemLamaAktif: o.sistemLamaAktif }, akun.nama);
-  return NextResponse.json({ sistemLamaAktif: p.sistemLamaAktif, diubahOleh: p.diubahOleh, diubahPada: p.diubahPada });
+  const o = (await req.json().catch(() => ({}))) as { sistemLamaAktif?: unknown; jadwalLamaAktif?: unknown };
+  const patch: { sistemLamaAktif?: boolean; jadwalLamaAktif?: boolean } = {};
+  if (typeof o.sistemLamaAktif === "boolean") patch.sistemLamaAktif = o.sistemLamaAktif;
+  if (typeof o.jadwalLamaAktif === "boolean") patch.jadwalLamaAktif = o.jadwalLamaAktif;
+  if (!Object.keys(patch).length) return galat("Nilai sakelar tidak sah.");
+  const p = await ubahPengaturan(patch, akun.nama);
+  return NextResponse.json({ sistemLamaAktif: p.sistemLamaAktif, jadwalLamaAktif: p.jadwalLamaAktif, diubahOleh: p.diubahOleh, diubahPada: p.diubahPada });
 }

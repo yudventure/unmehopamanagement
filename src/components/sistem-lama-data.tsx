@@ -42,6 +42,10 @@ export interface JawabanLama {
   siap: boolean;
   /** Dimatikan dari Pengaturan, bukan gagal. */
   mati?: boolean;
+  /** Booking-nya dipakai di kalender (sakelar sistem lama). False: hanya dibaca untuk jadwal dan pencocokan. */
+  pakaiDiKalender?: boolean;
+  /** Jadwal dive center boleh dibaca. */
+  jadwal?: boolean;
   pesan: string | null;
   ms?: number;
   bookings?: BookingLama[];

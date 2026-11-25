@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 
 interface Keadaan {
   sistemLamaAktif: boolean;
+  jadwalLamaAktif?: boolean;
   sistemLamaSiap: boolean;
   diubahOleh: string | null;
   diubahPada: string | null;
@@ -34,14 +35,14 @@ export function SakelarSistemLama({ ringkas = false }: { ringkas?: boolean }) {
   }, []);
   useEffect(() => void muat(), [muat]);
 
-  const balik = async () => {
+  const balik = async (kunci: "sistemLamaAktif" | "jadwalLamaAktif" = "sistemLamaAktif") => {
     if (!k || sibuk) return;
-    const baru = !k.sistemLamaAktif;
-    if (!baru && !window.confirm("Matikan sistem lama? Turtle akan memakai data dashboard sendiri. Booking dan jadwal yang hanya ada di sistem lama tidak akan tampil sampai sakelar dinyalakan lagi. Tidak ada data yang dihapus.")) return;
+    const baru = !(k[kunci] ?? true);
+    if (kunci === "sistemLamaAktif" && !baru && !window.confirm("Matikan booking sistem lama di kalender? Turtle akan memakai data dashboard sendiri. Jadwal dive center tetap tampil bila sakelarnya menyala. Tidak ada data yang dihapus.")) return;
     setSibuk(true);
     setGalat("");
     try {
-      const r = await fetch("/api/pengaturan", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sistemLamaAktif: baru }) });
+      const r = await fetch("/api/pengaturan", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ [kunci]: baru }) });
       if (!r.ok) {
         const o = (await r.json().catch(() => ({}))) as { galat?: string };
         setGalat(o.galat ?? "Tidak bisa mengubah sakelar.");
@@ -63,11 +64,12 @@ export function SakelarSistemLama({ ringkas = false }: { ringkas?: boolean }) {
       <div className="flex items-start gap-4">
         <div className="min-w-0 flex-1">
           <p className="text-[11px] font-bold tracking-[0.16em] text-panel-aksen uppercase">Sistem lama Turtle</p>
+          <p className="mt-1 text-[0.9375rem] font-bold text-panel-utama">Booking sistem lama di kalender</p>
           <p className="mt-1 text-[1.0625rem] font-bold text-panel-utama">{status}</p>
           <p className="mt-1 text-[0.875rem] leading-[1.5] text-panel-utama/75">
             {k.sistemLamaAktif
               ? "Booking dan jadwal Turtle dibaca dari sistem staf lama (Apps Script). Kamar Turtle di dashboard mengikuti sistem itu."
-              : "Turtle memakai data dashboard sendiri, dan sistem lama tidak dipanggil sama sekali. Tidak ada data yang dihapus; menyalakannya lagi membaca sistem lama seperti semula."}
+              : (k.jadwalLamaAktif ?? true) ? "Kalender Turtle memakai data dashboard sendiri; booking sistem lama tidak dipakai di kalender. Sistem lama masih dibaca untuk jadwal dive center dan pencocokan. Tidak ada data yang dihapus." : "Turtle memakai data dashboard sendiri, dan sistem lama tidak dipanggil sama sekali. Tidak ada data yang dihapus; menyalakannya lagi membaca sistem lama seperti semula."}
           </p>
           {k.diubahOleh && k.diubahPada && (
             <p className="mt-1 text-[0.75rem] text-panel-utama/60">
@@ -83,10 +85,32 @@ export function SakelarSistemLama({ ringkas = false }: { ringkas?: boolean }) {
           aria-checked={k.sistemLamaAktif}
           aria-label="Sistem lama"
           disabled={!k.bolehUbah || sibuk}
-          onClick={() => void balik()}
+          onClick={() => void balik("sistemLamaAktif")}
           className={`relative mt-1 h-7 w-12 shrink-0 cursor-pointer rounded-full border-none transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${k.sistemLamaAktif ? "bg-panel-aksen" : "bg-panel-garis"}`}
         >
           <span className={`absolute top-[3px] size-[22px] rounded-full bg-white shadow transition-all ${k.sistemLamaAktif ? "left-[23px]" : "left-[3px]"}`} />
+        </button>
+      </div>
+      <div className="mt-4 flex items-start gap-4 border-t border-panel-garis pt-4">
+        <div className="min-w-0 flex-1">
+          <p className="text-[0.9375rem] font-bold text-panel-utama">Jadwal dive center dari sistem lama</p>
+          <p className="mt-1 text-[0.8125rem] leading-[1.5] text-panel-utama/75">
+            {(k.jadwalLamaAktif ?? true) || k.sistemLamaAktif
+              ? "Jadwal diving, snorkeling, kursus, trip, dan transport dibaca dari sistem lama dan tampil di kalender, juga dipakai untuk mencocokkan pesanan Booking.com dengan sistem lama. Booking-nya tidak dipakai di kalender kecuali sakelar di atas menyala."
+              : "Jadwal dive center tidak dibaca."}
+          </p>
+        </div>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={(k.jadwalLamaAktif ?? true) || k.sistemLamaAktif}
+          aria-label="Jadwal dive center dari sistem lama"
+          disabled={!k.bolehUbah || sibuk || k.sistemLamaAktif}
+          title={k.sistemLamaAktif ? "Selalu menyala selama booking sistem lama dipakai." : undefined}
+          onClick={() => void balik("jadwalLamaAktif")}
+          className={`relative mt-1 h-7 w-12 shrink-0 cursor-pointer rounded-full border-none transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${(k.jadwalLamaAktif ?? true) || k.sistemLamaAktif ? "bg-panel-aksen" : "bg-panel-garis"}`}
+        >
+          <span className={`absolute top-[3px] size-[22px] rounded-full bg-white shadow transition-all ${(k.jadwalLamaAktif ?? true) || k.sistemLamaAktif ? "left-[23px]" : "left-[3px]"}`} />
         </button>
       </div>
     </div>

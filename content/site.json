@@ -1,0 +1,518 @@
+{
+  "contact": {
+    "whatsapp": "6281243237470",
+    "email": "turtlediversrajaampat@gmail.com",
+    "ownerEmail": "turtlediversrajaampat@gmail.com"
+  },
+  "social": {
+    "facebook": "",
+    "instagram": "https://www.instagram.com/turtlediversrajaampat",
+    "tiktok": ""
+  },
+  "divePrices": {
+    "fun2": 1600000,
+    "fun3": 2250000,
+    "dsd": 1300000,
+    "ow": 0,
+    "snorkel": 0,
+    "guide": 400000,
+    "one": 900000,
+    "piaynemo2": 1700000,
+    "manta2": 1900000,
+    "mantaPm": 0,
+    "yangefo2": 2200000,
+    "p47": 2000000,
+    "nightYenbuba": 1100000,
+    "nightSawandarek": 1200000,
+    "houseReef": 400000,
+    "refresh": 1200000,
+    "tank": 150000,
+    "boatPiaynemo": 7000000,
+    "boatPiaynemoJoin": 8167000,
+    "boatYangefo": 7000000,
+    "boatBatanta": 7000000
+  },
+  "diveVideo": "https://www.youtube.com/watch?v=UJiVARkYs0c",
+  "maintenance": false,
+  "founded": {
+    "homestay": null,
+    "diveCenter": null
+  },
+  "sites": {
+    "turtle": {
+      "contact": {
+        "whatsapp": "6281243237470",
+        "email": "turtlediversrajaampat@gmail.com",
+        "ownerEmail": "turtlediversrajaampat@gmail.com"
+      },
+      "social": {
+        "facebook": "",
+        "instagram": "https://www.instagram.com/turtlediversrajaampat",
+        "tiktok": ""
+      },
+      "maintenance": false
+    },
+    "eddo": {
+      "contact": {
+        "whatsapp": "628214896226",
+        "email": "halo@eddohomestay.com",
+        "ownerEmail": "kurniawanbisnis001@gmail.com"
+      },
+      "social": {
+        "facebook": "",
+        "instagram": "",
+        "tiktok": ""
+      },
+      "maintenance": false
+    }
+  },
+  "eddoServices": {
+    "snorkeling": [
+      {
+        "id": "snorkeling-setengah-hari",
+        "name": {
+          "en": "Snorkelling trip, half a day",
+          "id": "Trip snorkeling setengah hari"
+        },
+        "specs": [
+          {
+            "key": "duration",
+            "value": {
+              "en": "Half a day",
+              "id": "Setengah hari"
+            }
+          },
+          {
+            "key": "includes",
+            "value": {
+              "en": "Boat, crew and gear",
+              "id": "Perahu, awak, dan alatnya"
+            }
+          },
+          {
+            "key": "notes",
+            "value": {
+              "en": "Price depends on the fuel and how far you go",
+              "id": "Harganya tergantung bahan bakar dan sejauh apa perginya"
+            }
+          }
+        ]
+      }
+    ],
+    "diving": [
+      {
+        "id": "fun2",
+        "name": {
+          "en": "Fun dive, 2 tanks",
+          "id": "Fun dive, 2 tabung"
+        },
+        "price": 1400000,
+        "unit": "person",
+        "specs": [
+          {
+            "key": "level",
+            "value": {
+              "en": "Open Water and up",
+              "id": "Open Water ke atas"
+            }
+          },
+          {
+            "key": "includes",
+            "value": {
+              "en": "Guide, tank, weights, boat",
+              "id": "Pemandu, tabung, timbang, perahu"
+            }
+          }
+        ]
+      },
+      {
+        "id": "fun3",
+        "name": {
+          "en": "Fun dive, 3 tanks",
+          "id": "Fun dive, 3 tabung"
+        },
+        "price": 1850000,
+        "unit": "person",
+        "specs": [
+          {
+            "key": "level",
+            "value": {
+              "en": "Open Water and up",
+              "id": "Open Water ke atas"
+            }
+          },
+          {
+            "key": "duration",
+            "value": {
+              "en": "Full day",
+              "id": "Sehari penuh"
+            }
+          },
+          {
+            "key": "includes",
+            "value": {
+              "en": "Guide, tank, weights, boat, lunch",
+              "id": "Pemandu, tabung, timbang, perahu, makan siang"
+            }
+          }
+        ]
+      },
+      {
+        "id": "dsd",
+        "name": "Discover Scuba",
+        "price": 1600000,
+        "unit": "person",
+        "specs": [
+          {
+            "key": "level",
+            "value": {
+              "en": "No certificate needed",
+              "id": "Belum bersertifikat"
+            }
+          },
+          {
+            "key": "notes",
+            "value": {
+              "en": "First time in the water, with an instructor",
+              "id": "Turun pertama kali, didampingi instruktur"
+            }
+          }
+        ]
+      }
+    ],
+    "excursion": [
+      {
+        "id": "piaynemo-sehari",
+        "name": {
+          "en": "Whole day to Piaynemo",
+          "id": "Sehari penuh ke Piaynemo"
+        },
+        "specs": [
+          {
+            "key": "duration",
+            "value": {
+              "en": "One whole day",
+              "id": "Satu hari penuh"
+            }
+          },
+          {
+            "key": "includes",
+            "value": {
+              "en": "Boat and crew for the day",
+              "id": "Perahu dan awaknya untuk seharian"
+            }
+          }
+        ]
+      },
+      {
+        "id": "keliling-sehari",
+        "name": {
+          "en": "Whole day around the near islands",
+          "id": "Sehari penuh keliling pulau dekat"
+        },
+        "specs": [
+          {
+            "key": "duration",
+            "value": {
+              "en": "One whole day",
+              "id": "Satu hari penuh"
+            }
+          },
+          {
+            "key": "notes",
+            "value": {
+              "en": "Where you go depends on the tide that day",
+              "id": "Ke mana saja tergantung pasang hari itu"
+            }
+          }
+        ]
+      }
+    ],
+    "transfer": [
+      {
+        "id": "waisai-yenbuba",
+        "name": {
+          "en": "Waisai to Yenbuba",
+          "id": "Waisai ke Yenbuba"
+        },
+        "price": 1800000,
+        "returnPrice": 3600000,
+        "unit": "trip",
+        "specs": [
+          {
+            "key": "seats",
+            "value": {
+              "en": "Up to 6",
+              "id": "Sampai 6 orang"
+            }
+          },
+          {
+            "key": "duration",
+            "value": {
+              "en": "About 1.5 hours",
+              "id": "Sekitar 1,5 jam"
+            }
+          },
+          {
+            "key": "notes",
+            "value": {
+              "en": "One boat, not per person",
+              "id": "Satu perahu, bukan per orang"
+            }
+          }
+        ]
+      },
+      {
+        "id": "antar-pulau",
+        "name": {
+          "en": "To a nearby island",
+          "id": "Antar pulau terdekat"
+        },
+        "unit": "trip",
+        "specs": [
+          {
+            "key": "notes",
+            "value": {
+              "en": "Depends where, and on the tide",
+              "id": "Tergantung tujuan dan pasang"
+            }
+          }
+        ]
+      }
+    ],
+    "camera": [
+      {
+        "id": "gopro",
+        "name": "GoPro",
+        "price": 150000,
+        "unit": "day",
+        "specs": [
+          {
+            "key": "includes",
+            "value": {
+              "en": "Housing, spare battery, memory card",
+              "id": "Housing, baterai cadangan, kartu memori"
+            }
+          },
+          {
+            "key": "notes",
+            "value": {
+              "en": "Waterproof",
+              "id": "Tahan air"
+            }
+          }
+        ]
+      },
+      {
+        "id": "kamera-saku",
+        "name": {
+          "en": "Compact underwater camera",
+          "id": "Kamera saku bawah air"
+        },
+        "price": 200000,
+        "unit": "day",
+        "specs": [
+          {
+            "key": "includes",
+            "value": {
+              "en": "Housing, memory card",
+              "id": "Housing, kartu memori"
+            }
+          }
+        ]
+      }
+    ],
+    "motorbike": [
+      {
+        "id": "beat",
+        "name": "Honda Beat",
+        "price": 100000,
+        "unit": "day",
+        "specs": [
+          {
+            "key": "engine",
+            "value": {
+              "en": "110cc, automatic",
+              "id": "110cc, matic"
+            }
+          },
+          {
+            "key": "seats",
+            "value": "2"
+          },
+          {
+            "key": "includes",
+            "value": {
+              "en": "2 helmets, fuel to start",
+              "id": "Helm 2, bensin awal"
+            }
+          }
+        ]
+      },
+      {
+        "id": "vario",
+        "name": "Honda Vario",
+        "price": 125000,
+        "unit": "day",
+        "specs": [
+          {
+            "key": "engine",
+            "value": {
+              "en": "125cc, automatic",
+              "id": "125cc, matic"
+            }
+          },
+          {
+            "key": "seats",
+            "value": "2"
+          },
+          {
+            "key": "includes",
+            "value": {
+              "en": "2 helmets, fuel to start",
+              "id": "Helm 2, bensin awal"
+            }
+          }
+        ]
+      },
+      {
+        "id": "klx",
+        "name": "Kawasaki KLX",
+        "price": 175000,
+        "unit": "day",
+        "specs": [
+          {
+            "key": "engine",
+            "value": {
+              "en": "150cc, trail",
+              "id": "150cc, trail"
+            }
+          },
+          {
+            "key": "seats",
+            "value": "2"
+          },
+          {
+            "key": "notes",
+            "value": {
+              "en": "For the dirt roads",
+              "id": "Untuk jalan tanah"
+            }
+          }
+        ]
+      }
+    ],
+    "car": [
+      {
+        "id": "avanza",
+        "name": "Toyota Avanza",
+        "price": 700000,
+        "unit": "day",
+        "specs": [
+          {
+            "key": "seats",
+            "value": "7"
+          },
+          {
+            "key": "includes",
+            "value": {
+              "en": "Driver, fuel around town",
+              "id": "Sopir, bensin dalam kota"
+            }
+          }
+        ]
+      },
+      {
+        "id": "hilux",
+        "name": "Toyota Hilux",
+        "price": 850000,
+        "unit": "day",
+        "specs": [
+          {
+            "key": "seats",
+            "value": "4"
+          },
+          {
+            "key": "notes",
+            "value": {
+              "en": "Open bed, for a lot of luggage",
+              "id": "Bak terbuka, untuk barang banyak"
+            }
+          }
+        ]
+      }
+    ],
+    "merch": [
+      {
+        "id": "kaos-dewasa",
+        "name": {
+          "en": "Eddo Homestay T-shirt",
+          "id": "Kaos Eddo Homestay"
+        },
+        "price": 150000,
+        "unit": "piece",
+        "sizes": [
+          {
+            "label": "S"
+          },
+          {
+            "label": "M"
+          },
+          {
+            "label": "L"
+          },
+          {
+            "label": "XL"
+          }
+        ],
+        "specs": [
+          {
+            "key": "size",
+            "value": "S, M, L, XL"
+          },
+          {
+            "key": "notes",
+            "value": {
+              "en": "Cotton, one-colour print",
+              "id": "Katun, sablon satu warna"
+            }
+          }
+        ]
+      },
+      {
+        "id": "kaos-anak",
+        "name": {
+          "en": "Child's T-shirt",
+          "id": "Kaos anak"
+        },
+        "price": 120000,
+        "unit": "piece",
+        "sizes": [
+          {
+            "label": "2-4"
+          },
+          {
+            "label": "4-6"
+          },
+          {
+            "label": "6-8"
+          },
+          {
+            "label": "8-10"
+          }
+        ],
+        "specs": [
+          {
+            "key": "size",
+            "value": {
+              "en": "2 to 10 years",
+              "id": "2 sampai 10 tahun"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "updatedAt": "2026-09-20T21:23:27.677Z",
+  "updatedBy": "Owner"
+}

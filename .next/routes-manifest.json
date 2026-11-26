@@ -1,0 +1,831 @@
+{
+  "version": 3,
+  "pages404": true,
+  "appType": "app",
+  "caseSensitive": false,
+  "basePath": "",
+  "redirects": [
+    {
+      "source": "/:path+/",
+      "destination": "/:path+",
+      "internal": true,
+      "priority": true,
+      "statusCode": 308,
+      "regex": "^(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))/$"
+    },
+    {
+      "source": "/turtle",
+      "has": [
+        {
+          "type": "host",
+          "value": "turtlehomestay.com"
+        }
+      ],
+      "destination": "/",
+      "statusCode": 307,
+      "regex": "^(?!/_next)/turtle(?:/)?$"
+    },
+    {
+      "source": "/turtle/:path((?!.*\\.).+)",
+      "has": [
+        {
+          "type": "host",
+          "value": "turtlehomestay.com"
+        }
+      ],
+      "destination": "/:path+",
+      "statusCode": 307,
+      "regex": "^(?!/_next)/turtle(?:/((?!.*\\.).+))(?:/)?$"
+    },
+    {
+      "source": "/turtle",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.turtlehomestay.com"
+        }
+      ],
+      "destination": "/",
+      "statusCode": 307,
+      "regex": "^(?!/_next)/turtle(?:/)?$"
+    },
+    {
+      "source": "/turtle/:path((?!.*\\.).+)",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.turtlehomestay.com"
+        }
+      ],
+      "destination": "/:path+",
+      "statusCode": 307,
+      "regex": "^(?!/_next)/turtle(?:/((?!.*\\.).+))(?:/)?$"
+    },
+    {
+      "source": "/eddo",
+      "has": [
+        {
+          "type": "host",
+          "value": "eddohomestay.com"
+        }
+      ],
+      "destination": "/",
+      "statusCode": 307,
+      "regex": "^(?!/_next)/eddo(?:/)?$"
+    },
+    {
+      "source": "/eddo/:path((?!.*\\.).+)",
+      "has": [
+        {
+          "type": "host",
+          "value": "eddohomestay.com"
+        }
+      ],
+      "destination": "/:path+",
+      "statusCode": 307,
+      "regex": "^(?!/_next)/eddo(?:/((?!.*\\.).+))(?:/)?$"
+    },
+    {
+      "source": "/eddo",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.eddohomestay.com"
+        }
+      ],
+      "destination": "/",
+      "statusCode": 307,
+      "regex": "^(?!/_next)/eddo(?:/)?$"
+    },
+    {
+      "source": "/eddo/:path((?!.*\\.).+)",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.eddohomestay.com"
+        }
+      ],
+      "destination": "/:path+",
+      "statusCode": 307,
+      "regex": "^(?!/_next)/eddo(?:/((?!.*\\.).+))(?:/)?$"
+    },
+    {
+      "source": "/kelola",
+      "has": [
+        {
+          "type": "host",
+          "value": "turtlehomestay.com"
+        }
+      ],
+      "destination": "https://unmehopamanagement.com/kelola",
+      "statusCode": 307,
+      "regex": "^(?!/_next)/kelola(?:/)?$"
+    },
+    {
+      "source": "/kelola",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.turtlehomestay.com"
+        }
+      ],
+      "destination": "https://unmehopamanagement.com/kelola",
+      "statusCode": 307,
+      "regex": "^(?!/_next)/kelola(?:/)?$"
+    },
+    {
+      "source": "/kelola",
+      "has": [
+        {
+          "type": "host",
+          "value": "eddohomestay.com"
+        }
+      ],
+      "destination": "https://unmehopamanagement.com/kelola",
+      "statusCode": 307,
+      "regex": "^(?!/_next)/kelola(?:/)?$"
+    },
+    {
+      "source": "/kelola",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.eddohomestay.com"
+        }
+      ],
+      "destination": "https://unmehopamanagement.com/kelola",
+      "statusCode": 307,
+      "regex": "^(?!/_next)/kelola(?:/)?$"
+    },
+    {
+      "source": "/dashboard.html",
+      "destination": "/sistem/dashboard.html",
+      "statusCode": 307,
+      "regex": "^(?!/_next)/dashboard\\.html(?:/)?$"
+    },
+    {
+      "source": "/staff.html",
+      "destination": "/sistem/staff.html",
+      "statusCode": 307,
+      "regex": "^(?!/_next)/staff\\.html(?:/)?$"
+    },
+    {
+      "source": "/td_monitoring.html",
+      "destination": "/sistem/td_monitoring.html",
+      "statusCode": 307,
+      "regex": "^(?!/_next)/td_monitoring\\.html(?:/)?$"
+    },
+    {
+      "source": "/td_activity_log.html",
+      "destination": "/sistem/td_activity_log.html",
+      "statusCode": 307,
+      "regex": "^(?!/_next)/td_activity_log\\.html(?:/)?$"
+    },
+    {
+      "source": "/invoiceapp_turtle_v3.html",
+      "destination": "/sistem/invoiceapp_turtle_v3.html",
+      "statusCode": 307,
+      "regex": "^(?!/_next)/invoiceapp_turtle_v3\\.html(?:/)?$"
+    },
+    {
+      "source": "/td_room_availability.html",
+      "destination": "/sistem/td_room_availability.html",
+      "statusCode": 307,
+      "regex": "^(?!/_next)/td_room_availability\\.html(?:/)?$"
+    },
+    {
+      "source": "/td_dashboard_console_31.html",
+      "destination": "/sistem/td_dashboard_console_31.html",
+      "statusCode": 307,
+      "regex": "^(?!/_next)/td_dashboard_console_31\\.html(?:/)?$"
+    },
+    {
+      "source": "/turtle_staff_system_19_3.html",
+      "destination": "/sistem/turtle_staff_system_19_3.html",
+      "statusCode": 307,
+      "regex": "^(?!/_next)/turtle_staff_system_19_3\\.html(?:/)?$"
+    },
+    {
+      "source": "/td_monitoring_app.html",
+      "destination": "/sistem/td_monitoring_app.html",
+      "statusCode": 307,
+      "regex": "^(?!/_next)/td_monitoring_app\\.html(?:/)?$"
+    },
+    {
+      "source": "/td_activity_log_app.html",
+      "destination": "/sistem/td_activity_log_app.html",
+      "statusCode": 307,
+      "regex": "^(?!/_next)/td_activity_log_app\\.html(?:/)?$"
+    },
+    {
+      "source": "/invoiceapp_turtle_v3_app.html",
+      "destination": "/sistem/invoiceapp_turtle_v3_app.html",
+      "statusCode": 307,
+      "regex": "^(?!/_next)/invoiceapp_turtle_v3_app\\.html(?:/)?$"
+    },
+    {
+      "source": "/invoiceapp_turtle_v3_app_V32_room_occupancy.html",
+      "destination": "/sistem/invoiceapp_turtle_v3_app_V32_room_occupancy.html",
+      "statusCode": 307,
+      "regex": "^(?!/_next)/invoiceapp_turtle_v3_app_V32_room_occupancy\\.html(?:/)?$"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/turtle",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ],
+      "regex": "^/turtle(?:/)?$"
+    },
+    {
+      "source": "/turtle/:path*",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ],
+      "regex": "^/turtle(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))?(?:/)?$"
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "turtlehomestay.com"
+        }
+      ],
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ],
+      "regex": "^/(?:/)?$"
+    },
+    {
+      "source": "/:path((?!_next/|api/|kelola|.*\\..*).+)",
+      "has": [
+        {
+          "type": "host",
+          "value": "turtlehomestay.com"
+        }
+      ],
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ],
+      "regex": "^(?:/((?!_next/|api/|kelola|.*\\..*).+))(?:/)?$"
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.turtlehomestay.com"
+        }
+      ],
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ],
+      "regex": "^/(?:/)?$"
+    },
+    {
+      "source": "/:path((?!_next/|api/|kelola|.*\\..*).+)",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.turtlehomestay.com"
+        }
+      ],
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ],
+      "regex": "^(?:/((?!_next/|api/|kelola|.*\\..*).+))(?:/)?$"
+    },
+    {
+      "source": "/eddo",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ],
+      "regex": "^/eddo(?:/)?$"
+    },
+    {
+      "source": "/eddo/:path*",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ],
+      "regex": "^/eddo(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))?(?:/)?$"
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "eddohomestay.com"
+        }
+      ],
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ],
+      "regex": "^/(?:/)?$"
+    },
+    {
+      "source": "/:path((?!_next/|api/|kelola|.*\\..*).+)",
+      "has": [
+        {
+          "type": "host",
+          "value": "eddohomestay.com"
+        }
+      ],
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ],
+      "regex": "^(?:/((?!_next/|api/|kelola|.*\\..*).+))(?:/)?$"
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.eddohomestay.com"
+        }
+      ],
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ],
+      "regex": "^/(?:/)?$"
+    },
+    {
+      "source": "/:path((?!_next/|api/|kelola|.*\\..*).+)",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.eddohomestay.com"
+        }
+      ],
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ],
+      "regex": "^(?:/((?!_next/|api/|kelola|.*\\..*).+))(?:/)?$"
+    },
+    {
+      "source": "/sistem/:path*",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
+      ],
+      "regex": "^/sistem(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))?(?:/)?$"
+    }
+  ],
+  "onMatchHeaders": [],
+  "rewrites": {
+    "beforeFiles": [
+      {
+        "source": "/",
+        "has": [
+          {
+            "type": "host",
+            "value": "turtlehomestay.com"
+          }
+        ],
+        "destination": "/turtle",
+        "regex": "^/(?:/)?$"
+      },
+      {
+        "source": "/",
+        "has": [
+          {
+            "type": "host",
+            "value": "www.turtlehomestay.com"
+          }
+        ],
+        "destination": "/turtle",
+        "regex": "^/(?:/)?$"
+      },
+      {
+        "source": "/",
+        "has": [
+          {
+            "type": "host",
+            "value": "eddohomestay.com"
+          }
+        ],
+        "destination": "/eddo",
+        "regex": "^/(?:/)?$"
+      },
+      {
+        "source": "/",
+        "has": [
+          {
+            "type": "host",
+            "value": "www.eddohomestay.com"
+          }
+        ],
+        "destination": "/eddo",
+        "regex": "^/(?:/)?$"
+      }
+    ],
+    "afterFiles": [
+      {
+        "source": "/:path*",
+        "has": [
+          {
+            "type": "host",
+            "value": "turtlehomestay.com"
+          }
+        ],
+        "destination": "/turtle/:path*",
+        "regex": "^(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))?(?:/)?$"
+      },
+      {
+        "source": "/:path*",
+        "has": [
+          {
+            "type": "host",
+            "value": "www.turtlehomestay.com"
+          }
+        ],
+        "destination": "/turtle/:path*",
+        "regex": "^(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))?(?:/)?$"
+      },
+      {
+        "source": "/:path*",
+        "has": [
+          {
+            "type": "host",
+            "value": "eddohomestay.com"
+          }
+        ],
+        "destination": "/eddo/:path*",
+        "regex": "^(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))?(?:/)?$"
+      },
+      {
+        "source": "/:path*",
+        "has": [
+          {
+            "type": "host",
+            "value": "www.eddohomestay.com"
+          }
+        ],
+        "destination": "/eddo/:path*",
+        "regex": "^(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))?(?:/)?$"
+      }
+    ],
+    "fallback": []
+  },
+  "dynamicRoutes": [
+    {
+      "page": "/api/ical/[berkas]",
+      "regex": "^/api/ical/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPberkas": "nxtPberkas"
+      },
+      "namedRegex": "^/api/ical/(?<nxtPberkas>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/api/modul/[modul]",
+      "regex": "^/api/modul/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPmodul": "nxtPmodul"
+      },
+      "namedRegex": "^/api/modul/(?<nxtPmodul>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/turtle/dive/[pack]",
+      "regex": "^/turtle/dive/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPpack": "nxtPpack"
+      },
+      "namedRegex": "^/turtle/dive/(?<nxtPpack>[^/]+?)(?:/)?$"
+    }
+  ],
+  "staticRoutes": [
+    {
+      "page": "/",
+      "regex": "^/(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/(?:/)?$"
+    },
+    {
+      "page": "/_global-error",
+      "regex": "^/_global\\-error(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/_global\\-error(?:/)?$"
+    },
+    {
+      "page": "/_not-found",
+      "regex": "^/_not\\-found(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/_not\\-found(?:/)?$"
+    },
+    {
+      "page": "/api/akun",
+      "regex": "^/api/akun(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/akun(?:/)?$"
+    },
+    {
+      "page": "/api/baca-pesan",
+      "regex": "^/api/baca\\-pesan(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/baca\\-pesan(?:/)?$"
+    },
+    {
+      "page": "/api/bentrok",
+      "regex": "^/api/bentrok(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/bentrok(?:/)?$"
+    },
+    {
+      "page": "/api/buku",
+      "regex": "^/api/buku(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/buku(?:/)?$"
+    },
+    {
+      "page": "/api/calendar",
+      "regex": "^/api/calendar(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/calendar(?:/)?$"
+    },
+    {
+      "page": "/api/catatan-tamu",
+      "regex": "^/api/catatan\\-tamu(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/catatan\\-tamu(?:/)?$"
+    },
+    {
+      "page": "/api/content",
+      "regex": "^/api/content(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/content(?:/)?$"
+    },
+    {
+      "page": "/api/enquiry",
+      "regex": "^/api/enquiry(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/enquiry(?:/)?$"
+    },
+    {
+      "page": "/api/galat",
+      "regex": "^/api/galat(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/galat(?:/)?$"
+    },
+    {
+      "page": "/api/health",
+      "regex": "^/api/health(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/health(?:/)?$"
+    },
+    {
+      "page": "/api/kamar",
+      "regex": "^/api/kamar(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/kamar(?:/)?$"
+    },
+    {
+      "page": "/api/kunjungan",
+      "regex": "^/api/kunjungan(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/kunjungan(?:/)?$"
+    },
+    {
+      "page": "/api/login",
+      "regex": "^/api/login(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/login(?:/)?$"
+    },
+    {
+      "page": "/api/pay",
+      "regex": "^/api/pay(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/pay(?:/)?$"
+    },
+    {
+      "page": "/api/pay/notify",
+      "regex": "^/api/pay/notify(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/pay/notify(?:/)?$"
+    },
+    {
+      "page": "/api/pembaca",
+      "regex": "^/api/pembaca(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/pembaca(?:/)?$"
+    },
+    {
+      "page": "/api/pembayaran",
+      "regex": "^/api/pembayaran(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/pembayaran(?:/)?$"
+    },
+    {
+      "page": "/api/pembayaran/tes",
+      "regex": "^/api/pembayaran/tes(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/pembayaran/tes(?:/)?$"
+    },
+    {
+      "page": "/api/pengaturan",
+      "regex": "^/api/pengaturan(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/pengaturan(?:/)?$"
+    },
+    {
+      "page": "/api/penyiapan",
+      "regex": "^/api/penyiapan(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/penyiapan(?:/)?$"
+    },
+    {
+      "page": "/api/pesanan",
+      "regex": "^/api/pesanan(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/pesanan(?:/)?$"
+    },
+    {
+      "page": "/api/preview",
+      "regex": "^/api/preview(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/preview(?:/)?$"
+    },
+    {
+      "page": "/api/preview-link",
+      "regex": "^/api/preview\\-link(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/preview\\-link(?:/)?$"
+    },
+    {
+      "page": "/api/rates",
+      "regex": "^/api/rates(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/rates(?:/)?$"
+    },
+    {
+      "page": "/api/sinkron",
+      "regex": "^/api/sinkron(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/sinkron(?:/)?$"
+    },
+    {
+      "page": "/api/sinkron/impor",
+      "regex": "^/api/sinkron/impor(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/sinkron/impor(?:/)?$"
+    },
+    {
+      "page": "/api/sinkron/jalankan",
+      "regex": "^/api/sinkron/jalankan(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/sinkron/jalankan(?:/)?$"
+    },
+    {
+      "page": "/api/sistem-lama",
+      "regex": "^/api/sistem\\-lama(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/sistem\\-lama(?:/)?$"
+    },
+    {
+      "page": "/api/sistem-lama/cocok",
+      "regex": "^/api/sistem\\-lama/cocok(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/sistem\\-lama/cocok(?:/)?$"
+    },
+    {
+      "page": "/api/ttd",
+      "regex": "^/api/ttd(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/ttd(?:/)?$"
+    },
+    {
+      "page": "/apple-icon.png",
+      "regex": "^/apple\\-icon\\.png(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/apple\\-icon\\.png(?:/)?$"
+    },
+    {
+      "page": "/eddo",
+      "regex": "^/eddo(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/eddo(?:/)?$"
+    },
+    {
+      "page": "/eddo/apple-icon.png",
+      "regex": "^/eddo/apple\\-icon\\.png(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/eddo/apple\\-icon\\.png(?:/)?$"
+    },
+    {
+      "page": "/eddo/checkout",
+      "regex": "^/eddo/checkout(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/eddo/checkout(?:/)?$"
+    },
+    {
+      "page": "/eddo/icon.png",
+      "regex": "^/eddo/icon\\.png(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/eddo/icon\\.png(?:/)?$"
+    },
+    {
+      "page": "/icon.png",
+      "regex": "^/icon\\.png(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/icon\\.png(?:/)?$"
+    },
+    {
+      "page": "/kelola",
+      "regex": "^/kelola(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/kelola(?:/)?$"
+    },
+    {
+      "page": "/preview",
+      "regex": "^/preview(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/preview(?:/)?$"
+    },
+    {
+      "page": "/turtle",
+      "regex": "^/turtle(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/turtle(?:/)?$"
+    },
+    {
+      "page": "/turtle/about",
+      "regex": "^/turtle/about(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/turtle/about(?:/)?$"
+    },
+    {
+      "page": "/turtle/apple-icon.png",
+      "regex": "^/turtle/apple\\-icon\\.png(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/turtle/apple\\-icon\\.png(?:/)?$"
+    },
+    {
+      "page": "/turtle/checkout",
+      "regex": "^/turtle/checkout(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/turtle/checkout(?:/)?$"
+    },
+    {
+      "page": "/turtle/icon.png",
+      "regex": "^/turtle/icon\\.png(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/turtle/icon\\.png(?:/)?$"
+    }
+  ],
+  "dataRoutes": [],
+  "rsc": {
+    "header": "rsc",
+    "varyHeader": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch",
+    "prefetchHeader": "next-router-prefetch",
+    "didPostponeHeader": "x-nextjs-postponed",
+    "contentTypeHeader": "text/x-component",
+    "suffix": ".rsc",
+    "prefetchSegmentHeader": "next-router-segment-prefetch",
+    "prefetchSegmentSuffix": ".segment.rsc",
+    "prefetchSegmentDirSuffix": ".segments",
+    "clientParamParsing": false,
+    "dynamicRSCPrerender": false
+  },
+  "rewriteHeaders": {
+    "pathHeader": "x-nextjs-rewritten-path",
+    "queryHeader": "x-nextjs-rewritten-query"
+  }
+}

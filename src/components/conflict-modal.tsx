@@ -6,7 +6,7 @@ import { Modal, ModalHeader } from "@/components/ui/modal";
 import { Pill } from "@/components/ui/pill";
 import { CH, CHANNEL_LABELS } from "@/lib/data";
 import type { ConflictPair } from "@/lib/derive";
-import { dayDiff, fmt, fmtDate, fmtShort, iso, parse } from "@/lib/format";
+import { WEEKDAYS, dayDiff, fmt, fmtDate, fmtShort, iso, parse } from "@/lib/format";
 import { statusColors } from "@/lib/pills";
 import type { Booking } from "@/lib/types";
 
@@ -58,6 +58,52 @@ function overlapLabel(pair: ConflictPair) {
     iso(new Date(parse(pair.from).getTime() + (pair.nights - 1) * 86400000)),
   );
   return `${first} – ${last}`;
+}
+
+const hariTgl = (d: string) => `${WEEKDAYS[parse(d).getDay()]}, ${fmtShort(d)}`;
+
+/**
+ * Kapan irisan mulai dan kapan selesai, dengan nama tamunya, supaya terlihat
+ * apakah masih sempat menawarkan kompensasi atau memindahkan satu tamu ke kamar
+ * transit. `from` adalah malam pertama yang diperebutkan (tamu yang datang
+ * belakangan check-in), `to` pagi irisan berakhir (tamu yang pulang lebih dulu
+ * check-out). Check-out dan check-in pada hari yang sama tidak beririsan.
+ */
+function RentangIrisan({ pair }: { pair: ConflictPair }) {
+  const hariIni = iso(new Date());
+  const datang = pair.a.checkIn >= pair.b.checkIn ? pair.a : pair.b;
+  const lain = datang === pair.a ? pair.b : pair.a;
+  const pulang = pair.a.checkOut <= pair.b.checkOut ? pair.a : pair.b;
+  const tetap = pulang === pair.a ? pair.b : pair.a;
+  const sama = pair.a.checkIn === pair.b.checkIn;
+  const sisaHari = dayDiff(hariIni, pair.from);
+  const kapan =
+    pair.to <= hariIni
+      ? "Sudah lewat."
+      : pair.from <= hariIni
+        ? `Sedang berlangsung, ${dayDiff(hariIni, pair.to)} malam lagi.`
+        : sisaHari === 1
+          ? "Mulai besok malam."
+          : `Mulai ${sisaHari} hari lagi.`;
+  return (
+    <div className="mb-3 grid gap-2 rounded-[12px] border border-line-soft bg-surface px-[14px] py-[10px] text-[12.5px] leading-[1.5] text-slate sm:grid-cols-[1fr_1fr_auto]">
+      <div>
+        <div className="font-mono text-[10.5px] tracking-[0.06em] text-slate-mute uppercase">Mulai beririsan</div>
+        <div className="font-semibold text-ink">Malam {hariTgl(pair.from)}</div>
+        <div>{sama ? `${pair.a.guest} dan ${pair.b.guest} sama-sama check-in.` : `${datang.guest} check-in, ${lain.guest} masih menginap.`}</div>
+      </div>
+      <div>
+        <div className="font-mono text-[10.5px] tracking-[0.06em] text-slate-mute uppercase">Irisan selesai</div>
+        <div className="font-semibold text-ink">Pagi {hariTgl(pair.to)}</div>
+        <div>
+          {pair.a.checkOut === pair.b.checkOut
+            ? `Keduanya check-out bersamaan.`
+            : `${pulang.guest} check-out; ${tetap.guest} lanjut sampai ${fmtShort(tetap.checkOut)}.`}
+        </div>
+      </div>
+      <div className="self-center font-medium text-danger-ink sm:text-right">{kapan}</div>
+    </div>
+  );
 }
 
 function Side({
@@ -285,6 +331,7 @@ export function ConflictModal({
                 {pair.nights} malam bentrok
               </span>
             </div>
+            <RentangIrisan pair={pair} />
 
             <div className="flex flex-wrap gap-3">
               <Side

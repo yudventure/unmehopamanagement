@@ -322,8 +322,9 @@ const bertumpuk = (a: string, b: string, x: string, y: string) => a < y && x < b
  * punya `kamarLain` (satu tipe kamar, beberapa unit) membagikan tiap bacaan ke
  * kamar pertama yang kosong pada malam-malam itu, di antara kamarnya dan
  * kamar-kamar lain itu, setelah pesanan dashboard dan sambungan biasa ditaruh
- * lebih dulu. Hanya bila semua unit penuh bacaannya ditaruh di kamar utama, dan
- * di sana terbaca sebagai bentrok, karena memang itulah kelebihan jual.
+ * lebih dulu. Bila tidak ada unit yang kosong sepanjang menginap, bacaannya
+ * ditaruh di unit dengan malam bertumpuk paling sedikit, dan di sana terbaca
+ * sebagai bentrok, karena memang itulah kelebihan jual.
  *
  * Urutannya tetap (tanggal mulai, lalu selesai, lalu uid), jadi hasilnya sama
  * tiap kali dibaca selama isinya sama.
@@ -337,6 +338,30 @@ export async function bookingDariLuar(): Promise<Booking[]> {
     else sibuk.set(room, [[a, b]]);
   };
   const kosong = (room: string, a: string, b: string) => !(sibuk.get(room) ?? []).some(([x, y]) => bertumpuk(a, b, x, y));
+  /** Malam yang sudah terpakai di kamar itu dalam rentang [a, b). Check-out dan check-in di hari yang sama tidak dihitung. */
+  const malamTerpakai = (room: string, a: string, b: string) => {
+    const malam = new Set<string>();
+    for (const [x, y] of sibuk.get(room) ?? []) {
+      if (!bertumpuk(a, b, x, y)) continue;
+      for (const d of malamDari(x > a ? x : a, y < b ? y : b)) malam.add(d);
+    }
+    return malam.size;
+  };
+  /**
+   * Bila tidak ada unit yang kosong sepanjang menginap, taruh di unit yang
+   * paling sedikit malamnya bertumpuk, bukan selalu di kamar utama. Bentrok
+   * yang terbaca lalu hanya malam yang memang kelebihan jual, tidak seluruh
+   * masa menginap tamu yang datang paling akhir.
+   */
+  const kamarIrisanTersedikit = (kandidat: string[], a: string, b: string) => {
+    let terbaik = kandidat[0];
+    let nilai = Infinity;
+    for (const r of kandidat) {
+      const n = malamTerpakai(r, a, b);
+      if (n < nilai) [terbaik, nilai] = [r, n];
+    }
+    return terbaik;
+  };
   for (const p of await ambilPesanan()) {
     if (p.status === "Cancelled" || p.status === "Tidak datang") continue;
     isi(p.roomId, p.checkIn, p.checkOut);
@@ -435,7 +460,7 @@ export async function bookingDariLuar(): Promise<Booking[]> {
     const kandidat = [sb.roomId, ...(sb.kamarLain ?? []).filter((r) => r !== sb.roomId)];
     const urut = butirDari(sb).sort((p, q) => p.mulai.localeCompare(q.mulai) || p.selesai.localeCompare(q.selesai) || p.urut.localeCompare(q.urut));
     for (const b of urut) {
-      const room = kandidat.find((r) => kosong(r, b.mulai, b.selesai)) ?? sb.roomId;
+      const room = kandidat.find((r) => kosong(r, b.mulai, b.selesai)) ?? kamarIrisanTersedikit(kandidat, b.mulai, b.selesai);
       keluar.push(b.buat(room, true));
       isi(room, b.mulai, b.selesai);
     }
